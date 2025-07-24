@@ -1,0 +1,3 @@
+class PlotRenderer extends Renderer {
+
+}

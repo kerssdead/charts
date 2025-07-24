@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pie Example</title>
+
+    <script src="/src/charts.js"></script>
+</head>
+
+<body>
+    <div id="pie-example"></div>
+</body>
+
+<script>
+    let chart = new Chart(document.getElementById('pie-example'), {
+        data: [],
+        type: ChartTypes.circular
+    })
+
+    await chart.render()
+</script>
+</html>
