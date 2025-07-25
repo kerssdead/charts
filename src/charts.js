@@ -1,9 +1,13 @@
 class Chart {
     /**
+     * @type {HTMLElement}
+     */
+    node
+
+    /**
      * @type {ChartSettings}
      */
     #settings
-
 
     /**
      * @type {DynSettings}
@@ -17,15 +21,16 @@ class Chart {
     constructor(context, settings) {
         context[ChartProperties.chart] = this
 
+        this.node = context
         this.#settings = settings
         this.#dynSettings = new DynSettings(this, settings)
     }
 
-    async render() {
+    render() {
         this.#dynSettings.renderer.render()
     }
 
-    async destroy() {
+    destroy() {
 
     }
 }

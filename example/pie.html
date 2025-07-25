@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <title>Pie Example</title>
 
+    <script src="/src/enums.js"></script>
+    <script src="/src/dynSettings.js"></script>
+    <script src="/src/settings.js"></script>
+    <script src="/src/const/properties.js"></script>
+    <script src="/src/types/base/data.js"></script>
+    <script src="/src/types/base/renderer.js"></script>
+    <script src="/src/render/circularRenderer.js"></script>
+    <script src="/src/render/plotRenderer.js"></script>
+    <script src="/src/types/sector.js"></script>
+    <script src="/src/types/data/circularData.js"></script>
     <script src="/src/charts.js"></script>
 </head>
 
@@ -13,10 +23,38 @@
 
 <script>
     let chart = new Chart(document.getElementById('pie-example'), {
-        data: [],
+        data: {
+            type: CircularTypes.pie,
+            values: [
+                {
+                    value: 20,
+                    color: '#ff0000'
+                },
+                {
+                    value: 45,
+                    color: '#00ff00'
+                },
+                {
+                    value: 90,
+                    color: '#0000ff'
+                },
+                {
+                    value: 60,
+                    color: '#ff00ff'
+                },
+                {
+                    value: 30,
+                    color: '#ffff00'
+                },
+                {
+                    value: 115,
+                    color: '#ff5800'
+                }
+            ]
+        },
         type: ChartTypes.circular
     })
 
-    await chart.render()
+    chart.render()
 </script>
 </html>

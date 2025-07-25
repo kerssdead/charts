@@ -1,14 +1,49 @@
 class Renderer {
     /**
+     * @type {HTMLElement}
+     */
+    node
+
+    /**
      * @type {HTMLCanvasElement}
      */
     canvas
 
     /**
-     * @throws {Error}
+     * @type {ChartSettings}
      */
+    settings
+
+    /**
+     * @type {DynSettings}
+     */
+    dynSettings
+
+    /**
+
+     * @type {CircularData}
+     */
+    data
+
+    /**
+     * @param {HTMLElement} node
+     * @param {ChartSettings} settings
+     * @param {DynSettings} dynSettings
+     */
+    constructor(node, settings, dynSettings) {
+        this.node = node
+        this.settings = settings
+        this.dynSettings = dynSettings
+        this.data = settings.data
+    }
+
     render() {
         this.canvas = document.createElement('canvas')
+
+        this.canvas.width = 1000
+        this.canvas.height = 1000
+
+        this.node.append(this.canvas)
     }
 
     /**

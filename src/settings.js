@@ -1,6 +1,6 @@
 class ChartSettings {
     /**
-     * @type {Data[]}
+     * @type {Data}
      */
     data
 
