@@ -43,12 +43,16 @@ class CircularRenderer extends Renderer {
         if (!this.#isInit) {
             super.render()
 
+            const shortSide = this.canvas.width > this.canvas.height
+                ? this.canvas.height
+                : this.canvas.width
+
             this.#center = {
                 x: this.canvas.width / 2,
                 y: this.canvas.height / 2
             }
 
-            this.#radius = this.canvas.width / 3
+            this.#radius = shortSide / 3
 
             this.#sum = this.data.values.reduce((acc, v) => acc + v.value, 0)
 

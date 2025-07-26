@@ -45,7 +45,7 @@ class Renderer {
     render() {
         this.canvas = document.createElement('canvas')
 
-        this.canvas.width = 1000
+        this.canvas.width = 1600
         this.canvas.height = 1000
 
         this.node.append(this.canvas)
