@@ -13,42 +13,52 @@
     <script src="/src/render/circularRenderer.js"></script>
     <script src="/src/render/plotRenderer.js"></script>
     <script src="/src/types/sector.js"></script>
+    <script src="/src/types/point.js"></script>
     <script src="/src/types/data/circularData.js"></script>
     <script src="/src/charts.js"></script>
 </head>
 
 <body>
-    <div id="pie-example"></div>
+    <div id="pie-example" style="justify-self: center"></div>
 </body>
 
 <script>
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
     let chart = new Chart(document.getElementById('pie-example'), {
         data: {
             type: CircularTypes.pie,
             values: [
                 {
                     value: 20,
-                    color: '#ff0000'
+                    color: getRandomColor()
                 },
                 {
                     value: 45,
-                    color: '#00ff00'
+                    color: getRandomColor()
                 },
                 {
                     value: 90,
-                    color: '#0000ff'
+                    color: getRandomColor()
                 },
                 {
                     value: 60,
-                    color: '#ff00ff'
+                    color: getRandomColor()
                 },
                 {
                     value: 30,
-                    color: '#ffff00'
+                    color: getRandomColor()
                 },
                 {
                     value: 115,
-                    color: '#ff5800'
+                    color: getRandomColor()
                 }
             ]
         },
