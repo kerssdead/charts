@@ -14,3 +14,12 @@ const ChartTypes = Object.freeze({
 const CircularTypes = Object.freeze({
     pie: 0
 })
+
+/**
+ * @readonly
+ * @enum {string}
+ */
+const AnimationTypes = Object.freeze({
+    mouseover: 0,
+    mouseleave: 1
+})

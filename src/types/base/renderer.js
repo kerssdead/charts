@@ -20,10 +20,14 @@ class Renderer {
     dynSettings
 
     /**
-
      * @type {CircularData}
      */
     data
+
+    /**
+     * @type {Animations}
+     */
+    animations
 
     /**
      * @param {HTMLElement} node
@@ -35,6 +39,7 @@ class Renderer {
         this.settings = settings
         this.dynSettings = dynSettings
         this.data = settings.data
+        this.animations = new Animations()
     }
 
     render() {

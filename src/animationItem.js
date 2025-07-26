@@ -5,6 +5,11 @@ class AnimationItem {
     timer
 
     /**
+     * @type {function:boolean}
+     */
+    before
+
+    /**
      * @type {function}
      */
     body

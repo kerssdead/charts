@@ -30,16 +30,6 @@ class CircularRenderer extends Renderer {
     #accumulator
 
     /**
-     * @type {Date}
-     */
-    #timer
-
-    /**
-     * @type {number}
-     */
-    #animationHash
-
-    /**
      * @type {MouseEvent}
      */
     #onMouseMoveEvent
@@ -50,8 +40,6 @@ class CircularRenderer extends Renderer {
     #globalTimer
 
     render() {
-        // console.log('render')
-
         if (!this.#isInit) {
             super.render()
 
@@ -86,13 +74,6 @@ class CircularRenderer extends Renderer {
 
             for (const value of this.data.values)
                 nextPoint = this.#drawSector(value, nextPoint)
-
-            function radiansToDegrees(radians)
-            {
-                return radians * (180 / Math.PI)
-            }
-
-            console.log(radiansToDegrees(this.#accumulator))
         }
 
         const stamp = new Date()
@@ -158,46 +139,81 @@ class CircularRenderer extends Renderer {
         ctx.fill()
 
         if (this.#onMouseMoveEvent && !isInner) {
-            let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
-                y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y
+            this.animations.add(value,
+                AnimationTypes.mouseover,
+                {
+                    timer: null,
+                    duration: 100,
+                    before: () => {
+                        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
+                            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y
 
-            if (ctx.isPointInPath(x, y)) {
-                let direction = this.#accumulator - angle / 2
+                        return ctx.isPointInPath(x, y)
+                    },
+                    body: (passed, duration) => {
+                        let direction = this.#accumulator - angle / 2
 
-                this.#initTimer(value)
+                        if (passed > duration)
+                            passed = duration
 
-                const stamp = new Date()
+                        const transition = {
+                            x: 20 * Math.cos(direction) * (passed / duration),
+                            y: 20 * Math.sin(direction) * (passed / duration)
+                        }
 
-                let passed = stamp - this.#timer
+                        ctx.translate(transition.x, transition.y)
 
-                const duration = 100
+                        this.#accumulator -= angle
 
-                if (passed > duration)
-                    passed = duration
+                        // ~! should transparent/invisible
+                        ctx.fillStyle = '#ffffff'
+                        ctx.fill()
 
-                const transition = {
-                    x: 20 * Math.cos(direction) * (passed / duration),
-                    y: 20 * Math.sin(direction) * (passed / duration)
-                }
+                        point2 = this.#drawSector({
+                            value: value.value,
+                            color: adjustColor(value.color, 33)
+                        }, point1, true)
 
-                ctx.translate(transition.x, transition.y)
+                        ctx.resetTransform()
+                    }
+                })
 
-                this.#accumulator -= angle
+            this.animations.add(value,
+                AnimationTypes.mouseleave,
+                {
+                    timer: null,
+                    duration: 100,
+                    before: () => {
+                        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
+                            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y
 
-                // ~! should transparent/invisible
-                ctx.fillStyle = '#ffffff'
-                ctx.fill()
+                        return !ctx.isPointInPath(x, y)
+                    },
+                    body: (passed, duration) => {
+                        let direction = this.#accumulator - angle / 2
 
-                point2 = this.#drawSector({
-                    value: value.value,
-                    color: adjustColor(value.color, 33)
-                }, point1, true)
+                        if (passed > duration)
+                            passed = duration
 
-                ctx.resetTransform()
+                        const transition = {
+                            x: 20 * Math.cos(direction) * (1 - passed / duration),
+                            y: 20 * Math.sin(direction) * (1 - passed / duration)
+                        }
+
+                        ctx.translate(transition.x, transition.y)
+
+                        this.#accumulator -= angle
+
+                        // ~! should transparent/invisible
+                        ctx.fillStyle = '#ffffff'
+                        ctx.fill()
+
+                        point2 = this.#drawSector(value, point1, true)
+
+                        ctx.resetTransform()
+                    }
+                })
             }
-        } else {
-
-        }
 
         return point2
     }
@@ -205,21 +221,7 @@ class CircularRenderer extends Renderer {
     #initAnimations() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
 
-        this.canvas.onmousemove = event => {
-            this.#onMouseMoveEvent = event
-        }
-    }
-
-    /**
-     * @param entity {object}
-     */
-    #initTimer(entity) {
-        const hash = entity.hashCode()
-
-        if (hash !== this.#animationHash)
-            this.#timer = new Date()
-
-        this.#animationHash = hash
+        this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
     }
 
     destroy() {
