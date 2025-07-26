@@ -39,6 +39,11 @@ class CircularRenderer extends Renderer {
      */
     #globalTimer
 
+    /**
+     * @type {number}
+     */
+    #startAngle
+
     render() {
         if (!this.#isInit) {
             super.render()
@@ -52,6 +57,8 @@ class CircularRenderer extends Renderer {
                 y: this.canvas.height / 2
             }
 
+            this.#startAngle = Math.random() % (Math.PI * 2)
+
             this.#radius = shortSide / 3
 
             this.#sum = this.data.values.reduce((acc, v) => acc + v.value, 0)
@@ -61,7 +68,7 @@ class CircularRenderer extends Renderer {
             this.#initAnimations()
         }
 
-        this.#accumulator = 0
+        this.#accumulator = this.#startAngle
 
         this.#draw()
 
@@ -74,7 +81,10 @@ class CircularRenderer extends Renderer {
 
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
-            let nextPoint = { x: this.#center.x + this.#radius, y: this.#center.y }
+            let nextPoint = {
+                x: this.#center.x + this.#radius * Math.cos(this.#startAngle),
+                y: this.#center.y + this.#radius * Math.sin(this.#startAngle)
+            }
 
             for (const value of this.data.values)
                 nextPoint = this.#drawSector(value, nextPoint)
