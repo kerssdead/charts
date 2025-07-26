@@ -78,7 +78,7 @@ class CircularRenderer extends Renderer {
 
         const stamp = new Date()
 
-        if (stamp - this.#globalTimer >= 1000 / 10)
+        if (stamp - this.#globalTimer >= 1000 / 24)
             requestAnimationFrame(this.render.bind(this))
         else
             setTimeout(() => requestAnimationFrame(this.render.bind(this)), stamp - this.#globalTimer)
@@ -94,6 +94,37 @@ class CircularRenderer extends Renderer {
 
         const piece = value.value / this.#sum,
             angle = piece * 2 * Math.PI
+
+        if (!isInner) {
+            let labelStartPoint = {
+                x: this.#center.x + (this.#radius + 25) * Math.cos(this.#accumulator + angle / 2),
+                y: this.#center.y + (this.#radius + 25) * Math.sin(this.#accumulator + angle / 2)
+            }
+
+            let labelMidPoint = {
+                x: this.#center.x + (this.#radius + 50) * Math.cos(this.#accumulator + angle / 2),
+                y: this.#center.y + (this.#radius + 50) * Math.sin(this.#accumulator + angle / 2)
+            }
+
+            ctx.beginPath()
+            ctx.moveTo(labelStartPoint.x, labelStartPoint.y)
+
+            const dir = labelStartPoint.x > this.#center.x ? 1 : -1
+
+            let endPoint = {
+                x: labelMidPoint.x + 40 * dir,
+                y: labelMidPoint.y
+            }
+
+            ctx.quadraticCurveTo(labelMidPoint.x, labelMidPoint.y, endPoint.x, endPoint.y)
+
+            ctx.stroke()
+
+            ctx.fillStyle = '#000000'
+            ctx.textAlign = dir === 1 ? 'start': 'end'
+            ctx.font = '18px serif'
+            ctx.fillText(value.label, endPoint.x + 10 * dir, endPoint.y)
+        }
 
         let point2
 
@@ -171,7 +202,8 @@ class CircularRenderer extends Renderer {
 
                         point2 = this.#drawSector({
                             value: value.value,
-                            color: adjustColor(value.color, 33)
+                            color: adjustColor(value.color, 33),
+                            label: value.label
                         }, point1, true)
 
                         ctx.resetTransform()

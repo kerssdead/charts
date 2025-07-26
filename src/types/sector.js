@@ -8,4 +8,9 @@ class Sector {
      * @type {string}
      */
     color
+
+    /**
+     * @type {string}
+     */
+    label
 }
