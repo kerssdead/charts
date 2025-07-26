@@ -36,38 +36,40 @@
         return color
     }
 
+    const color = getRandomColor()
+
     let chart = new Chart(document.getElementById('pie-example'), {
         data: {
             type: CircularTypes.pie,
             values: [
                 {
                     value: Math.random() % 100,
-                    color: getRandomColor(),
+                    color: adjustColor(color, -60),
                     label: 'test 1'
                 },
                 {
                     value: Math.random() % 100,
-                    color: getRandomColor(),
+                    color: adjustColor(color, -40),
                     label: 'test 2'
                 },
                 {
                     value: Math.random() % 100,
-                    color: getRandomColor(),
+                    color: adjustColor(color, -20),
                     label: 'some label'
                 },
                 {
                     value: Math.random() % 100,
-                    color: getRandomColor(),
+                    color: color,
                     label: 'another one'
                 },
                 {
                     value: Math.random() % 100,
-                    color: getRandomColor(),
+                    color: adjustColor(color, 20),
                     label: 'label'
                 },
                 {
                     value: Math.random() % 100,
-                    color: getRandomColor(),
+                    color: adjustColor(color, 40),
                     label: 'test 3'
                 }
             ]
