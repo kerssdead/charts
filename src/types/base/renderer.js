@@ -40,15 +40,17 @@ class Renderer {
         this.dynSettings = dynSettings
         this.data = settings.data
         this.animations = new Animations()
-    }
 
-    render() {
         this.canvas = document.createElement('canvas')
 
         this.canvas.width = 1600
         this.canvas.height = 1000
 
         this.node.append(this.canvas)
+    }
+
+    render() {
+
     }
 
     /**
