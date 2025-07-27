@@ -44,6 +44,16 @@ class CircularRenderer extends Renderer {
      */
     #startAngle
 
+    /**
+     * @type {string}
+     */
+    #currentHover
+
+    /**
+     * @type {boolean}
+     */
+    #isHover = false
+
     render() {
         if (!this.#isInit) {
             super.render()
@@ -69,6 +79,7 @@ class CircularRenderer extends Renderer {
         }
 
         this.#accumulator = this.#startAngle
+        this.#isHover = false
 
         this.#draw()
 
@@ -76,6 +87,7 @@ class CircularRenderer extends Renderer {
     }
 
     #draw() {
+        // ~! this.#onMouseMoveEvent never set null ?
         if (this.animations.any() || this.#onMouseMoveEvent || !!this.#isInit === false) {
             const ctx = this.canvas.getContext('2d')
 
@@ -88,6 +100,10 @@ class CircularRenderer extends Renderer {
 
             for (const value of this.data.values)
                 nextPoint = this.#drawSector(value, nextPoint)
+
+            if (this.#onMouseMoveEvent)
+                for (const value of this.data.values)
+                    this.#drawTooltip(value, false)
         }
 
         const stamp = new Date()
@@ -113,6 +129,10 @@ class CircularRenderer extends Renderer {
 
         const piece = value.value / this.#sum,
             angle = piece * 2 * Math.PI
+
+        ctx.fillStyle = value.color
+        ctx.shadowBlur = null
+        ctx.shadowColor = null
 
         if (!isInner) {
             let labelStartPoint = {
@@ -201,6 +221,9 @@ class CircularRenderer extends Renderer {
                         return ctx.isPointInPath(x, y)
                     },
                     body: (passed, duration) => {
+                        this.#isHover = true
+                        this.#currentHover = value.hashCode()
+
                         let direction = this.#accumulator - angle / 2
 
                         if (passed > duration)
@@ -313,6 +336,31 @@ class CircularRenderer extends Renderer {
         }
 
         return point2
+    }
+
+    /**
+     * @param value {Sector}
+     */
+    #drawTooltip(value) {
+        const ctx = this.canvas.getContext('2d')
+
+        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
+            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y
+
+        if (this.#currentHover === value.hashCode() && this.#isHover) {
+            const text = `${value.label}: ${value.value}`
+
+            ctx.beginPath()
+            ctx.roundRect(x + 20, y + 20, text.width(18) + 10, 38, 20)
+            ctx.fillStyle = '#00000077'
+            ctx.shadowColor = '#00000077'
+            ctx.shadowBlur = 20
+            ctx.fill()
+
+            ctx.fillStyle = '#ffffff'
+            ctx.font = '18px serif'
+            ctx.fillText(text, x + 35, y + 45)
+        }
     }
 
     #initAnimations() {
