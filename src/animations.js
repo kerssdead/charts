@@ -37,21 +37,40 @@ class Animations {
     }
 
     /**
+     * @param object {Object}
+     * @param type {number}
+     *
+     * @return {boolean}
+     */
+    contains(object, type) {
+        return this.#queue.has({
+            type: type,
+            hash: object.hashCode()
+        }.hashCode())
+    }
+
+    any() {
+        return this.#queue.size > 0
+    }
+
+    /**
      * @param key {string}
      */
     #process(key) {
         let item = this.#queue.get(key)
-        const before = item.before()
+
+        const stamp = new Date(),
+            passed = stamp - item.timer
+
+        const before = item.before(item, passed, item.duration)
 
         if (!item.timer && before)
             item.timer = new Date()
 
-        const stamp = new Date()
-
         if (before)
-            item.body(stamp - item.timer, item.duration)
+            item.body(passed, item.duration)
 
-        if (stamp - item.timer > item.duration && !before)
+        if (passed > item.duration && !before)
             this.#queue.delete(key)
     }
 }

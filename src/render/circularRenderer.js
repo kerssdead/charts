@@ -76,7 +76,7 @@ class CircularRenderer extends Renderer {
     }
 
     #draw() {
-        if (this.#onMouseMoveEvent || !!this.#isInit === false) {
+        if (this.animations.any() || this.#onMouseMoveEvent || !!this.#isInit === false) {
             const ctx = this.canvas.getContext('2d')
 
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -92,10 +92,15 @@ class CircularRenderer extends Renderer {
 
         const stamp = new Date()
 
-        if (stamp - this.#globalTimer >= 1000 / 24)
+        if (stamp - this.#globalTimer >= 1000 / 10) {
+            this.#globalTimer = new Date()
             requestAnimationFrame(this.render.bind(this))
-        else
-            setTimeout(() => requestAnimationFrame(this.render.bind(this)), stamp - this.#globalTimer)
+        } else {
+            setTimeout(() => {
+                this.#globalTimer = new Date()
+                requestAnimationFrame(this.render.bind(this))
+            }, stamp - this.#globalTimer)
+        }
     }
 
     /**
@@ -259,7 +264,53 @@ class CircularRenderer extends Renderer {
                         ctx.resetTransform()
                     }
                 })
-            }
+        }
+
+        if (!isInner && (!this.#isInit || this.animations.contains(value, AnimationTypes.init))) {
+            this.animations.add(value,
+                AnimationTypes.init,
+                {
+                    timer: new Date(),
+                    duration: 175 + this.data.values.indexOf(value) / this.data.values.length * 250,
+                    before: (item, passed, duration) => {
+                        return !item.timer || passed < duration
+                    },
+                    body: (passed, duration) => {
+                        if (passed > duration)
+                            passed = duration
+
+                        const transition = passed / duration
+
+                        const centerOfSector = {
+                            x: this.#center.x + this.#radius / 2 * Math.cos(this.#accumulator - angle / 2),
+                            y: this.#center.y + this.#radius / 2 * Math.sin(this.#accumulator - angle / 2)
+                        }
+
+                        const minSize = .7,
+                            rest = 1 - minSize
+
+                        ctx.translate(centerOfSector.x - centerOfSector.x * (minSize + transition * rest),
+                            centerOfSector.y - centerOfSector.y * (minSize + transition * rest))
+                        ctx.scale((minSize + transition * rest), (minSize + transition * rest))
+
+                        this.#accumulator -= angle
+
+                        // ~! should transparent/invisible
+                        ctx.fillStyle = '#ffffff'
+                        ctx.fill()
+
+                        point2 = this.#drawSector({
+                                value: value.value,
+                                color: value.color + Math.round(256 * transition).toString(16),
+                                label: value.label
+                            },
+                            point1,
+                            true)
+
+                        ctx.resetTransform()
+                    }
+                })
+        }
 
         return point2
     }
