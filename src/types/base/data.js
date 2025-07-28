@@ -1,1 +1,6 @@
-class Data { }
+class Data {
+    /**
+     * @type {BasePoint[]}
+     */
+    values
+}

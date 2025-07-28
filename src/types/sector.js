@@ -1,4 +1,4 @@
-class Sector {
+class Sector extends BasePoint {
     /**
      * @type {number}
      */

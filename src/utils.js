@@ -23,3 +23,10 @@ const avg = 0.5279276315789471
 String.prototype.width = function(font) {
     return Array.from(this).reduce((acc, cur) => acc + (widths[cur.charCodeAt(0)] ?? avg), 0) * (font || 12)
 }
+
+function createGuid() {
+    function S4() {
+        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    }
+    return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
+}

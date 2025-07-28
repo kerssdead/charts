@@ -28,9 +28,12 @@ class Chart {
 
         this.node = context
         this.#settings = settings
-        this.#dynSettings = new DynSettings(this, settings)
 
-        this.#legend = new Legend(this, settings.data)
+        this.#prepareSettings()
+
+        this.#dynSettings = new DynSettings(this, this.#settings)
+
+        this.#legend = new Legend(this, this.#settings.data)
 
         if (this.#legend) {
             this.#dynSettings.renderer.canvas.height -= 200
@@ -48,5 +51,10 @@ class Chart {
 
     destroy() {
 
+    }
+
+    #prepareSettings() {
+        for (let item of this.#settings.data.values)
+            item.id = createGuid()
     }
 }

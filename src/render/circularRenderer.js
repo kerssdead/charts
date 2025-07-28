@@ -35,6 +35,11 @@ class CircularRenderer extends Renderer {
     #onMouseMoveEvent
 
     /**
+     * @type {MouseEvent}
+     */
+    #onClickEvent
+
+    /**
      * @type {Date}
      */
     #globalTimer
@@ -53,6 +58,11 @@ class CircularRenderer extends Renderer {
      * @type {boolean}
      */
     #isHover = false
+
+    /**
+     * @type {string[]}
+     */
+    #pinned
 
     render() {
         if (!this.#isInit) {
@@ -74,6 +84,8 @@ class CircularRenderer extends Renderer {
             this.#sum = this.data.values.reduce((acc, v) => acc + v.value, 0)
 
             this.#globalTimer = new Date()
+
+            this.#pinned = []
 
             this.#initAnimations()
         }
@@ -210,6 +222,56 @@ class CircularRenderer extends Renderer {
 
         ctx.fillStyle = value.color
         ctx.fill()
+
+        if (this.#onClickEvent && !isInner) {
+            this.animations.add(value,
+                AnimationTypes.mouseleave,
+                {
+                    timer: null,
+                    duration: 100,
+                    before: () => {
+                        if (this.#onClickEvent !== null) {
+                            let x = this.#onClickEvent.clientX - this.#canvasPosition.x,
+                                y = this.#onClickEvent.clientY - this.#canvasPosition.y
+
+                            if (ctx.isPointInPath(x, y))
+                                if (this.#pinned.includes(value.id)) {
+                                    this.#pinned = this.#pinned.filter(id => id !== value.id)
+                                    this.#onClickEvent = null
+                                } else {
+                                    this.#pinned.push(value.id)
+                                    this.#onClickEvent = null
+                                }
+                        }
+
+                        return true
+                    },
+                    body: () => {
+                        if (!this.#pinned.includes(value.id))
+                            return
+
+                        let direction = this.#accumulator - angle / 2
+
+                        const transition = {
+                            x: 20 * Math.cos(direction),
+                            y: 20 * Math.sin(direction)
+                        }
+
+                        ctx.translate(transition.x, transition.y)
+
+                        this.#accumulator -= angle
+
+                        // ~! should transparent/invisible
+                        ctx.fillStyle = '#ffffff'
+                        ctx.fill()
+
+                        point2 = this.#drawSector(value, point1, true)
+
+                        ctx.resetTransform()
+                    }
+                })
+
+        }
 
         if (this.#onMouseMoveEvent && !isInner) {
             this.animations.add(value,
@@ -375,6 +437,7 @@ class CircularRenderer extends Renderer {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
 
         this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
+        this.canvas.onclick = event => this.#onClickEvent = event
     }
 
     destroy() {
