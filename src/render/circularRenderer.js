@@ -83,6 +83,9 @@ class CircularRenderer extends Renderer {
 
         this.#draw()
 
+        if (!this.#isInit)
+            this.canvas.dispatchEvent(new MouseEvent('mousemove'))
+
         this.#isInit = true
     }
 
@@ -103,7 +106,7 @@ class CircularRenderer extends Renderer {
 
             if (this.#onMouseMoveEvent)
                 for (const value of this.data.values)
-                    this.#drawTooltip(value, false)
+                    this.#drawTooltip(value)
         }
 
         const stamp = new Date()
@@ -160,7 +163,7 @@ class CircularRenderer extends Renderer {
             ctx.stroke()
 
             ctx.fillStyle = '#000000'
-            ctx.textAlign = dir === 1 ? 'start': 'end'
+            ctx.textAlign = dir === 1 ? 'start' : 'end'
             ctx.font = '18px serif'
             ctx.fillText(value.label, endPoint.x + 10 * dir, endPoint.y)
         }
@@ -210,6 +213,45 @@ class CircularRenderer extends Renderer {
 
         if (this.#onMouseMoveEvent && !isInner) {
             this.animations.add(value,
+                AnimationTypes.mouseleave,
+                {
+                    timer: null,
+                    duration: 100,
+                    before: () => {
+                        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
+                            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y
+
+                        return !ctx.isPointInPath(x, y)
+                    },
+                    body: (passed, duration) => {
+                        if (passed > duration)
+                            return
+
+                        let direction = this.#accumulator - angle / 2
+
+                        if (passed > duration)
+                            passed = duration
+
+                        const transition = {
+                            x: 20 * Math.cos(direction) * (1 - passed / duration),
+                            y: 20 * Math.sin(direction) * (1 - passed / duration)
+                        }
+
+                        ctx.translate(transition.x, transition.y)
+
+                        this.#accumulator -= angle
+
+                        // ~! should transparent/invisible
+                        ctx.fillStyle = '#ffffff'
+                        ctx.fill()
+
+                        point2 = this.#drawSector(value, point1, true)
+
+                        ctx.resetTransform()
+                    }
+                })
+
+            this.animations.add(value,
                 AnimationTypes.mouseover,
                 {
                     timer: null,
@@ -243,46 +285,12 @@ class CircularRenderer extends Renderer {
                         ctx.fill()
 
                         point2 = this.#drawSector({
-                            value: value.value,
-                            color: adjustColor(value.color, 33),
-                            label: value.label
-                        }, point1, true)
-
-                        ctx.resetTransform()
-                    }
-                })
-
-            this.animations.add(value,
-                AnimationTypes.mouseleave,
-                {
-                    timer: null,
-                    duration: 100,
-                    before: () => {
-                        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
-                            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y
-
-                        return !ctx.isPointInPath(x, y)
-                    },
-                    body: (passed, duration) => {
-                        let direction = this.#accumulator - angle / 2
-
-                        if (passed > duration)
-                            passed = duration
-
-                        const transition = {
-                            x: 20 * Math.cos(direction) * (1 - passed / duration),
-                            y: 20 * Math.sin(direction) * (1 - passed / duration)
-                        }
-
-                        ctx.translate(transition.x, transition.y)
-
-                        this.#accumulator -= angle
-
-                        // ~! should transparent/invisible
-                        ctx.fillStyle = '#ffffff'
-                        ctx.fill()
-
-                        point2 = this.#drawSector(value, point1, true)
+                                value: value.value,
+                                color: adjustColor(value.color, 33),
+                                label: value.label
+                            },
+                            point1,
+                            true)
 
                         ctx.resetTransform()
                     }
@@ -348,7 +356,7 @@ class CircularRenderer extends Renderer {
             y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y
 
         if (this.#currentHover === value.hashCode() && this.#isHover) {
-            const text = `${value.label}: ${value.value}`
+            const text = `${value.label}: ${value.value.toPrecision(2)}`
 
             ctx.beginPath()
             ctx.roundRect(x + 20, y + 20, text.width(18) + 10, 38, 20)
