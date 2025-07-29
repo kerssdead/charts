@@ -92,6 +92,7 @@ class CircularRenderer extends Renderer {
 
         this.#accumulator = this.#startAngle
         this.#isHover = false
+        document.body.style.cursor = 'default'
 
         this.#draw()
 
@@ -327,6 +328,8 @@ class CircularRenderer extends Renderer {
                     body: (passed, duration) => {
                         this.#isHover = true
                         this.#currentHover = value.hashCode()
+
+                        document.body.style.cursor = 'pointer'
 
                         let direction = this.#accumulator - angle / 2
 
