@@ -14,11 +14,7 @@ class Animations {
      * @param value {AnimationItem}
      */
     add(object, type, value) {
-        const key = {
-            type: type,
-            hash: object.hashCode()
-        }.hashCode()
-
+        const key = this.#getKey(object, type)
         if (!this.#queue.has(key))
             this.#queue.set(key, value)
 
@@ -30,10 +26,7 @@ class Animations {
      * @param type {number}
      */
     delete(object, type) {
-        this.#queue.delete({
-            type: type,
-            hash: object.hashCode()
-        }.hashCode())
+        this.#queue.delete(this.#getKey(object, type))
     }
 
     /**
@@ -43,14 +36,23 @@ class Animations {
      * @return {boolean}
      */
     contains(object, type) {
-        return this.#queue.has({
-            type: type,
-            hash: object.hashCode()
-        }.hashCode())
+        return this.#queue.has(this.#getKey(object, type))
     }
 
     any() {
         return this.#queue.size > 0
+    }
+
+    /**
+     * @param object {Object}
+     * @param type {number}
+     */
+    reload(object, type) {
+        if (this.contains(object, type)) {
+            let item = this.#queue.get(this.#getKey(object, type))
+
+            item.timer = new Date()
+        }
     }
 
     /**
@@ -60,9 +62,9 @@ class Animations {
         let item = this.#queue.get(key)
 
         const stamp = new Date(),
-            passed = stamp - item.timer
+            passed = stamp - (item.timer ?? stamp)
 
-        const before = item.before(item, passed, item.duration)
+        const before = item.before(item, passed, item.duration) ?? true
 
         if (!item.timer && before)
             item.timer = new Date()
@@ -72,5 +74,18 @@ class Animations {
 
         if (passed > item.duration && !before)
             this.#queue.delete(key)
+    }
+
+    /**
+     * @param object {Object}
+     * @param type {number}
+     *
+     * @return string
+     */
+    #getKey(object, type) {
+        return {
+            type: type,
+            hash: object
+        }.hashCode()
     }
 }

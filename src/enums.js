@@ -22,5 +22,6 @@ const CircularTypes = Object.freeze({
 const AnimationTypes = Object.freeze({
     mouseover: 0,
     mouseleave: 1,
-    init: 2
+    init: 2,
+    click: 3
 })
