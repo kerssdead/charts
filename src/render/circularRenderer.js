@@ -189,6 +189,7 @@ class CircularRenderer extends Renderer {
 
             ctx.quadraticCurveTo(labelMidPoint.x, labelMidPoint.y, endPoint.x, endPoint.y)
 
+            ctx.strokeStyle = '#000000'
             ctx.stroke()
 
             ctx.fillStyle = '#000000'
@@ -398,7 +399,9 @@ class CircularRenderer extends Renderer {
             ctx.closePath()
 
             ctx.fillStyle = value.color
+            ctx.strokeStyle = value.color
             ctx.fill()
+            ctx.stroke()
 
             this.#accumulator += angle
         }
