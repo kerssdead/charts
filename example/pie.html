@@ -38,43 +38,27 @@
         return color
     }
 
-    const color = getRandomColor()
+    const baseColor = getRandomColor()
+    const labelsPool = ['test 1', 'test 2', 'some label', 'another one', 'label', 'test 3', 'chart label', 'custom']
+
+    let values = []
+    const valuesCount = Math.floor(Math.random() * 25) + 2
+
+    const adjustStep = Math.round(100 / valuesCount)
+    let adjustAmount = -50
+
+    for (let i = 0; i < valuesCount; i++) {
+        values.push({
+            value: Math.random(),
+            color: adjustColor(baseColor, adjustAmount += adjustStep),
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
+        })
+    }
 
     let chart = new Chart(document.getElementById('pie-example'), {
         data: {
             type: CircularTypes.pie,
-            values: [
-                {
-                    value: Math.random() % 100,
-                    color: adjustColor(color, -60),
-                    label: 'test 1'
-                },
-                {
-                    value: Math.random() % 100,
-                    color: adjustColor(color, -40),
-                    label: 'test 2'
-                },
-                {
-                    value: Math.random() % 100,
-                    color: adjustColor(color, -20),
-                    label: 'some label'
-                },
-                {
-                    value: Math.random() % 100,
-                    color: color,
-                    label: 'another one'
-                },
-                {
-                    value: Math.random() % 100,
-                    color: adjustColor(color, 20),
-                    label: 'label'
-                },
-                {
-                    value: Math.random() % 100,
-                    color: adjustColor(color, 40),
-                    label: 'test 3'
-                }
-            ]
+            values: values
         },
         type: ChartTypes.circular
     })
