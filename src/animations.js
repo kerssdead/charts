@@ -9,7 +9,7 @@ class Animations {
     }
 
     /**
-     * @param object {Object}
+     * @param object {BasePoint}
      * @param type {number}
      * @param value {AnimationItem}
      */
@@ -83,9 +83,6 @@ class Animations {
      * @return string
      */
     #getKey(object, type) {
-        return {
-            type: type,
-            hash: object
-        }.hashCode()
+        return object.id + type
     }
 }

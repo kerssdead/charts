@@ -5,6 +5,11 @@ class Chart {
     node
 
     /**
+     * @type {Data}
+     */
+    data
+
+    /**
      * @type {ChartSettings}
      */
     #settings
@@ -27,13 +32,14 @@ class Chart {
         context[ChartProperties.chart] = this
 
         this.node = context
+        this.data = settings.data
         this.#settings = settings
 
         this.#prepareSettings()
 
         this.#dynSettings = new DynSettings(this, this.#settings)
 
-        this.#legend = new Legend(this, this.#settings.data)
+        this.#legend = new Legend(this)
 
         if (this.#legend) {
             this.#dynSettings.renderer.canvas.height -= 200

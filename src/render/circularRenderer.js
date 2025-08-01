@@ -69,6 +69,30 @@ class CircularRenderer extends Renderer {
      */
     #angles
 
+    /**
+     * @type {CircularData}
+     */
+    data
+
+    /**
+     * @type {Point}
+     */
+    #startPoint
+
+    /**
+     * @param {Chart} chart
+     * @param {ChartSettings} settings
+     * @param {DynSettings} dynSettings
+     */
+    constructor(chart, settings, dynSettings) {
+        super(chart, settings, dynSettings)
+
+        this.data = this.chart.data
+
+        for (const value of this.data.values)
+            value.current = value.value
+    }
+
     render() {
         if (!this.#isInit) {
             super.render()
@@ -86,30 +110,16 @@ class CircularRenderer extends Renderer {
 
             this.#radius = shortSide / 3
 
-            this.#sum = this.data.values.reduce((acc, v) => acc + v.value, 0)
-
             this.#globalTimer = new Date()
 
             this.#pinned = []
 
             this.#initAnimations()
-
-            let anglesSum = this.#startAngle
-            this.#angles = this.data.values.flatMap(sector => {
-                const angle = sector.value / this.#sum * 2 * Math.PI
-
-                return {
-                    id: sector.id,
-                    value: angle,
-                    sum: (anglesSum += angle) - angle
-                }
-            })
-                .reverse()
         }
 
         this.#accumulator = this.#startAngle
         this.#isHover = false
-        document.body.style.cursor = 'default'
+        this.canvas.style.cursor = 'default'
 
         this.#draw()
 
@@ -121,52 +131,55 @@ class CircularRenderer extends Renderer {
 
     #draw() {
         if (this.animations.any() || this.#onMouseMoveEvent || !!this.#isInit === false) {
+            this.#sum = this.data.values.reduce((acc, v) => acc + v.current, 0)
+
+            let anglesSum = this.#startAngle
+            this.#angles = this.data.values.flatMap(sector => {
+                const angle = sector.current / this.#sum * 2 * Math.PI
+
+                return {
+                    id: sector.id,
+                    value: angle,
+                    sum: (anglesSum += angle) - angle
+                }
+            })
+                .reverse()
+
             const ctx = this.canvas.getContext('2d')
 
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
-            let nextPoint = {
+            this.#startPoint = {
                 x: this.#center.x + this.#radius * Math.cos(this.#startAngle),
                 y: this.#center.y + this.#radius * Math.sin(this.#startAngle)
             }
 
             for (const value of this.data.values)
-                nextPoint = this.#drawSector(value, nextPoint)
+                this.#drawSector(value)
 
             if (this.#onMouseMoveEvent)
                 for (const value of this.data.values)
                     this.#drawTooltip(value)
         }
 
-        const stamp = new Date()
-
-        if (stamp - this.#globalTimer >= 1000 / 10) {
-            this.#globalTimer = new Date()
-            requestAnimationFrame(this.render.bind(this))
-        } else {
-            setTimeout(() => {
-                this.#globalTimer = new Date()
-                requestAnimationFrame(this.render.bind(this))
-            }, stamp - this.#globalTimer)
-        }
+        requestAnimationFrame(this.render.bind(this))
     }
 
     /**
      * @param value {Sector}
-     * @param point1 {Point}
      * @param isInner {boolean?}
      */
-    #drawSector(value, point1, isInner = false) {
+    #drawSector(value, isInner = false) {
         const ctx = this.canvas.getContext('2d')
 
-        const piece = value.value / this.#sum,
+        const piece = value.current / this.#sum,
             angle = piece * 2 * Math.PI
 
         ctx.fillStyle = value.color
         ctx.shadowBlur = null
         ctx.shadowColor = null
 
-        if (!isInner) {
+        if (!isInner && !value.disabled) {
             let labelStartPoint = {
                 x: this.#center.x + (this.#radius + 25) * Math.cos(this.#accumulator + angle / 2),
                 y: this.#center.y + (this.#radius + 25) * Math.sin(this.#accumulator + angle / 2)
@@ -208,7 +221,7 @@ class CircularRenderer extends Renderer {
                 AnimationTypes.init,
                 {
                     timer: new Date(),
-                    duration: 125 + (this.data.values.indexOf(value) + 1) / this.data.values.length * 175,
+                    duration: 125 + (this.chart.data.values.indexOf(value) + 1) / this.chart.data.values.length * 175,
                     before: (item, passed, duration) => {
                         return passed <= duration
                     },
@@ -235,13 +248,14 @@ class CircularRenderer extends Renderer {
                         if (opacity.length < 2)
                             opacity = 0 + opacity
 
-                        point2 = this.#drawSector({
+                        this.#drawSector({
                                 value: value.value,
+                                current: value.current,
                                 color: value.color + opacity,
                                 label: value.label,
-                                id: value.id
+                                id: value.id,
+                                disabled: value.disabled
                             },
-                            point1,
                             true)
 
                         ctx.resetTransform()
@@ -280,12 +294,11 @@ class CircularRenderer extends Renderer {
 
                         ctx.translate(transition.x, transition.y)
 
-                        point2 = this.#drawSector(value, point1, true)
+                        this.#drawSector(value, true)
 
                         ctx.resetTransform()
                     }
                 })
-
         }
 
         if (this.#onMouseMoveEvent
@@ -313,7 +326,15 @@ class CircularRenderer extends Renderer {
 
                         ctx.translate(transition.x, transition.y)
 
-                        point2 = this.#drawSector(value, point1, true)
+                        this.#drawSector({
+                                value: value.value,
+                                current: value.current,
+                                color: adjustColor(value.color, Math.round(33 * (1 - passed / duration))),
+                                label: value.label,
+                                id: value.id,
+                                disabled: value.disabled
+                            },
+                            true)
 
                         ctx.resetTransform()
                     }
@@ -333,7 +354,7 @@ class CircularRenderer extends Renderer {
                         this.#isHover = true
                         this.#currentHover = value.hashCode()
 
-                        document.body.style.cursor = 'pointer'
+                        this.canvas.style.cursor = 'pointer'
 
                         let direction = this.#accumulator + angle / 2
 
@@ -347,13 +368,14 @@ class CircularRenderer extends Renderer {
 
                         ctx.translate(transition.x, transition.y)
 
-                        point2 = this.#drawSector({
+                        this.#drawSector({
                                 value: value.value,
-                                color: adjustColor(value.color, 33),
+                                current: value.current,
+                                color: adjustColor(value.color, Math.round(33 * passed / duration)),
                                 label: value.label,
-                                id: value.id
+                                id: value.id,
+                                disabled: value.disabled
                             },
-                            point1,
                             true)
 
                         ctx.resetTransform()
@@ -361,21 +383,18 @@ class CircularRenderer extends Renderer {
                 })
         }
 
-        if (isInner) {
+        if (isInner && angle > 0) {
             ctx.beginPath()
             ctx.moveTo(this.#center.x, this.#center.y)
-            ctx.lineTo(point1.x, point1.y)
+            ctx.lineTo(this.#startPoint.x, this.#startPoint.y)
 
             let localAccumulator = 0,
                 localAngle = angle
 
             while (localAngle > 0) {
-                let currentAngle = 0
-
-                if (localAngle - Math.PI / 6 > 0)
-                    currentAngle = Math.PI / 6
-                else
-                    currentAngle = localAngle
+                let currentAngle = localAngle - Math.PI / 6 > 0
+                    ? Math.PI / 6
+                    : localAngle
 
                 point2 = {
                     x: this.#center.x + this.#radius * Math.cos(this.#accumulator + localAccumulator + currentAngle),
@@ -406,7 +425,7 @@ class CircularRenderer extends Renderer {
             this.#accumulator += angle
         }
 
-        return point2
+        this.#startPoint = point2
     }
 
     /**
@@ -419,7 +438,7 @@ class CircularRenderer extends Renderer {
             y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y
 
         if (this.#currentHover === value.hashCode() && this.#isHover) {
-            const text = `${value.label}: ${value.value.toPrecision(2)}`
+            const text = `${value.label}: ${value.current.toPrecision(2)}`
 
             ctx.beginPath()
             ctx.roundRect(x + 20, y + 20, text.width(18) + 10, 38, 20)
@@ -478,6 +497,6 @@ class CircularRenderer extends Renderer {
     }
 
     destroy() {
-        super.destroy();
+        super.destroy()
     }
 }

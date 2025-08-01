@@ -20,9 +20,9 @@ class Renderer {
     dynSettings
 
     /**
-     * @type {CircularData}
+     * @type {Chart}
      */
-    data
+    chart
 
     /**
      * @type {Animations}
@@ -30,15 +30,15 @@ class Renderer {
     animations
 
     /**
-     * @param {HTMLElement} node
+     * @param {Chart} chart
      * @param {ChartSettings} settings
      * @param {DynSettings} dynSettings
      */
-    constructor(node, settings, dynSettings) {
-        this.node = node
+    constructor(chart, settings, dynSettings) {
+        this.node = chart.node
         this.settings = settings
         this.dynSettings = dynSettings
-        this.data = settings.data
+        this.chart = chart
         this.animations = new Animations()
 
         this.canvas = document.createElement('canvas')

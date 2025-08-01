@@ -5,12 +5,7 @@ class Sector extends BasePoint {
     value
 
     /**
-     * @type {string}
+     * @type {Number}
      */
-    color
-
-    /**
-     * @type {string}
-     */
-    label
+    current
 }
