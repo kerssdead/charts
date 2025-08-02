@@ -1,0 +1,16 @@
+{
+  "name": "charts",
+  "version": "1.0.0",
+  "description": "Javascript Canvas Charts",
+  "jsdelivr": "./ch.in.js",
+  "repository": "https://github.com/kerssdead/charts",
+  "bugs": {
+    "email": "kerss26rus@gmail.com",
+    "url": "https://github.com/kerssdead/charts/issues"
+  },
+  "author": "Sergey Ryabko <kerss26rus@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "charts"
+  ]
+}
