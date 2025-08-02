@@ -18,4 +18,14 @@ class AnimationItem {
      * @type {number}
      */
     duration
+
+    /**
+     * @type {boolean}
+     */
+    inProgress
+
+    /**
+     * @type {boolean}
+     */
+    continuous
 }

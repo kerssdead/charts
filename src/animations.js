@@ -69,11 +69,15 @@ class Animations {
         if (!item.timer && before)
             item.timer = new Date()
 
-        if (before)
+        if (before || (item.inProgress && item.continuous)) {
             item.body(passed, item.duration)
+            item.inProgress = true
+        }
 
-        if (passed > item.duration && !before)
+        if (passed >= item.duration && (!before || item.continuous)) {
             this.#queue.delete(key)
+            item.inProgress = false
+        }
     }
 
     /**

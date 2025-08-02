@@ -115,6 +115,7 @@ class Legend {
                 {
                     timer: null,
                     duration: 220,
+                    continuous: true,
                     before: () => {
                         return isHover(this.#onClickEvent)
                     },
@@ -129,7 +130,6 @@ class Legend {
                             value.current = value.value * (1 - passed / duration)
                         else
                             value.current = value.value * passed / duration
-
 
                         if (passed === duration)
                             this.#onClickEvent = new PointerEvent('click')
