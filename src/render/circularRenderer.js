@@ -201,7 +201,7 @@ class CircularRenderer extends Renderer {
             ctx.fillStyle = '#000000'
             ctx.textAlign = dir === 1 ? 'start' : 'end'
             ctx.font = '18px serif'
-            ctx.fillText(value.label, endPoint.x + 10 * dir, endPoint.y)
+            ctx.fillText(value.label, endPoint.x + 10 * dir, endPoint.y + 4)
         }
 
         let point2 = {
