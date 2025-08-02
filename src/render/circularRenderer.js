@@ -460,7 +460,7 @@ class CircularRenderer extends Renderer {
             const text = `${value.label}: ${value.current.toPrecision(2)}`
 
             ctx.beginPath()
-            ctx.roundRect(x + 20, y + 20, text.width(18) + 10, 38, 20)
+            ctx.roundRect(x += 10, y += 10, text.width(18) + 18, 38, 20)
             ctx.fillStyle = '#00000077'
             ctx.shadowColor = '#00000077'
             ctx.shadowBlur = 20
@@ -468,7 +468,8 @@ class CircularRenderer extends Renderer {
 
             ctx.fillStyle = '#ffffff'
             ctx.font = '18px serif'
-            ctx.fillText(text, x + 35, y + 45)
+            ctx.textAlign = 'start'
+            ctx.fillText(text, x + 15, y + 25)
         }
     }
 
