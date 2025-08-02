@@ -114,7 +114,10 @@ class CircularRenderer extends Renderer {
         this.#isHover = false
         this.canvas.style.cursor = 'default'
 
-        this.#draw()
+        if (this.data.values.filter(v => !v.disabled).length === 0)
+            this.#drawEmpty()
+        else
+            this.#draw()
 
         if (!this.#isInit)
             this.canvas.dispatchEvent(new MouseEvent('mousemove'))
@@ -166,7 +169,7 @@ class CircularRenderer extends Renderer {
         const ctx = this.canvas.getContext('2d')
 
         const piece = value.current / this.#sum,
-            angle = piece * 2 * Math.PI
+            angle = (isNaN(piece) ? 1 : piece) * 2 * Math.PI
 
         ctx.fillStyle = value.color
         ctx.shadowBlur = null
@@ -507,6 +510,27 @@ class CircularRenderer extends Renderer {
                 x: point.x - this.#center.x,
                 y: point.y - this.#center.y
             })
+    }
+
+    #drawEmpty() {
+        const ctx = this.canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, this.#canvasPosition.width, this.#canvasPosition.height)
+
+        ctx.closePath()
+        ctx.beginPath()
+
+        ctx.arc(this.#center.x, this.#center.y, this.#radius, 0, 2 * Math.PI)
+        ctx.strokeStyle = '#000000'
+        ctx.stroke()
+
+        ctx.font = '18px serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillStyle = '#000000'
+        ctx.fillText('All data is hidden', this.#center.x, this.#center.y)
+
+        requestAnimationFrame(this.render.bind(this))
     }
 
     destroy() {
