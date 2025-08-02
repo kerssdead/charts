@@ -58,10 +58,8 @@ class Legend {
     }
 
     render() {
-        if (!this.#isInit) {
+        if (!this.#isInit)
             this.#initInteractions()
-            this.#isInit = true
-        }
 
         const ctx = this.canvas.getContext('2d')
 
@@ -76,6 +74,11 @@ class Legend {
         }
 
         requestAnimationFrame(this.render.bind(this))
+
+        if (!this.#isInit)
+            this.canvas.dispatchEvent(new MouseEvent('mousemove'))
+
+        this.#isInit = true
     }
 
     /**
@@ -144,7 +147,7 @@ class Legend {
                     timer: null,
                     duration: 100,
                     before: () => {
-                        return !isHover(this.#onMouseMoveEvent)
+                        return !isHover(this.#onMouseMoveEvent) && !this.#isInit
                     },
                     body: (passed, duration) => {
                         if (passed > duration)
