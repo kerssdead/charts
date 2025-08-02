@@ -102,8 +102,8 @@ class Legend {
             rectH = circleRadius + circleRadius + circleRadius
 
         const isHover = event => {
-            const px = event.clientX - this.#canvasPosition.x,
-                py = event.clientY - this.#canvasPosition.y
+            const px = event.clientX - this.#canvasPosition.x + window.scrollX,
+                py = event.clientY - this.#canvasPosition.y + window.scrollY
 
             return px >= rectX && px <= rectX + rectW
                 && py >= rectY && py <= rectY + rectH
@@ -193,7 +193,6 @@ class Legend {
 
         ctx.fillStyle = '#000000'
         ctx.font = '18px serif'
-        ctx.font
         ctx.fillText(value.label, x += 20, y + 4)
 
         if (value.disabled) {
@@ -213,6 +212,9 @@ class Legend {
 
     #initInteractions() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
+
+        this.#canvasPosition.x += window.scrollX
+        this.#canvasPosition.y += window.scrollY
 
         this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
         this.canvas.onclick = event => this.#onClickEvent = event

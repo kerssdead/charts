@@ -435,7 +435,7 @@ class CircularRenderer extends Renderer {
         const ctx = this.canvas.getContext('2d')
 
         let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
-            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y
+            y = this.#onMouseMoveEvent.clientY + window.scrollY
 
         if (this.#currentHover === value.hashCode() && this.#isHover) {
             const text = `${value.label}: ${value.current.toPrecision(2)}`
@@ -455,6 +455,9 @@ class CircularRenderer extends Renderer {
 
     #initAnimations() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
+
+        this.#canvasPosition.x += window.scrollX
+        this.#canvasPosition.y += window.scrollY
 
         this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
         this.canvas.onclick = event => this.#onClickEvent = event
@@ -484,8 +487,8 @@ class CircularRenderer extends Renderer {
             return v.x * v.x + v.y * v.y <= this.#radius * this.#radius
         }
 
-        let x = event.clientX - this.#canvasPosition.x,
-            y = event.clientY - this.#canvasPosition.y
+        let x = event.clientX - this.#canvasPosition.x + window.scrollX,
+            y = event.clientY - this.#canvasPosition.y + window.scrollY
 
         let point = { x: x, y: y }
 
