@@ -171,6 +171,8 @@ class CircularRenderer extends Renderer {
         const piece = value.current / this.#sum,
             angle = (isNaN(piece) ? 1 : piece) * 2 * Math.PI
 
+        const isSingle = this.data.values.filter(s => !s.disabled).length === 1
+
         ctx.fillStyle = value.color
         ctx.shadowBlur = null
         ctx.shadowColor = null
@@ -274,7 +276,10 @@ class CircularRenderer extends Renderer {
                 })
         }
 
-        if (!!this.#onClickEvent && !isInner && !this.animations.contains(value, AnimationTypes.init)) {
+        if (!!this.#onClickEvent
+            && !isInner
+            && !this.animations.contains(value, AnimationTypes.init)
+            && !isSingle) {
             this.animations.add(value,
                 AnimationTypes.click,
                 {
@@ -320,7 +325,8 @@ class CircularRenderer extends Renderer {
         if (this.#onMouseMoveEvent
             && !isInner
             && !this.animations.contains(value, AnimationTypes.init)
-            && !this.#pinned.includes(value.id)) {
+            && !this.#pinned.includes(value.id)
+            && !isSingle) {
             this.animations.add(value,
                 AnimationTypes.mouseleave,
                 {
@@ -396,7 +402,7 @@ class CircularRenderer extends Renderer {
                 })
         }
 
-        if (isInner && angle > 0) {
+        if ((isInner || isSingle) && angle > 0) {
             ctx.beginPath()
             ctx.moveTo(this.#center.x, this.#center.y)
             ctx.lineTo(this.#startPoint.x, this.#startPoint.y)
