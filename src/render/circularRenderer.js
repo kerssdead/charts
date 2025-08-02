@@ -301,6 +301,11 @@ class CircularRenderer extends Renderer {
                 })
         }
 
+        if (this.#onMouseMoveEvent && this.#isInsideSector(this.#onMouseMoveEvent, value)) {
+            this.#currentHover = value.id
+            this.#isHover = true
+        }
+
         if (this.#onMouseMoveEvent
             && !isInner
             && !this.animations.contains(value, AnimationTypes.init)
@@ -350,9 +355,6 @@ class CircularRenderer extends Renderer {
                     },
                     body: (passed, duration) => {
                         this.animations.reload(value, AnimationTypes.mouseleave)
-
-                        this.#isHover = true
-                        this.#currentHover = value.hashCode()
 
                         this.canvas.style.cursor = 'pointer'
 
@@ -437,7 +439,7 @@ class CircularRenderer extends Renderer {
         let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
             y = this.#onMouseMoveEvent.clientY + window.scrollY
 
-        if (this.#currentHover === value.hashCode() && this.#isHover) {
+        if (this.#currentHover === value.id && this.#isHover) {
             const text = `${value.label}: ${value.current.toPrecision(2)}`
 
             ctx.beginPath()
