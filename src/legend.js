@@ -114,7 +114,7 @@ class Legend {
                 AnimationTypes.click,
                 {
                     timer: null,
-                    duration: 250,
+                    duration: 220,
                     before: () => {
                         return isHover(this.#onClickEvent)
                     },
@@ -122,13 +122,14 @@ class Legend {
                         if (passed > duration)
                             passed = duration
 
+                        if (passed === 0)
+                            value.disabled = !value.disabled
+
                         if (value.disabled)
                             value.current = value.value * (1 - passed / duration)
                         else
                             value.current = value.value * passed / duration
 
-                        if (passed === 0)
-                            value.disabled = !value.disabled
 
                         if (passed === duration)
                             this.#onClickEvent = new PointerEvent('click')
