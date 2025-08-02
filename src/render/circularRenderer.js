@@ -40,11 +40,6 @@ class CircularRenderer extends Renderer {
     #onClickEvent
 
     /**
-     * @type {Date}
-     */
-    #globalTimer
-
-    /**
      * @type {number}
      */
     #startAngle
@@ -57,7 +52,7 @@ class CircularRenderer extends Renderer {
     /**
      * @type {boolean}
      */
-    #isHover = false
+    #isHover
 
     /**
      * @type {string[]}
@@ -109,8 +104,6 @@ class CircularRenderer extends Renderer {
             this.#startAngle = Math.random() % (Math.PI * 2)
 
             this.#radius = shortSide / 3
-
-            this.#globalTimer = new Date()
 
             this.#pinned = []
 
