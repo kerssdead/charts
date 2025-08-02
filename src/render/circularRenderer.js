@@ -371,11 +371,14 @@ class CircularRenderer extends Renderer {
                         return this.#isInsideSector(this.#onMouseMoveEvent, value)
                     },
                     body: (passed, duration) => {
+                        const actualPiece = value.current / this.#sum,
+                            actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
+
                         this.animations.reload(value, AnimationTypes.mouseleave)
 
                         this.canvas.style.cursor = 'pointer'
 
-                        let direction = this.#accumulator + angle / 2
+                        let direction = this.#accumulator + actualAngle / 2
 
                         if (passed > duration)
                             passed = duration
