@@ -183,9 +183,6 @@ class CircularRenderer extends Renderer {
                 y: this.#center.y + (this.#radius + 50) * Math.sin(this.#accumulator + angle / 2)
             }
 
-            ctx.beginPath()
-            ctx.moveTo(labelStartPoint.x, labelStartPoint.y)
-
             const dir = labelStartPoint.x > this.#center.x ? 1 : -1
 
             let endPoint = {
@@ -193,15 +190,33 @@ class CircularRenderer extends Renderer {
                 y: labelMidPoint.y
             }
 
-            ctx.quadraticCurveTo(labelMidPoint.x, labelMidPoint.y, endPoint.x, endPoint.y)
+            let isBusy = false
 
-            ctx.strokeStyle = '#000000'
-            ctx.stroke()
+            const textWidth = value.label.width(18),
+                imageDataX = dir === 1 ? endPoint.x + 10 : endPoint.x - textWidth - 10,
+                imageData = new Uint32Array(ctx.getImageData(imageDataX, endPoint.y - 12, textWidth, 24).data.buffer)
 
-            ctx.fillStyle = '#000000'
-            ctx.textAlign = dir === 1 ? 'start' : 'end'
-            ctx.font = '18px serif'
-            ctx.fillText(value.label, endPoint.x + 10 * dir, endPoint.y + 4)
+            for (let i = 0; i < imageData.length; i++) {
+                if (imageData[i] & 0xff000000) {
+                    isBusy = true
+                    break
+                }
+            }
+
+            if (!isBusy) {
+                ctx.beginPath()
+                ctx.moveTo(labelStartPoint.x, labelStartPoint.y)
+
+                ctx.quadraticCurveTo(labelMidPoint.x, labelMidPoint.y, endPoint.x, endPoint.y)
+
+                ctx.strokeStyle = '#000000'
+                ctx.stroke()
+
+                ctx.fillStyle = '#000000'
+                ctx.textAlign = dir === 1 ? 'start' : 'end'
+                ctx.font = '18px serif'
+                ctx.fillText(value.label, endPoint.x + 10 * dir, endPoint.y + 4)
+            }
         }
 
         let point2 = {
