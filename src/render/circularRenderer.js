@@ -1,4 +1,4 @@
-class CircularRenderer extends Renderer {
+class OCircularRenderer extends ORenderer {
     /**
      * @type {boolean}
      */
@@ -10,7 +10,7 @@ class CircularRenderer extends Renderer {
     #canvasPosition
 
     /**
-     * @type {Point}
+     * @type {OPoint}
      */
     #center
 
@@ -65,19 +65,19 @@ class CircularRenderer extends Renderer {
     #angles
 
     /**
-     * @type {CircularData}
+     * @type {OCircularData}
      */
     data
 
     /**
-     * @type {Point}
+     * @type {OPoint}
      */
     #startPoint
 
     /**
-     * @param {Chart} chart
-     * @param {ChartSettings} settings
-     * @param {DynSettings} dynSettings
+     * @param {OChart} chart
+     * @param {OChartSettings} settings
+     * @param {ODynSettings} dynSettings
      */
     constructor(chart, settings, dynSettings) {
         super(chart, settings, dynSettings)
@@ -162,7 +162,7 @@ class CircularRenderer extends Renderer {
     }
 
     /**
-     * @param value {Sector}
+     * @param value {OSector}
      * @param isInner {boolean?}
      */
     #drawSector(value, isInner = false) {
@@ -197,7 +197,7 @@ class CircularRenderer extends Renderer {
 
             let isBusy = false
 
-            const textWidth = value.label.width(18),
+            const textWidth = OHelper.stringWidth(value.label, 18),
                 imageDataX = dir === 1 ? endPoint.x + 10 : endPoint.x - textWidth - 10,
                 imageData = new Uint32Array(ctx.getImageData(imageDataX, endPoint.y - 12, textWidth, 24).data.buffer)
 
@@ -229,9 +229,9 @@ class CircularRenderer extends Renderer {
             y: this.#center.y + this.#radius * Math.sin(this.#accumulator + angle)
         }
 
-        if (!isInner && (!this.#isInit || this.animations.contains(value, AnimationTypes.init))) {
+        if (!isInner && (!this.#isInit || this.animations.contains(value, OAnimationTypes.init))) {
             this.animations.add(value,
-                AnimationTypes.init,
+                OAnimationTypes.init,
                 {
                     timer: new Date(),
                     duration: 125 + (this.chart.data.values.indexOf(value) + 1) / this.chart.data.values.length * 175,
@@ -278,10 +278,10 @@ class CircularRenderer extends Renderer {
 
         if (!!this.#onClickEvent
             && !isInner
-            && !this.animations.contains(value, AnimationTypes.init)
+            && !this.animations.contains(value, OAnimationTypes.init)
             && !isSingle) {
             this.animations.add(value,
-                AnimationTypes.click,
+                OAnimationTypes.click,
                 {
                     timer: null,
                     duration: 100,
@@ -324,11 +324,11 @@ class CircularRenderer extends Renderer {
 
         if (this.#onMouseMoveEvent
             && !isInner
-            && !this.animations.contains(value, AnimationTypes.init)
+            && !this.animations.contains(value, OAnimationTypes.init)
             && !this.#pinned.includes(value.id)
             && !isSingle) {
             this.animations.add(value,
-                AnimationTypes.mouseleave,
+                OAnimationTypes.mouseleave,
                 {
                     timer: null,
                     duration: 100,
@@ -351,7 +351,7 @@ class CircularRenderer extends Renderer {
                         this.#drawSector({
                                 value: value.value,
                                 current: value.current,
-                                color: adjustColor(value.color, Math.round(33 * (1 - passed / duration))),
+                                color: OHelper.adjustColor(value.color, Math.round(33 * (1 - passed / duration))),
                                 label: value.label,
                                 id: value.id,
                                 disabled: value.disabled
@@ -363,7 +363,7 @@ class CircularRenderer extends Renderer {
                 })
 
             this.animations.add(value,
-                AnimationTypes.mouseover,
+                OAnimationTypes.mouseover,
                 {
                     timer: null,
                     duration: 100,
@@ -374,7 +374,7 @@ class CircularRenderer extends Renderer {
                         const actualPiece = value.current / this.#sum,
                             actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
 
-                        this.animations.reload(value, AnimationTypes.mouseleave)
+                        this.animations.reload(value, OAnimationTypes.mouseleave)
 
                         this.canvas.style.cursor = 'pointer'
 
@@ -393,7 +393,7 @@ class CircularRenderer extends Renderer {
                         this.#drawSector({
                                 value: value.value,
                                 current: value.current,
-                                color: adjustColor(value.color, Math.round(33 * passed / duration)),
+                                color: OHelper.adjustColor(value.color, Math.round(33 * passed / duration)),
                                 label: value.label,
                                 id: value.id,
                                 disabled: value.disabled
@@ -451,7 +451,7 @@ class CircularRenderer extends Renderer {
     }
 
     /**
-     * @param value {Sector}
+     * @param value {OSector}
      */
     #drawTooltip(value) {
         const ctx = this.canvas.getContext('2d')
@@ -463,7 +463,7 @@ class CircularRenderer extends Renderer {
             const text = `${value.label}: ${value.current.toPrecision(2)}`
 
             ctx.beginPath()
-            ctx.roundRect(x += 10, y += 10, text.width(18) + 18, 38, 20)
+            ctx.roundRect(x += 10, y += 10, OHelper.stringWidth(text, 18) + 18, 38, 20)
             ctx.fillStyle = '#00000077'
             ctx.shadowColor = '#00000077'
             ctx.shadowBlur = 20
@@ -488,7 +488,7 @@ class CircularRenderer extends Renderer {
 
     /**
      * @param event {MouseEvent}
-     * @param value {Sector}
+     * @param value {OSector}
      *
      * @return {boolean}
      */

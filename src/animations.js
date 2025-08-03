@@ -1,6 +1,6 @@
-class Animations {
+class OAnimations {
     /**
-     * @type {Map<string, AnimationItem>}
+     * @type {Map<string, OAnimationItem>}
      */
     #queue
 
@@ -9,9 +9,9 @@ class Animations {
     }
 
     /**
-     * @param object {BasePoint}
+     * @param object {OBasePoint}
      * @param type {number}
-     * @param value {AnimationItem}
+     * @param value {OAnimationItem}
      */
     add(object, type, value) {
         const key = this.#getKey(object, type)

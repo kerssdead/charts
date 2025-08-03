@@ -1,4 +1,4 @@
-class Sector extends BasePoint {
+class OSector extends OBasePoint {
     /**
      * @type {number}
      */

@@ -1,4 +1,4 @@
-class Renderer {
+class ORenderer {
     /**
      * @type {HTMLElement}
      */
@@ -10,36 +10,36 @@ class Renderer {
     canvas
 
     /**
-     * @type {ChartSettings}
+     * @type {OChartSettings}
      */
     settings
 
     /**
-     * @type {DynSettings}
+     * @type {ODynSettings}
      */
     dynSettings
 
     /**
-     * @type {Chart}
+     * @type {OChart}
      */
     chart
 
     /**
-     * @type {Animations}
+     * @type {OAnimations}
      */
     animations
 
     /**
-     * @param {Chart} chart
-     * @param {ChartSettings} settings
-     * @param {DynSettings} dynSettings
+     * @param {OChart} chart
+     * @param {OChartSettings} settings
+     * @param {ODynSettings} dynSettings
      */
     constructor(chart, settings, dynSettings) {
         this.node = chart.node
         this.settings = settings
         this.dynSettings = dynSettings
         this.chart = chart
-        this.animations = new Animations()
+        this.animations = new OAnimations()
 
         this.canvas = document.createElement('canvas')
 

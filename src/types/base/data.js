@@ -1,6 +1,6 @@
-class Data {
+class OData {
     /**
-     * @type {BasePoint[]}
+     * @type {OBasePoint[]}
      */
     values
 }

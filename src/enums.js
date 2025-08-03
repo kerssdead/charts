@@ -2,7 +2,7 @@
  * @readonly
  * @enum {string}
  */
-const ChartTypes = Object.freeze({
+const OChartTypes = Object.freeze({
     plot: 0,
     circular: 1
 })
@@ -11,7 +11,7 @@ const ChartTypes = Object.freeze({
  * @readonly
  * @enum {string}
  */
-const CircularTypes = Object.freeze({
+const OCircularTypes = Object.freeze({
     pie: 0
 })
 
@@ -19,7 +19,7 @@ const CircularTypes = Object.freeze({
  * @readonly
  * @enum {string}
  */
-const AnimationTypes = Object.freeze({
+const OAnimationTypes = Object.freeze({
     mouseover: 0,
     mouseleave: 1,
     init: 2,

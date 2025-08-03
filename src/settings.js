@@ -1,6 +1,6 @@
-class ChartSettings {
+class OChartSettings {
     /**
-     * @type {Data}
+     * @type {OData}
      */
     data
 

@@ -1,35 +1,35 @@
-class Chart {
+class OChart {
     /**
      * @type {HTMLElement}
      */
     node
 
     /**
-     * @type {Data}
+     * @type {OData}
      */
     data
 
     /**
-     * @type {ChartSettings}
+     * @type {OChartSettings}
      */
     #settings
 
     /**
-     * @type {DynSettings}
+     * @type {ODynSettings}
      */
     #dynSettings
 
     /**
-     * @type {Legend}
+     * @type {OLegend}
      */
     #legend
 
     /**
      * @param {HTMLElement} context
-     * @param {ChartSettings} settings
+     * @param {OChartSettings} settings
      */
     constructor(context, settings) {
-        context[ChartProperties.chart] = this
+        context[OChartProperties.chart] = this
 
         this.node = context
         this.data = settings.data
@@ -37,9 +37,9 @@ class Chart {
 
         this.#prepareSettings()
 
-        this.#dynSettings = new DynSettings(this, this.#settings)
+        this.#dynSettings = new ODynSettings(this, this.#settings)
 
-        this.#legend = new Legend(this)
+        this.#legend = new OLegend(this)
 
         if (this.#legend) {
             this.#dynSettings.renderer.canvas.height -= 200
@@ -61,6 +61,6 @@ class Chart {
 
     #prepareSettings() {
         for (let item of this.#settings.data.values)
-            item.id = createGuid()
+            item.id = OHelper.guid()
     }
 }

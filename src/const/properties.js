@@ -1,4 +1,4 @@
-class ChartProperties {
+class OChartProperties {
     /**
      * @readonly
      * @type {string}

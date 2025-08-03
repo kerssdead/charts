@@ -1,11 +1,11 @@
-class CircularData extends Data {
+class OCircularData extends OData {
     /**
      * @type {int}
      */
     type
 
     /**
-     * @type {Sector[]}
+     * @type {OSector[]}
      */
     values
 }

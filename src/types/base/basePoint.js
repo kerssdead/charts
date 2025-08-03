@@ -1,4 +1,4 @@
-class BasePoint {
+class OBasePoint {
     /**
      * @type {string}
      */

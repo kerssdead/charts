@@ -1,16 +1,16 @@
-class Legend {
+class OLegend {
     /**
      * @type {HTMLCanvasElement}
      */
     canvas
 
     /**
-     * @type {Chart}
+     * @type {OChart}
      */
     chart
 
     /**
-     * @type {Animations}
+     * @type {OAnimations}
      */
     animations
 
@@ -40,7 +40,7 @@ class Legend {
     #isInit = false
 
     /**
-     * @param chart {Chart}
+     * @param chart {OChart}
      */
     constructor(chart) {
         this.chart = chart
@@ -54,7 +54,7 @@ class Legend {
 
         this.#globalTimer = new Date()
 
-        this.animations = new Animations()
+        this.animations = new OAnimations()
     }
 
     render() {
@@ -82,16 +82,16 @@ class Legend {
     }
 
     /**
-     * @param value {BasePoint}
+     * @param value {OBasePoint}
      * @param x {number}
      * @param y {number}
      *
-     * @return {Point}
+     * @return {OPoint}
      */
     #draw(value, x, y) {
         const ctx = this.canvas.getContext('2d')
 
-        const textWidth = value.label.width(18),
+        const textWidth = OHelper.stringWidth(value.label, 18),
             circleRadius = 10
 
         if (x + 50 + textWidth >= this.canvas.width) {
@@ -114,7 +114,7 @@ class Legend {
 
         if (this.#onClickEvent) {
             this.animations.add(value,
-                AnimationTypes.click,
+                OAnimationTypes.click,
                 {
                     timer: null,
                     duration: 220,
@@ -142,7 +142,7 @@ class Legend {
 
         if (this.#onMouseMoveEvent) {
             this.animations.add(value,
-                AnimationTypes.mouseleave,
+                OAnimationTypes.mouseleave,
                 {
                     timer: null,
                     duration: 100,
@@ -157,7 +157,7 @@ class Legend {
 
                         ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
 
-                        ctx.fillStyle = adjustColor('#ffffff', Math.round(-50 * (1 - passed / duration)))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', Math.round(-50 * (1 - passed / duration)))
                         ctx.fill()
 
                         this.canvas.style.cursor = 'pointer'
@@ -165,7 +165,7 @@ class Legend {
                 })
 
             this.animations.add(value,
-                AnimationTypes.mouseover,
+                OAnimationTypes.mouseover,
                 {
                     timer: null,
                     duration: 100,
@@ -180,7 +180,7 @@ class Legend {
 
                         ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
 
-                        ctx.fillStyle = adjustColor('#ffffff', Math.round(-50 * passed / duration))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', Math.round(-50 * passed / duration))
                         ctx.fill()
 
                         this.canvas.style.cursor = 'pointer'
@@ -191,7 +191,7 @@ class Legend {
         ctx.beginPath()
 
         ctx.arc(x, y, circleRadius, 0, 2 * Math.PI)
-        ctx.fillStyle = value.disabled ? grayScale(value.color) : value.color
+        ctx.fillStyle = value.disabled ? OHelper.grayScale(value.color) : value.color
         ctx.fill()
 
         ctx.fillStyle = '#000000'

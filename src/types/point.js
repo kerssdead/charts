@@ -1,4 +1,4 @@
-class Point {
+class OPoint {
     /**
      * @type {number}
      */

@@ -1,3 +1,3 @@
-class PlotRenderer extends Renderer {
+class OPlotRenderer extends ORenderer {
 
 }

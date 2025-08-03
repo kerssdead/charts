@@ -6,7 +6,7 @@
         Pie Example
     </title>
 
-    <script src="/src/utils.js"></script>
+    <script src="/src/helper.js"></script>
     <script src="/src/enums.js"></script>
     <script src="/src/dynSettings.js"></script>
     <script src="/src/settings.js"></script>
@@ -51,17 +51,17 @@
     for (let i = 0; i < valuesCount; i++) {
         values.push({
             value: Math.random(),
-            color: adjustColor(baseColor, adjustAmount += adjustStep),
+            color: OHelper.adjustColor(baseColor, adjustAmount += adjustStep),
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
     }
 
-    let chart = new Chart(document.getElementById('pie-example'), {
+    let chart = new OChart(document.getElementById('pie-example'), {
         data: {
-            type: CircularTypes.pie,
+            type: OCircularTypes.pie,
             values: values
         },
-        type: ChartTypes.circular
+        type: OChartTypes.circular
     })
 
     chart.render()

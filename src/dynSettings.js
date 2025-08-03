@@ -1,21 +1,21 @@
-class DynSettings {
+class ODynSettings {
     /**
-     * @type {Renderer}
+     * @type {ORenderer}
      */
     renderer
 
     /**
-     * @param {Chart} chart
-     * @param {ChartSettings} settings
+     * @param {OChart} chart
+     * @param {OChartSettings} settings
      */
     constructor(chart, settings) {
         switch (settings.type) {
-            case ChartTypes.plot:
-                this.renderer = new PlotRenderer(chart, settings, this)
+            case OChartTypes.plot:
+                this.renderer = new OPlotRenderer(chart, settings, this)
                 break
 
-            case ChartTypes.circular:
-                this.renderer = new CircularRenderer(chart, settings, this)
+            case OChartTypes.circular:
+                this.renderer = new OCircularRenderer(chart, settings, this)
                 break
         }
     }
