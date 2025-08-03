@@ -12,7 +12,7 @@ class OChart {
     /**
      * @type {OChartSettings}
      */
-    #settings
+    settings
 
     /**
      * @type {ODynSettings}
@@ -33,15 +33,15 @@ class OChart {
 
         this.node = context
         this.data = settings.data
-        this.#settings = settings
+        this.settings = settings
 
         this.#prepareSettings()
 
-        this.#dynSettings = new ODynSettings(this, this.#settings)
+        this.#dynSettings = new ODynSettings(this, this.settings)
 
-        this.#legend = new OLegend(this)
+        if  (this.settings.enableLegend) {
+            this.#legend = new OLegend(this)
 
-        if (this.#legend) {
             this.#dynSettings.renderer.canvas.height -= 200
 
             this.#legend.canvas.width = this.#dynSettings.renderer.canvas.width > this.#dynSettings.renderer.canvas.height
@@ -52,7 +52,7 @@ class OChart {
 
     render() {
         this.#dynSettings.renderer.render()
-        this.#legend.render()
+        this.#legend?.render()
     }
 
     destroy() {
@@ -60,7 +60,7 @@ class OChart {
     }
 
     #prepareSettings() {
-        for (let item of this.#settings.data.values)
+        for (let item of this.settings.data.values)
             item.id = OHelper.guid()
     }
 }

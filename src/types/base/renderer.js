@@ -43,8 +43,8 @@ class ORenderer {
 
         this.canvas = document.createElement('canvas')
 
-        this.canvas.width = 1600
-        this.canvas.height = 1000
+        this.canvas.width = chart.settings.width
+        this.canvas.height = chart.settings.height
 
         this.node.append(this.canvas)
     }
