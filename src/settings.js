@@ -23,4 +23,9 @@ class OChartSettings {
      * @type {boolean}
      */
     enableLegend
+
+    /**
+     * @type {boolean}
+     */
+    enableTooltip
 }
