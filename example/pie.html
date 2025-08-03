@@ -42,6 +42,10 @@
         })
     }
 
+    values.unshift({
+        label: 'null'
+    })
+
     let chart = new OChart(document.getElementById('pie-example'), {
         width: 1600,
         height: 1000,

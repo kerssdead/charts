@@ -67,6 +67,8 @@ class OChart {
         for (let item of this.settings.data.values) {
             item.id = OHelper.guid()
             item.color ??= OHelper.adjustColor(baseColor, adjustAmount += adjustStep)
+            item.disabled = !item.value
+            item.value ??= 0
         }
     }
 }
