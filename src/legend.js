@@ -91,7 +91,7 @@ class OLegend {
     #draw(value, x, y) {
         const ctx = this.canvas.getContext('2d')
 
-        const textWidth = OHelper.stringWidth(value.label, 18),
+        const textWidth = OHelper.stringWidth(value.label, 14),
             circleRadius = 10
 
         if (x + 50 + textWidth >= this.canvas.width) {
@@ -195,7 +195,7 @@ class OLegend {
         ctx.fill()
 
         ctx.fillStyle = '#000000'
-        ctx.font = '18px serif'
+        ctx.font = '14px serif'
         ctx.fillText(value.label, x += 20, y + 4)
 
         if (value.disabled) {
