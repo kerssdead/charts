@@ -60,7 +60,13 @@ class OChart {
     }
 
     #prepareSettings() {
-        for (let item of this.settings.data.values)
+        const baseColor = getRandomColor()
+        const adjustStep = Math.round(100 / this.settings.data.values.length)
+        let adjustAmount = -50
+
+        for (let item of this.settings.data.values) {
             item.id = OHelper.guid()
+            item.color ??= OHelper.adjustColor(baseColor, adjustAmount += adjustStep)
+        }
     }
 }
