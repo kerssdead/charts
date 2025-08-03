@@ -12,7 +12,8 @@ const OChartTypes = Object.freeze({
  * @enum {string}
  */
 const OCircularTypes = Object.freeze({
-    pie: 0
+    pie: 0,
+    donut: 1
 })
 
 /**

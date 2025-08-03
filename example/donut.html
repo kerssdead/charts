@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>
+    Donut Example
+  </title>
+
+  <script src="/src/helper.js"></script>
+  <script src="/src/enums.js"></script>
+  <script src="/src/dynSettings.js"></script>
+  <script src="/src/settings.js"></script>
+  <script src="/src/const/properties.js"></script>
+  <script src="/src/types/base/basePoint.js"></script>
+  <script src="/src/types/base/data.js"></script>
+  <script src="/src/types/base/renderer.js"></script>
+  <script src="/src/render/circularRenderer.js"></script>
+  <script src="/src/render/plotRenderer.js"></script>
+  <script src="/src/types/sector.js"></script>
+  <script src="/src/types/point.js"></script>
+  <script src="/src/types/data/circularData.js"></script>
+  <script src="/src/legend.js"></script>
+  <script src="/src/charts.js"></script>
+  <script src="/src/animationItem.js"></script>
+  <script src="/src/animations.js"></script>
+</head>
+
+<body>
+<div id="pie-example" style="text-align: center"></div>
+</body>
+
+<script>
+  const labelsPool = ['test 1', 'test 2', 'some label', 'another one', 'label', 'test 3', 'chart label', 'custom']
+
+  let values = []
+  const valuesCount = Math.floor(Math.random() * 25) + 2
+
+  for (let i = 0; i < valuesCount; i++)
+    values.push({
+      value: Math.random(),
+      label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
+    })
+
+  values.unshift({
+    label: 'null'
+  })
+
+  let chart = new OChart(document.getElementById('pie-example'), {
+    width: 1600,
+    height: 1000,
+    enableLegend: true,
+    enableTooltip: true,
+    data: {
+      type: OCircularTypes.donut,
+      values: values
+    },
+    type: OChartTypes.circular
+  })
+
+  chart.render()
+</script>
+</html>

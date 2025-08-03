@@ -35,12 +35,11 @@
     let values = []
     const valuesCount = Math.floor(Math.random() * 25) + 2
 
-    for (let i = 0; i < valuesCount; i++) {
+    for (let i = 0; i < valuesCount; i++)
         values.push({
             value: Math.random(),
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
-    }
 
     values.unshift({
         label: 'null'

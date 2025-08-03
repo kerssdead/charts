@@ -407,7 +407,20 @@ class OCircularRenderer extends ORenderer {
 
         if ((isInner || isSingle) && angle > 0) {
             ctx.beginPath()
-            ctx.moveTo(this.#center.x, this.#center.y)
+
+            let innerPoint
+
+            if (this.chart.data.type === OCircularTypes.pie) {
+                ctx.moveTo(this.#center.x, this.#center.y)
+            } else if (this.chart.data.type === OCircularTypes.donut) {
+                innerPoint = {
+                    x: this.#startPoint.x - (((this.#radius / 2) * (this.#startPoint.x - this.#center.x)) / this.#radius),
+                    y: this.#startPoint.y - (((this.#radius / 2) * (this.#startPoint.y - this.#center.y)) / this.#radius)
+                }
+
+                ctx.moveTo(innerPoint.x, innerPoint.y)
+            }
+
             ctx.lineTo(this.#startPoint.x, this.#startPoint.y)
 
             let localAccumulator = 0,
@@ -435,6 +448,46 @@ class OCircularRenderer extends ORenderer {
                 localAccumulator += currentAngle
 
                 localAngle -= Math.PI / 6
+            }
+
+            if (this.chart.data.type === OCircularTypes.donut) {
+                const innerPoint2 = {
+                    x: point2.x - (((this.#radius / 2) * (point2.x - this.#center.x)) / this.#radius),
+                    y: point2.y - (((this.#radius / 2) * (point2.y - this.#center.y)) / this.#radius)
+                }
+
+                ctx.lineTo(innerPoint2.x, innerPoint2.y)
+
+                localAngle = 0
+                localAccumulator = angle
+
+                let counter = 0
+
+                while (localAngle < angle) {
+                    let currentAngle = localAngle + Math.PI / 6 < angle
+                        ? Math.PI / 6
+                        : angle - localAngle
+
+                    point2 = {
+                        x: this.#center.x + this.#radius / 2 * Math.cos(this.#accumulator + localAccumulator - currentAngle),
+                        y: this.#center.y + this.#radius / 2 * Math.sin(this.#accumulator + localAccumulator - currentAngle)
+                    }
+
+                    const tangentIntersectionAngle = Math.PI - currentAngle
+                    const lengthToTangentIntersection = this.#radius / 2 / Math.sin(tangentIntersectionAngle / 2)
+                    const tangentIntersectionPoint = {
+                        x: this.#center.x + lengthToTangentIntersection * Math.cos(this.#accumulator + localAccumulator - currentAngle / 2),
+                        y: this.#center.y + lengthToTangentIntersection * Math.sin(this.#accumulator + localAccumulator - currentAngle / 2)
+                    }
+
+                    ctx.quadraticCurveTo(tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y)
+
+                    localAccumulator -= currentAngle
+
+                    localAngle += Math.PI / 6
+
+                    counter++
+                }
             }
 
             ctx.closePath()
@@ -511,6 +564,7 @@ class OCircularRenderer extends ORenderer {
 
         const isWithinRadius = v => {
             return v.x * v.x + v.y * v.y <= this.#radius * this.#radius
+                && (this.data.type !== OCircularTypes.donut || v.x * v.x + v.y * v.y >= this.#radius / 2 * this.#radius / 2)
         }
 
         let x = event.clientX - this.#canvasPosition.x + window.scrollX,
