@@ -184,21 +184,21 @@ class OCircularRenderer extends ORenderer {
             }
 
             let labelMidPoint = {
-                x: this.#center.x + (this.#radius + 50) * Math.cos(this.#accumulator + angle / 2),
-                y: this.#center.y + (this.#radius + 50) * Math.sin(this.#accumulator + angle / 2)
+                x: this.#center.x + (this.#radius + 35) * Math.cos(this.#accumulator + angle / 2),
+                y: this.#center.y + (this.#radius + 35) * Math.sin(this.#accumulator + angle / 2)
             }
 
             const dir = labelStartPoint.x > this.#center.x ? 1 : -1
 
             let endPoint = {
-                x: labelMidPoint.x + 40 * dir,
+                x: labelMidPoint.x + 10 * dir,
                 y: labelMidPoint.y
             }
 
             let isBusy = false
 
-            const textWidth = OHelper.stringWidth(value.label, 18),
-                imageDataX = dir === 1 ? endPoint.x + 10 : endPoint.x - textWidth - 10,
+            const textWidth = OHelper.stringWidth(value.label, 14),
+                imageDataX = dir === 1 ? endPoint.x + 8 : endPoint.x - textWidth - 8,
                 imageData = new Uint32Array(ctx.getImageData(imageDataX, endPoint.y - 12, textWidth, 24).data.buffer)
 
             for (let i = 0; i < imageData.length; i++) {
@@ -219,8 +219,8 @@ class OCircularRenderer extends ORenderer {
 
                 ctx.fillStyle = '#000000'
                 ctx.textAlign = dir === 1 ? 'start' : 'end'
-                ctx.font = '18px serif'
-                ctx.fillText(value.label, endPoint.x + 10 * dir, endPoint.y + 4)
+                ctx.font = '14px serif'
+                ctx.fillText(value.label, endPoint.x + 8 * dir, endPoint.y + 4)
             }
         }
 
@@ -463,14 +463,14 @@ class OCircularRenderer extends ORenderer {
             const text = `${value.label}: ${value.current.toPrecision(2)}`
 
             ctx.beginPath()
-            ctx.roundRect(x += 10, y += 10, OHelper.stringWidth(text, 18) + 18, 38, 20)
+            ctx.roundRect(x += 10, y += 10, OHelper.stringWidth(text, 14) + 14, 38, 20)
             ctx.fillStyle = '#00000077'
             ctx.shadowColor = '#00000077'
             ctx.shadowBlur = 20
             ctx.fill()
 
             ctx.fillStyle = '#ffffff'
-            ctx.font = '18px serif'
+            ctx.font = '14px serif'
             ctx.textAlign = 'start'
             ctx.fillText(text, x + 15, y + 25)
         }
@@ -534,7 +534,7 @@ class OCircularRenderer extends ORenderer {
         ctx.strokeStyle = '#000000'
         ctx.stroke()
 
-        ctx.font = '18px serif'
+        ctx.font = '14px serif'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.fillStyle = '#000000'
