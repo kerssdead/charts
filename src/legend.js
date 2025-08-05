@@ -120,7 +120,7 @@ class OLegend {
                     duration: 220,
                     continuous: true,
                     before: () => {
-                        return isHover(this.#onClickEvent)
+                        return isHover(this.#onClickEvent) && value.value !== 0
                     },
                     body: (passed, duration) => {
                         if (passed > duration)
