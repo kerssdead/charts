@@ -409,7 +409,7 @@ class OCircularRenderer extends ORenderer {
                 })
         }
 
-        if ((isInner || isSingle) && angle > 0) {
+        if ((isInner || (isSingle && !this.animations.contains(value, OAnimationTypes.init))) && angle > 0) {
             ctx.beginPath()
 
             if (this.chart.data.type === OCircularTypes.pie)
