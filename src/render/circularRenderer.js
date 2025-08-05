@@ -412,18 +412,8 @@ class OCircularRenderer extends ORenderer {
         if ((isInner || isSingle) && angle > 0) {
             ctx.beginPath()
 
-            let innerPoint
-
-            if (this.chart.data.type === OCircularTypes.pie) {
+            if (this.chart.data.type === OCircularTypes.pie)
                 ctx.moveTo(this.#center.x, this.#center.y)
-            } else if (this.chart.data.type === OCircularTypes.donut) {
-                innerPoint = {
-                    x: this.#startPoint.x - (((this.#radius / 2) * (this.#startPoint.x - this.#center.x)) / this.#radius),
-                    y: this.#startPoint.y - (((this.#radius / 2) * (this.#startPoint.y - this.#center.y)) / this.#radius)
-                }
-
-                ctx.moveTo(innerPoint.x, innerPoint.y)
-            }
 
             ctx.lineTo(this.#startPoint.x, this.#startPoint.y)
 
@@ -465,8 +455,6 @@ class OCircularRenderer extends ORenderer {
                 localAngle = 0
                 localAccumulator = angle
 
-                let counter = 0
-
                 while (localAngle < angle) {
                     let currentAngle = localAngle + Math.PI / 6 < angle
                         ? Math.PI / 6
@@ -489,8 +477,6 @@ class OCircularRenderer extends ORenderer {
                     localAccumulator -= currentAngle
 
                     localAngle += Math.PI / 6
-
-                    counter++
                 }
             }
 
