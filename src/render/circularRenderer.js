@@ -348,6 +348,8 @@ class OCircularRenderer extends ORenderer {
 
                         ctx.translate(transition.x, transition.y)
 
+                        value.transition = transition
+
                         this.#drawSector({
                                 value: value.value,
                                 current: value.current,
@@ -389,6 +391,8 @@ class OCircularRenderer extends ORenderer {
                         }
 
                         ctx.translate(transition.x, transition.y)
+
+                        value.transition = transition
 
                         this.#drawSector({
                                 value: value.value,
@@ -572,11 +576,16 @@ class OCircularRenderer extends ORenderer {
 
         let point = { x: x, y: y }
 
-        return isAngle(point)
-            && isWithinRadius({
+        const inner = {
                 x: point.x - this.#center.x,
                 y: point.y - this.#center.y
-            })
+            },
+            outer = {
+                x: point.x - this.#center.x - value.transition?.x,
+                y: point.y - this.#center.y - value.transition?.y
+            }
+
+        return isAngle(point) && (isWithinRadius(inner) || isWithinRadius(outer))
     }
 
     #drawEmpty() {

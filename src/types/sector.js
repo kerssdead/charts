@@ -8,4 +8,9 @@ class OSector extends OBasePoint {
      * @type {Number}
      */
     current
+
+    /**
+     * @type {OPoint}
+     */
+    transition
 }
