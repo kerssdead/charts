@@ -39,7 +39,7 @@ class OChart {
 
         this.#dynSettings = new ODynSettings(this, this.settings)
 
-        if  (this.settings.enableLegend) {
+        if (this.settings.enableLegend) {
             this.#legend = new OLegend(this)
 
             this.#dynSettings.renderer.canvas.height -= 200
@@ -73,5 +73,12 @@ class OChart {
             item.disabled = !item.value
             item.value ??= 0
         }
+
+        const dimension = this.node.parentNode.getBoundingClientRect()
+
+        if (!this.settings.width || +this.settings.width === 0)
+            this.settings.width = dimension.width
+        if (!this.settings.height || +this.settings.height === 0)
+            this.settings.height = dimension.height
     }
 }

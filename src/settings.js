@@ -12,12 +12,12 @@ class OChartSettings {
     /**
      * @type {number}
      */
-    width = 1600
+    width
 
     /**
      * @type {number}
      */
-    height = 1000
+    height
 
     /**
      * @type {boolean}

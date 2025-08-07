@@ -49,6 +49,7 @@ class OLegend {
 
         this.canvas.width = 1600
         this.canvas.height = 200
+        this.canvas.style.width = 'fit-content'
 
         chart.node.append(this.canvas)
 
@@ -69,9 +70,8 @@ class OLegend {
 
         this.canvas.style.cursor = 'default'
 
-        for (const value of this.chart.data.values) {
+        for (const value of this.chart.data.values)
             nextPoint = this.#draw(value, nextPoint.x, nextPoint.y)
-        }
 
         requestAnimationFrame(this.render.bind(this))
 
