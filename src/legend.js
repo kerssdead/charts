@@ -54,6 +54,7 @@ class OLegend {
 
         this.canvas.width = 1600
         this.canvas.height = 200
+        this.canvas.style.width = 'fit-content'
 
         this.canvas.width = this.chart.settings.width > this.chart.settings.height
             ? this.chart.settings.height
@@ -94,9 +95,8 @@ class OLegend {
 
         this.canvas.style.cursor = 'default'
 
-        for (const value of this.chart.data.values) {
+        for (const value of this.chart.data.values)
             nextPoint = this.#draw(value, nextPoint.x, nextPoint.y)
-        }
 
         requestAnimationFrame(this.render.bind(this))
 
@@ -147,7 +147,7 @@ class OLegend {
                     duration: 220,
                     continuous: true,
                     before: () => {
-                        return isHover(this.#onClickEvent)
+                        return isHover(this.#onClickEvent) && value.value !== 0
                     },
                     body: (passed, duration) => {
                         if (passed > duration)

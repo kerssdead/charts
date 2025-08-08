@@ -353,6 +353,8 @@ class OCircularRenderer extends ORenderer {
 
                         ctx.translate(transition.x, transition.y)
 
+                        value.transition = transition
+
                         this.#drawSector({
                                 value: value.value,
                                 current: value.current,
@@ -395,6 +397,8 @@ class OCircularRenderer extends ORenderer {
 
                         ctx.translate(transition.x, transition.y)
 
+                        value.transition = transition
+
                         this.#drawSector({
                                 value: value.value,
                                 current: value.current,
@@ -410,21 +414,11 @@ class OCircularRenderer extends ORenderer {
                 })
         }
 
-        if ((isInner || isSingle) && angle > 0) {
+        if ((isInner || (isSingle && !this.animations.contains(value, OAnimationTypes.init))) && angle > 0) {
             ctx.beginPath()
 
-            let innerPoint
-
-            if (this.chart.data.type === OCircularTypes.pie) {
+            if (this.chart.data.type === OCircularTypes.pie)
                 ctx.moveTo(this.#center.x, this.#center.y)
-            } else if (this.chart.data.type === OCircularTypes.donut) {
-                innerPoint = {
-                    x: this.#startPoint.x - (((this.#radius / 2) * (this.#startPoint.x - this.#center.x)) / this.#radius),
-                    y: this.#startPoint.y - (((this.#radius / 2) * (this.#startPoint.y - this.#center.y)) / this.#radius)
-                }
-
-                ctx.moveTo(innerPoint.x, innerPoint.y)
-            }
 
             ctx.lineTo(this.#startPoint.x, this.#startPoint.y)
 
@@ -466,8 +460,6 @@ class OCircularRenderer extends ORenderer {
                 localAngle = 0
                 localAccumulator = angle
 
-                let counter = 0
-
                 while (localAngle < angle) {
                     let currentAngle = localAngle + Math.PI / 6 < angle
                         ? Math.PI / 6
@@ -490,8 +482,6 @@ class OCircularRenderer extends ORenderer {
                     localAccumulator -= currentAngle
 
                     localAngle += Math.PI / 6
-
-                    counter++
                 }
             }
 
@@ -577,11 +567,16 @@ class OCircularRenderer extends ORenderer {
 
         let point = { x: x, y: y }
 
-        return isAngle(point)
-            && isWithinRadius({
+        const inner = {
                 x: point.x - this.#center.x,
                 y: point.y - this.#center.y
-            })
+            },
+            outer = {
+                x: point.x - this.#center.x - value.transition?.x,
+                y: point.y - this.#center.y - value.transition?.y
+            }
+
+        return isAngle(point) && (isWithinRadius(inner) || isWithinRadius(outer))
     }
 
     #drawEmpty() {

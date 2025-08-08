@@ -39,7 +39,7 @@ class OChart {
 
         this.#dynSettings = new ODynSettings(this, this.settings)
 
-        if  (this.settings.enableLegend)
+        if (this.settings.enableLegend)
             this.#legend = new OLegend(this)
     }
 
@@ -54,8 +54,11 @@ class OChart {
 
     #prepareSettings() {
         const baseColor = OHelper.randomColor()
-        const adjustStep = Math.round(100 / this.settings.data.values.length)
-        let adjustAmount = -50
+        let adjustStep = Math.round(100 / this.settings.data.values.length),
+            adjustAmount = -50
+
+        if (adjustStep <= 1)
+            adjustStep = 1
 
         for (let item of this.settings.data.values) {
             item.id = OHelper.guid()
@@ -63,5 +66,12 @@ class OChart {
             item.disabled = !item.value
             item.value ??= 0
         }
+
+        const dimension = this.node.parentNode.getBoundingClientRect()
+
+        if (!this.settings.width || +this.settings.width === 0)
+            this.settings.width = dimension.width
+        if (!this.settings.height || +this.settings.height === 0)
+            this.settings.height = dimension.height
     }
 }
