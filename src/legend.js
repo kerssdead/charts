@@ -40,6 +40,11 @@ class OLegend {
     #isInit = false
 
     /**
+     * @type {ODropdown}
+     */
+    #dropdown
+
+    /**
      * @param chart {OChart}
      */
     constructor(chart) {
@@ -50,11 +55,31 @@ class OLegend {
         this.canvas.width = 1600
         this.canvas.height = 200
 
+        this.canvas.width = this.chart.settings.width > this.chart.settings.height
+            ? this.chart.settings.height
+            : this.chart.settings.width
+
         chart.node.append(this.canvas)
 
         this.#globalTimer = new Date()
 
         this.animations = new OAnimations()
+
+        this.#dropdown = new ODropdown(this.chart,
+            this.canvas,
+            {
+                x: this.canvas.width,
+                y: 0,
+                items: [
+                    {
+                        text: 'Reset',
+                        action: () => {
+                            for (let value of this.chart.data.values)
+                                value.disabled = false
+                        }
+                    }
+                ]
+            })
     }
 
     render() {
@@ -77,6 +102,8 @@ class OLegend {
 
         if (!this.#isInit)
             this.canvas.dispatchEvent(new MouseEvent('mousemove'))
+
+        this.#dropdown.render(this.#onMouseMoveEvent)
 
         this.#isInit = true
     }
@@ -112,7 +139,7 @@ class OLegend {
                 && py >= rectY && py <= rectY + rectH
         }
 
-        if (this.#onClickEvent) {
+        if (this.#onClickEvent && !this.#dropdown.isActive) {
             this.animations.add(value,
                 OAnimationTypes.click,
                 {
@@ -140,7 +167,7 @@ class OLegend {
                 })
         }
 
-        if (this.#onMouseMoveEvent) {
+        if (this.#onMouseMoveEvent && !this.#dropdown.isActive) {
             this.animations.add(value,
                 OAnimationTypes.mouseleave,
                 {
@@ -196,6 +223,8 @@ class OLegend {
 
         ctx.fillStyle = '#000000'
         ctx.font = '14px serif'
+        ctx.textAlign = 'start'
+        ctx.textBaseline = 'alphabetic'
         ctx.fillText(value.label, x += 20, y + 4)
 
         if (value.disabled) {

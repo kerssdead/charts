@@ -46,6 +46,9 @@ class ORenderer {
         this.canvas.width = chart.settings.width
         this.canvas.height = chart.settings.height
 
+        if (settings.enableLegend)
+            this.canvas.height -= 200
+
         this.node.append(this.canvas)
     }
 
