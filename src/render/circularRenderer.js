@@ -177,7 +177,7 @@ class OCircularRenderer extends ORenderer {
         ctx.shadowBlur = null
         ctx.shadowColor = null
 
-        if (!isInner && !value.disabled) {
+        if (!isInner && value.current > 0) {
             let labelStartPoint = {
                 x: this.#center.x + (this.#radius + 25) * Math.cos(this.#accumulator + angle / 2),
                 y: this.#center.y + (this.#radius + 25) * Math.sin(this.#accumulator + angle / 2)
@@ -217,7 +217,12 @@ class OCircularRenderer extends ORenderer {
                 ctx.strokeStyle = '#000000'
                 ctx.stroke()
 
-                ctx.fillStyle = '#000000'
+                let opacity = Math.round(255 * (value.current / value.value)).toString(16)
+
+                if (opacity.length < 2)
+                    opacity = 0 + opacity
+
+                ctx.fillStyle = '#000000' + opacity
                 ctx.textAlign = dir === 1 ? 'start' : 'end'
                 ctx.font = '14px serif'
                 ctx.fillText(value.label, endPoint.x + 8 * dir, endPoint.y + 4)
