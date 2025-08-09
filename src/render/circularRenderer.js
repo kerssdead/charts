@@ -218,12 +218,16 @@ class OCircularRenderer extends ORenderer {
                 imageDataX = dir === 1 ? endPoint.x + 8 : endPoint.x - textWidth - 8,
                 imageData = new Uint32Array(ctx.getImageData(imageDataX, endPoint.y - 12, textWidth, 24).data.buffer)
 
-            for (let i = 0; i < imageData.length; i++) {
-                if (imageData[i] & 0xff000000) {
-                    isBusy = true
-                    break
-                }
-            }
+            if (imageDataX < 0 || imageDataX + textWidth > this.canvas.width
+                || endPoint.y - 12 < 0 || endPoint.y + 12 > this.canvas.height)
+                isBusy = true
+
+            if (!isBusy)
+                for (let i = 0; i < imageData.length; i++)
+                    if (imageData[i] & 0xff000000) {
+                        isBusy = true
+                        break
+                    }
 
             if (!isBusy) {
                 ctx.beginPath()
