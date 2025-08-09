@@ -75,6 +75,11 @@ class OCircularRenderer extends ORenderer {
     #startPoint
 
     /**
+     * @type {ODropdown}
+     */
+    #dropdown
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -105,6 +110,39 @@ class OCircularRenderer extends ORenderer {
                 ? this.data.innerRadius ?? 50
                 : 0
         }
+
+        this.#dropdown = new ODropdown(this.chart,
+            this.canvas,
+            {
+                x: this.canvas.width - 10,
+                y: 10,
+                text: 'Menu',
+                items: [
+                    {
+                        text: 'Export PNG',
+                        action: () => {
+                            const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
+                            ctx.clearRect(this.#center.x + this.#radius, 0, this.canvas.width, this.canvas.height)
+
+                            let destinationCanvas = document.createElement('canvas')
+                            destinationCanvas.width = this.canvas.width
+                            destinationCanvas.height = this.canvas.height
+
+                            let destCtx = destinationCanvas.getContext('2d')
+
+                            destCtx.fillStyle = "#FFFFFF"
+                            destCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+
+                            destCtx.drawImage(this.canvas, 0, 0)
+
+                            let download = document.createElement('a')
+                            download.href = destinationCanvas.toDataURL('image/png')
+                            download.download = this.settings.title
+                            download.click()
+                        }
+                    }
+                ]
+            })
     }
 
     render() {
@@ -140,6 +178,8 @@ class OCircularRenderer extends ORenderer {
 
         if (!this.#isInit)
             this.canvas.dispatchEvent(new MouseEvent('mousemove'))
+
+        this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
 
         this.#isInit = true
     }
