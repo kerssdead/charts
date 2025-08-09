@@ -35,6 +35,11 @@ class OGaugeRenderer extends ORenderer {
     #onClickEvent
 
     /**
+     * @type {boolean}
+     */
+    #isInit
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -101,6 +106,8 @@ class OGaugeRenderer extends ORenderer {
             y: this.canvas.height - this.#radius / 3
         }
 
+        this.animations = new OAnimations()
+
         this.#initAnimations()
     }
 
@@ -112,12 +119,34 @@ class OGaugeRenderer extends ORenderer {
         this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
 
         requestAnimationFrame(this.render.bind(this))
+
+        this.#isInit = true
     }
 
     #draw() {
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
-        const value = this.data.values[0].value
+        const value = this.data.values[0]
+
+        if (!this.#isInit || this.animations.contains(value, OAnimationTypes.init))
+            this.animations.add({ id: value.id },
+                OAnimationTypes.init,
+                {
+                    timer: null,
+                    duration: 450,
+                    before: () => {
+                        return true
+                    },
+                    body: (passed, duration) => {
+                        if (passed > duration)
+                            passed = duration
+
+                        value.current = value.value * (passed / duration)
+
+                        if (passed === duration)
+                            this.animations.delete({ id: value.id }, OAnimationTypes.init)
+                    }
+                })
 
         ctx.beginPath()
 
@@ -125,7 +154,7 @@ class OGaugeRenderer extends ORenderer {
         ctx.lineCap = 'round'
         ctx.lineWidth = 40
 
-        const piece = value / this.data.max,
+        const piece = value.current / this.data.max,
             angle = (isNaN(piece) ? 1 : piece) * Math.PI
 
         let startPoint = {
@@ -194,14 +223,16 @@ class OGaugeRenderer extends ORenderer {
                 y: this.#center.y + (this.#radius + 115) * Math.sin(Math.PI + localAccumulator)
             }
 
+            const opacity = Math.PI - localAngle > angle ? '66' : 'ff'
+
             ctx.moveTo(point3.x, point3.y)
             ctx.lineTo(point4.x, point4.y)
-            ctx.strokeStyle = '#000000'
+            ctx.strokeStyle = '#000000' + opacity
             ctx.stroke()
 
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
-            ctx.fillStyle = '#000000'
+            ctx.fillStyle = '#000000' + opacity
             ctx.fillText((100 - localAngle / Math.PI * 100).toString(), point5.x, point5.y)
 
             localAccumulator += currentAngle
