@@ -116,6 +116,9 @@ class OGaugeRenderer extends ORenderer {
 
         this.#draw()
 
+        if (this.#onMouseMoveEvent)
+            this.#drawTooltip(this.data.values[0])
+
         this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
 
         requestAnimationFrame(this.render.bind(this))
@@ -240,6 +243,76 @@ class OGaugeRenderer extends ORenderer {
             localAngle -= Math.PI / 10
         }
     }
+
+    /**
+     * @param value {OSector}
+     */
+    #drawTooltip(value) {
+        if (!this.chart.settings.enableTooltip)
+            return
+
+        if (this.#isInsideSector(this.#onMouseMoveEvent, value)) {
+            const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
+
+            let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
+                y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
+
+            const text = `${value.label}: ${value.current.toPrecision(2)}`
+
+            ctx.beginPath()
+            ctx.roundRect(x += 12, y += 10, OHelper.stringWidth(text) + 16, 34, 20)
+            ctx.fillStyle = '#00000077'
+            ctx.shadowColor = '#00000077'
+            ctx.shadowBlur = 20
+            ctx.fill()
+
+            ctx.fillStyle = '#ffffff'
+            ctx.font = '14px serif'
+            ctx.textAlign = 'start'
+            ctx.textBaseline = 'middle'
+            ctx.fillText(text, x + 10, y + 18)
+        }
+    }
+
+    /**
+     * @param event {MouseEvent}
+     * @param value {OSector}
+     *
+     * @return {boolean}
+     */
+    #isInsideSector(event, value) {
+        const isAngle = point => {
+            let a = Math.atan2(point.y - this.#center.y, point.x - this.#center.x)
+            if (a < 0)
+                a += Math.PI * 2
+
+            const piece = value.current / this.data.max,
+                angle = (isNaN(piece) ? 1 : piece) * Math.PI
+
+            return Math.PI + angle >= a
+        }
+
+        const isWithinRadius = v => {
+            const outerRadius = this.#radius + 20,
+                innerRadius = this.#radius - 20
+
+            return v.x * v.x + v.y * v.y <= outerRadius * outerRadius
+                && v.x * v.x + v.y * v.y >= innerRadius * innerRadius
+        }
+
+        let x = event.clientX - this.#canvasPosition.x + window.scrollX,
+            y = event.clientY - this.#canvasPosition.y + window.scrollY
+
+        let point = { x: x, y: y }
+
+        const inner = {
+                x: point.x - this.#center.x,
+                y: point.y - this.#center.y
+            }
+
+        return isAngle(point) && isWithinRadius(inner)
+    }
+
 
     #initAnimations() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
