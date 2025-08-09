@@ -141,7 +141,7 @@ class OCircularRenderer extends ORenderer {
             })
                 .reverse()
 
-            const ctx = this.canvas.getContext('2d')
+            const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
@@ -166,7 +166,7 @@ class OCircularRenderer extends ORenderer {
      * @param isInner {boolean?}
      */
     #drawSector(value, isInner = false) {
-        const ctx = this.canvas.getContext('2d')
+        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         const piece = value.current / this.#sum,
             angle = (isNaN(piece) ? 1 : piece) * 2 * Math.PI
@@ -505,7 +505,7 @@ class OCircularRenderer extends ORenderer {
         if (!this.chart.settings.enableTooltip)
             return
 
-        const ctx = this.canvas.getContext('2d')
+        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
             y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
@@ -580,7 +580,7 @@ class OCircularRenderer extends ORenderer {
     }
 
     #drawEmpty() {
-        const ctx = this.canvas.getContext('2d')
+        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         ctx.clearRect(0, 0, this.#canvasPosition.width, this.#canvasPosition.height)
 

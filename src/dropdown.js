@@ -51,7 +51,7 @@ class ODropdown {
      * @return MouseEvent
      */
     render(moveEvent, clickEvent) {
-        let ctx = this.#canvas.getContext('2d')
+        let ctx = this.#canvas.getContext('2d', { willReadFrequently: true })
 
         const width = OHelper.stringWidth(this.#options.text) + 20,
             height = 24

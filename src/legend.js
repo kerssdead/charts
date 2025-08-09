@@ -88,7 +88,7 @@ class OLegend {
         if (!this.#isInit)
             this.#initInteractions()
 
-        const ctx = this.canvas.getContext('2d')
+        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
@@ -122,7 +122,7 @@ class OLegend {
      * @return {OPoint}
      */
     #draw(value, x, y) {
-        const ctx = this.canvas.getContext('2d')
+        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         const textWidth = OHelper.stringWidth(value.label),
             circleRadius = 10
