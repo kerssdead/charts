@@ -84,8 +84,27 @@ class OCircularRenderer extends ORenderer {
 
         this.data = this.chart.data
 
-        for (const value of this.data.values)
+        if (settings.enableOther && chart.data.values.length > 20) {
+            const sum = chart.data.values.splice(20).reduce((acc, v) => acc + v.current, 0)
+
+            chart.data.values = chart.data.values.slice(0, 20)
+
+            chart.data.values.push({
+                value: sum,
+                current: sum,
+                label: 'Other',
+                id: OHelper.guid(),
+                color: '#a3a3a3',
+                innerRadius: this.data.innerRadius
+            })
+        }
+
+        for (const value of this.data.values) {
             value.current = value.value
+            value.innerRadius ??= this.data.type === OCircularTypes.donut
+                ? this.data.innerRadius ?? 50
+                : 0
+        }
     }
 
     render() {
@@ -272,7 +291,8 @@ class OCircularRenderer extends ORenderer {
                                 color: value.color + opacity,
                                 label: value.label,
                                 id: value.id,
-                                disabled: value.disabled
+                                disabled: value.disabled,
+                                innerRadius: value.innerRadius
                             },
                             true)
 
@@ -361,7 +381,8 @@ class OCircularRenderer extends ORenderer {
                                 color: OHelper.adjustColor(value.color, Math.round(33 * (1 - passed / duration))),
                                 label: value.label,
                                 id: value.id,
-                                disabled: value.disabled
+                                disabled: value.disabled,
+                                innerRadius: value.innerRadius
                             },
                             true)
 
@@ -405,7 +426,8 @@ class OCircularRenderer extends ORenderer {
                                 color: OHelper.adjustColor(value.color, Math.round(33 * passed / duration)),
                                 label: value.label,
                                 id: value.id,
-                                disabled: value.disabled
+                                disabled: value.disabled,
+                                innerRadius: value.innerRadius
                             },
                             true)
 
@@ -449,10 +471,12 @@ class OCircularRenderer extends ORenderer {
                 localAngle -= Math.PI / 6
             }
 
-            if (this.chart.data.type === OCircularTypes.donut) {
+            if (this.chart.data.type === OCircularTypes.donut || value.innerRadius !== 0) {
+                const innerRadius = this.#radius * (value.innerRadius / 100)
+
                 const innerPoint2 = {
-                    x: point2.x - (((this.#radius / 2) * (point2.x - this.#center.x)) / this.#radius),
-                    y: point2.y - (((this.#radius / 2) * (point2.y - this.#center.y)) / this.#radius)
+                    x: point2.x - (((this.#radius - innerRadius) * (point2.x - this.#center.x)) / this.#radius),
+                    y: point2.y - (((this.#radius - innerRadius) * (point2.y - this.#center.y)) / this.#radius)
                 }
 
                 ctx.lineTo(innerPoint2.x, innerPoint2.y)
@@ -466,12 +490,12 @@ class OCircularRenderer extends ORenderer {
                         : angle - localAngle
 
                     point2 = {
-                        x: this.#center.x + this.#radius / 2 * Math.cos(this.#accumulator + localAccumulator - currentAngle),
-                        y: this.#center.y + this.#radius / 2 * Math.sin(this.#accumulator + localAccumulator - currentAngle)
+                        x: this.#center.x + innerRadius * Math.cos(this.#accumulator + localAccumulator - currentAngle),
+                        y: this.#center.y + innerRadius * Math.sin(this.#accumulator + localAccumulator - currentAngle)
                     }
 
                     const tangentIntersectionAngle = Math.PI - currentAngle
-                    const lengthToTangentIntersection = this.#radius / 2 / Math.sin(tangentIntersectionAngle / 2)
+                    const lengthToTangentIntersection = innerRadius / Math.sin(tangentIntersectionAngle / 2)
                     const tangentIntersectionPoint = {
                         x: this.#center.x + lengthToTangentIntersection * Math.cos(this.#accumulator + localAccumulator - currentAngle / 2),
                         y: this.#center.y + lengthToTangentIntersection * Math.sin(this.#accumulator + localAccumulator - currentAngle / 2)
@@ -559,7 +583,8 @@ class OCircularRenderer extends ORenderer {
 
         const isWithinRadius = v => {
             return v.x * v.x + v.y * v.y <= this.#radius * this.#radius
-                && (this.data.type !== OCircularTypes.donut || v.x * v.x + v.y * v.y >= this.#radius / 2 * this.#radius / 2)
+                && (this.data.type !== OCircularTypes.donut || v.x * v.x + v.y * v.y
+                    >= this.#radius * (value.innerRadius / 100) * this.#radius * (value.innerRadius / 100))
         }
 
         let x = event.clientX - this.#canvasPosition.x + window.scrollX,

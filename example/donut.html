@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>
-      Donut Example
+        Donut Example
     </title>
 
     <script src="/src/helper.js"></script>
@@ -39,25 +39,26 @@
     const valuesCount = Math.floor(Math.random() * 25) + 2
 
     for (let i = 0; i < valuesCount; i++)
-      values.push({
-        value: Math.random(),
-        label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
-      })
+        values.push({
+            value: Math.random(),
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
+        })
 
     values.unshift({
-      label: 'null'
+        label: 'null'
     })
 
     let chart = new OChart(document.getElementById('pie-example'), {
-      width: 1600,
-      height: 1000,
-      enableLegend: true,
-      enableTooltip: true,
-      data: {
-        type: OCircularTypes.donut,
-        values: values
-      },
-      type: OChartTypes.circular
+        width: 1600,
+        height: 1000,
+        enableLegend: true,
+        enableTooltip: true,
+        data: {
+            type: OCircularTypes.donut,
+            values: values,
+            innerRadius: 50
+        },
+        type: OChartTypes.circular
     })
 
     chart.render()

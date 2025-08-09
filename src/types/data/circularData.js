@@ -5,6 +5,11 @@ class OCircularData extends OData {
     type
 
     /**
+     * @type {number}
+     */
+    innerRadius
+
+    /**
      * @type {OSector[]}
      */
     values

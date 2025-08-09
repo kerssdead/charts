@@ -5,7 +5,7 @@ class OSector extends OBasePoint {
     value
 
     /**
-     * @type {Number}
+     * @type {number}
      */
     current
 
@@ -13,4 +13,9 @@ class OSector extends OBasePoint {
      * @type {OPoint}
      */
     transition
+
+    /**
+     * @type {number}
+     */
+    innerRadius
 }
