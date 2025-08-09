@@ -197,7 +197,7 @@ class OCircularRenderer extends ORenderer {
 
             let isBusy = false
 
-            const textWidth = OHelper.stringWidth(value.label, 14),
+            const textWidth = OHelper.stringWidth(value.label),
                 imageDataX = dir === 1 ? endPoint.x + 8 : endPoint.x - textWidth - 8,
                 imageData = new Uint32Array(ctx.getImageData(imageDataX, endPoint.y - 12, textWidth, 24).data.buffer)
 
@@ -514,7 +514,7 @@ class OCircularRenderer extends ORenderer {
             const text = `${value.label}: ${value.current.toPrecision(2)}`
 
             ctx.beginPath()
-            ctx.roundRect(x += 10, y += 10, OHelper.stringWidth(text, 14) + 16, 34, 20)
+            ctx.roundRect(x += 10, y += 10, OHelper.stringWidth(text) + 16, 34, 20)
             ctx.fillStyle = '#00000077'
             ctx.shadowColor = '#00000077'
             ctx.shadowBlur = 20

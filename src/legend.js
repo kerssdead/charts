@@ -69,8 +69,9 @@ class OLegend {
         this.#dropdown = new ODropdown(this.chart,
             this.canvas,
             {
-                x: this.canvas.width,
-                y: 0,
+                x: this.canvas.width - 110,
+                y: 10,
+                text: 'Menu',
                 items: [
                     {
                         text: 'Reset',
@@ -103,7 +104,12 @@ class OLegend {
         if (!this.#isInit)
             this.canvas.dispatchEvent(new MouseEvent('mousemove'))
 
-        this.#dropdown.render(this.#onMouseMoveEvent)
+        const isCursorPointer = this.canvas.style.cursor === 'pointer'
+
+        this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
+
+        if (isCursorPointer)
+            this.canvas.style.cursor = 'pointer'
 
         this.#isInit = true
     }
@@ -118,10 +124,10 @@ class OLegend {
     #draw(value, x, y) {
         const ctx = this.canvas.getContext('2d')
 
-        const textWidth = OHelper.stringWidth(value.label, 14),
+        const textWidth = OHelper.stringWidth(value.label),
             circleRadius = 10
 
-        if (x + 50 + textWidth >= this.canvas.width) {
+        if (x + 50 + textWidth >= this.canvas.width - 100) {
             x = 20
             y += 38
         }
@@ -137,9 +143,10 @@ class OLegend {
 
             return px >= rectX && px <= rectX + rectW
                 && py >= rectY && py <= rectY + rectH
+                && !this.#dropdown.isActive
         }
 
-        if (this.#onClickEvent && !this.#dropdown.isActive) {
+        if ((this.#onClickEvent || (value.current === 0 && !value.disabled)) && !this.#dropdown.isActive) {
             this.animations.add(value,
                 OAnimationTypes.click,
                 {
@@ -147,13 +154,13 @@ class OLegend {
                     duration: 220,
                     continuous: true,
                     before: () => {
-                        return isHover(this.#onClickEvent) && value.value !== 0
+                        return (value.current === 0 && !value.disabled) || (isHover(this.#onClickEvent) && value.value !== 0)
                     },
                     body: (passed, duration) => {
                         if (passed > duration)
                             passed = duration
 
-                        if (passed === 0)
+                        if (passed === 0 && this.#onClickEvent)
                             value.disabled = !value.disabled
 
                         if (value.disabled)
@@ -168,6 +175,9 @@ class OLegend {
         }
 
         if (this.#onMouseMoveEvent && !this.#dropdown.isActive) {
+            if (isHover(this.#onMouseMoveEvent))
+                this.canvas.style.cursor = 'pointer'
+
             this.animations.add(value,
                 OAnimationTypes.mouseleave,
                 {
@@ -186,8 +196,6 @@ class OLegend {
 
                         ctx.fillStyle = OHelper.adjustColor('#ffffff', Math.round(-50 * (1 - passed / duration)))
                         ctx.fill()
-
-                        this.canvas.style.cursor = 'pointer'
                     }
                 })
 
@@ -209,8 +217,6 @@ class OLegend {
 
                         ctx.fillStyle = OHelper.adjustColor('#ffffff', Math.round(-50 * passed / duration))
                         ctx.fill()
-
-                        this.canvas.style.cursor = 'pointer'
                     }
                 })
         }

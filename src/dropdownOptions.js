@@ -13,4 +13,9 @@ class ODropdownOptions {
      * @type {number}
      */
     y
+
+    /**
+     * @type {string}
+     */
+    text
 }

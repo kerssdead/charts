@@ -20,16 +20,6 @@ class ODropdown {
     #canvasPosition
 
     /**
-     * @type {MouseEvent}
-     */
-    #onMouseMoveEvent
-
-    /**
-     * @type {MouseEvent}
-     */
-    #onClickEvent
-
-    /**
      * @type {OAnimations}
      */
     animations
@@ -55,12 +45,16 @@ class ODropdown {
     }
 
     /**
-     * @param event {MouseEvent}
+     * @param moveEvent {MouseEvent}
+     * @param clickEvent {MouseEvent}
+     *
+     * @return MouseEvent
      */
-    render(event) {
+    render(moveEvent, clickEvent) {
         let ctx = this.#canvas.getContext('2d')
 
-        const width = 100, height = 50
+        const width = OHelper.stringWidth(this.#options.text) + 20,
+            height = 24
 
         ctx.beginPath()
 
@@ -69,10 +63,14 @@ class ODropdown {
         let x = this.#options.x + width > this.#canvas.width ? this.#canvas.width - width : this.#options.x,
             y = this.#options.y + height > this.#canvas.height ? this.#canvas.height - height : this.#options.y
 
-        if (this.#isOnButton(event, x, y, width, height)) {
-            if (event.type === 'click') {
-                this.isActive = true
-                console.log('click')
+        const isOnButton = this.#isOnButton(moveEvent, x, y, width, height)
+
+        if (isOnButton) {
+            this.#canvas.style.cursor = 'pointer'
+
+            if (clickEvent) {
+                this.isActive = !this.isActive
+                clickEvent = undefined
             }
 
             this.animations.add({ id: 'animation-dropdown' },
@@ -81,7 +79,7 @@ class ODropdown {
                     timer: null,
                     duration: 300,
                     before: () => {
-                        return true
+                        return clickEvent === undefined
                     },
                     body: (passed, duration) => {
                         this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseleave)
@@ -89,10 +87,12 @@ class ODropdown {
                         if (passed > duration)
                             passed = duration
 
-                        ctx.fillStyle = OHelper.adjustColor('#ff0000', Math.round(passed / duration * 100))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(passed / duration * 100))
                     }
                 })
         } else {
+            this.#canvas.style.cursor = 'default'
+
             this.animations.add({ id: 'animation-dropdown' },
                 OAnimationTypes.mouseleave,
                 {
@@ -107,21 +107,110 @@ class ODropdown {
                         if (passed > duration)
                             passed = duration
 
-                        ctx.fillStyle = OHelper.adjustColor('#ff0000', Math.round(100 - passed / duration * 100))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(100 - passed / duration * 100))
                     }
                 })
         }
 
-        ctx.rect(x, y, width, height)
+        ctx.roundRect(x, y, width, height, 4)
         ctx.fill()
-        ctx.strokeStyle = '#000000'
-        ctx.stroke()
         ctx.fillStyle = '#000000'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText('dropdown', x + width / 2, y + height / 2)
+        ctx.fillText(this.#options.text, x + width / 2, y + height / 2)
 
         ctx.closePath()
+
+        if (this.isActive) {
+            y += height
+
+            let maxWidth = Math.max(this.#options.items.map(value => OHelper.stringWidth(value.text))) + 8
+
+            if (maxWidth < 50)
+                maxWidth = 50
+
+            ctx.beginPath()
+            ctx.roundRect(x, y, maxWidth, this.#options.items.length * 20 + 8, 4)
+            ctx.fillStyle = '#ffffff'
+            ctx.fill()
+            ctx.stroke()
+
+            ctx.closePath()
+            ctx.beginPath()
+
+            y += 4
+
+            for (const item of this.#options.items) {
+                if (this.#isOnButton(moveEvent, x, y, maxWidth, 20)) {
+                    this.animations.add({ id: 'animation-dropdown' + item.text },
+                        OAnimationTypes.mouseover,
+                        {
+                            timer: null,
+                            duration: 300,
+                            before: () => {
+                                return clickEvent === undefined
+                            },
+                            body: (passed, duration) => {
+                                this.animations.reload({ id: 'animation-dropdown' + item.text }, OAnimationTypes.mouseleave)
+
+                                if (passed > duration)
+                                    passed = duration
+
+                                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(passed / duration * 100))
+                            }
+                        })
+
+                    this.#canvas.style.cursor = 'pointer'
+
+                    if (clickEvent) {
+                        item.action()
+
+                        clickEvent = undefined
+                        this.isActive = false
+                    }
+                } else {
+                    this.animations.add({ id: 'animation-dropdown' + item.text },
+                        OAnimationTypes.mouseleave,
+                        {
+                            timer: null,
+                            duration: 300,
+                            before: () => {
+                                return true
+                            },
+                            body: (passed, duration) => {
+                                this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseover)
+
+                                if (passed > duration)
+                                    passed = duration
+
+                                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(100 - passed / duration * 100))
+                            }
+                        })
+                }
+
+                // ctx.fillStyle = '#ffffff'
+                ctx.rect(x, y, maxWidth, 20)
+                ctx.fill()
+
+                ctx.fillStyle = '#000000'
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'hanging'
+                ctx.fillText(item.text, x + maxWidth / 2, y + 4)
+
+                y += 20
+            }
+
+            ctx.closePath()
+
+            ctx.fillStyle = '#000000'
+        }
+
+        if (clickEvent !== undefined && this.isActive) {
+            this.isActive = false
+            clickEvent = undefined
+        }
+
+        return clickEvent
     }
 
     #initAnimations() {
