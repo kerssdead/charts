@@ -43,4 +43,9 @@ class OChartSettings {
      * @type {boolean}
      */
     enableOther
+
+    /**
+     * @type {number}
+     */
+    legendPlace
 }

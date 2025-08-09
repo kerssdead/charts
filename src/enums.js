@@ -26,3 +26,14 @@ const OAnimationTypes = Object.freeze({
     init: 2,
     click: 3
 })
+
+/**
+ * @readonly
+ * @enum {string}
+ */
+const OLegendPlaces = Object.freeze({
+    bottom: 0,
+    left: 1,
+    top: 2,
+    right: 3
+})

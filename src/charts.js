@@ -32,6 +32,9 @@ class OChart {
         context[OChartProperties.chart] = this
 
         this.node = context
+        this.node.style.display = 'flex'
+        this.node.style.alignItems = 'center'
+
         this.data = settings.data
         this.settings = settings
 
@@ -40,7 +43,7 @@ class OChart {
         this.#dynSettings = new ODynSettings(this, this.settings)
 
         if (this.settings.enableLegend)
-            this.#legend = new OLegend(this)
+            this.#legend = new OLegend(this, context)
     }
 
     render() {
@@ -80,5 +83,7 @@ class OChart {
             this.settings.width = dimension.width
         if (!this.settings.height || +this.settings.height === 0)
             this.settings.height = dimension.height
+
+        this.settings.legendPlace ??= OLegendPlaces.bottom
     }
 }

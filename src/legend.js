@@ -46,8 +46,9 @@ class OLegend {
 
     /**
      * @param chart {OChart}
+     * @param context {HTMLElement}
      */
-    constructor(chart) {
+    constructor(chart, context) {
         this.chart = chart
 
         this.canvas = document.createElement('canvas')
@@ -56,9 +57,39 @@ class OLegend {
         this.canvas.height = 200
         this.canvas.style.width = 'fit-content'
 
-        this.canvas.width = this.chart.settings.width > this.chart.settings.height
-            ? this.chart.settings.height
-            : this.chart.settings.width
+        switch (chart.settings.legendPlace) {
+            case OLegendPlaces.bottom:
+                this.canvas.width = this.chart.settings.width > this.chart.settings.height
+                    ? this.chart.settings.height
+                    : this.chart.settings.width
+
+                context.style.flexDirection = 'column'
+
+                break
+
+            case OLegendPlaces.top:
+                this.canvas.width = this.chart.settings.width > this.chart.settings.height
+                    ? this.chart.settings.height
+                    : this.chart.settings.width
+
+                context.style.flexDirection = 'column-reverse'
+
+                break
+
+            case OLegendPlaces.left:
+                this.canvas.width = 500
+
+                context.style.flexDirection = 'row'
+
+                break
+
+            case OLegendPlaces.right:
+                this.canvas.width = 500
+
+                context.style.flexDirection = 'row-reverse'
+
+                break
+        }
 
         chart.node.append(this.canvas)
 
