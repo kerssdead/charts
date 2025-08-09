@@ -58,8 +58,6 @@ class ODropdown {
 
         ctx.beginPath()
 
-        ctx.fillStyle = 'red'
-
         let x = this.#options.x + width > this.#canvas.width ? this.#canvas.width - width : this.#options.x,
             y = this.#options.y + height > this.#canvas.height ? this.#canvas.height - height : this.#options.y
 
@@ -112,6 +110,7 @@ class ODropdown {
                 })
         }
 
+        ctx.shadowBlur = null
         ctx.roundRect(x, y, width, height, 4)
         ctx.fill()
         ctx.fillStyle = '#000000'
@@ -188,7 +187,6 @@ class ODropdown {
                         })
                 }
 
-                // ctx.fillStyle = '#ffffff'
                 ctx.rect(x, y, maxWidth, 20)
                 ctx.fill()
 
