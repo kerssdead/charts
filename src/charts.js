@@ -67,6 +67,13 @@ class OChart {
             item.value ??= 0
         }
 
+        if (this.settings.data.values.filter(v => v.value < 0)) {
+            for (const item of this.settings.data.values.filter(v => v.value < 0))
+                console.warn(`"${item.name}" has negative value (${item.value}) and will not be render`)
+
+            this.settings.data.values = this.settings.data.values.filter(v => v.value >= 0)
+        }
+
         const dimension = this.node.parentNode.getBoundingClientRect()
 
         if (!this.settings.width || +this.settings.width === 0)
