@@ -171,6 +171,8 @@ class OCircularRenderer extends ORenderer {
             if (this.#onMouseMoveEvent)
                 for (const value of this.data.values)
                     this.#drawTooltip(value)
+
+            this.#drawInnerTitle()
         }
 
         requestAnimationFrame(this.render.bind(this))
@@ -620,6 +622,22 @@ class OCircularRenderer extends ORenderer {
         ctx.fillText('All data is hidden', this.#center.x, this.#center.y)
 
         requestAnimationFrame(this.render.bind(this))
+    }
+
+    #drawInnerTitle() {
+        if (this.data.innerTitle) {
+            const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
+
+            ctx.beginPath()
+
+            ctx.fillStyle = '#000000'
+            ctx.font = '16px serif'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillText(this.data.innerTitle, this.#center.x, this.#center.y)
+
+            ctx.closePath()
+        }
     }
 
     destroy() {

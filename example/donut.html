@@ -57,7 +57,8 @@
         data: {
             type: OCircularTypes.donut,
             values: values,
-            innerRadius: 50
+            innerRadius: 50,
+            innerTitle: `Average: ${(values.filter(v => v.value !== undefined).map(v => v.value).reduce((a, b) => a + b) / values.length).toPrecision(2)}`
         },
         type: OChartTypes.circular
     })
