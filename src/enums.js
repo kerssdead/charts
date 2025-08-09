@@ -4,7 +4,8 @@
  */
 const OChartTypes = Object.freeze({
     plot: 0,
-    circular: 1
+    circular: 1,
+    gauge: 2
 })
 
 /**

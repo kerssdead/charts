@@ -116,6 +116,7 @@ class ODropdown {
         ctx.fillStyle = '#000000'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
+        ctx.font = '14px serif'
         ctx.fillText(this.#options.text, x + width / 2, y + height / 2)
 
         ctx.closePath()

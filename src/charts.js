@@ -33,6 +33,7 @@ class OChart {
 
         this.node = context
         this.node.style.display = 'flex'
+        this.node.style.flexDirection = 'column'
         this.node.style.alignItems = 'center'
 
         this.data = settings.data

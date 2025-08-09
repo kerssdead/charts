@@ -17,6 +17,10 @@ class ODynSettings {
             case OChartTypes.circular:
                 this.renderer = new OCircularRenderer(chart, settings, this)
                 break
+
+            case OChartTypes.gauge:
+                this.renderer = new OGaugeRenderer(chart, settings, this)
+                break
         }
     }
 }
