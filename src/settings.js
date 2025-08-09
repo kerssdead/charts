@@ -20,6 +20,11 @@ class OChartSettings {
     height
 
     /**
+     * @type {string}
+     */
+    baseColor
+
+    /**
      * @type {boolean}
      */
     enableLegend

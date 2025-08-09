@@ -53,7 +53,7 @@ class OChart {
     }
 
     #prepareSettings() {
-        const baseColor = OHelper.randomColor()
+        const baseColor = this.settings.baseColor ?? OHelper.randomColor()
         let adjustStep = Math.round(100 / this.settings.data.values.length),
             adjustAmount = -50
 
