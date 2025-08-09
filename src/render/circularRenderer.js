@@ -108,9 +108,9 @@ class OCircularRenderer extends ORenderer {
     }
 
     render() {
-        if (!this.#isInit) {
-            super.render()
+        super.render()
 
+        if (!this.#isInit) {
             const shortSide = this.canvas.width > this.canvas.height
                 ? this.canvas.height
                 : this.canvas.width
@@ -159,10 +159,6 @@ class OCircularRenderer extends ORenderer {
                 }
             })
                 .reverse()
-
-            const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-
-            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
             this.#startPoint = {
                 x: this.#center.x + this.#radius * Math.cos(this.#startAngle),
@@ -243,6 +239,7 @@ class OCircularRenderer extends ORenderer {
 
                 ctx.fillStyle = '#000000' + opacity
                 ctx.textAlign = dir === 1 ? 'start' : 'end'
+                ctx.textBaseline = 'alphabetic'
                 ctx.font = '14px serif'
                 ctx.fillText(value.label, endPoint.x + 8 * dir, endPoint.y + 4)
             }

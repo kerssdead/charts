@@ -25,6 +25,11 @@ class OChartSettings {
     baseColor
 
     /**
+     * @type {string}
+     */
+    title
+
+    /**
      * @type {boolean}
      */
     enableLegend

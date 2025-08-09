@@ -53,7 +53,22 @@ class ORenderer {
     }
 
     render() {
+        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+        if (this.settings.title) {
+            ctx.beginPath()
+
+            ctx.shadowBlur = null
+            ctx.fillStyle = '#000000'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'top'
+            ctx.font = '20px serif'
+            ctx.fillText(this.settings.title, this.canvas.width / 2, 30)
+
+            ctx.closePath()
+        }
     }
 
     /**
