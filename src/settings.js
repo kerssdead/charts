@@ -28,4 +28,9 @@ class OChartSettings {
      * @type {boolean}
      */
     enableTooltip
+
+    /**
+     * @type {boolean}
+     */
+    enableOther
 }
