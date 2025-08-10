@@ -268,6 +268,8 @@ class OLegend {
             ctx.beginPath()
             ctx.moveTo(x - 5, y)
             ctx.lineTo(x + textWidth, y)
+            ctx.fillStyle = '#000000'
+            ctx.strokeStyle = '#000000'
             ctx.stroke()
         }
 
