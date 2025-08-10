@@ -111,6 +111,7 @@ class ODropdown {
         }
 
         ctx.shadowBlur = null
+        ctx.strokeStyle = '#ffffff'
         ctx.roundRect(x, y, width, height, 4)
         ctx.fill()
         ctx.fillStyle = '#000000'
@@ -129,9 +130,13 @@ class ODropdown {
             if (maxWidth < 50)
                 maxWidth = 50
 
+            if (x + maxWidth > this.#canvas.width - 4)
+                x -= x + maxWidth - this.#canvas.width + 4
+
             ctx.beginPath()
             ctx.roundRect(x, y, maxWidth, this.#options.items.length * 20 + 8, 4)
             ctx.fillStyle = '#ffffff'
+            ctx.strokeStyle = '#353535'
             ctx.fill()
             ctx.stroke()
 
