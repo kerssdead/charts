@@ -50,6 +50,8 @@ class OChart {
     render() {
         this.#dynSettings.renderer.render()
         this.#legend?.render()
+
+        this.#refresh()
     }
 
     destroy() {
@@ -86,5 +88,10 @@ class OChart {
             this.settings.height = dimension.height
 
         this.settings.legendPlace ??= OLegendPlaces.bottom
+    }
+
+    #refresh() {
+        this.#dynSettings.renderer.refresh()
+        this.#legend?.refresh()
     }
 }

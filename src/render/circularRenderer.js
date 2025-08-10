@@ -694,4 +694,12 @@ class OCircularRenderer extends ORenderer {
     destroy() {
         super.destroy()
     }
+
+    refresh() {
+        super.refresh()
+
+        this.#isInit = false
+
+        this.#dropdown.refresh()
+    }
 }

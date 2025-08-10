@@ -30,6 +30,11 @@ class ODropdown {
     isActive = false
 
     /**
+     * @type {boolean}
+     */
+    #isInit
+
+    /**
      * @param chart {OChart}
      * @param canvas {HTMLCanvasElement}
      * @param options {ODropdownOptions}
@@ -51,6 +56,9 @@ class ODropdown {
      * @return MouseEvent
      */
     render(moveEvent, clickEvent) {
+        if (!this.#isInit)
+            this.#initAnimations()
+
         let ctx = this.#canvas.getContext('2d', { willReadFrequently: true })
 
         const width = OHelper.stringWidth(this.#options.text) + 20,
@@ -214,6 +222,8 @@ class ODropdown {
             clickEvent = undefined
         }
 
+        this.#isInit = true
+
         return clickEvent
     }
 
@@ -242,5 +252,9 @@ class ODropdown {
 
         return trueX >= x && trueX <= x + w
             && trueY >= y && trueY <= y + h
+    }
+
+    refresh() {
+        this.#isInit = false
     }
 }

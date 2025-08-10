@@ -82,4 +82,8 @@ class ORenderer {
     destroy() {
         throw new Error('Method not implemented')
     }
+
+    refresh() {
+
+    }
 }

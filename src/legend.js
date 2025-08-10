@@ -297,4 +297,8 @@ class OLegend {
     destroy() {
         throw new Error('Method not implemented')
     }
+
+    refresh() {
+        this.#isInit = false
+    }
 }
