@@ -122,7 +122,14 @@ class OCircularRenderer extends ORenderer {
                         text: 'Export PNG',
                         action: () => {
                             const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-                            ctx.clearRect(this.#center.x + this.#radius, 0, this.canvas.width, this.canvas.height)
+
+                            let width = OHelper.stringWidth('Export PNG') + 16,
+                                height = 64
+
+                            if (width < 50)
+                                width = 50
+
+                            ctx.clearRect(this.canvas.width - width, 0, width, height)
 
                             let destinationCanvas = document.createElement('canvas')
                             destinationCanvas.width = this.canvas.width
