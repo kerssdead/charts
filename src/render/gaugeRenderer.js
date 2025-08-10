@@ -168,44 +168,9 @@ class OGaugeRenderer extends ORenderer {
         const piece = value.current / this.data.max,
             angle = (isNaN(piece) ? 1 : piece) * Math.PI
 
-        let startPoint = {
-            x: this.#center.x + this.#radius * Math.cos(Math.PI),
-            y: this.#center.y + this.#radius * Math.sin(Math.PI)
-        }
-
-        ctx.lineTo(startPoint.x, startPoint.y)
-
-        let localAccumulator = 0,
-            localAngle = angle
-
         if (value.value) {
-            while (localAngle > 0) {
-                let currentAngle = localAngle - Math.PI / 6 > 0
-                    ? Math.PI / 6
-                    : localAngle
-
-                let point2 = {
-                    x: this.#center.x + this.#radius * Math.cos(Math.PI + localAccumulator + currentAngle),
-                    y: this.#center.y + this.#radius * Math.sin(Math.PI + localAccumulator + currentAngle)
-                }
-
-                const tangentIntersectionAngle = Math.PI - currentAngle
-                const lengthToTangentIntersection = this.#radius / Math.sin(tangentIntersectionAngle / 2)
-                const tangentIntersectionPoint = {
-                    x: this.#center.x + lengthToTangentIntersection * Math.cos(Math.PI + localAccumulator + currentAngle / 2),
-                    y: this.#center.y + lengthToTangentIntersection * Math.sin(Math.PI + localAccumulator + currentAngle / 2)
-                }
-
-                ctx.quadraticCurveTo(tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y)
-
-                localAccumulator += currentAngle
-
-                localAngle -= Math.PI / 6
-            }
-
+            ctx.arc(this.#center.x, this.#center.y, this.#radius, Math.PI, angle - Math.PI)
             ctx.stroke()
-
-            ctx.closePath()
         }
 
         ctx.beginPath()
@@ -213,40 +178,40 @@ class OGaugeRenderer extends ORenderer {
         ctx.lineWidth = 1
         ctx.lineCap = 'square'
 
-        localAccumulator = 0
-        localAngle = Math.PI
+        let localAccumulator = 0,
+            localAngle = Math.PI
 
         while (localAngle >= 0) {
             let currentAngle = localAngle - Math.PI / 10 > 0
                 ? Math.PI / 10
                 : localAngle
 
-            let point3 = {
+            let point1 = {
                 x: this.#center.x + (this.#radius + 50) * Math.cos(Math.PI + localAccumulator),
                 y: this.#center.y + (this.#radius + 50) * Math.sin(Math.PI + localAccumulator)
             }
 
-            let point4 = {
+            let point2 = {
                 x: this.#center.x + (this.#radius + 90) * Math.cos(Math.PI + localAccumulator),
                 y: this.#center.y + (this.#radius + 90) * Math.sin(Math.PI + localAccumulator)
             }
 
-            let point5 = {
+            let point3 = {
                 x: this.#center.x + (this.#radius + 115) * Math.cos(Math.PI + localAccumulator),
                 y: this.#center.y + (this.#radius + 115) * Math.sin(Math.PI + localAccumulator)
             }
 
             const opacity = Math.PI - localAngle > angle ? '66' : 'ff'
 
-            ctx.moveTo(point3.x, point3.y)
-            ctx.lineTo(point4.x, point4.y)
+            ctx.moveTo(point1.x, point1.y)
+            ctx.lineTo(point2.x, point2.y)
             ctx.strokeStyle = '#000000' + opacity
             ctx.stroke()
 
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
             ctx.fillStyle = '#000000' + opacity
-            ctx.fillText((100 - localAngle / Math.PI * 100).toString(), point5.x, point5.y)
+            ctx.fillText((100 - localAngle / Math.PI * 100).toString(), point3.x, point3.y)
 
             localAccumulator += currentAngle
 
