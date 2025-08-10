@@ -234,15 +234,15 @@ class OCircularRenderer extends ORenderer {
         ctx.shadowBlur = null
         ctx.shadowColor = null
 
-        if (!isInner && value.current > 0) {
+        if (isInner && value.current > 0) {
             let labelStartPoint = {
-                x: this.#center.x + (this.#radius + 25) * Math.cos(this.#accumulator + angle / 2),
-                y: this.#center.y + (this.#radius + 25) * Math.sin(this.#accumulator + angle / 2)
+                x: this.#center.x + (this.#radius + 10) * Math.cos(this.#accumulator + angle / 2),
+                y: this.#center.y + (this.#radius + 10) * Math.sin(this.#accumulator + angle / 2)
             }
 
             let labelMidPoint = {
-                x: this.#center.x + (this.#radius + 35) * Math.cos(this.#accumulator + angle / 2),
-                y: this.#center.y + (this.#radius + 35) * Math.sin(this.#accumulator + angle / 2)
+                x: this.#center.x + (this.#radius + 20) * Math.cos(this.#accumulator + angle / 2),
+                y: this.#center.y + (this.#radius + 20) * Math.sin(this.#accumulator + angle / 2)
             }
 
             const dir = labelStartPoint.x > this.#center.x ? 1 : -1
