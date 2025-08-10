@@ -106,6 +106,14 @@ class OGaugeRenderer extends ORenderer {
             y: this.canvas.height - this.#radius / 3
         }
 
+        if (this.data.values.length > 0) {
+            if (this.data.values[0].value < this.data.min)
+                this.data.values[0].value = this.data.min
+
+            if (this.data.values[0].value > this.data.max)
+                this.data.values[0].value = this.data.max
+        }
+
         this.animations = new OAnimations()
 
         this.#initAnimations()
@@ -129,7 +137,7 @@ class OGaugeRenderer extends ORenderer {
     #draw() {
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
-        const value = this.data.values[0]
+        const value = this.data.values[0] ?? { id: OHelper.guid() }
 
         if (!this.#isInit || this.animations.contains(value, OAnimationTypes.init))
             this.animations.add({ id: value.id },
@@ -170,33 +178,35 @@ class OGaugeRenderer extends ORenderer {
         let localAccumulator = 0,
             localAngle = angle
 
-        while (localAngle > 0) {
-            let currentAngle = localAngle - Math.PI / 6 > 0
-                ? Math.PI / 6
-                : localAngle
+        if (value.value) {
+            while (localAngle > 0) {
+                let currentAngle = localAngle - Math.PI / 6 > 0
+                    ? Math.PI / 6
+                    : localAngle
 
-            let point2 = {
-                x: this.#center.x + this.#radius * Math.cos(Math.PI + localAccumulator + currentAngle),
-                y: this.#center.y + this.#radius * Math.sin(Math.PI + localAccumulator + currentAngle)
+                let point2 = {
+                    x: this.#center.x + this.#radius * Math.cos(Math.PI + localAccumulator + currentAngle),
+                    y: this.#center.y + this.#radius * Math.sin(Math.PI + localAccumulator + currentAngle)
+                }
+
+                const tangentIntersectionAngle = Math.PI - currentAngle
+                const lengthToTangentIntersection = this.#radius / Math.sin(tangentIntersectionAngle / 2)
+                const tangentIntersectionPoint = {
+                    x: this.#center.x + lengthToTangentIntersection * Math.cos(Math.PI + localAccumulator + currentAngle / 2),
+                    y: this.#center.y + lengthToTangentIntersection * Math.sin(Math.PI + localAccumulator + currentAngle / 2)
+                }
+
+                ctx.quadraticCurveTo(tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y)
+
+                localAccumulator += currentAngle
+
+                localAngle -= Math.PI / 6
             }
 
-            const tangentIntersectionAngle = Math.PI - currentAngle
-            const lengthToTangentIntersection = this.#radius / Math.sin(tangentIntersectionAngle / 2)
-            const tangentIntersectionPoint = {
-                x: this.#center.x + lengthToTangentIntersection * Math.cos(Math.PI + localAccumulator + currentAngle / 2),
-                y: this.#center.y + lengthToTangentIntersection * Math.sin(Math.PI + localAccumulator + currentAngle / 2)
-            }
+            ctx.stroke()
 
-            ctx.quadraticCurveTo(tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y)
-
-            localAccumulator += currentAngle
-
-            localAngle -= Math.PI / 6
+            ctx.closePath()
         }
-
-        ctx.stroke()
-
-        ctx.closePath()
 
         ctx.beginPath()
 
