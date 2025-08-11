@@ -21,6 +21,10 @@ class ODynSettings {
             case OChartTypes.gauge:
                 this.renderer = new OGaugeRenderer(chart, settings, this)
                 break
+
+            case OChartTypes.treemap:
+                this.renderer = new OTreeRenderer(chart, settings, this)
+                break
         }
     }
 }

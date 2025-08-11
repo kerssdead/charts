@@ -1,0 +1,1 @@
+class OTreeData extends OData { }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>
-    Gauge Example
+    Tree Map Example
   </title>
 
   <script src="/src/helper.js"></script>
@@ -37,23 +37,26 @@
 </body>
 
 <script>
+  const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
+
+  let values = []
+  const valuesCount = Math.floor(Math.random() * 25) + 2
+  // const valuesCount = 6
+
+  for (let i = 0; i < valuesCount; i++)
+    values.push({
+      value: valuesCount - i,
+      label: labelsPool[i]
+    })
+
   let chart = new OChart(document.getElementById('pie-example'), {
     width: 1600,
     height: 1000,
-    enableTooltip: true,
-    title: 'Gauge Chart',
+    title: 'Tree Map',
     data: {
-      values: [
-        {
-          value: Math.random() * 100,
-          label: 'Value'
-        }
-      ],
-      min: 0,
-      max: 100
+      values: values,
     },
-    type: OChartTypes.gauge,
-    legendPlace: OLegendPlaces.left
+    type: OChartTypes.treemap
   })
 
   chart.render()
