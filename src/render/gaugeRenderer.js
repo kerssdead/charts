@@ -211,7 +211,7 @@ class OGaugeRenderer extends ORenderer {
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
             ctx.fillStyle = '#000000' + opacity
-            ctx.fillText((100 - localAngle / Math.PI * 100).toString(), point3.x, point3.y)
+            ctx.fillText((this.data.max - localAngle / Math.PI * this.data.max).toString(), point3.x, point3.y)
 
             localAccumulator += currentAngle
 
