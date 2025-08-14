@@ -33,32 +33,42 @@
 </head>
 
 <body>
+<span id="counter"></span>
 <div id="pie-example" style="text-align: center"></div>
 </body>
 
 <script>
-  const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
+  // for (let j = 1; j < 101; j++) {
+  //   setTimeout(() => {
+  //     document.getElementById('counter').textContent = j
 
-  let values = []
-  const valuesCount = Math.floor(Math.random() * 25) + 2
-  // const valuesCount = 6
+      document.getElementById('pie-example').innerHTML = ''
 
-  for (let i = 0; i < valuesCount; i++)
-    values.push({
-      value: valuesCount - i,
-      label: labelsPool[i]
-    })
+      const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
 
-  let chart = new OChart(document.getElementById('pie-example'), {
-    width: 1600,
-    height: 1000,
-    title: 'Tree Map',
-    data: {
-      values: values,
-    },
-    type: OChartTypes.treemap
-  })
+      let values = []
+      // const valuesCount = Math.floor(Math.random() * 25) + 2
+      const valuesCount = 3
 
-  chart.render()
+      for (let i = 0; i < valuesCount; i++)
+        values.push({
+          value: valuesCount - i,
+          label: labelsPool[i]
+        })
+
+      let chart = new OChart(document.getElementById('pie-example'), {
+        width: 1600,
+        height: 1000,
+        title: 'Tree Map',
+        baseColor: '#3762b3',
+        data: {
+          values: values,
+        },
+        type: OChartTypes.treemap
+      })
+
+      chart.render()
+  //   }, 400 * j)
+  // }
 </script>
 </html>

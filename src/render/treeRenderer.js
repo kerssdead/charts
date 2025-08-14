@@ -21,9 +21,6 @@ class OTreeRenderer extends ORenderer {
         let sum = this.data.values.reduce((acc, cur) => acc + cur.value, 0),
             totalSquare = this.canvas.width * this.canvas.height
 
-        let w = Math.round(Math.sqrt(this.data.values[0].value / sum * totalSquare)),
-            h = w
-
         let x = 0,
             y = 0
 
@@ -33,24 +30,17 @@ class OTreeRenderer extends ORenderer {
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         let isVertical = true
-
         for (let i = 0; i < this.data.values.length; i++) {
             const item = this.data.values[i]
 
-            const target = Math.round(item.value / sum * totalSquare)
-
-            if (isVertical) {
-                w = this.canvas.width / 2
-                h = this.canvas.height / 4
-            }
+            const remainWidth = this.canvas.width - minX,
+                remainHeight = this.canvas.height - minY
 
             let cells = [
                 {
-                    w: w,
-                    h: h,
                     color: item.color,
                     label: item.label,
-                    s: target
+                    s: item.value / sum * totalSquare
                 }
             ]
 
@@ -58,99 +48,128 @@ class OTreeRenderer extends ORenderer {
                 const next = this.data.values[i + 1]
 
                 cells.push({
-                    w: w,
-                    h: this.canvas.height - h,
                     color: next.color,
                     label: next.label,
-                    s: Math.round(next.value / sum * totalSquare)
+                    s: next.value / sum * totalSquare
                 })
 
                 i++
             }
 
-            let counter = 0
-
             const isSingle = cells.length === 1,
                 isLast = i === this.data.values.length - 1
 
-            const precision = 1000
+            const countMultiplier = this.data.values.length / (this.data.values.length / (this.data.values.length / 10))
 
-            while (Math.abs(cells[0].w * cells[0].h - cells[0].s) >= precision
-                || (!isSingle && Math.abs(cells[1].w * cells[1].h - cells[1].s) >= precision)
-                || (isSingle ? cells[0].h : cells[0].h + cells[1].h) > this.canvas.height
-                || (isSingle ? cells[0].h : cells[0].h + cells[1].h) < this.canvas.height) {
-                const moreWidth = () => {
-                    if ((isSingle ? cells[0].h : cells[0].h + cells[1].h) > this.canvas.height) {
-                        cells[0].w++
-                        if (!isSingle)
-                            cells[1].w++
-                    }
-                }
-                const lessWidth = () => {
-                    if ((isSingle ? cells[0].h : cells[0].h + cells[1].h) < this.canvas.height) {
-                        cells[0].w--
-                        if (!isSingle)
-                            cells[1].w--
-                    }
-                }
+            if (isVertical) {
+                for (let j = 1; j <= remainWidth + i * i; j++) {
+                    const h1 = cells[0].s / j,
+                        h2 = isSingle ? 0 : cells[1].s / j
 
-                moreWidth()
-                lessWidth()
+                    if (Math.abs(h1 + h2 - remainHeight) <= i * countMultiplier) {
+                    // if (h1 + h2 >= remainHeight) {
+                        cells[0].w = j
+                        cells[0].h = h1
 
-                if (!isSingle
-                    && Math.abs(cells[0].w * cells[0].h - cells[0].s) >= precision
-                    && Math.abs(cells[1].w * cells[1].h - cells[1].s) >= precision
-                    && cells[0].h + cells[1].h > this.canvas.height) {
-                    cells[1].h = this.canvas.height - cells[0].h
-                }
+                        if (!isSingle) {
+                            cells[1].w = j
+                            cells[1].h = remainHeight - cells[0].h
 
-                const s0 = cells[0].w * cells[0].h,
-                    s1 = !isSingle ? cells[1].w * cells[1].h : 0
+                            let ew = j,
+                                eh = Math.abs(h1 + h2 - remainHeight),
+                                es = ew * eh
 
-                if (Math.abs(s0 - cells[0].s) >= precision) {
-                    if (s0 > cells[0].s) {
-                        cells[0].h--
-                    } else {
-                        cells[0].h++
-                    }
-                }
+                            let x = es / (cells[0].h + cells[1].h)
 
-                if (!isSingle) {
-                    if (Math.abs(s1 - cells[1].s) >= precision) {
-                        if (s1 > cells[1].s) {
-                            cells[1].h--
-                        } else {
-                            cells[1].h++
+                            // console.log(x)
+
+                            // let ratio = (cells[0].w * cells[0].h) / (cells[1].w * cells[1].h)
+
+                            // console.log(ratio)
+
+                            // let addS1 = es / ratio,
+                            //     addS2 = es - addS1
+
+                            // cells[0].w = (cells[0].s + addS1) / cells[0].h
+                            // cells[1].w = (cells[1].s + addS2) / cells[1].h
+
+                            cells[0].w += x
+                            cells[1].w += x
                         }
+
+                        break
                     }
                 }
+            } else {
+                for (let j = 1; j <= remainHeight + i * i; j++) {
+                    const w1 = cells[0].s / j,
+                        w2 = isSingle ? 0 : cells[1].s / j
 
-                if (isSingle && cells[0].h > this.canvas.height) {
-                    cells[0].w += cells[0].h - this.canvas.height
-                    cells[0].h = this.canvas.height
+                    // if (Math.abs(w1 + w2 - remainWidth) <= i * countMultiplier) {
+                    if (w1 + w2 >= remainWidth) {
+                        cells[0].h = j
+                        cells[0].w = Math.floor(w1)
+
+                        if (!isSingle) {
+                            cells[1].h = j
+                            cells[1].w = remainWidth - cells[0].w
+
+                            let ew = j,
+                                eh = Math.abs(w1 + w2 - remainWidth),
+                                es = ew * eh
+
+                            let x = es / (cells[0].w + cells[1].w)
+
+                            console.log(x)
+
+                            // let ratio = (cells[0].w * cells[0].h) / (cells[1].w * cells[1].h)
+                            //
+                            // console.log(ratio)
+                            //
+                            // let addS1 = es / ratio,
+                            //     addS2 = es - addS1
+                            //
+                            // cells[0].h = (cells[0].s + addS1) / cells[0].w
+                            // cells[1].h = (cells[1].s + addS2) / cells[1].w
+
+                            cells[0].h += x
+                            cells[1].h += x
+                        }
+
+                        break
+                    }
                 }
-
-                if (!isSingle && cells[0].h + cells[1].h < this.canvas.height) {
-                    cells[0].h++
-
-                    cells[0].w--
-                    cells[1].w--
-                }
-
-                counter++
-
-                if (counter > this.canvas.width + this.canvas.height)
-                    throw new Error('invalid values')
             }
 
-            if (isLast && isSingle) {
-                cells[0].w = this.canvas.width - minX
-                cells[0].h = this.canvas.height - minY
-            }
+
 
             for (const cell of cells) {
+                // if (isLast) {
+                //     if (isVertical) {
+                //         cell.w = remainWidth
+                //         if (isSingle)
+                //             cell.h = remainHeight
+                //     } else {
+                //         cell.h = remainHeight
+                //         if (isSingle)
+                //             cell.w = remainWidth
+                //     }
+                // }
+
                 ctx.fillStyle = cell.color
                 ctx.fillRect(x, y, cell.w, cell.h)
+
+                // console.log(x, y, cell.w, cell.h, '|', cell.w * cell.h, cell.s, '|', 'diff', Math.abs(cell.w * cell.h - cell.s))
+
+                if (cell.w <= 0 || cell.h <= 0
+                    || isNaN(cell.w) || isNaN(cell.h)) {
+                    console.log(i)
+                    console.log('count:', this.data.values.length)
+                    console.log('isVertical?', isVertical)
+                    if (isLast)
+                        console.log('last')
+                    throw new Error('on render')
+                }
 
                 ctx.fillStyle = '#000000'
                 ctx.font = '14px serif'
@@ -158,38 +177,42 @@ class OTreeRenderer extends ORenderer {
                 ctx.textBaseline = 'middle'
                 ctx.fillText(cell.label, x + cell.w / 2, y + cell.h / 2)
 
-                y += cell.h
+                if (isVertical)
+                    y += cell.h
+                else
+                    x += cell.w
+
             }
 
-            x += cells[0].w
-
-            if (isVertical)
-                y += h
-            else
-                x += w
-
-            if (x > this.canvas.width) {
-                minY = y
+            if (isVertical) {
+                x += cells[0].w
                 y = minY
+            } else {
+                y += cells[0].h
                 x = minX
             }
 
-            if (y > this.canvas.height) {
-                minX = x
-                x = minX
-                y = minY
+            minX = x
+            minY = y
+
+            // console.log(totalSquare, sss)
+
+            if (minX > this.canvas.width
+                || minY > this.canvas.height) {
+                console.log(i)
+                console.log('count:', this.data.values.length)
+                console.log('isVertical?', isVertical)
+                if (isLast)
+                    console.log('last')
+
+                console.log('minX', minX)
+                console.log('minY', minY)
+
+                throw new Error('out of bounds')
             }
 
-            // isVertical = !isVertical
+            isVertical = !isVertical
         }
-    }
-
-    /**
-     * @param a {number}
-     * @param b {number}
-     */
-    #isCloseToASquare(a, b) {
-
     }
 
     destroy() {
