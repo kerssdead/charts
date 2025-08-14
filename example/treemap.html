@@ -47,7 +47,7 @@
     for (let i = 0; i < valuesCount; i++)
         values.push({
             value: valuesCount - i,
-            label: labelsPool[i]
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
     let chart = new OChart(document.getElementById('pie-example'), {

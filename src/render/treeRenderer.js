@@ -118,11 +118,13 @@ class OTreeRenderer extends ORenderer {
                 ctx.fillStyle = cell.color
                 ctx.fillRect(x, y, cell.w, cell.h)
 
-                ctx.fillStyle = '#000000'
-                ctx.font = '14px serif'
-                ctx.textAlign = 'center'
-                ctx.textBaseline = 'middle'
-                ctx.fillText(cell.label, x + cell.w / 2, y + cell.h / 2)
+                if (cell.label && OHelper.stringWidth(cell.label) < cell.w) {
+                    ctx.fillStyle = '#000000'
+                    ctx.font = '14px serif'
+                    ctx.textAlign = 'center'
+                    ctx.textBaseline = 'middle'
+                    ctx.fillText(cell.label, x + cell.w / 2, y + cell.h / 2)
+                }
 
                 if (isVertical)
                     y += cell.h
