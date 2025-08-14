@@ -1,74 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>
-    Tree Map Example
-  </title>
+    <meta charset="UTF-8">
+    <title>
+        Tree Map Example
+    </title>
 
-  <script src="/src/helper.js"></script>
-  <script src="/src/enums.js"></script>
-  <script src="/src/dynSettings.js"></script>
-  <script src="/src/settings.js"></script>
-  <script src="/src/const/properties.js"></script>
-  <script src="/src/types/base/basePoint.js"></script>
-  <script src="/src/types/base/data.js"></script>
-  <script src="/src/types/base/renderer.js"></script>
-  <script src="/src/render/circularRenderer.js"></script>
-  <script src="/src/render/plotRenderer.js"></script>
-  <script src="/src/render/gaugeRenderer.js"></script>
-  <script src="/src/render/treeRenderer.js"></script>
-  <script src="/src/types/sector.js"></script>
-  <script src="/src/types/point.js"></script>
-  <script src="/src/types/data/circularData.js"></script>
-  <script src="/src/types/data/gaugeData.js"></script>
-  <script src="/src/types/data/treeData.js"></script>
-  <script src="/src/legend.js"></script>
-  <script src="/src/charts.js"></script>
-  <script src="/src/animationItem.js"></script>
-  <script src="/src/animations.js"></script>
-  <script src="/src/dropdownItem.js"></script>
-  <script src="/src/dropdownOptions.js"></script>
-  <script src="/src/dropdown.js"></script>
+    <script src="/src/helper.js"></script>
+    <script src="/src/enums.js"></script>
+    <script src="/src/dynSettings.js"></script>
+    <script src="/src/settings.js"></script>
+    <script src="/src/const/properties.js"></script>
+    <script src="/src/types/base/basePoint.js"></script>
+    <script src="/src/types/base/data.js"></script>
+    <script src="/src/types/base/renderer.js"></script>
+    <script src="/src/render/circularRenderer.js"></script>
+    <script src="/src/render/plotRenderer.js"></script>
+    <script src="/src/render/gaugeRenderer.js"></script>
+    <script src="/src/render/treeRenderer.js"></script>
+    <script src="/src/types/sector.js"></script>
+    <script src="/src/types/point.js"></script>
+    <script src="/src/types/data/circularData.js"></script>
+    <script src="/src/types/data/gaugeData.js"></script>
+    <script src="/src/types/data/treeData.js"></script>
+    <script src="/src/legend.js"></script>
+    <script src="/src/charts.js"></script>
+    <script src="/src/animationItem.js"></script>
+    <script src="/src/animations.js"></script>
+    <script src="/src/dropdownItem.js"></script>
+    <script src="/src/dropdownOptions.js"></script>
+    <script src="/src/dropdown.js"></script>
 </head>
 
 <body>
-<span id="counter"></span>
 <div id="pie-example" style="text-align: center"></div>
 </body>
 
 <script>
-  // for (let j = 1; j < 101; j++) {
-  //   setTimeout(() => {
-  //     document.getElementById('counter').textContent = j
+    document.getElementById('pie-example').innerHTML = ''
 
-      document.getElementById('pie-example').innerHTML = ''
+    const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
 
-      const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
+    let values = []
+    const valuesCount = Math.floor(Math.random() * 25) + 2
 
-      let values = []
-      // const valuesCount = Math.floor(Math.random() * 25) + 2
-      const valuesCount = 3
-
-      for (let i = 0; i < valuesCount; i++)
+    for (let i = 0; i < valuesCount; i++)
         values.push({
-          value: valuesCount - i,
-          label: labelsPool[i]
+            value: valuesCount - i,
+            label: labelsPool[i]
         })
 
-      let chart = new OChart(document.getElementById('pie-example'), {
+    let chart = new OChart(document.getElementById('pie-example'), {
         width: 1600,
         height: 1000,
         title: 'Tree Map',
-        baseColor: '#3762b3',
+        baseColor: '#6999fd',
         data: {
-          values: values,
+            values: values,
         },
         type: OChartTypes.treemap
-      })
+    })
 
-      chart.render()
-  //   }, 400 * j)
-  // }
+    chart.render()
 </script>
 </html>
