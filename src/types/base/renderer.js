@@ -30,6 +30,11 @@ class ORenderer {
     animations
 
     /**
+     * @type {OTooltip}
+     */
+    tooltip
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -55,6 +60,8 @@ class ORenderer {
         }
 
         this.node.append(this.canvas)
+
+        this.tooltip = new OTooltip(this.canvas, settings)
     }
 
     render() {
@@ -84,6 +91,6 @@ class ORenderer {
     }
 
     refresh() {
-
+        this.tooltip.refresh()
     }
 }

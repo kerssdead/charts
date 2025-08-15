@@ -124,8 +124,10 @@ class OGaugeRenderer extends ORenderer {
 
         this.#draw()
 
-        if (this.#onMouseMoveEvent)
-            this.#drawTooltip(this.data.values[0])
+        const value = this.data.values[0]
+        if (this.data.values.length > 0 && this.#isInsideSector(this.#onMouseMoveEvent, value))
+            this.tooltip.render(this.#onMouseMoveEvent,
+                `${value.label}: ${value.current.toPrecision(2)}`)
 
         this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
 
@@ -220,42 +222,15 @@ class OGaugeRenderer extends ORenderer {
     }
 
     /**
-     * @param value {OSector}
-     */
-    #drawTooltip(value) {
-        if (!this.chart.settings.enableTooltip)
-            return
-
-        if (this.#isInsideSector(this.#onMouseMoveEvent, value)) {
-            const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-
-            let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
-                y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
-
-            const text = `${value.label}: ${value.current.toPrecision(2)}`
-
-            ctx.beginPath()
-            ctx.roundRect(x += 12, y += 10, OHelper.stringWidth(text) + 16, 34, 20)
-            ctx.fillStyle = '#00000077'
-            ctx.shadowColor = '#00000077'
-            ctx.shadowBlur = 20
-            ctx.fill()
-
-            ctx.fillStyle = '#ffffff'
-            ctx.font = '14px serif'
-            ctx.textAlign = 'start'
-            ctx.textBaseline = 'middle'
-            ctx.fillText(text, x + 10, y + 18)
-        }
-    }
-
-    /**
      * @param event {MouseEvent}
      * @param value {OSector}
      *
      * @return {boolean}
      */
     #isInsideSector(event, value) {
+        if (!event)
+            return false
+
         const isAngle = point => {
             let a = Math.atan2(point.y - this.#center.y, point.x - this.#center.x)
             if (a < 0)
@@ -297,5 +272,9 @@ class OGaugeRenderer extends ORenderer {
 
         this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
         this.canvas.onclick = event => this.#onClickEvent = event
+    }
+
+    refresh() {
+        super.refresh()
     }
 }

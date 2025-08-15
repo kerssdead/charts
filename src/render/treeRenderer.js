@@ -288,7 +288,9 @@ class OTreeRenderer extends ORenderer {
             isVertical = !isVertical
         }
 
-        this.#drawTooltip(tooltipCell)
+        if (tooltipCell)
+            this.tooltip.render(this.#onMouseMoveEvent,
+                `${tooltipCell.label}: ${tooltipCell.value.toPrecision(2)}`)
 
         requestAnimationFrame(this.render.bind(this))
 
@@ -308,35 +310,6 @@ class OTreeRenderer extends ORenderer {
     /**
      * @param cell {OTreeCell}
      */
-    #drawTooltip(cell) {
-        if (!this.#onMouseMoveEvent || !this.chart.settings.enableTooltip)
-            return
-
-        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-
-        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
-            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
-
-        if (this.#isInCell(cell)) {
-            const text = `${cell.label}: ${cell.value.toPrecision(2)}`
-
-            ctx.beginPath()
-            ctx.roundRect(x += 10, y += 10, OHelper.stringWidth(text) + 16, 34, 20)
-            ctx.fillStyle = '#00000077'
-            ctx.shadowColor = '#00000077'
-            ctx.shadowBlur = 20
-            ctx.fill()
-
-            ctx.fillStyle = '#ffffff'
-            ctx.font = '14px serif'
-            ctx.textAlign = 'start'
-            ctx.fillText(text, x + 12, y + 22)
-        }
-    }
-
-    /**
-     * @param cell {OTreeCell}
-     */
     #isInCell(cell) {
         if (!this.#onMouseMoveEvent || !cell)
             return false
@@ -350,5 +323,9 @@ class OTreeRenderer extends ORenderer {
 
     destroy() {
 
+    }
+
+    refresh() {
+        super.refresh()
     }
 }

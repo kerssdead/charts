@@ -215,9 +215,11 @@ class OCircularRenderer extends ORenderer {
             for (const value of this.data.values)
                 this.#drawSector(value)
 
-            if (this.#onMouseMoveEvent)
-                for (const value of this.data.values)
-                    this.#drawTooltip(value)
+            if (this.#isHover && this.#currentHover) {
+                const value = this.data.values.find(v => v.id === this.#currentHover)
+                this.tooltip.render(this.#onMouseMoveEvent,
+                    `${value.label}: ${value.current.toPrecision(2)}`)
+            }
 
             this.#drawInnerTitle()
         }
@@ -570,35 +572,6 @@ class OCircularRenderer extends ORenderer {
         }
 
         this.#startPoint = point2
-    }
-
-    /**
-     * @param value {OSector}
-     */
-    #drawTooltip(value) {
-        if (!this.chart.settings.enableTooltip)
-            return
-
-        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-
-        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x,
-            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
-
-        if (this.#currentHover === value.id && this.#isHover) {
-            const text = `${value.label}: ${value.current.toPrecision(2)}`
-
-            ctx.beginPath()
-            ctx.roundRect(x += 10, y += 10, OHelper.stringWidth(text) + 16, 34, 20)
-            ctx.fillStyle = '#00000077'
-            ctx.shadowColor = '#00000077'
-            ctx.shadowBlur = 20
-            ctx.fill()
-
-            ctx.fillStyle = '#ffffff'
-            ctx.font = '14px serif'
-            ctx.textAlign = 'start'
-            ctx.fillText(text, x + 12, y + 22)
-        }
     }
 
     #initAnimations() {
