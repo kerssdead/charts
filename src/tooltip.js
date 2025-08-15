@@ -46,18 +46,23 @@ class OTooltip {
     }
 
     /**
+     * @param condition {boolean}
      * @param event {MouseEvent}
      * @param text {string}
      * @param value {OBasePoint?}
      */
-    render(event, text, value) {
+    render(condition, event, text, value) {
         if (!this.#enabled || !event)
             return
 
-        if (this.#isCustom)
-            this.#renderCustom(event, value)
-        else
-            this.#renderRegular(event, text)
+        if (condition) {
+            if (this.#isCustom)
+                this.#renderCustom(event, value)
+            else
+                this.#renderRegular(event, text)
+        } else {
+            this.#hideAll()
+        }
     }
 
     /**
@@ -101,10 +106,7 @@ class OTooltip {
         let tooltip = document.getElementById(id)
 
         const updateVisibility = () => {
-            const tooltips = document.querySelectorAll(`[name="${ this.#template.id }"]`)
-
-            for (let node of tooltips)
-                node.style.visibility = 'hidden'
+            this.#hideAll()
 
             tooltip.style.visibility = 'visible'
         }
@@ -160,6 +162,16 @@ class OTooltip {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
         this.#canvasPosition.x += window.scrollX
         this.#canvasPosition.y += window.scrollY
+    }
+
+    #hideAll() {
+        if (!this.#isCustom)
+            return
+
+        const tooltips = document.querySelectorAll(`[name="${ this.#template.id }"]`)
+
+        for (let node of tooltips)
+            node.style.visibility = 'hidden'
     }
 
     destroy() {

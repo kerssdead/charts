@@ -288,10 +288,10 @@ class OTreeRenderer extends ORenderer {
             isVertical = !isVertical
         }
 
-        if (tooltipCell)
-            this.tooltip.render(this.#onMouseMoveEvent,
-                `${tooltipCell.label}: ${tooltipCell.value.toPrecision(2)}`,
-                this.data.values.find(v => v.id === tooltipCell.id))
+        this.tooltip.render(tooltipCell,
+            this.#onMouseMoveEvent,
+            `${tooltipCell?.label}: ${tooltipCell?.value.toPrecision(2)}`,
+            this.data.values.find(v => v.id === tooltipCell?.id))
 
         requestAnimationFrame(this.render.bind(this))
 

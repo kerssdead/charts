@@ -125,9 +125,9 @@ class OGaugeRenderer extends ORenderer {
         this.#draw()
 
         const value = this.data.values[0]
-        if (this.data.values.length > 0 && this.#isInsideSector(this.#onMouseMoveEvent, value))
-            this.tooltip.render(this.#onMouseMoveEvent,
-                `${value.label}: ${value.current.toPrecision(2)}`)
+        this.tooltip.render(this.#isInsideSector(this.#onMouseMoveEvent, value),
+            this.#onMouseMoveEvent,
+            `${value?.label}: ${value?.current.toPrecision(2)}`)
 
         this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
 

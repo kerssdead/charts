@@ -215,11 +215,10 @@ class OCircularRenderer extends ORenderer {
             for (const value of this.data.values)
                 this.#drawSector(value)
 
-            if (this.#isHover && this.#currentHover) {
-                const value = this.data.values.find(v => v.id === this.#currentHover)
-                this.tooltip.render(this.#onMouseMoveEvent,
-                    `${value.label}: ${value.current.toPrecision(2)}`)
-            }
+            const value = this.data.values.find(v => v.id === this.#currentHover)
+            this.tooltip.render(this.#isHover && this.#currentHover,
+                this.#onMouseMoveEvent,
+                `${value?.label}: ${value?.current.toPrecision(2)}`)
 
             this.#drawInnerTitle()
         }
