@@ -36,6 +36,16 @@ class OTreeRenderer extends ORenderer {
 
         this.data.values.sort((a, b) => b.value - a.value)
 
+        const baseColor = settings.baseColor ?? OHelper.randomColor()
+        let adjustStep = Math.round(100 / this.data.values.length),
+            adjustAmount = -50
+
+        if (adjustStep <= 1)
+            adjustStep = 1
+
+        for (let item of this.data.values)
+            item.color = OHelper.adjustColor(baseColor, adjustAmount += adjustStep)
+
         this.#initAnimations()
     }
 
