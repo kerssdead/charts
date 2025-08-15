@@ -57,11 +57,17 @@ class OTooltip {
 
         const textWidth = OHelper.stringWidth(text)
 
-        let x = event.clientX - this.#canvasPosition.x,
-            y = event.clientY - this.#canvasPosition.y + window.scrollY
+        let x = event.clientX - this.#canvasPosition.x + 10,
+            y = event.clientY - this.#canvasPosition.y + window.scrollY + 10
+
+        if (x + textWidth + 16 > this.#canvasPosition.width)
+            x = this.#canvasPosition.width - (textWidth + 16)
+
+        if (y + 34 > this.#canvasPosition.height)
+            y = this.#canvasPosition.height - 34
 
         ctx.beginPath()
-        ctx.roundRect(x += 10, y += 10, textWidth + 16, 34, 20)
+        ctx.roundRect(x, y, textWidth + 16, 34, 20)
         ctx.fillStyle = '#00000077'
         ctx.shadowColor = '#00000077'
         ctx.shadowBlur = 20
