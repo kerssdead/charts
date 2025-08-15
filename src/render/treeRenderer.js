@@ -290,7 +290,8 @@ class OTreeRenderer extends ORenderer {
 
         if (tooltipCell)
             this.tooltip.render(this.#onMouseMoveEvent,
-                `${tooltipCell.label}: ${tooltipCell.value.toPrecision(2)}`)
+                `${tooltipCell.label}: ${tooltipCell.value.toPrecision(2)}`,
+                this.data.values.find(v => v.id === tooltipCell.id))
 
         requestAnimationFrame(this.render.bind(this))
 

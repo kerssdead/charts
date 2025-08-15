@@ -38,6 +38,20 @@
 <div id="pie-example" style="text-align: center"></div>
 </body>
 
+<template id="pie-chart-tooltip">
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid black; border-radius: 4px; background-color: #ffffff">
+        <img src="https://placecats.com/${ Id }/${ Id }" alt="cat"/>
+
+        <span>
+            ${ Id }, ${ Name }
+        </span>
+
+        <b>
+            ${ Value }
+        </b>
+    </div>
+</template>
+
 <script>
     document.getElementById('pie-example').innerHTML = ''
 
@@ -49,7 +63,12 @@
     for (let i = 0; i < valuesCount; i++)
         values.push({
             value: valuesCount - i,
-            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)],
+            data: {
+                Id: 50,
+                Name: 'First Second',
+                Value: 16
+            }
         })
 
     let chart = new OChart(document.getElementById('pie-example'), {
@@ -61,7 +80,8 @@
         data: {
             values: values,
         },
-        type: OChartTypes.treemap
+        type: OChartTypes.treemap,
+        templateId: 'pie-chart-tooltip'
     })
 
     chart.render()

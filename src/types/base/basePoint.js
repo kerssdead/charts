@@ -18,4 +18,9 @@ class OBasePoint {
      * @type {boolean}
      */
     disabled
+
+    /**
+     * @type {object}
+     */
+    data
 }

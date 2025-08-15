@@ -48,4 +48,9 @@ class OChartSettings {
      * @type {number}
      */
     legendPlace
+
+    /**
+     * @type {string}
+     */
+    templateId
 }
