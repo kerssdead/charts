@@ -52,6 +52,11 @@ class OTreeRenderer extends ORenderer {
     render() {
         super.render()
 
+        if (this.data.values.filter(v => v.value > 0).length === 0) {
+            this.#drawEmpty()
+            return
+        }
+
         let titleOffset = this.settings.title ? 50 : 0
 
         let maxWidth = this.canvas.width - this.data.padding * 2,
@@ -334,6 +339,18 @@ class OTreeRenderer extends ORenderer {
 
         return cell.x <= x && x <= cell.x + cell.w
             && cell.y <= y && y <= cell.y + cell.h
+    }
+
+    #drawEmpty() {
+        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
+
+        ctx.font = '14px serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillStyle = '#000000'
+        ctx.fillText('Incorrect values',
+            this.canvas.width / 2,
+            this.canvas.height / 2)
     }
 
     destroy() {
