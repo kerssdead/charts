@@ -1,1 +1,6 @@
-class OTreeData extends OData { }
+class OTreeData extends OData {
+    /**
+     * @type {number}
+     */
+    padding
+}

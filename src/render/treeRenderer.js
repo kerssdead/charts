@@ -42,17 +42,17 @@ class OTreeRenderer extends ORenderer {
     render() {
         super.render()
 
-        let maxWidth = this.canvas.width,
-            maxHeight = this.canvas.height
+        let maxWidth = this.canvas.width - this.data.padding,
+            maxHeight = this.canvas.height - this.data.padding
 
         let sum = this.data.values.reduce((acc, cur) => acc + cur.value, 0),
             totalSquare = maxWidth * maxHeight
 
-        let x = 0,
-            y = 0
+        let x = this.data.padding,
+            y = this.data.padding
 
-        let minX = 0,
-            minY = 0
+        let minX = this.data.padding,
+            minY = this.data.padding
 
         let tooltipCell
 
@@ -62,8 +62,8 @@ class OTreeRenderer extends ORenderer {
         for (let i = 0; i < this.data.values.length; i++) {
             const item = this.data.values[i]
 
-            const remainWidth = maxWidth - minX,
-                remainHeight = maxHeight - minY
+            const remainWidth = maxWidth - minX + this.data.padding,
+                remainHeight = maxHeight - minY + this.data.padding
 
             let cells = [
                 {
