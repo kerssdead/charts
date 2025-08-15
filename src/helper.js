@@ -26,4 +26,34 @@ class OHelper {
         const S4 = () => (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
         return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase()
     }
+
+    static hexToRgb(hex) {
+        if (hex.length > 4) {
+            const value =  /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+            if (value)
+                return {
+                    r: parseInt(value[1], 16),
+                    g: parseInt(value[2], 16),
+                    b: parseInt(value[3], 16)
+                }
+        } else {
+            const value = /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(hex)
+            if (value)
+                return {
+                    r: parseInt(value[1] + value[1], 16),
+                    g: parseInt(value[2] + value[2], 16),
+                    b: parseInt(value[3] + value[3], 16)
+                }
+        }
+
+        return null
+    }
+
+    static isColorVisible(background, foreground) {
+        const backgroundAsRgb = OHelper.hexToRgb(background),
+            foregroundAsRgb = OHelper.hexToRgb(foreground),
+            value = .77
+
+        return (backgroundAsRgb.r + backgroundAsRgb.g + backgroundAsRgb.b) / (foregroundAsRgb.r + foregroundAsRgb.g + foregroundAsRgb.b) < value
+    }
 }
