@@ -44,8 +44,8 @@ class OTreeRenderer extends ORenderer {
 
         let titleOffset = this.settings.title ? 50 : 0
 
-        let maxWidth = this.canvas.width - this.data.padding,
-            maxHeight = this.canvas.height - this.data.padding - titleOffset
+        let maxWidth = this.canvas.width - this.data.padding * 2,
+            maxHeight = this.canvas.height - this.data.padding * 2 - titleOffset
 
         let sum = this.data.values.reduce((acc, cur) => acc + cur.value, 0),
             totalSquare = maxWidth * maxHeight
