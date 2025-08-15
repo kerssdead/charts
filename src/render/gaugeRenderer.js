@@ -239,7 +239,7 @@ class OGaugeRenderer extends ORenderer {
             const piece = value.current / this.data.max,
                 angle = (isNaN(piece) ? 1 : piece) * Math.PI
 
-            return Math.PI + angle >= a
+            return a > Math.PI && Math.PI + angle >= a
         }
 
         const isWithinRadius = v => {
