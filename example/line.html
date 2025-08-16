@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>
-        Tree Map Example
+        Line Plot Example
     </title>
 
     <script src="/src/helper.js"></script>
@@ -39,53 +39,39 @@
 </head>
 
 <body>
-<div id="pie-example" style="text-align: center"></div>
+<div id="line-example" style="text-align: center"></div>
 </body>
 
-<template id="pie-chart-tooltip">
-    <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid black; border-radius: 4px; background-color: #ffffff">
-        <img src="https://placecats.com/${ Id }/${ Id }" alt="cat"/>
-
-        <span>
-            ${ Id }, ${ Name }
-        </span>
-
-        <b>
-            ${ Value }
-        </b>
-    </div>
-</template>
-
 <script>
-    document.getElementById('pie-example').innerHTML = ''
-
     const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
 
     let values = []
-    const valuesCount = Math.floor(Math.random() * 25) + 2
+    const valuesCount = Math.floor(Math.random() * 25) + 3
 
     for (let i = 0; i < valuesCount; i++)
         values.push({
-            value: Math.random(),
-            label: labelsPool[Math.floor(Math.random() * labelsPool.length)],
-            data: {
-                Id: 50,
-                Name: 'First Second',
-                Value: 16
-            }
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
-    let chart = new OChart(document.getElementById('pie-example'), {
+    values.sort((a, b) => a.x - b.x)
+
+    let chart = new OChart(document.getElementById('line-example'), {
         width: 1600,
         height: 1000,
-        title: 'Tree Map',
+        title: 'Line Plot',
         enableTooltip: true,
         data: {
-            values: values,
-            padding: 20
+            values: [
+                {
+                    values: values,
+                    type: OPlotTypes.line,
+                    width: 3
+                }
+            ]
         },
-        type: OChartTypes.treemap,
-        templateId: 'pie-chart-tooltip'
+        type: OChartTypes.plot
     })
 
     chart.render()

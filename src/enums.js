@@ -39,3 +39,11 @@ const OLegendPlaces = Object.freeze({
     top: 2,
     right: 3
 })
+
+/**
+ * @readonly
+ * @enum {string}
+ */
+const OPlotTypes = Object.freeze({
+    line: 0
+})
