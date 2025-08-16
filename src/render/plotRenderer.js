@@ -25,6 +25,21 @@ class OPlotRenderer extends ORenderer {
     #paddings
 
     /**
+     * @type {DOMRect}
+     */
+    #canvasPosition
+
+    /**
+     * @type {MouseEvent}
+     */
+    #onMouseMoveEvent
+
+    /**
+     * @type {MouseEvent}
+     */
+    #onClickEvent
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -58,12 +73,18 @@ class OPlotRenderer extends ORenderer {
             step: (this.canvas.height - this.#paddings.y * 2 - this.#topOffset) / this.data.values[0].values.length,
             count: this.data.values[0].values.length
         }
+
+        this.tooltip = new OTooltip(this.canvas, this.settings)
+
+        this.#initAnimations()
     }
 
     render() {
         super.render()
 
         const axisLabelOffset = 12
+
+        let tooltipText
 
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
@@ -136,9 +157,12 @@ class OPlotRenderer extends ORenderer {
         ctx.closePath()
 
         for (const series of this.data.values) {
+            let hoverX
+
             ctx.beginPath()
 
             ctx.strokeStyle = series.color
+            ctx.fillStyle = series.color
             ctx.lineWidth = series.width
 
             for (const value of series.values) {
@@ -151,12 +175,33 @@ class OPlotRenderer extends ORenderer {
                 } else {
                     ctx.lineTo(x, y)
                 }
+
+                if (this.#isOnX(x)) {
+                    hoverX = {
+                        x: x,
+                        y: y
+                    }
+
+                    tooltipText = `${value.label} ${value.x.toFixed(2)} ${value.y.toFixed(2)}`
+                }
             }
 
             ctx.stroke()
 
+            ctx.closePath()
+
+            if (hoverX) {
+                ctx.beginPath()
+                ctx.arc(hoverX.x, hoverX.y, 5, 0, 2 * Math.PI)
+                ctx.fill()
+            }
+
             isFirst = true
         }
+
+        this.tooltip.render(!!tooltipText, this.#onMouseMoveEvent, tooltipText)
+
+        requestAnimationFrame(this.render.bind(this))
     }
 
     destroy() {
@@ -165,5 +210,27 @@ class OPlotRenderer extends ORenderer {
 
     refresh() {
         super.refresh()
+    }
+
+    #initAnimations() {
+        this.#canvasPosition = this.canvas.getBoundingClientRect()
+
+        this.#canvasPosition.x += window.scrollX
+        this.#canvasPosition.y += window.scrollY
+
+        this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
+        this.canvas.onclick = event => this.#onClickEvent = event
+    }
+
+    #isOnX(x) {
+        if (!this.#onMouseMoveEvent)
+            return false
+
+        let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + window.scrollX,
+            mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
+
+        return x - this.#x.step / 2 <= mouseX && mouseX < x + this.#x.step / 2
+            && this.#paddings.y + this.#topOffset <= mouseY && mouseY <= this.canvas.height - this.#paddings.y
+            && this.#paddings.x < mouseX
     }
 }
