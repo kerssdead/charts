@@ -88,6 +88,7 @@ class OCircularRenderer extends ORenderer {
         super(chart, settings, dynSettings)
 
         this.data = this.chart.data
+        this.data.values = this.data.values.map(v => new OSector(v))
 
         if (settings.enableOther && chart.data.values.length > 20) {
             const sum = chart.data.values.splice(20).reduce((acc, v) => acc + v.current, 0)

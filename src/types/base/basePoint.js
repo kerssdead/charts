@@ -23,4 +23,18 @@ class OBasePoint {
      * @type {object}
      */
     data
+
+    /**
+     * @param passed {int}
+     * @param duration {int}
+     */
+    toggle(passed, duration) {
+        if (passed === 0)
+            this.disabled = !this.disabled
+    }
+
+    /**
+     * @return {boolean}
+     */
+    checkCondition() { }
 }

@@ -177,7 +177,7 @@ class OLegend {
                 && !this.#dropdown.isActive
         }
 
-        if ((this.#onClickEvent || (value.current === 0 && !value.disabled)) && !this.#dropdown.isActive) {
+        if (this.#onClickEvent && !this.#dropdown.isActive) {
             this.animations.add(value,
                 OAnimationTypes.click,
                 {
@@ -185,19 +185,13 @@ class OLegend {
                     duration: 220,
                     continuous: true,
                     before: () => {
-                        return (value.current === 0 && !value.disabled) || (isHover(this.#onClickEvent) && value.value !== 0)
+                        return isHover(this.#onClickEvent) && value.checkCondition()
                     },
                     body: (passed, duration) => {
                         if (passed > duration)
                             passed = duration
 
-                        if (passed === 0 && this.#onClickEvent)
-                            value.disabled = !value.disabled
-
-                        if (value.disabled)
-                            value.current = value.value * (1 - passed / duration)
-                        else
-                            value.current = value.value * passed / duration
+                        value.toggle(passed, duration)
 
                         if (passed === duration)
                             this.#onClickEvent = new PointerEvent('click')

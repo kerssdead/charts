@@ -48,6 +48,7 @@ class OPlotRenderer extends ORenderer {
         super(chart, settings, dynSettings)
 
         this.data = chart.data
+        this.data.values = this.data.values.map(v => new OPlotSeries(v))
 
         const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
             yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
@@ -159,7 +160,7 @@ class OPlotRenderer extends ORenderer {
 
         ctx.closePath()
 
-        for (const series of this.data.values) {
+        for (const series of this.data.values.filter(s => !s.disabled)) {
             let hoverX
 
             ctx.beginPath()

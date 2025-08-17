@@ -1,4 +1,4 @@
-class OPlotSeries {
+class OPlotSeries extends OBasePoint {
     /**
      * @type {OPlotPoint[]}
      */
@@ -15,12 +15,28 @@ class OPlotSeries {
     width
 
     /**
-     * @type {string}
+     * @param obj {object}
      */
-    color
+    constructor(obj) {
+        super()
+
+        Object.assign(this, obj)
+    }
 
     /**
-     * @type {string}
+     * @param passed {int}
+     * @param duration {int}
      */
-    label
+    toggle(passed, duration) {
+        super.toggle(passed, duration)
+    }
+
+    /**
+     * @return {boolean}
+     */
+    checkCondition() {
+        super.checkCondition()
+
+        return true
+    }
 }
