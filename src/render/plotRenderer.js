@@ -15,12 +15,7 @@ class OPlotRenderer extends ORenderer {
     #y
 
     /**
-     * @type {number}
-     */
-    #topOffset
-
-    /**
-     * @type {OPoint}
+     * @type {OPaddings}
      */
     #paddings
 
@@ -54,28 +49,31 @@ class OPlotRenderer extends ORenderer {
 
         this.data = chart.data
 
-        const xValues = this.data.values[0].values.map(p => p.x),
-            yValues = this.data.values[0].values.map(p => p.y)
-
-        this.#topOffset = settings.title ? 50 : 0
+        const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
+            yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
 
         this.#paddings = {
-            x: 100,
-            y: 40
+            top: 40,
+            right: 100,
+            bottom: 40,
+            left: 100
         }
+
+        if (settings.title)
+            this.#paddings.top += 50
 
         this.#x = {
             min: Math.min(...xValues),
             max: Math.max(...xValues),
             unit: (Math.abs(Math.min(...xValues)) + Math.abs(Math.max(...xValues))) / (this.data.values[0].values.length - 1),
-            step: (this.canvas.width - this.#paddings.x * 2) / this.data.values[0].values.length,
+            step: (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.data.values[0].values.length,
             count: this.data.values[0].values.length
         }
         this.#y = {
             min: Math.min(...yValues),
             max: Math.max(...yValues),
             unit: (Math.abs(Math.min(...yValues)) + Math.abs(Math.max(...yValues))) / (this.data.values[0].values.length - 1),
-            step: (this.canvas.height - this.#paddings.y * 2 - this.#topOffset) / this.data.values[0].values.length,
+            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / this.data.values[0].values.length,
             count: this.data.values[0].values.length
         }
 
@@ -96,12 +94,12 @@ class OPlotRenderer extends ORenderer {
         ctx.strokeStyle = '#000000'
         ctx.lineWidth = 1
 
-        ctx.moveTo(this.#paddings.x, this.canvas.height - this.#paddings.y)
-        ctx.lineTo(this.canvas.width - this.#paddings.x, this.canvas.height - this.#paddings.y)
+        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
+        ctx.lineTo(this.canvas.width - this.#paddings.right, this.canvas.height - this.#paddings.bottom)
         ctx.stroke()
 
-        ctx.moveTo(this.#paddings.x, this.canvas.height - this.#paddings.y)
-        ctx.lineTo(this.#paddings.x, this.#paddings.y + this.#topOffset)
+        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
+        ctx.lineTo(this.#paddings.left, this.#paddings.top)
         ctx.stroke()
 
         ctx.textAlign = 'center'
@@ -112,8 +110,8 @@ class OPlotRenderer extends ORenderer {
 
         for (let i = 1; i < this.data.values[0].values.length; i++) {
             const label = {
-                x: this.#paddings.x + i * this.#x.step,
-                y: this.canvas.height - this.#paddings.y
+                x: this.#paddings.left + i * this.#x.step,
+                y: this.canvas.height - this.#paddings.bottom
             }
 
             ctx.fillText((this.#x.min + i * (this.#x.max - this.#x.min) / (this.#x.count - 1)).toFixed(2),
@@ -123,7 +121,7 @@ class OPlotRenderer extends ORenderer {
             ctx.beginPath()
 
             ctx.moveTo(label.x, label.y)
-            ctx.lineTo(label.x, this.#paddings.y + this.#topOffset)
+            ctx.lineTo(label.x, this.#paddings.top)
 
             ctx.lineWidth = 1
             ctx.strokeStyle = axisLineColor
@@ -137,8 +135,8 @@ class OPlotRenderer extends ORenderer {
 
         for (let i = 1; i < this.data.values[0].values.length; i++) {
             const label = {
-                x: this.#paddings.x,
-                y: this.canvas.height - i * this.#y.step - this.#paddings.y
+                x: this.#paddings.left,
+                y: this.canvas.height - i * this.#y.step - this.#paddings.bottom
             }
 
             ctx.fillText((this.#y.min + i * (this.#y.max - this.#y.min) / (this.#y.count - 1)).toFixed(2),
@@ -148,7 +146,7 @@ class OPlotRenderer extends ORenderer {
             ctx.beginPath()
 
             ctx.moveTo(label.x, label.y)
-            ctx.lineTo(this.canvas.width - this.#paddings.x, label.y)
+            ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
 
             ctx.lineWidth = 1
             ctx.strokeStyle = axisLineColor
@@ -173,8 +171,10 @@ class OPlotRenderer extends ORenderer {
             for (const value of series.values) {
                 const index = series.values.indexOf(value)
 
-                let x = this.#paddings.x + index * this.#x.step,
-                    y = this.canvas.height - this.#paddings.y - value.y / this.#y.unit * this.#y.step
+                const yCorrection = this.#y.min / this.#y.unit * this.#y.step
+
+                let x = this.#paddings.left + index * this.#x.step,
+                    y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection
 
                 const pointDuration = 1500 / series.values.length * 1.2
 
@@ -204,8 +204,8 @@ class OPlotRenderer extends ORenderer {
                                 const next = series.values[index - 1]
 
                                 let prevValue = {
-                                    x: this.#paddings.x + (index - 1) * this.#x.step,
-                                    y: this.canvas.height - this.#paddings.y - next.y / this.#y.unit * this.#y.step
+                                    x: this.#paddings.left + (index - 1) * this.#x.step,
+                                    y: this.canvas.height - this.#paddings.bottom - next.y / this.#y.unit * this.#y.step + yCorrection
                                 }
 
                                 ctx.lineTo(prevValue.x + (x - prevValue.x) * transition,
@@ -278,7 +278,7 @@ class OPlotRenderer extends ORenderer {
             mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
 
         return x - this.#x.step / 2 <= mouseX && mouseX < x + this.#x.step / 2
-            && this.#paddings.y + this.#topOffset <= mouseY && mouseY <= this.canvas.height - this.#paddings.y
-            && this.#paddings.x < mouseX
+            && this.#paddings.top <= mouseY && mouseY <= this.canvas.height - this.#paddings.bottom
+            && this.#paddings.left < mouseX
     }
 }

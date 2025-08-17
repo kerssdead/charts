@@ -24,6 +24,7 @@
     <script src="/src/types/plotPoint.js"></script>
     <script src="/src/types/plotSeries.js"></script>
     <script src="/src/types/plotAxis.js"></script>
+    <script src="/src/types/paddings.js"></script>
     <script src="/src/types/data/circularData.js"></script>
     <script src="/src/types/data/gaugeData.js"></script>
     <script src="/src/types/data/treeData.js"></script>
@@ -45,17 +46,27 @@
 <script>
     const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
 
-    let values = []
-    const valuesCount = 40
+    let values = [],
+        values1 = []
+    const valuesCount = 40,
+        indexMin = 0
 
-    for (let i = 0; i < valuesCount; i++)
+    for (let i = indexMin; i < valuesCount; i++)
         values.push({
             x: i,
             y: Math.pow(i, 2),
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
+    for (let i = indexMin; i < valuesCount; i++)
+        values1.push({
+            x: i,
+            y: Math.pow(i, 2.1),
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
+        })
+
     values.sort((a, b) => a.x - b.x)
+    values1.sort((a, b) => b.x - a.x)
 
     let chart = new OChart(document.getElementById('line-example'), {
         width: 1600,
@@ -70,6 +81,13 @@
                     width: 3,
                     label: 'Line series',
                     color: 'red'
+                },
+                {
+                    values: values1,
+                    type: OPlotTypes.line,
+                    width: 3,
+                    label: 'Line series 2',
+                    color: 'orange'
                 }
             ]
         },
