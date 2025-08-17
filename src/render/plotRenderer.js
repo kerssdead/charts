@@ -63,11 +63,13 @@ class OPlotRenderer extends ORenderer {
         if (settings.title)
             this.#paddings.top += 50
 
+        const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
+
         this.#x = {
             min: Math.min(...xValues),
             max: Math.max(...xValues),
             unit: (Math.abs(Math.min(...xValues)) + Math.abs(Math.max(...xValues))) / (this.data.values[0].values.length - 1),
-            step: (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.data.values[0].values.length,
+            step: (this.canvas.width - this.#paddings.left - this.#paddings.right) / (this.data.values[0].values.length + (isContainsColumn ? 1 : 0)),
             count: this.data.values[0].values.length
         }
         this.#y = {
@@ -109,13 +111,16 @@ class OPlotRenderer extends ORenderer {
 
         const axisLineColor = '#0000001e'
 
-        for (let i = 1; i < this.data.values[0].values.length; i++) {
+        const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
+
+        for (let i = 1; i < this.data.values[0].values.length + (isContainsColumn ? 1 : 0); i++) {
             const label = {
                 x: this.#paddings.left + i * this.#x.step,
-                y: this.canvas.height - this.#paddings.bottom
+                y: this.canvas.height - this.#paddings.bottom,
+                label: this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)
             }
 
-            ctx.fillText((this.#x.min + i * (this.#x.max - this.#x.min) / (this.#x.count - 1)).toFixed(2),
+            ctx.fillText(label.label.toFixed(2),
                 label.x,
                 label.y + axisLabelOffset)
 
@@ -269,6 +274,28 @@ class OPlotRenderer extends ORenderer {
 
                         if (!(!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)))
                             ctx.lineTo(this.canvas.width - this.#paddings.right, yValue)
+
+                        break
+
+                    case OPlotTypes.column:
+                        const yCorr = this.#y.min / this.#y.unit * this.#y.step
+
+                        let x1 = this.#paddings.left + (index + 1) * this.#x.step,
+                            y1 = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorr
+
+                        ctx.fillRect(x1 - this.#x.step / 4,
+                            this.canvas.height - this.#paddings.bottom,
+                            this.#x.step / 2,
+                            y1 - this.canvas.height + this.#paddings.bottom)
+
+                        if (this.#isOnX(x1)) {
+                            hoverX = {
+                                x: x1,
+                                y: y1
+                            }
+
+                            tooltipText = `${series.label}: ${value.y}`
+                        }
 
                         break
                 }
