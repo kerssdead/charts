@@ -50,8 +50,8 @@ class OPlotRenderer extends ORenderer {
         this.data = chart.data
         this.data.values = this.data.values.map(v => new OPlotSeries(v))
 
-        const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
-            yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
+        const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)).filter(value => !isNaN(value)),
+            yValues = this.data.values.flatMap(s => s.values.map(p => p.y)).filter(value => !isNaN(value))
 
         this.#paddings = {
             top: 40,
@@ -172,75 +172,136 @@ class OPlotRenderer extends ORenderer {
             for (const value of series.values) {
                 const index = series.values.indexOf(value)
 
-                const yCorrection = this.#y.min / this.#y.unit * this.#y.step
+                switch (series.type) {
+                    case OPlotTypes.line:
+                        const yCorrection = this.#y.min / this.#y.unit * this.#y.step
 
-                let x = this.#paddings.left + index * this.#x.step,
-                    y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection
+                        let x = this.#paddings.left + index * this.#x.step,
+                            y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection
 
-                const pointDuration = 1500 / series.values.length * 1.2
+                        const pointDuration = 1500 / series.values.length * 1.2
 
-                if (!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)) {
-                    this.animations.add({ id: value.id },
-                        OAnimationTypes.init,
-                        {
-                            timer: null,
-                            duration: index * pointDuration,
-                            before: (item, passed, duration) => {
-                                return passed < duration && index > 0
-                            },
-                            body: (passed, duration) => {
-                                if (passed > duration)
-                                    passed = duration
+                        if (!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)) {
+                            this.animations.add({ id: value.id },
+                                OAnimationTypes.init,
+                                {
+                                    timer: null,
+                                    duration: index * pointDuration,
+                                    before: (item, passed, duration) => {
+                                        return passed < duration && index > 0
+                                    },
+                                    body: (passed, duration) => {
+                                        if (passed > duration)
+                                            passed = duration
 
-                                if (index > 0) {
-                                    passed -= (index - 1) * pointDuration
-                                    duration = pointDuration
-                                }
+                                        if (index > 0) {
+                                            passed -= (index - 1) * pointDuration
+                                            duration = pointDuration
+                                        }
 
-                                if (passed < 0)
-                                    return
+                                        if (passed < 0)
+                                            return
 
-                                const transition = passed / duration
+                                        const transition = passed / duration
 
-                                const next = series.values[index - 1]
+                                        const next = series.values[index - 1]
 
-                                let prevValue = {
-                                    x: this.#paddings.left + (index - 1) * this.#x.step,
-                                    y: this.canvas.height - this.#paddings.bottom - next.y / this.#y.unit * this.#y.step + yCorrection
-                                }
+                                        let prevValue = {
+                                            x: this.#paddings.left + (index - 1) * this.#x.step,
+                                            y: this.canvas.height - this.#paddings.bottom - next.y / this.#y.unit * this.#y.step + yCorrection
+                                        }
 
-                                ctx.lineTo(prevValue.x + (x - prevValue.x) * transition,
-                                    prevValue.y + (y - prevValue.y) * transition)
+                                        ctx.lineTo(prevValue.x + (x - prevValue.x) * transition,
+                                            prevValue.y + (y - prevValue.y) * transition)
+                                    }
+                                })
+                        }
+
+                        if (isFirst) {
+                            ctx.moveTo(x, y)
+                            isFirst = false
+                        } else {
+                            if (!(!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)))
+                                ctx.lineTo(x, y)
+                        }
+
+                        if (this.#isOnX(x)) {
+                            hoverX = {
+                                x: x,
+                                y: y
                             }
-                        })
-                }
 
-                if (isFirst) {
-                    ctx.moveTo(x, y)
-                    isFirst = false
-                } else {
-                    if (!(!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)))
-                        ctx.lineTo(x, y)
-                }
+                            tooltipText = `${series.label}: ${value.label} ${value.x.toFixed(2)} ${value.y.toFixed(2)}`
+                        }
 
-                if (this.#isOnX(x)) {
-                    hoverX = {
-                        x: x,
-                        y: y
-                    }
+                        break
 
-                    tooltipText = `${series.label}: ${value.label} ${value.x.toFixed(2)} ${value.y.toFixed(2)}`
+                    case OPlotTypes.attentionLine:
+                        let yValue = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step
+
+                        ctx.strokeStyle = series.color
+
+                        ctx.moveTo(this.#paddings.left, yValue)
+
+                        if (!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)) {
+                            this.animations.add({ id: value.id },
+                                OAnimationTypes.init,
+                                {
+                                    timer: null,
+                                    duration: 1500,
+                                    before: (item, passed, duration) => {
+                                        return passed < duration && index > 0
+                                    },
+                                    body: (passed, duration) => {
+                                        if (passed > duration)
+                                            passed = duration
+
+                                        if (passed < 0)
+                                            return
+
+                                        const transition = 1 - passed / duration
+
+                                        ctx.lineTo(this.canvas.width - this.#paddings.right - (this.canvas.width - this.#paddings.left - this.#paddings.right) * transition,
+                                            yValue)
+                                    }
+                                })
+                        }
+
+                        if (!(!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)))
+                            ctx.lineTo(this.canvas.width - this.#paddings.right, yValue)
+
+                        break
                 }
             }
 
-            ctx.stroke()
+            switch (series.type) {
+                case OPlotTypes.line:
+                    ctx.stroke()
 
-            ctx.closePath()
+                    ctx.closePath()
 
-            if (hoverX) {
-                ctx.beginPath()
-                ctx.arc(hoverX.x, hoverX.y, 5, 0, 2 * Math.PI)
-                ctx.fill()
+                    if (hoverX) {
+                        ctx.beginPath()
+                        ctx.arc(hoverX.x, hoverX.y, 5, 0, 2 * Math.PI)
+                        ctx.fill()
+                    }
+
+                    break
+
+                case OPlotTypes.attentionLine:
+                    ctx.stroke()
+                    ctx.closePath()
+
+                    ctx.fillStyle = '#000000'
+                    ctx.font = '14px serif'
+                    ctx.textBaseline = 'top'
+                    ctx.textAlign = 'center'
+
+                    ctx.fillText(series.label,
+                        this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
+                        this.canvas.height - this.#paddings.bottom - series.values[0].y / this.#y.unit * this.#y.step + 8)
+
+                    break
             }
 
             isFirst = true

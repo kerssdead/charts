@@ -45,5 +45,6 @@ const OLegendPlaces = Object.freeze({
  * @enum {string}
  */
 const OPlotTypes = Object.freeze({
-    line: 0
+    line: 0,
+    attentionLine: 1
 })

@@ -93,6 +93,7 @@ class OTooltip {
         ctx.fillStyle = '#ffffff'
         ctx.font = '14px serif'
         ctx.textAlign = 'start'
+        ctx.textBaseline = 'alphabetic'
         ctx.fillText(text, x + 12, y + 22)
     }
 
