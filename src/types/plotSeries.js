@@ -18,4 +18,9 @@ class OPlotSeries {
      * @type {string}
      */
     color
+
+    /**
+     * @type {string}
+     */
+    label
 }

@@ -46,12 +46,12 @@
     const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
 
     let values = []
-    const valuesCount = Math.floor(Math.random() * 25) + 3
+    const valuesCount = 40
 
     for (let i = 0; i < valuesCount; i++)
         values.push({
-            x: Math.random() * 100,
-            y: Math.random() * 100,
+            x: i,
+            y: Math.pow(i, 2),
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
@@ -67,7 +67,9 @@
                 {
                     values: values,
                     type: OPlotTypes.line,
-                    width: 3
+                    width: 3,
+                    label: 'Line series',
+                    color: 'red'
                 }
             ]
         },

@@ -40,6 +40,11 @@ class OPlotRenderer extends ORenderer {
     #onClickEvent
 
     /**
+     * @type {boolean}
+     */
+    #isInit
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -166,14 +171,55 @@ class OPlotRenderer extends ORenderer {
             ctx.lineWidth = series.width
 
             for (const value of series.values) {
-                const x = this.#paddings.x + series.values.indexOf(value) * this.#x.step,
+                const index = series.values.indexOf(value)
+
+                let x = this.#paddings.x + index * this.#x.step,
                     y = this.canvas.height - this.#paddings.y - value.y / this.#y.unit * this.#y.step
+
+                const pointDuration = 1500 / series.values.length * 1.2
+
+                if (!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)) {
+                    this.animations.add({ id: value.id },
+                        OAnimationTypes.init,
+                        {
+                            timer: null,
+                            duration: index * pointDuration,
+                            before: (item, passed, duration) => {
+                                return passed < duration && index > 0
+                            },
+                            body: (passed, duration) => {
+                                if (passed > duration)
+                                    passed = duration
+
+                                if (index > 0) {
+                                    passed -= (index - 1) * pointDuration
+                                    duration = pointDuration
+                                }
+
+                                if (passed < 0)
+                                    return
+
+                                const transition = passed / duration
+
+                                const next = series.values[index - 1]
+
+                                let prevValue = {
+                                    x: this.#paddings.x + (index - 1) * this.#x.step,
+                                    y: this.canvas.height - this.#paddings.y - next.y / this.#y.unit * this.#y.step
+                                }
+
+                                ctx.lineTo(prevValue.x + (x - prevValue.x) * transition,
+                                    prevValue.y + (y - prevValue.y) * transition)
+                            }
+                        })
+                }
 
                 if (isFirst) {
                     ctx.moveTo(x, y)
                     isFirst = false
                 } else {
-                    ctx.lineTo(x, y)
+                    if (!(!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)))
+                        ctx.lineTo(x, y)
                 }
 
                 if (this.#isOnX(x)) {
@@ -182,7 +228,7 @@ class OPlotRenderer extends ORenderer {
                         y: y
                     }
 
-                    tooltipText = `${value.label} ${value.x.toFixed(2)} ${value.y.toFixed(2)}`
+                    tooltipText = `${series.label}: ${value.label} ${value.x.toFixed(2)} ${value.y.toFixed(2)}`
                 }
             }
 
@@ -202,6 +248,8 @@ class OPlotRenderer extends ORenderer {
         this.tooltip.render(!!tooltipText, this.#onMouseMoveEvent, tooltipText)
 
         requestAnimationFrame(this.render.bind(this))
+
+        this.#isInit = true
     }
 
     destroy() {

@@ -71,6 +71,12 @@ class OChart {
             item.color ??= OHelper.adjustColor(baseColor, adjustAmount += adjustStep)
             item.disabled = !item.value
             item.value ??= 0
+
+            if (this.settings.type === OChartTypes.plot)
+                for (let it of item.values) {
+                    it.id = OHelper.guid()
+                    it.value ??= 0
+                }
         }
 
         if (this.settings.data.values.filter(v => v.value < 0)) {
