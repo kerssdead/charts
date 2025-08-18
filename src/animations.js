@@ -64,7 +64,7 @@ class OAnimations {
         const stamp = new Date(),
             passed = stamp - (item.timer ?? stamp)
 
-        const before = item.before(item, passed, item.duration) ?? true
+        const before = item.before ? item.before(item, passed, item.duration) : true
 
         if (!item.timer && before)
             item.timer = new Date()

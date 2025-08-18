@@ -283,10 +283,34 @@ class OPlotRenderer extends ORenderer {
                         let x1 = this.#paddings.left + (index + 1) * this.#x.step,
                             y1 = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorr
 
-                        ctx.fillRect(x1 - this.#x.step / 4,
-                            this.canvas.height - this.#paddings.bottom,
-                            this.#x.step / 2,
-                            y1 - this.canvas.height + this.#paddings.bottom)
+                        const isInitInProgress = !this.#isInit || this.animations.contains(value, OAnimationTypes.init)
+
+                        if (isInitInProgress)
+                            this.animations.add(value,
+                                OAnimationTypes.init,
+                                {
+                                    timer: null,
+                                    duration: 800,
+                                    body: (passed, duration) => {
+                                        if (passed > duration)
+                                            passed = duration
+
+                                        const transition = passed / duration
+
+                                        ctx.fillRect(x1 - this.#x.step / 4,
+                                            this.canvas.height - this.#paddings.bottom,
+                                            this.#x.step / 2,
+                                            (y1 - this.canvas.height + this.#paddings.bottom) * transition)
+
+                                        if (passed === duration)
+                                            this.animations.delete(value, OAnimationTypes.init)
+                                    }
+                                })
+                        else
+                            ctx.fillRect(x1 - this.#x.step / 4,
+                                this.canvas.height - this.#paddings.bottom,
+                                this.#x.step / 2,
+                                y1 - this.canvas.height + this.#paddings.bottom)
 
                         if (this.#isOnX(x1)) {
                             hoverX = {
