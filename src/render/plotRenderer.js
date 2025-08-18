@@ -56,8 +56,8 @@ class OPlotRenderer extends ORenderer {
         this.#paddings = {
             top: 40,
             right: 100,
-            bottom: 40,
-            left: 100
+            bottom: 50,
+            left: 80
         }
 
         if (settings.title)
@@ -112,6 +112,28 @@ class OPlotRenderer extends ORenderer {
         const axisLineColor = '#0000001e'
 
         const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
+
+        if (this.data.xTitle) {
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'bottom'
+
+            ctx.fillText(this.data.xTitle,
+                this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
+                this.canvas.height)
+
+            ctx.rotate(-Math.PI / 2)
+
+            ctx.textBaseline = 'top'
+
+            ctx.fillText(this.data.yTitle,
+                -(this.#paddings.top + (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / 2),
+                0)
+
+            ctx.resetTransform()
+        }
+
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'top'
 
         for (let i = 1; i < this.data.values[0].values.length + (isContainsColumn ? 1 : 0); i++) {
             const label = {
