@@ -49,32 +49,29 @@
     let values = [],
         values1 = [],
         values2 = []
-    const valuesCount = 40,
+    const valuesCount = 10,
         indexMin = 0
 
     for (let i = indexMin; i < valuesCount; i++)
         values.push({
-            x: i,
+            x: new Date(new Date().setDate(new Date().getDate() + i)).toLocaleDateString(),
             y: Math.pow(i, 2),
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
     for (let i = indexMin; i < valuesCount; i++)
         values1.push({
-            x: i,
+            x: new Date(new Date().setDate(new Date().getDate() + i)).toLocaleDateString(),
             y: Math.pow(i, 2.1),
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
     for (let i = indexMin; i < valuesCount; i++)
         values2.push({
-            x: i,
-            y: 400,
+            x: new Date(new Date().setDate(new Date().getDate() + i)).toLocaleDateString(),
+            y: 60,
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
-
-    values.sort((a, b) => a.x - b.x)
-    values1.sort((a, b) => b.x - a.x)
 
     let chart = new OChart(document.getElementById('line-example'), {
         width: 1600,

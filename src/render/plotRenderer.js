@@ -72,8 +72,8 @@ class OPlotRenderer extends ORenderer {
             }
         }
 
-        const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)).filter(value => !isNaN(value)),
-            yValues = this.data.values.flatMap(s => s.values.map(p => p.y)).filter(value => !isNaN(value))
+        const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
+            yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
 
         this.#paddings = {
             top: 40,
@@ -85,7 +85,7 @@ class OPlotRenderer extends ORenderer {
         if (settings.title)
             this.#paddings.top += 50
 
-        const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
+        const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn).length > 0
         const isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
 
         this.#x = {
@@ -108,7 +108,7 @@ class OPlotRenderer extends ORenderer {
         if (stackingColumns.length > 0) {
             let values = stackingColumns.map(s => s.values.flatMap(v => v.y))
 
-            let max = this.#x.max
+            let max = this.#y.max
 
             for (let i = 0; i < values[0].length; i++) {
                 let sum = 0
@@ -156,7 +156,7 @@ class OPlotRenderer extends ORenderer {
             }
         }
 
-        const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
+        const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn).length > 0
         const isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
 
         if (this.data.xTitle) {
@@ -187,12 +187,14 @@ class OPlotRenderer extends ORenderer {
             const label = {
                 x: this.#paddings.left + i * this.#x.step,
                 y: this.canvas.height - this.#paddings.bottom,
-                label: this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)
+                label: isNaN(+this.#x.min) || !isFinite(+this.#x.min)
+                    ? this.data.values[0].values[i - 1].x
+                    : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)).toFixed(2)
             }
 
             let isBusy = xSkipCount !== 0 ? i % xSkipCount !== 0 : false
 
-            const textWidth = OHelper.stringWidth(label.label.toFixed(2)),
+            const textWidth = OHelper.stringWidth(label.label),
                 imageDataX = label.x,
                 imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth, 24).data.buffer)
 
@@ -206,7 +208,7 @@ class OPlotRenderer extends ORenderer {
                 }
 
             if(!isBusy) {
-                ctx.fillText(label.label.toFixed(2),
+                ctx.fillText(label.label,
                     label.x,
                     label.y + axisLabelOffset)
             }
