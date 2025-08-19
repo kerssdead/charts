@@ -113,7 +113,7 @@ class OPlotRenderer extends ORenderer {
 
         const axisLabelOffset = 12
 
-        let tooltipText
+        let tooltipText = ''
 
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
@@ -315,7 +315,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y
                             }
 
-                            tooltipText = `${series.label}: ${value.label} ${value.x.toFixed(2)} ${value.y.toFixed(2)}`
+                            tooltipText += `\n${series.label}: ${value.label} ${value.x.toFixed(2)} ${value.y.toFixed(2)}`
                             this.#tooltipX = x
                         }
 
@@ -401,7 +401,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y1
                             }
 
-                            tooltipText = `${series.label}: ${value.y}`
+                            tooltipText += `\n${series.label}: ${value.y}`
                             this.#tooltipX = x1
                         }
 
@@ -449,7 +449,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y11
                             }
 
-                            tooltipText = `${series.label}: ${value.y}`
+                            tooltipText += `\n${series.label}: ${value.y}`
                             this.#tooltipY = y11
                         }
 

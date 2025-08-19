@@ -72,7 +72,9 @@ class OTooltip {
     #renderRegular(event, text) {
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
-        const textWidth = OHelper.stringWidth(text)
+        const split = text.split('\n').filter(line => !!line)
+
+        const textWidth = Math.max(...split.map(line => OHelper.stringWidth(line)))
 
         let x = event.clientX - this.#canvasPosition.x + 10,
             y = event.clientY - this.#canvasPosition.y + window.scrollY + 10
@@ -84,17 +86,21 @@ class OTooltip {
             y = this.#canvasPosition.height - 34
 
         ctx.beginPath()
-        ctx.roundRect(x, y, textWidth + 16, 34, 20)
+        ctx.roundRect(x, y, textWidth + 16, 16 + 16 * split.length, 20)
         ctx.fillStyle = '#00000077'
         ctx.shadowColor = '#00000077'
         ctx.shadowBlur = 20
         ctx.fill()
 
-        ctx.fillStyle = '#ffffff'
-        ctx.font = '14px serif'
-        ctx.textAlign = 'start'
-        ctx.textBaseline = 'alphabetic'
-        ctx.fillText(text, x + 12, y + 22)
+        for (let line of split) {
+            ctx.fillStyle = '#ffffff'
+            ctx.font = '14px serif'
+            ctx.textAlign = 'start'
+            ctx.textBaseline = 'alphabetic'
+            ctx.fillText(line, x + 12, y + 22)
+
+            y += 16
+        }
     }
 
     /**
