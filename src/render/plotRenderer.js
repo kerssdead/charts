@@ -267,6 +267,9 @@ class OPlotRenderer extends ORenderer {
 
         let stackingAccumulator = []
 
+        for (let i = 0; i < this.data.values.filter(s => !s.disabled)[0].values.length; i++)
+            stackingAccumulator.push(0)
+
         for (const series of this.data.values.filter(s => !s.disabled)) {
             let hoverX
 
@@ -498,8 +501,14 @@ class OPlotRenderer extends ORenderer {
 
                                         const transition = passed / duration
 
+                                        columnsIndex = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn)
+                                            .indexOf(series)
+
+                                        if (columnsIndex === 0)
+                                            stackingAccumulator[index] = 0
+
                                         let offset = stackingAccumulator[index] !== undefined
-                                            ? stackingAccumulator[index].reduce((acc, cur) => acc + cur, 0)
+                                            ? stackingAccumulator[index]
                                             : 0
 
                                         ctx.fillRect(x1111 - this.#x.step / 4,
@@ -507,17 +516,15 @@ class OPlotRenderer extends ORenderer {
                                             this.#x.step / 2,
                                             (y1111 - this.canvas.height + this.#paddings.bottom) * transition)
 
-                                        if (stackingAccumulator.length <= index)
-                                            stackingAccumulator.push([(y1111 - this.canvas.height + this.#paddings.bottom) * transition])
+                                        stackingAccumulator[index] += (y1111 - this.canvas.height + this.#paddings.bottom) * transition
 
                                         if (passed === duration)
-                                            this.animations.delete(value, OAnimationTypes.init)
-                                            // this.animations.delete({ id: value.id + index }, OAnimationTypes.init)
+                                            this.animations.delete({ id: value.id + index }, OAnimationTypes.init)
                                     }
                                 })
                         } else {
                             let offset = stackingAccumulator[index] !== undefined
-                                ? stackingAccumulator[index].reduce((acc, cur) => acc + cur, 0)
+                                ? stackingAccumulator[index]
                                 : 0
 
                             ctx.fillRect(x1111 - this.#x.step / 4,
@@ -525,8 +532,7 @@ class OPlotRenderer extends ORenderer {
                                 this.#x.step / 2,
                                 y1111 - this.canvas.height + this.#paddings.bottom)
 
-                            if (stackingAccumulator.length <= index)
-                                stackingAccumulator.push([y1111 - this.canvas.height + this.#paddings.bottom])
+                            stackingAccumulator[index] += (y1111 - this.canvas.height + this.#paddings.bottom)
                         }
 
                         if (this.#isOnX(x1111)) {
