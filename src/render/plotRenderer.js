@@ -222,7 +222,7 @@ class OPlotRenderer extends ORenderer {
 
             const textWidth = OHelper.stringWidth(label.label),
                 imageDataX = label.x,
-                imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth, 24).data.buffer)
+                imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth > 0 ? textWidth : 1, 24).data.buffer)
 
             if (!isBusy)
                 for (let i = 0; i < imageData.length; i++) {
