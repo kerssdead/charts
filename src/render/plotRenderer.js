@@ -510,7 +510,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y11
                             }
 
-                            tooltipText += `\n${series.label}: ${value.y.toFixed(2)}`
+                            tooltipText += `\n${series.label}: ${value.x.toFixed(2)}`
                             this.#tooltipY = y11
                         }
 
