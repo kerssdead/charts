@@ -50,6 +50,16 @@ class OPlotRenderer extends ORenderer {
     #tooltipY
 
     /**
+     * @type {Map<number, string>}
+     */
+    #labelsX
+
+    /**
+     * @type {Map<number, string>}
+     */
+    #labelsY
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -126,6 +136,9 @@ class OPlotRenderer extends ORenderer {
 
         this.tooltip = new OTooltip(this.canvas, this.settings)
 
+        this.#labelsX = new Map()
+        this.#labelsY = new Map()
+
         this.#initAnimations()
     }
 
@@ -156,6 +169,12 @@ class OPlotRenderer extends ORenderer {
             }
         }
 
+        if (this.#tooltipX)
+            tooltipText = this.#labelsX.get(Math.round(this.#tooltipX))
+
+        if (this.#tooltipY)
+            tooltipText = this.#labelsY.get(Math.round(this.#tooltipY))
+
         const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn).length > 0
         const isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
 
@@ -184,12 +203,19 @@ class OPlotRenderer extends ORenderer {
         let xSkipCount = 0
 
         for (let i = 1; i < this.data.values[0].values.length + (isContainsColumn ? 1 : 0); i++) {
+            const labelX = this.#paddings.left + i * this.#x.step,
+                labelXAsKey = Math.round(labelX)
+
+            if (!this.#labelsX.has(labelXAsKey))
+                this.#labelsX.set(labelXAsKey,
+                    isNaN(+this.#x.min) || !isFinite(+this.#x.min)
+                        ? this.data.values[0].values[i - 1].x
+                        : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)).toFixed(2))
+
             const label = {
-                x: this.#paddings.left + i * this.#x.step,
+                x: labelX,
                 y: this.canvas.height - this.#paddings.bottom,
-                label: isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                    ? this.data.values[0].values[i - 1].x
-                    : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)).toFixed(2)
+                label: this.#labelsX.get(labelXAsKey)
             }
 
             let isBusy = xSkipCount !== 0 ? i % xSkipCount !== 0 : false
@@ -231,13 +257,20 @@ class OPlotRenderer extends ORenderer {
         ctx.textBaseline = 'middle'
 
         for (let i = 1; i < this.data.values[0].values.length + (isContainsBar ? 1 : 0); i++) {
+            const labelY = this.canvas.height - i * this.#y.step - this.#paddings.bottom,
+                labelYAsKey = Math.round(labelY)
+
+            if (!this.#labelsY.get(labelYAsKey))
+                this.#labelsY.set(labelYAsKey,
+                    (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)).toFixed(2))
+
             const label = {
                 x: this.#paddings.left,
-                y: this.canvas.height - i * this.#y.step - this.#paddings.bottom,
-                label: this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)
+                y: labelY,
+                label: this.#labelsY.get(labelYAsKey)
             }
 
-            ctx.fillText(label.label.toFixed(2),
+            ctx.fillText(label.label,
                 label.x - axisLabelOffset,
                 label.y)
 
