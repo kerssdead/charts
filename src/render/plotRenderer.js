@@ -210,6 +210,14 @@ class OPlotRenderer extends ORenderer {
 
         ctx.closePath()
 
+        let columnsIndex = 0,
+            columnsCount = this.data.values.filter(s => s.type === OPlotTypes.column).length,
+            columnWidth = this.#x.step / (2 * columnsCount)
+
+        let barsIndex = 0,
+            barsCount = this.data.values.filter(s => s.type === OPlotTypes.bar).length,
+            barHeight = this.#y.step / (2 * barsCount)
+
         for (const series of this.data.values.filter(s => !s.disabled)) {
             let hoverX
 
@@ -328,10 +336,10 @@ class OPlotRenderer extends ORenderer {
                         let x1 = this.#paddings.left + (index + 1) * this.#x.step,
                             y1 = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorr
 
-                        const isInitInProgress = !this.#isInit || this.animations.contains(value, OAnimationTypes.init)
+                        const isInitInProgress = !this.#isInit || this.animations.contains({ id: value.id + columnsIndex }, OAnimationTypes.init)
 
                         if (isInitInProgress)
-                            this.animations.add(value,
+                            this.animations.add({ id: value.id + columnsIndex },
                                 OAnimationTypes.init,
                                 {
                                     timer: null,
@@ -342,9 +350,12 @@ class OPlotRenderer extends ORenderer {
 
                                         const transition = passed / duration
 
-                                        ctx.fillRect(x1 - this.#x.step / 4,
+                                        columnsIndex = this.data.values.filter(s => s.type === OPlotTypes.column)
+                                            .indexOf(series)
+
+                                        ctx.fillRect(x1 - this.#x.step / 4 + columnsIndex * columnWidth,
                                             this.canvas.height - this.#paddings.bottom,
-                                            this.#x.step / 2,
+                                            columnWidth,
                                             (y1 - this.canvas.height + this.#paddings.bottom) * transition)
 
                                         if (passed === duration)
@@ -352,9 +363,9 @@ class OPlotRenderer extends ORenderer {
                                     }
                                 })
                         else
-                            ctx.fillRect(x1 - this.#x.step / 4,
+                            ctx.fillRect(x1 - this.#x.step / 4  + columnsIndex * columnWidth,
                                 this.canvas.height - this.#paddings.bottom,
-                                this.#x.step / 2,
+                                columnWidth,
                                 y1 - this.canvas.height + this.#paddings.bottom)
 
                         if (this.#isOnX(x1)) {
@@ -372,10 +383,10 @@ class OPlotRenderer extends ORenderer {
                         let x11 = this.#paddings.left,
                             y11 = this.#paddings.top + (index + 1) * this.#y.step
 
-                        const isInitInProgress1 = !this.#isInit || this.animations.contains(value, OAnimationTypes.init)
+                        const isInitInProgress1 = !this.#isInit || this.animations.contains({ id: value.id + barsIndex }, OAnimationTypes.init)
 
                         if (isInitInProgress1)
-                            this.animations.add(value,
+                            this.animations.add({ id: value.id + barsIndex },
                                 OAnimationTypes.init,
                                 {
                                     timer: null,
@@ -386,10 +397,13 @@ class OPlotRenderer extends ORenderer {
 
                                         const transition = passed / duration
 
+                                        barsIndex = this.data.values.filter(s => s.type === OPlotTypes.bar)
+                                            .indexOf(series)
+
                                         ctx.fillRect(x11,
-                                            y11 - this.#y.step / 4,
+                                            y11 - this.#y.step / 4 + barsIndex * barHeight,
                                             value.x / this.#x.unit * this.#x.step * transition,
-                                            this.#y.step / 2)
+                                            barHeight)
 
                                         if (passed === duration)
                                             this.animations.delete(value, OAnimationTypes.init)
@@ -397,9 +411,9 @@ class OPlotRenderer extends ORenderer {
                                 })
                         else
                             ctx.fillRect(x11,
-                                y11 - this.#y.step / 4,
+                                y11 - this.#y.step / 4 + barsIndex * barHeight,
                                 value.x / this.#x.unit * this.#x.step,
-                                this.#y.step / 2)
+                                barHeight)
 
                         if (this.#isOnY(y11)) {
                             hoverX = {
@@ -440,6 +454,16 @@ class OPlotRenderer extends ORenderer {
                     ctx.fillText(series.label,
                         this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
                         this.canvas.height - this.#paddings.bottom - series.values[0].y / this.#y.unit * this.#y.step + 8)
+
+                    break
+
+                case OPlotTypes.column:
+                    columnsIndex++
+
+                    break
+
+                case OPlotTypes.bar:
+                    barsIndex++
 
                     break
             }

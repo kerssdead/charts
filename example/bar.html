@@ -46,7 +46,8 @@
 <script>
     const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
 
-    let values = []
+    let values = [],
+        values1 = []
     const valuesCount = 40,
         indexMin = 0
 
@@ -54,6 +55,12 @@
         values.push({
             x: i,
             y: Math.pow(i, 2),
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
+        })
+    for (let i = indexMin; i < valuesCount; i++)
+        values1.push({
+            x: i,
+            y: Math.pow(i, 2.1),
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
@@ -69,9 +76,14 @@
                 {
                     values: values,
                     type: OPlotTypes.bar,
-                    width: 3,
                     label: 'Bar',
                     color: '#ffa500'
+                },
+                {
+                    values: values1,
+                    type: OPlotTypes.bar,
+                    label: 'Bar 2',
+                    color: '#ff5a00'
                 }
             ],
             xTitle: 'X-Axis',
