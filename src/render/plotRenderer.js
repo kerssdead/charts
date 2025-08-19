@@ -389,6 +389,7 @@ class OPlotRenderer extends ORenderer {
                         let yValue = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step
 
                         ctx.strokeStyle = series.color
+                        ctx.lineWidth = series.width
 
                         ctx.moveTo(this.#paddings.left, yValue)
 
