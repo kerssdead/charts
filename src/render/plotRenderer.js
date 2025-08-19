@@ -154,6 +154,8 @@ class OPlotRenderer extends ORenderer {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
         ctx.font = '14px serif'
+        ctx.fillStyle = '#000000'
+        ctx.shadowBlur = null
 
         const axisLineColor = '#0000001e',
             axisLineHoverColor = '#00000088'
