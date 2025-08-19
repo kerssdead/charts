@@ -57,6 +57,8 @@ class OPlotRenderer extends ORenderer {
                     item.x = item.y
                     item.y = x
                 }
+
+                series.values.sort((a, b) => b.x - a.x)
             }
         }
 
