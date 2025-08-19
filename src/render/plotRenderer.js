@@ -103,6 +103,27 @@ class OPlotRenderer extends ORenderer {
             count: this.data.values[0].values.length
         }
 
+        let stackingColumns = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn)
+
+        if (stackingColumns.length > 0) {
+            let values = stackingColumns.map(s => s.values.flatMap(v => v.y))
+
+            let max = this.#x.max
+
+            for (let i = 0; i < values[0].length; i++) {
+                let sum = 0
+
+                for (const v of values)
+                    sum += v[i]
+
+                if (sum > max)
+                    max = sum
+            }
+
+            this.#y.max = max
+            this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.data.values[0].values.length - 1)
+        }
+
         this.tooltip = new OTooltip(this.canvas, this.settings)
 
         this.#initAnimations()
@@ -243,6 +264,8 @@ class OPlotRenderer extends ORenderer {
         let barsIndex = 0,
             barsCount = this.data.values.filter(s => s.type === OPlotTypes.bar).length,
             barHeight = this.#y.step / (2 * barsCount)
+
+        let stackingAccumulator = []
 
         for (const series of this.data.values.filter(s => !s.disabled)) {
             let hoverX
@@ -454,6 +477,69 @@ class OPlotRenderer extends ORenderer {
                         }
 
                         break
+
+                    case OPlotTypes.stackingColumn:
+                        const yCorr22 = this.#y.min / this.#y.unit * this.#y.step
+
+                        let x1111 = this.#paddings.left + (index + 1) * this.#x.step,
+                            y1111 = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorr22
+
+                        const isInitInProgress22 = !this.#isInit || this.animations.contains({ id: value.id + index }, OAnimationTypes.init)
+
+                        if (isInitInProgress22) {
+                            this.animations.add({ id: value.id + index },
+                                OAnimationTypes.init,
+                                {
+                                    timer: null,
+                                    duration: 800,
+                                    body: (passed, duration) => {
+                                        if (passed > duration)
+                                            passed = duration
+
+                                        const transition = passed / duration
+
+                                        let offset = stackingAccumulator[index] !== undefined
+                                            ? stackingAccumulator[index].reduce((acc, cur) => acc + cur, 0)
+                                            : 0
+
+                                        ctx.fillRect(x1111 - this.#x.step / 4,
+                                            this.canvas.height - this.#paddings.bottom + offset,
+                                            this.#x.step / 2,
+                                            (y1111 - this.canvas.height + this.#paddings.bottom) * transition)
+
+                                        if (stackingAccumulator.length <= index)
+                                            stackingAccumulator.push([(y1111 - this.canvas.height + this.#paddings.bottom) * transition])
+
+                                        if (passed === duration)
+                                            this.animations.delete(value, OAnimationTypes.init)
+                                            // this.animations.delete({ id: value.id + index }, OAnimationTypes.init)
+                                    }
+                                })
+                        } else {
+                            let offset = stackingAccumulator[index] !== undefined
+                                ? stackingAccumulator[index].reduce((acc, cur) => acc + cur, 0)
+                                : 0
+
+                            ctx.fillRect(x1111 - this.#x.step / 4,
+                                this.canvas.height - this.#paddings.bottom + offset,
+                                this.#x.step / 2,
+                                y1111 - this.canvas.height + this.#paddings.bottom)
+
+                            if (stackingAccumulator.length <= index)
+                                stackingAccumulator.push([y1111 - this.canvas.height + this.#paddings.bottom])
+                        }
+
+                        if (this.#isOnX(x1111)) {
+                            hoverX = {
+                                x: x1111,
+                                y: y1111
+                            }
+
+                            tooltipText += `\n${series.label}: ${value.y}`
+                            this.#tooltipX = x1111
+                        }
+
+                        break
                 }
             }
 
@@ -487,6 +573,7 @@ class OPlotRenderer extends ORenderer {
                     break
 
                 case OPlotTypes.column:
+                case OPlotTypes.stackingColumn:
                     columnsIndex++
 
                     break

@@ -48,5 +48,6 @@ const OPlotTypes = Object.freeze({
     line: 0,
     attentionLine: 1,
     column: 2,
-    bar: 3
+    bar: 3,
+    stackingColumn: 4
 })
