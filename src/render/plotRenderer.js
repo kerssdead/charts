@@ -632,6 +632,8 @@ class OPlotRenderer extends ORenderer {
             isFirst = true
         }
 
+        ctx.beginPath()
+
         ctx.strokeStyle = '#000000'
         ctx.lineWidth = 1
 
