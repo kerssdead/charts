@@ -429,7 +429,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y1
                             }
 
-                            tooltipText += `\n${series.label}: ${value.y}`
+                            tooltipText += `\n${series.label}: ${value.y.toFixed(2)}`
                             this.#tooltipX = x1
                         }
 
@@ -477,7 +477,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y11
                             }
 
-                            tooltipText += `\n${series.label}: ${value.y}`
+                            tooltipText += `\n${series.label}: ${value.y.toFixed(2)}`
                             this.#tooltipY = y11
                         }
 
@@ -543,7 +543,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y1111
                             }
 
-                            tooltipText += `\n${series.label}: ${value.y}`
+                            tooltipText += `\n${series.label}: ${value.y.toFixed(2)}`
                             this.#tooltipX = x1111
                         }
 
