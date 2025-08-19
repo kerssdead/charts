@@ -40,6 +40,16 @@ class OPlotRenderer extends ORenderer {
     #isInit
 
     /**
+     * @type {number}
+     */
+    #tooltipX
+
+    /**
+     * @type {number}
+     */
+    #tooltipY
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -111,7 +121,19 @@ class OPlotRenderer extends ORenderer {
         ctx.textBaseline = 'top'
         ctx.font = '14px serif'
 
-        const axisLineColor = '#0000001e'
+        const axisLineColor = '#0000001e',
+            axisLineHoverColor = '#00000088'
+
+        if (this.#onMouseMoveEvent) {
+            let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + window.scrollX,
+                mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
+
+            if (this.#paddings.left > mouseX || mouseX > this.canvas.width - this.#paddings.right
+                || this.#paddings.top > mouseY || mouseY > this.canvas.height - this.#paddings.bottom) {
+                this.#tooltipX = undefined
+                this.#tooltipY = undefined
+            }
+        }
 
         const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
         const isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
@@ -173,8 +195,10 @@ class OPlotRenderer extends ORenderer {
             ctx.moveTo(label.x, label.y)
             ctx.lineTo(label.x, this.#paddings.top)
 
-            ctx.lineWidth = 1
-            ctx.strokeStyle = axisLineColor
+            const isHover = Math.round(label.x) === Math.round(this.#tooltipX)
+
+            ctx.lineWidth = isHover ? 2 : 1
+            ctx.strokeStyle = isHover ? axisLineHoverColor : axisLineColor
             ctx.stroke()
 
             ctx.closePath()
@@ -199,8 +223,10 @@ class OPlotRenderer extends ORenderer {
             ctx.moveTo(label.x, label.y)
             ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
 
-            ctx.lineWidth = 1
-            ctx.strokeStyle = axisLineColor
+            const isHover = Math.round(label.y) === Math.round(this.#tooltipY)
+
+            ctx.lineWidth = isHover ? 2 : 1
+            ctx.strokeStyle = isHover ? axisLineHoverColor : axisLineColor
             ctx.stroke()
 
             ctx.closePath()
@@ -290,6 +316,7 @@ class OPlotRenderer extends ORenderer {
                             }
 
                             tooltipText = `${series.label}: ${value.label} ${value.x.toFixed(2)} ${value.y.toFixed(2)}`
+                            this.#tooltipX = x
                         }
 
                         break
@@ -375,6 +402,7 @@ class OPlotRenderer extends ORenderer {
                             }
 
                             tooltipText = `${series.label}: ${value.y}`
+                            this.#tooltipX = x1
                         }
 
                         break
@@ -422,6 +450,7 @@ class OPlotRenderer extends ORenderer {
                             }
 
                             tooltipText = `${series.label}: ${value.y}`
+                            this.#tooltipY = y11
                         }
 
                         break
