@@ -136,6 +136,8 @@ class OPlotRenderer extends ORenderer {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
 
+        let xSkipCount = 0
+
         for (let i = 1; i < this.data.values[0].values.length + (isContainsColumn ? 1 : 0); i++) {
             const label = {
                 x: this.#paddings.left + i * this.#x.step,
@@ -143,9 +145,26 @@ class OPlotRenderer extends ORenderer {
                 label: this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)
             }
 
-            ctx.fillText(label.label.toFixed(2),
-                label.x,
-                label.y + axisLabelOffset)
+            let isBusy = xSkipCount !== 0 ? i % xSkipCount !== 0 : false
+
+            const textWidth = OHelper.stringWidth(label.label.toFixed(2)),
+                imageDataX = label.x,
+                imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth, 24).data.buffer)
+
+            if (!isBusy)
+                for (let i = 0; i < imageData.length; i++) {
+                    if (imageData[i] & 0xff000000) {
+                        isBusy = true
+                        xSkipCount++
+                        break
+                    }
+                }
+
+            if(!isBusy) {
+                ctx.fillText(label.label.toFixed(2),
+                    label.x,
+                    label.y + axisLabelOffset)
+            }
 
             ctx.beginPath()
 
