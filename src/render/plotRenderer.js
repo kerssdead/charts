@@ -413,6 +413,9 @@ class OPlotRenderer extends ORenderer {
 
                                         ctx.lineTo(this.canvas.width - this.#paddings.right - (this.canvas.width - this.#paddings.left - this.#paddings.right) * transition,
                                             yValue)
+
+                                        if (passed === duration)
+                                            this.animations.delete({ id: value.id }, OAnimationTypes.init)
                                     }
                                 })
                         }
