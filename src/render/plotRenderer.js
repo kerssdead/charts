@@ -317,6 +317,9 @@ class OPlotRenderer extends ORenderer {
             for (const value of series.values) {
                 const index = series.values.indexOf(value)
 
+                const tooltipXValue = value.x ? (+value.x).toFixed(2) : '',
+                    tooltipYValue = value.y ? (+value.y).toFixed(2) : ''
+
                 switch (series.type) {
                     case OPlotTypes.line:
                         const yCorrection = this.#y.min / this.#y.unit * this.#y.step
@@ -376,7 +379,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y
                             }
 
-                            tooltipText += `\n${series.label}: ${value.label} ${value.x.toFixed(2)} ${value.y.toFixed(2)}`
+                            tooltipText += `\n${series.label}: ${value.label} ${tooltipXValue} ${tooltipYValue}`
                             this.#tooltipX = x
                         }
 
@@ -462,7 +465,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y1
                             }
 
-                            tooltipText += `\n${series.label}: ${value.y.toFixed(2)}`
+                            tooltipText += `\n${series.label}: ${tooltipYValue}`
                             this.#tooltipX = x1
                         }
 
@@ -510,7 +513,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y11
                             }
 
-                            tooltipText += `\n${series.label}: ${value.x.toFixed(2)}`
+                            tooltipText += `\n${series.label}: ${tooltipXValue}`
                             this.#tooltipY = y11
                         }
 
@@ -576,7 +579,7 @@ class OPlotRenderer extends ORenderer {
                                 y: y1111
                             }
 
-                            tooltipText += `\n${series.label}: ${value.y.toFixed(2)}`
+                            tooltipText += `\n${series.label}: ${tooltipYValue}`
                             this.#tooltipX = x1111
                         }
 
