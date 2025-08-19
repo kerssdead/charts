@@ -47,5 +47,6 @@ const OLegendPlaces = Object.freeze({
 const OPlotTypes = Object.freeze({
     line: 0,
     attentionLine: 1,
-    column: 2
+    column: 2,
+    bar: 3
 })

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Bar Plot Example
+    </title>
+
+    <script src="/src/helper.js"></script>
+    <script src="/src/enums.js"></script>
+    <script src="/src/dynSettings.js"></script>
+    <script src="/src/settings.js"></script>
+    <script src="/src/const/properties.js"></script>
+    <script src="/src/types/base/basePoint.js"></script>
+    <script src="/src/types/base/data.js"></script>
+    <script src="/src/types/base/renderer.js"></script>
+    <script src="/src/render/circularRenderer.js"></script>
+    <script src="/src/render/plotRenderer.js"></script>
+    <script src="/src/render/gaugeRenderer.js"></script>
+    <script src="/src/render/treeRenderer.js"></script>
+    <script src="/src/types/sector.js"></script>
+    <script src="/src/types/point.js"></script>
+    <script src="/src/types/treeCell.js"></script>
+    <script src="/src/types/plotPoint.js"></script>
+    <script src="/src/types/plotSeries.js"></script>
+    <script src="/src/types/plotAxis.js"></script>
+    <script src="/src/types/paddings.js"></script>
+    <script src="/src/types/data/circularData.js"></script>
+    <script src="/src/types/data/gaugeData.js"></script>
+    <script src="/src/types/data/treeData.js"></script>
+    <script src="/src/types/data/plotData.js"></script>
+    <script src="/src/legend.js"></script>
+    <script src="/src/charts.js"></script>
+    <script src="/src/animationItem.js"></script>
+    <script src="/src/animations.js"></script>
+    <script src="/src/dropdownItem.js"></script>
+    <script src="/src/dropdownOptions.js"></script>
+    <script src="/src/dropdown.js"></script>
+    <script src="/src/tooltip.js"></script>
+</head>
+
+<body>
+<div id="line-example" style="text-align: center"></div>
+</body>
+
+<script>
+    const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
+
+    let values = []
+    const valuesCount = 40,
+        indexMin = 0
+
+    for (let i = indexMin; i < valuesCount; i++)
+        values.push({
+            x: i,
+            y: Math.pow(i, 2),
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
+        })
+
+    values.sort((a, b) => a.x - b.x)
+
+    let chart = new OChart(document.getElementById('line-example'), {
+        width: 1600,
+        height: 1000,
+        title: 'Bar Plot',
+        enableTooltip: true,
+        data: {
+            values: [
+                {
+                    values: values,
+                    type: OPlotTypes.bar,
+                    width: 3,
+                    label: 'Bar',
+                    color: '#ffa500'
+                }
+            ],
+            xTitle: 'X-Axis',
+            yTitle: 'Y-Axis'
+        },
+        type: OChartTypes.plot
+    })
+
+    chart.render()
+</script>
+</html>

@@ -50,6 +50,16 @@ class OPlotRenderer extends ORenderer {
         this.data = chart.data
         this.data.values = this.data.values.map(v => new OPlotSeries(v))
 
+        if (this.data.values.filter(v => v.type === OPlotTypes.bar).length > 0) {
+            for (let series of this.data.values) {
+                for (let item of series.values) {
+                    let x = item.x
+                    item.x = item.y
+                    item.y = x
+                }
+            }
+        }
+
         const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)).filter(value => !isNaN(value)),
             yValues = this.data.values.flatMap(s => s.values.map(p => p.y)).filter(value => !isNaN(value))
 
@@ -64,6 +74,7 @@ class OPlotRenderer extends ORenderer {
             this.#paddings.top += 50
 
         const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
+        const isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
 
         this.#x = {
             min: Math.min(...xValues),
@@ -76,7 +87,7 @@ class OPlotRenderer extends ORenderer {
             min: Math.min(...yValues),
             max: Math.max(...yValues),
             unit: (Math.abs(Math.min(...yValues)) + Math.abs(Math.max(...yValues))) / (this.data.values[0].values.length - 1),
-            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / this.data.values[0].values.length,
+            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / (this.data.values[0].values.length + (isContainsBar ? 1 : 0)),
             count: this.data.values[0].values.length
         }
 
@@ -94,17 +105,6 @@ class OPlotRenderer extends ORenderer {
 
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
-        ctx.strokeStyle = '#000000'
-        ctx.lineWidth = 1
-
-        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
-        ctx.lineTo(this.canvas.width - this.#paddings.right, this.canvas.height - this.#paddings.bottom)
-        ctx.stroke()
-
-        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
-        ctx.lineTo(this.#paddings.left, this.#paddings.top)
-        ctx.stroke()
-
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
         ctx.font = '14px serif'
@@ -112,6 +112,7 @@ class OPlotRenderer extends ORenderer {
         const axisLineColor = '#0000001e'
 
         const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
+        const isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
 
         if (this.data.xTitle) {
             ctx.textAlign = 'center'
@@ -161,13 +162,14 @@ class OPlotRenderer extends ORenderer {
         ctx.textAlign = 'right'
         ctx.textBaseline = 'middle'
 
-        for (let i = 1; i < this.data.values[0].values.length; i++) {
+        for (let i = 1; i < this.data.values[0].values.length + (isContainsBar ? 1 : 0); i++) {
             const label = {
                 x: this.#paddings.left,
-                y: this.canvas.height - i * this.#y.step - this.#paddings.bottom
+                y: this.canvas.height - i * this.#y.step - this.#paddings.bottom,
+                label: this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)
             }
 
-            ctx.fillText((this.#y.min + i * (this.#y.max - this.#y.min) / (this.#y.count - 1)).toFixed(2),
+            ctx.fillText(label.label.toFixed(2),
                 label.x - axisLabelOffset,
                 label.y)
 
@@ -344,6 +346,50 @@ class OPlotRenderer extends ORenderer {
                         }
 
                         break
+
+                    case OPlotTypes.bar:
+                        let x11 = this.#paddings.left,
+                            y11 = this.#paddings.top + (index + 1) * this.#y.step
+
+                        const isInitInProgress1 = !this.#isInit || this.animations.contains(value, OAnimationTypes.init)
+
+                        if (isInitInProgress1)
+                            this.animations.add(value,
+                                OAnimationTypes.init,
+                                {
+                                    timer: null,
+                                    duration: 800,
+                                    body: (passed, duration) => {
+                                        if (passed > duration)
+                                            passed = duration
+
+                                        const transition = passed / duration
+
+                                        ctx.fillRect(x11,
+                                            y11 - this.#y.step / 4,
+                                            value.x / this.#x.unit * this.#x.step * transition,
+                                            this.#y.step / 2)
+
+                                        if (passed === duration)
+                                            this.animations.delete(value, OAnimationTypes.init)
+                                    }
+                                })
+                        else
+                            ctx.fillRect(x11,
+                                y11 - this.#y.step / 4,
+                                value.x / this.#x.unit * this.#x.step,
+                                this.#y.step / 2)
+
+                        if (this.#isOnY(y11)) {
+                            hoverX = {
+                                x: x11,
+                                y: y11
+                            }
+
+                            tooltipText = `${series.label}: ${value.y}`
+                        }
+
+                        break
                 }
             }
 
@@ -380,6 +426,21 @@ class OPlotRenderer extends ORenderer {
             isFirst = true
         }
 
+        ctx.strokeStyle = '#000000'
+        ctx.lineWidth = 1
+
+        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
+        ctx.lineTo(this.canvas.width - this.#paddings.right, this.canvas.height - this.#paddings.bottom)
+        ctx.stroke()
+
+        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
+        ctx.lineTo(this.#paddings.left, this.#paddings.top)
+        ctx.stroke()
+
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'top'
+        ctx.font = '14px serif'
+
         this.tooltip.render(!!tooltipText, this.#onMouseMoveEvent, tooltipText)
 
         requestAnimationFrame(this.render.bind(this))
@@ -405,6 +466,11 @@ class OPlotRenderer extends ORenderer {
         this.canvas.onclick = event => this.#onClickEvent = event
     }
 
+    /**
+     * @param x {number}
+     *
+     * @returns {boolean}
+     */
     #isOnX(x) {
         if (!this.#onMouseMoveEvent)
             return false
@@ -415,5 +481,21 @@ class OPlotRenderer extends ORenderer {
         return x - this.#x.step / 2 <= mouseX && mouseX < x + this.#x.step / 2
             && this.#paddings.top <= mouseY && mouseY <= this.canvas.height - this.#paddings.bottom
             && this.#paddings.left < mouseX
+    }
+
+    /**
+     * @param y {number}
+     *
+     * @returns {boolean}
+     */
+    #isOnY(y) {
+        if (!this.#onMouseMoveEvent)
+            return false
+
+        let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + window.scrollX,
+            mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
+
+        return y - this.#y.step / 2 <= mouseY && mouseY < y + this.#y.step / 2
+            && this.#paddings.left <= mouseX && mouseX <= this.canvas.width - this.#paddings.right
     }
 }
