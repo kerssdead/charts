@@ -20,6 +20,11 @@ class OBasePoint {
     disabled
 
     /**
+     * @type {boolean}
+     */
+    hideInLegend
+
+    /**
      * @type {object}
      */
     data

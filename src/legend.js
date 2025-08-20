@@ -127,7 +127,7 @@ class OLegend {
 
         this.canvas.style.cursor = 'default'
 
-        for (const value of this.chart.data.values)
+        for (const value of this.chart.data.values.filter(v => !v.hideInLegend))
             nextPoint = this.#draw(value, nextPoint.x, nextPoint.y)
 
         requestAnimationFrame(this.render.bind(this))
