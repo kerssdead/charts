@@ -123,8 +123,25 @@ class OLegend {
 
         this.canvas.style.cursor = 'default'
 
+        let maxWidth = 20
+
+        for (const value of this.chart.data.values.filter(v => !v.hideInLegend)) {
+            const labelWidth = OHelper.stringWidth(value.label)
+
+            if (maxWidth + labelWidth >= this.canvas.width)
+                break
+
+            maxWidth += labelWidth + 50
+        }
+
+        let offsetX = this.canvas.width / 2 - maxWidth / 2
+
+        ctx.translate(offsetX, 0)
+
         for (const value of this.chart.data.values.filter(v => !v.hideInLegend))
-            nextPoint = this.#draw(value, nextPoint.x, nextPoint.y)
+            nextPoint = this.#draw(value, nextPoint.x, nextPoint.y, offsetX)
+
+        ctx.translate(-offsetX, 0)
 
         requestAnimationFrame(this.render.bind(this))
 
@@ -145,10 +162,11 @@ class OLegend {
      * @param value {OBasePoint}
      * @param x {number}
      * @param y {number}
+     * @param offsetX {number}
      *
      * @return {OPoint}
      */
-    #draw(value, x, y) {
+    #draw(value, x, y, offsetX) {
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         const textWidth = OHelper.stringWidth(value.label),
@@ -165,7 +183,7 @@ class OLegend {
             rectH = circleRadius + circleRadius + circleRadius
 
         const isHover = event => {
-            const px = event.clientX - this.#canvasPosition.x + window.scrollX,
+            const px = event.clientX - this.#canvasPosition.x + window.scrollX - offsetX,
                 py = event.clientY - this.#canvasPosition.y + window.scrollY
 
             return px >= rectX && px <= rectX + rectW
