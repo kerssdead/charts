@@ -87,7 +87,7 @@ class OPlotRenderer extends ORenderer {
 
         this.#paddings = {
             top: 40,
-            right: 100,
+            right: 60,
             bottom: 50,
             left: 80
         }
