@@ -125,18 +125,7 @@ class OLegend {
 
         this.canvas.style.cursor = 'default'
 
-        let maxWidth = 20
-
-        for (const value of this.chart.data.values.filter(v => !v.hideInLegend)) {
-            const labelWidth = OHelper.stringWidth(value.label)
-
-            if (maxWidth + labelWidth >= this.canvas.width)
-                break
-
-            maxWidth += labelWidth + 50
-        }
-
-        let offsetX = this.canvas.width / 2 - maxWidth / 2
+        const offsetX = OLegend.getOffsetToCenter(this.chart.data.values, this.canvas.width)
 
         ctx.translate(offsetX, 0)
 
@@ -174,7 +163,7 @@ class OLegend {
         const textWidth = OHelper.stringWidth(value.label),
             circleRadius = 10
 
-        if (x + 50 + textWidth >= this.canvas.width - 100) {
+        if (x + 50 + textWidth >= this.canvas.width - 100 - offsetX) {
             x = 20
             y += 38
         }
@@ -316,21 +305,43 @@ class OLegend {
      * @param values {OBasePoint[]}
      * @param width {number}
      *
-     * @return {int}
+     * @returns {number}
      */
-    static getLegendHeight(values, width) {
-        let count = 1,
-            acc = 20
+    static getOffsetToCenter(values, width) {
+        let maxWidth = 20
 
         for (const value of values.filter(v => !v.hideInLegend)) {
             const labelWidth = OHelper.stringWidth(value.label)
 
-            if (acc + labelWidth >= width) {
+            if (maxWidth + labelWidth + 35 >= width - 100)
+                break
+
+            maxWidth += labelWidth + 35
+        }
+
+        return width / 2 - maxWidth / 2
+    }
+
+    /**
+     * @param values {OBasePoint[]}
+     * @param width {number}
+     *
+     * @return {int}
+     */
+    static getLegendHeight(values, width) {
+        let count = 1,
+            acc = 20,
+            offset = OLegend.getOffsetToCenter(values, width)
+
+        for (const value of values.filter(v => !v.hideInLegend)) {
+            const labelWidth = OHelper.stringWidth(value.label)
+
+            if (acc + labelWidth + 45 >= width - 100 - offset) {
                 acc = 20
                 count++
             }
 
-            acc += labelWidth + 50
+            acc += labelWidth + 40
         }
 
         return count * 40
