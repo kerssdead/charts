@@ -295,8 +295,7 @@ class OPlotRenderer extends ORenderer {
         ctx.closePath()
 
         let columnsIndex = 0,
-            columnsCount = this.data.values.filter(s => s.type === OPlotTypes.column).length,
-            columnWidth = this.#x.step / (2 * columnsCount)
+            columnsCount = this.data.values.filter(s => s.type === OPlotTypes.column).length
 
         let barsIndex = 0,
             barsCount = this.data.values.filter(s => s.type === OPlotTypes.bar).length,
@@ -433,6 +432,8 @@ class OPlotRenderer extends ORenderer {
                         let x1 = this.#paddings.left + (index + 1) * this.#x.step,
                             y1 = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorr
 
+                        let columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
+
                         const isInitInProgress = !this.#isInit || this.animations.contains({ id: value.id + columnsIndex }, OAnimationTypes.init)
 
                         if (isInitInProgress)
@@ -531,6 +532,8 @@ class OPlotRenderer extends ORenderer {
                         let x1111 = this.#paddings.left + (index + 1) * this.#x.step,
                             y1111 = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorr22
 
+                        let columnWidth1 = this.#x.step * (series.width ? series.width / 100 : .5)
+
                         const isInitInProgress22 = !this.#isInit || this.animations.contains({ id: value.id + index }, OAnimationTypes.init)
 
                         if (isInitInProgress22) {
@@ -555,9 +558,9 @@ class OPlotRenderer extends ORenderer {
                                             ? stackingAccumulator[index]
                                             : 0
 
-                                        ctx.fillRect(x1111 - this.#x.step / 4,
+                                        ctx.fillRect(x1111 - columnWidth1 / 2,
                                             this.canvas.height - this.#paddings.bottom + offset,
-                                            this.#x.step / 2,
+                                            columnWidth1,
                                             (y1111 - this.canvas.height + this.#paddings.bottom) * transition)
 
                                         stackingAccumulator[index] += (y1111 - this.canvas.height + this.#paddings.bottom) * transition
@@ -571,9 +574,9 @@ class OPlotRenderer extends ORenderer {
                                 ? stackingAccumulator[index]
                                 : 0
 
-                            ctx.fillRect(x1111 - this.#x.step / 4,
+                            ctx.fillRect(x1111 - columnWidth1 / 2,
                                 this.canvas.height - this.#paddings.bottom + offset,
-                                this.#x.step / 2,
+                                columnWidth1,
                                 y1111 - this.canvas.height + this.#paddings.bottom)
 
                             stackingAccumulator[index] += (y1111 - this.canvas.height + this.#paddings.bottom)
