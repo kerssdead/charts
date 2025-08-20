@@ -186,7 +186,7 @@ class OPlotRenderer extends ORenderer {
 
             ctx.fillText(this.data.xTitle,
                 this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
-                this.canvas.height)
+                this.canvas.height - 4)
 
             ctx.rotate(-Math.PI / 2)
 
@@ -194,7 +194,7 @@ class OPlotRenderer extends ORenderer {
 
             ctx.fillText(this.data.yTitle,
                 -(this.#paddings.top + (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / 2),
-                0)
+                8)
 
             ctx.resetTransform()
         }
