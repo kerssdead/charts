@@ -13,4 +13,9 @@ class OPlotData extends OData {
      * @type {string}
      */
     yTitle
+
+    /**
+     * @type {number}
+     */
+    yMax
 }

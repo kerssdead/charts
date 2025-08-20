@@ -107,8 +107,8 @@ class OPlotRenderer extends ORenderer {
         }
         this.#y = {
             min: Math.min(...yValues),
-            max: Math.max(...yValues),
-            unit: (Math.abs(Math.min(...yValues)) + Math.abs(Math.max(...yValues))) / (this.data.values[0].values.length - 1),
+            max: this.data.yMax ?? Math.max(...yValues),
+            unit: (Math.abs(Math.min(...yValues)) + Math.abs(this.data.yMax ?? Math.max(...yValues))) / (this.data.values[0].values.length - 1),
             step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / (this.data.values[0].values.length + (isContainsBar ? 1 : 0)),
             count: this.data.values[0].values.length
         }
@@ -130,7 +130,7 @@ class OPlotRenderer extends ORenderer {
                     max = sum
             }
 
-            this.#y.max = max
+            this.#y.max = max > this.data.yMax ? this.data.yMax : max
             this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.data.values[0].values.length - 1)
         }
 
@@ -429,8 +429,10 @@ class OPlotRenderer extends ORenderer {
                     case OPlotTypes.column:
                         const yCorr = this.#y.min / this.#y.unit * this.#y.step
 
+                        let yValue11 = value.y > this.data.yMax ? this.data.yMax : value.y
+
                         let x1 = this.#paddings.left + (index + 1) * this.#x.step,
-                            y1 = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorr
+                            y1 = this.canvas.height - this.#paddings.bottom - yValue11 / this.#y.unit * this.#y.step + yCorr
 
                         let columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
 
@@ -558,10 +560,19 @@ class OPlotRenderer extends ORenderer {
                                             ? stackingAccumulator[index]
                                             : 0
 
-                                        ctx.fillRect(x1111 - columnWidth1 / 2,
-                                            this.canvas.height - this.#paddings.bottom + offset,
-                                            columnWidth1,
-                                            (y1111 - this.canvas.height + this.#paddings.bottom) * transition)
+                                        let yValue2 = this.canvas.height - this.#paddings.bottom + offset,
+                                            yHeight2 = (y1111 - this.canvas.height + this.#paddings.bottom) * transition
+
+                                        if (yValue2 > this.#paddings.top) {
+                                            if (yValue2 + yHeight2 < this.#paddings.top) {
+                                                yHeight2 -= yValue2 + yHeight2 - this.#paddings.top
+                                            }
+
+                                            ctx.fillRect(x1111 - columnWidth1 / 2,
+                                                yValue2,
+                                                columnWidth1,
+                                                yHeight2)
+                                        }
 
                                         stackingAccumulator[index] += (y1111 - this.canvas.height + this.#paddings.bottom) * transition
 
@@ -574,10 +585,19 @@ class OPlotRenderer extends ORenderer {
                                 ? stackingAccumulator[index]
                                 : 0
 
-                            ctx.fillRect(x1111 - columnWidth1 / 2,
-                                this.canvas.height - this.#paddings.bottom + offset,
-                                columnWidth1,
-                                y1111 - this.canvas.height + this.#paddings.bottom)
+                            let yValue22 = this.canvas.height - this.#paddings.bottom + offset,
+                                yHeight22 = y1111 - this.canvas.height + this.#paddings.bottom
+
+                            if (yValue22 > this.#paddings.top) {
+                                if (yValue22 + yHeight22 < this.#paddings.top) {
+                                    yHeight22 -= yValue22 + yHeight22 - this.#paddings.top
+                                }
+
+                                ctx.fillRect(x1111 - columnWidth1 / 2,
+                                    yValue22,
+                                    columnWidth1,
+                                    yHeight22)
+                            }
 
                             stackingAccumulator[index] += (y1111 - this.canvas.height + this.#paddings.bottom)
                         }
