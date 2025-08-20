@@ -105,10 +105,15 @@ class OPlotRenderer extends ORenderer {
             step: (this.canvas.width - this.#paddings.left - this.#paddings.right) / (this.data.values[0].values.length + (isContainsColumn ? 1 : 0)),
             count: this.data.values[0].values.length
         }
+
+        let yMin = Math.min(...yValues)
+        if (yMin > 0)
+            yMin = 0
+
         this.#y = {
-            min: Math.min(...yValues),
+            min: yMin,
             max: this.data.yMax ?? Math.max(...yValues),
-            unit: (Math.abs(Math.min(...yValues)) + Math.abs(this.data.yMax ?? Math.max(...yValues))) / (this.data.values[0].values.length - 1),
+            unit: (Math.abs(yMin) + Math.abs(this.data.yMax ?? Math.max(...yValues))) / (this.data.values[0].values.length - 1),
             step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / (this.data.values[0].values.length + (isContainsBar ? 1 : 0)),
             count: this.data.values[0].values.length
         }
