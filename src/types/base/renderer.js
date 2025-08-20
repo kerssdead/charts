@@ -53,7 +53,7 @@ class ORenderer {
 
         if (settings.enableLegend) {
             if (settings.legendPlace === OLegendPlaces.top || settings.legendPlace === OLegendPlaces.bottom)
-                this.canvas.height -= 200
+                this.canvas.height -= 100
 
             if (settings.legendPlace === OLegendPlaces.left || settings.legendPlace === OLegendPlaces.right)
                 this.canvas.width -= 500

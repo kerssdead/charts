@@ -54,23 +54,19 @@ class OLegend {
         this.canvas = document.createElement('canvas')
 
         this.canvas.width = 1600
-        this.canvas.height = 200
+        this.canvas.height = 100
         this.canvas.style.width = 'fit-content'
 
         switch (chart.settings.legendPlace) {
             case OLegendPlaces.bottom:
-                this.canvas.width = this.chart.settings.width > this.chart.settings.height
-                    ? this.chart.settings.height
-                    : this.chart.settings.width
+                this.canvas.width = this.chart.settings.width
 
                 context.style.flexDirection = 'column'
 
                 break
 
             case OLegendPlaces.top:
-                this.canvas.width = this.chart.settings.width > this.chart.settings.height
-                    ? this.chart.settings.height
-                    : this.chart.settings.width
+                this.canvas.width = this.chart.settings.width
 
                 context.style.flexDirection = 'column-reverse'
 
