@@ -60,6 +60,7 @@ class OLegend {
         switch (chart.settings.legendPlace) {
             case OLegendPlaces.bottom:
                 this.canvas.width = this.chart.settings.width
+                this.canvas.height = OLegend.getLegendHeight(this.chart.data.values, this.canvas.width)
 
                 context.style.flexDirection = 'column'
 
@@ -67,6 +68,7 @@ class OLegend {
 
             case OLegendPlaces.top:
                 this.canvas.width = this.chart.settings.width
+                this.canvas.height = OLegend.getLegendHeight(this.chart.data.values, this.canvas.width)
 
                 context.style.flexDirection = 'column-reverse'
 
@@ -308,5 +310,29 @@ class OLegend {
 
     refresh() {
         this.#isInit = false
+    }
+
+    /**
+     * @param values {OBasePoint[]}
+     * @param width {number}
+     *
+     * @return {int}
+     */
+    static getLegendHeight(values, width) {
+        let count = 1,
+            acc = 20
+
+        for (const value of values.filter(v => !v.hideInLegend)) {
+            const labelWidth = OHelper.stringWidth(value.label)
+
+            if (acc + labelWidth >= width) {
+                acc = 20
+                count++
+            }
+
+            acc += labelWidth + 50
+        }
+
+        return count * 40
     }
 }
