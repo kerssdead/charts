@@ -121,7 +121,7 @@ class OPlotRenderer extends ORenderer {
         let stackingColumns = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn)
 
         if (stackingColumns.length > 0) {
-            let values = stackingColumns.map(s => s.values.flatMap(v => v.y))
+            let values = stackingColumns.map(s => s.values.flatMap(v => +v.y))
 
             let max = this.#y.max
 
