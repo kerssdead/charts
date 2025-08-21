@@ -40,9 +40,9 @@ class OLegend {
     #isInit = false
 
     /**
-     * @type {ODropdown}
+     * @type {OButton}
      */
-    #dropdown
+    #button
 
     /**
      * @param chart {OChart}
@@ -95,21 +95,16 @@ class OLegend {
 
         this.animations = new OAnimations()
 
-        this.#dropdown = new ODropdown(this.chart,
+        this.#button = new OButton(this.chart,
             this.canvas,
             {
                 x: this.canvas.width - 110,
                 y: 10,
-                text: 'Menu',
-                items: [
-                    {
-                        text: 'Reset',
-                        action: () => {
-                            for (let value of this.chart.data.values)
-                                value.disabled = false
-                        }
-                    }
-                ]
+                text: 'Reset',
+                action: () => {
+                    for (let value of this.chart.data.values)
+                        value.disabled = false
+                }
             })
     }
 
@@ -141,7 +136,7 @@ class OLegend {
 
         const isCursorPointer = this.canvas.style.cursor === 'pointer'
 
-        this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
+        this.#onClickEvent = this.#button.render(this.#onMouseMoveEvent, this.#onClickEvent)
 
         if (isCursorPointer)
             this.canvas.style.cursor = 'pointer'
@@ -179,10 +174,9 @@ class OLegend {
 
             return px >= rectX && px <= rectX + rectW
                 && py >= rectY && py <= rectY + rectH
-                && !this.#dropdown.isActive
         }
 
-        if (this.#onClickEvent && !this.#dropdown.isActive) {
+        if (this.#onClickEvent) {
             this.animations.add(value,
                 OAnimationTypes.click,
                 {
@@ -204,7 +198,7 @@ class OLegend {
                 })
         }
 
-        if (this.#onMouseMoveEvent && !this.#dropdown.isActive) {
+        if (this.#onMouseMoveEvent) {
             if (isHover(this.#onMouseMoveEvent))
                 this.canvas.style.cursor = 'pointer'
 
