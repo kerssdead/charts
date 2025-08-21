@@ -391,7 +391,7 @@ class OPlotRenderer extends ORenderer {
                                     index: index
                                 }
 
-                                tooltipText += `\n${series.label}: ${value.label} ${tooltipXValue} ${tooltipYValue}`
+                                tooltipText += `\n${series.label}: ${tooltipYValue}`
                                 this.#tooltipX = x + this.#x.step / 2
                             }
                         }
