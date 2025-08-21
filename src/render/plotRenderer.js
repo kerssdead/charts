@@ -197,15 +197,17 @@ class OPlotRenderer extends ORenderer {
                     this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
                     this.canvas.height - 4)
 
-            ctx.rotate(-Math.PI / 2)
+            if (this.data.yMax) {
+                ctx.rotate(-Math.PI / 2)
 
-            ctx.textBaseline = 'top'
+                ctx.textBaseline = 'top'
 
-            ctx.fillText(this.data.yTitle,
-                -(this.#paddings.top + (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / 2),
-                8)
+                ctx.fillText(this.data.yTitle,
+                    -(this.#paddings.top + (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / 2),
+                    8)
 
-            ctx.resetTransform()
+                ctx.resetTransform()
+            }
         }
 
         ctx.textAlign = 'center'
