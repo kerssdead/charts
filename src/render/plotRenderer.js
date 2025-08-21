@@ -206,7 +206,7 @@ class OPlotRenderer extends ORenderer {
 
         let xSkipCount = 0
 
-        for (let i = 1; i < this.data.values[0].values.length + 1; i++) {
+        for (let i = !isContainsBar ? 1 : 0; i < this.data.values[0].values.length + 1; i++) {
             const labelX = this.#paddings.left + i * this.#x.step,
                 labelXAsKey = Math.round(labelX)
 
@@ -238,7 +238,7 @@ class OPlotRenderer extends ORenderer {
 
             if(!isBusy)
                 ctx.fillText(label.label,
-                    label.x - this.#x.step / 2,
+                    label.x - (!isContainsBar ? this.#x.step / 2 : 0),
                     label.y + axisLabelOffset)
 
             ctx.beginPath()
@@ -268,7 +268,7 @@ class OPlotRenderer extends ORenderer {
         let x1111 = 0,
             y1111 = 0
 
-        for (let i = 1; i < this.data.values[0].values.length + 1; i++) {
+        for (let i = isContainsBar ? 1 : 0; i < this.data.values[0].values.length + 1; i++) {
             const labelY = this.canvas.height - i * this.#y.step - this.#paddings.bottom,
                 labelYAsKey = Math.round(labelY)
 
@@ -284,7 +284,7 @@ class OPlotRenderer extends ORenderer {
 
             ctx.fillText(label.label,
                 label.x - axisLabelOffset,
-                label.y + this.#y.step / 2)
+                label.y + (isContainsBar ? this.#y.step / 2 : 0))
 
             ctx.beginPath()
 
