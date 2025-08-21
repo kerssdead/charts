@@ -74,9 +74,11 @@ class OChart {
             item.disabled = isPlot ? !item.values : !item.value
             item.value ??= 0
 
-            if (isPlot)
+            if (isPlot) {
+                item.type ??= OPlotTypes.line
                 for (let it of item.values)
                     it.id = OHelper.guid()
+            }
         }
 
         if (this.settings.data.values.filter(v => v.value < 0)) {
