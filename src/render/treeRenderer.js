@@ -309,7 +309,7 @@ class OTreeRenderer extends ORenderer {
 
         this.tooltip.render(tooltipCell,
             this.#onMouseMoveEvent,
-            `${tooltipCell?.label}: ${tooltipCell?.value.toPrecision(2)}`,
+            `${tooltipCell?.label}: ${tooltipCell?.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             this.data.values.find(v => v.id === tooltipCell?.id))
 
         requestAnimationFrame(this.render.bind(this))
