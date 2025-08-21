@@ -188,13 +188,14 @@ class OPlotRenderer extends ORenderer {
         const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
         const isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
 
-        if (this.data.xTitle) {
+        if (this.data.xTitle || this.data.yTitle) {
             ctx.textAlign = 'center'
             ctx.textBaseline = 'bottom'
 
-            ctx.fillText(this.data.xTitle,
-                this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
-                this.canvas.height - 4)
+            if (this.data.xTitle)
+                ctx.fillText(this.data.xTitle,
+                    this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
+                    this.canvas.height - 4)
 
             ctx.rotate(-Math.PI / 2)
 
