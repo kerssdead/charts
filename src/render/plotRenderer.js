@@ -136,7 +136,7 @@ class OPlotRenderer extends ORenderer {
             this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.data.values[0].values.length - 1)
         }
 
-        const yMaxWidth = OHelper.stringWidth(this.#y.max.toFixed(2))
+        const yMaxWidth = OHelper.stringWidth(this.#y.max.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
         if (yMaxWidth > this.#paddings.left - 40) {
             this.#paddings.left += yMaxWidth - this.#paddings.left + 40
             this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / (this.data.values[0].values.length)
@@ -220,7 +220,8 @@ class OPlotRenderer extends ORenderer {
                 this.#labelsX.set(labelXAsKey,
                     isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                         ? this.data.values[0].values[i - 1].x
-                        : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)).toFixed(2))
+                        : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
+                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
 
             const label = {
                 x: labelX,
@@ -280,7 +281,8 @@ class OPlotRenderer extends ORenderer {
 
             if (!this.#labelsY.get(labelYAsKey))
                 this.#labelsY.set(labelYAsKey,
-                    (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)).toFixed(2))
+                    (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1))
+                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
 
             const label = {
                 x: this.#paddings.left,
