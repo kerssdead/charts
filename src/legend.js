@@ -53,8 +53,6 @@ class OLegend {
 
         this.canvas = document.createElement('canvas')
 
-        this.canvas.width = 1600
-        this.canvas.height = 100
         this.canvas.style.width = 'fit-content'
 
         switch (chart.settings.legendPlace) {
@@ -76,6 +74,7 @@ class OLegend {
 
             case OLegendPlaces.left:
                 this.canvas.width = 500
+                this.canvas.height = this.chart.settings.height
 
                 context.style.flexDirection = 'row'
 
@@ -83,6 +82,7 @@ class OLegend {
 
             case OLegendPlaces.right:
                 this.canvas.width = 500
+                this.canvas.height = this.chart.settings.height
 
                 context.style.flexDirection = 'row-reverse'
 
@@ -120,14 +120,15 @@ class OLegend {
 
         this.canvas.style.cursor = 'default'
 
-        const offsetX = OLegend.getOffsetToCenter(this.chart.data.values, this.canvas.width)
+        const offsetX = OLegend.getOffsetToCenter(this.chart.data.values, this.canvas.width),
+            offsetY = (this.canvas.height - OLegend.getLegendHeight(this.chart.data.values, this.canvas.width)) / 2
 
-        ctx.translate(offsetX, 0)
+        ctx.translate(offsetX, offsetY)
 
         for (const value of this.chart.data.values.filter(v => !v.hideInLegend))
-            nextPoint = this.#draw(value, nextPoint.x, nextPoint.y, offsetX)
+            nextPoint = this.#draw(value, nextPoint.x, nextPoint.y, offsetX, offsetY)
 
-        ctx.translate(-offsetX, 0)
+        ctx.translate(-offsetX, -offsetY)
 
         requestAnimationFrame(this.render.bind(this))
 
@@ -149,10 +150,11 @@ class OLegend {
      * @param x {number}
      * @param y {number}
      * @param offsetX {number}
+     * @param offsetY {number}
      *
      * @return {OPoint}
      */
-    #draw(value, x, y, offsetX) {
+    #draw(value, x, y, offsetX, offsetY) {
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         const textWidth = OHelper.stringWidth(value.label),
@@ -173,7 +175,7 @@ class OLegend {
                 return false
 
             const px = event.clientX - this.#canvasPosition.x + window.scrollX - offsetX,
-                py = event.clientY - this.#canvasPosition.y + window.scrollY
+                py = event.clientY - this.#canvasPosition.y + window.scrollY - offsetY
 
             return px >= rectX && px <= rectX + rectW
                 && py >= rectY && py <= rectY + rectH
