@@ -103,7 +103,7 @@ class OLegend {
                 text: 'Reset',
                 action: () => {
                     for (let value of this.chart.data.values)
-                        value.disabled = false
+                        value.reset()
                 }
             })
     }
@@ -169,6 +169,9 @@ class OLegend {
             rectH = circleRadius + circleRadius + circleRadius
 
         const isHover = event => {
+            if (!event)
+                return false
+
             const px = event.clientX - this.#canvasPosition.x + window.scrollX - offsetX,
                 py = event.clientY - this.#canvasPosition.y + window.scrollY
 

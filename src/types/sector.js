@@ -49,4 +49,10 @@ class OSector extends OBasePoint {
 
         return (this.current === 0 && !this.disabled) || this.value !== 0
     }
+
+    reset() {
+        super.reset()
+
+        this.current = this.value
+    }
 }

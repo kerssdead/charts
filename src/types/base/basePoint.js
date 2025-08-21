@@ -42,4 +42,8 @@ class OBasePoint {
      * @return {boolean}
      */
     checkCondition() { }
+
+    reset() {
+        this.disabled = false
+    }
 }

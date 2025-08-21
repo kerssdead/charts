@@ -39,4 +39,8 @@ class OPlotSeries extends OBasePoint {
 
         return true
     }
+
+    reset() {
+        super.reset()
+    }
 }

@@ -69,12 +69,12 @@ class OButton {
         if (isOnButton) {
             this.#canvas.style.cursor = 'pointer'
 
-            if (clickEvent) {
+            if (clickEvent && this.#isOnButton(clickEvent, x, y, width, height)) {
                 this.#options.action()
                 clickEvent = undefined
             }
 
-            this.animations.add({ id: 'animation-dropdown' },
+            this.animations.add({ id: 'animation-button' },
                 OAnimationTypes.mouseover,
                 {
                     timer: null,
@@ -94,7 +94,7 @@ class OButton {
         } else {
             this.#canvas.style.cursor = 'default'
 
-            this.animations.add({ id: 'animation-dropdown' },
+            this.animations.add({ id: 'animation-button-leave' },
                 OAnimationTypes.mouseleave,
                 {
                     timer: null,
@@ -103,7 +103,7 @@ class OButton {
                         return true
                     },
                     body: (passed, duration) => {
-                        this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseover)
+                        this.animations.reload({ id: 'animation-button' }, OAnimationTypes.mouseover)
 
                         if (passed > duration)
                             passed = duration
@@ -124,9 +124,6 @@ class OButton {
         ctx.fillText(this.#options.text, x + width / 2, y + height / 2)
 
         ctx.closePath()
-
-        if (clickEvent !== undefined)
-            clickEvent = undefined
 
         this.#isInit = true
 
