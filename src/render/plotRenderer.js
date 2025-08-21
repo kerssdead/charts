@@ -687,13 +687,15 @@ class OPlotRenderer extends ORenderer {
                             ? stackingAccumulator[hoverX.index]
                             : 0
 
-                        ctx.lineWidth = 1
-                        ctx.strokeStyle = axisLineHoverColor
-                        ctx.moveTo(this.#tooltipX - this.#x.step / 2,
-                            this.#paddings.top)
-                        ctx.lineTo(this.#tooltipX - this.#x.step / 2,
-                            this.canvas.height - this.#paddings.bottom + offset)
-                        ctx.stroke()
+                        if (this.canvas.height - this.#paddings.bottom + offset > this.#paddings.top) {
+                            ctx.lineWidth = 1
+                            ctx.strokeStyle = axisLineHoverColor
+                            ctx.moveTo(this.#tooltipX - this.#x.step / 2,
+                                this.#paddings.top)
+                            ctx.lineTo(this.#tooltipX - this.#x.step / 2,
+                                this.canvas.height - this.#paddings.bottom + offset)
+                            ctx.stroke()
+                        }
                     }
 
                     columnsIndex++
