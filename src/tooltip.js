@@ -82,8 +82,8 @@ class OTooltip {
         if (x + textWidth + 16 > this.#canvasPosition.width)
             x = this.#canvasPosition.width - (textWidth + 16)
 
-        if (y + 34 > this.#canvasPosition.height)
-            y = this.#canvasPosition.height - 34
+        if (y + 10 + split.length * 18 > this.#canvasPosition.height)
+            y = this.#canvasPosition.height - 10 - split.length * 18
 
         ctx.beginPath()
         ctx.roundRect(x, y, textWidth + 16, 16 + 16 * split.length, 20)
