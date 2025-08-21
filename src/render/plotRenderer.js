@@ -136,6 +136,12 @@ class OPlotRenderer extends ORenderer {
             this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.data.values[0].values.length - 1)
         }
 
+        const yMaxWidth = OHelper.stringWidth(this.#y.max.toFixed(2))
+        if (yMaxWidth > this.#paddings.left - 40) {
+            this.#paddings.left += yMaxWidth - this.#paddings.left + 40
+            this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / (this.data.values[0].values.length)
+        }
+
         this.tooltip = new OTooltip(this.canvas, this.settings)
 
         this.#labelsX = new Map()
