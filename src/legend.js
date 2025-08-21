@@ -165,7 +165,7 @@ class OLegend {
 
         let rectX = x - circleRadius - circleRadius,
             rectY = y - circleRadius / 2 - circleRadius,
-            rectW = circleRadius + circleRadius + 20 + textWidth,
+            rectW = circleRadius + circleRadius + 32 + textWidth,
             rectH = circleRadius + circleRadius + circleRadius
 
         const isHover = event => {
@@ -255,7 +255,9 @@ class OLegend {
         ctx.font = '14px serif'
         ctx.textAlign = 'start'
         ctx.textBaseline = 'alphabetic'
-        ctx.fillText(value.label, x += 20, y + 4)
+        ctx.fillText(value.label, x + 20, y + 4)
+
+        x += 20
 
         if (value.disabled) {
             ctx.beginPath()
@@ -307,10 +309,10 @@ class OLegend {
         for (const value of values.filter(v => !v.hideInLegend)) {
             const labelWidth = OHelper.stringWidth(value.label)
 
-            if (maxWidth + labelWidth + 35 >= width - 100)
+            if (maxWidth + labelWidth + 47 >= width - 100)
                 break
 
-            maxWidth += labelWidth + 35
+            maxWidth += labelWidth + 47
         }
 
         return width / 2 - maxWidth / 2
@@ -330,12 +332,12 @@ class OLegend {
         for (const value of values.filter(v => !v.hideInLegend)) {
             const labelWidth = OHelper.stringWidth(value.label)
 
-            if (acc + labelWidth + 45 >= width - 100 - offset) {
+            if (acc + labelWidth + 57 >= width - 100 - offset) {
                 acc = 20
                 count++
             }
 
-            acc += labelWidth + 40
+            acc += labelWidth + 57
         }
 
         return count * 40
