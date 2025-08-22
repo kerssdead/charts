@@ -126,7 +126,7 @@ class OPlotRenderer extends ORenderer {
             min: yMin,
             max: this.data.yMax ?? Math.max(...yValues),
             unit: (Math.abs(yMin) + Math.abs(this.data.yMax ?? Math.max(...yValues))) / (this.#allValuesY.length - 1),
-            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / (this.#allValuesY.length),
+            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / this.#allValuesY.length,
             count: this.#allValuesY.length
         }
 
@@ -148,7 +148,7 @@ class OPlotRenderer extends ORenderer {
             }
 
             this.#y.max = max > this.data.yMax ? this.data.yMax : max
-            this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.data.values[0].values.length - 1)
+            this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
         }
 
         const yMaxWidth = OHelper.stringWidth(this.#y.max.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
@@ -230,12 +230,12 @@ class OPlotRenderer extends ORenderer {
 
         const xCount = this.#x.count > 10 ? 10 : this.#x.count
 
-        let xCounter = 1,
-            xStep = this.#x.count / xCount
+        let xCounter = !isContainsBar ? 1 : 0,
+            xStep = this.#allValuesX.length / xCount
 
         for (let i = !isContainsBar ? 1 : 0; i < this.#allValuesX.length + 1; i++) {
-            const labelX = this.#paddings.left + i * this.#x.step,
-                labelXAsKey = Math.round(labelX)
+            const labelX = this.#paddings.left + xCounter * xStep * this.#x.step,
+                labelXAsKey = Math.round(this.#paddings.left + i * this.#x.step)
 
             if (!this.#labelsX.has(labelXAsKey))
                 this.#labelsX.set(labelXAsKey,
@@ -247,7 +247,10 @@ class OPlotRenderer extends ORenderer {
             const label = {
                 x: labelX,
                 y: this.canvas.height - this.#paddings.bottom,
-                label: this.#labelsX.get(labelXAsKey)
+                label: isNaN(+this.#x.min) || !isFinite(+this.#x.min)
+                    ? this.#allValuesX[i - 1]
+                    : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
+                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
             }
 
             let isRender = i >= xCounter * xStep
@@ -269,16 +272,18 @@ class OPlotRenderer extends ORenderer {
                     label.x - (!isContainsBar ? this.#x.step / 2 : 0),
                     label.y + axisLabelOffset)
 
-                ctx.beginPath()
+                if (isContainsBar) {
+                    ctx.beginPath()
 
-                ctx.moveTo(label.x, label.y)
-                ctx.lineTo(label.x, this.#paddings.top)
+                    ctx.moveTo(label.x, label.y)
+                    ctx.lineTo(label.x, this.#paddings.top)
 
-                ctx.lineWidth = 1
-                ctx.strokeStyle = axisLineColor
-                ctx.stroke()
+                    ctx.lineWidth = 1
+                    ctx.strokeStyle = axisLineColor
+                    ctx.stroke()
 
-                ctx.closePath()
+                    ctx.closePath()
+                }
 
                 xCounter++
             }
@@ -301,12 +306,12 @@ class OPlotRenderer extends ORenderer {
 
         const yCount = this.#y.count > 10 ? 10 : this.#y.count
 
-        let yCounter = 1,
-            yStep = this.#y.count / yCount
+        let yCounter = isContainsBar ? 1 : 0,
+            yStep = this.#allValuesY.length / yCount
 
         for (let i = isContainsBar ? 1 : 0; i < this.#allValuesY.length + 1; i++) {
-            const labelY = this.canvas.height - i * this.#y.step - this.#paddings.bottom,
-                labelYAsKey = Math.round(labelY)
+            const labelY = this.canvas.height - yCounter * yStep * this.#y.step - this.#paddings.bottom,
+                labelYAsKey = Math.round(this.canvas.height - i * this.#y.step - this.#paddings.bottom)
 
             if (!this.#labelsY.get(labelYAsKey))
                 this.#labelsY.set(labelYAsKey,
@@ -319,23 +324,26 @@ class OPlotRenderer extends ORenderer {
                 const label = {
                     x: this.#paddings.left,
                     y: labelY,
-                    label: this.#labelsY.get(labelYAsKey)
+                    label: (this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1))
+                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                 }
 
                 ctx.fillText(label.label,
                     label.x - axisLabelOffset,
                     label.y + (isContainsBar ? this.#y.step / 2 : 0))
 
-                ctx.beginPath()
+                if (this.data.values.filter(s => s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn).length > 0) {
+                    ctx.beginPath()
 
-                ctx.moveTo(label.x, label.y)
-                ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
+                    ctx.moveTo(label.x, label.y)
+                    ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
 
-                ctx.lineWidth = 1
-                ctx.strokeStyle = axisLineColor
-                ctx.stroke()
+                    ctx.lineWidth = 1
+                    ctx.strokeStyle = axisLineColor
+                    ctx.stroke()
 
-                ctx.closePath()
+                    ctx.closePath()
+                }
 
                 yCounter++
             }
