@@ -70,6 +70,11 @@ class OPlotRenderer extends ORenderer {
     #allValuesY
 
     /**
+     * @type {ImageData}
+     */
+    #base
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -206,98 +211,154 @@ class OPlotRenderer extends ORenderer {
         const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
         const isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
 
-        if (this.data.xTitle || this.data.yTitle) {
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'bottom'
+        if (!this.#base) {
+            if (this.data.xTitle || this.data.yTitle) {
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'bottom'
 
-            if (this.data.xTitle)
-                ctx.fillText(this.data.xTitle,
-                    this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
-                    this.canvas.height - 4)
+                if (this.data.xTitle)
+                    ctx.fillText(this.data.xTitle,
+                        this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
+                        this.canvas.height - 4)
 
-            if (this.data.yMax) {
-                ctx.rotate(-Math.PI / 2)
+                if (this.data.yMax) {
+                    ctx.rotate(-Math.PI / 2)
 
-                ctx.textBaseline = 'top'
+                    ctx.textBaseline = 'top'
 
-                ctx.fillText(this.data.yTitle,
-                    -(this.#paddings.top + (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / 2),
-                    8)
+                    ctx.fillText(this.data.yTitle,
+                        -(this.#paddings.top + (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / 2),
+                        8)
 
-                ctx.resetTransform()
+                    ctx.resetTransform()
+                }
             }
-        }
 
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'top'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'top'
 
-        const xCount = this.#x.count > 10 ? 10 : this.#x.count
+            const xCount = this.#x.count > 10 ? 10 : this.#x.count
 
-        let xCounter = !isContainsBar ? 1 : 0,
-            xStep = this.#allValuesX.length / xCount
+            let xCounter = !isContainsBar ? 1 : 0,
+                xStep = this.#allValuesX.length / xCount
 
-        for (let i = !isContainsBar ? 1 : 0; i < this.#allValuesX.length + 1; i++) {
-            const labelX = this.#paddings.left + xCounter * xStep * this.#x.step,
-                labelXAsKey = Math.round(this.#paddings.left + i * this.#x.step)
+            for (let i = !isContainsBar ? 1 : 0; i < this.#allValuesX.length + 1; i++) {
+                const labelX = this.#paddings.left + xCounter * xStep * this.#x.step,
+                    labelXAsKey = Math.round(this.#paddings.left + i * this.#x.step)
 
-            if (!this.#labelsX.has(labelXAsKey))
-                this.#labelsX.set(labelXAsKey,
-                    this.data.xType === OPlotAxisType.date
+                if (!this.#labelsX.has(labelXAsKey))
+                    this.#labelsX.set(labelXAsKey,
+                        this.data.xType === OPlotAxisType.date
+                            ? this.#allValuesX[i - 1].toLocaleDateString()
+                            : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
+                                ? this.#allValuesX[i - 1]
+                                : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
+                                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+
+                const label = {
+                    x: labelX,
+                    y: this.canvas.height - this.#paddings.bottom,
+                    label: this.data.xType === OPlotAxisType.date
                         ? this.#allValuesX[i - 1].toLocaleDateString()
                         : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                             ? this.#allValuesX[i - 1]
                             : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
-                                .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
-
-            const label = {
-                x: labelX,
-                y: this.canvas.height - this.#paddings.bottom,
-                label: this.data.xType === OPlotAxisType.date
-                    ? this.#allValuesX[i - 1].toLocaleDateString()
-                    : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                        ? this.#allValuesX[i - 1]
-                        : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
-                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-            }
-
-            let isRender = i >= xCounter * xStep
-
-            if (isRender) {
-                const textWidth = OHelper.stringWidth(label.label),
-                    imageDataX = label.x,
-                    imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth > 0 ? textWidth : 1, 24).data.buffer)
-
-                for (let i = 0; i < imageData.length; i++)
-                    if (imageData[i] & 0xff000000) {
-                        isRender = false
-                        break
-                    }
-            }
-
-            if(isRender) {
-                ctx.fillText(label.label,
-                    label.x - (!isContainsBar ? this.#x.step / 2 : 0),
-                    label.y + axisLabelOffset)
-
-                if (isContainsBar) {
-                    ctx.beginPath()
-
-                    ctx.moveTo(label.x, label.y)
-                    ctx.lineTo(label.x, this.#paddings.top)
-
-                    ctx.lineWidth = 1
-                    ctx.strokeStyle = axisLineColor
-                    ctx.stroke()
-
-                    ctx.closePath()
+                                .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                 }
 
-                xCounter++
-            }
-        }
+                let isRender = i >= xCounter * xStep
 
-        ctx.textAlign = 'right'
-        ctx.textBaseline = 'middle'
+                if (isRender) {
+                    const textWidth = OHelper.stringWidth(label.label),
+                        imageDataX = label.x,
+                        imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth > 0 ? textWidth : 1, 24).data.buffer)
+
+                    for (let i = 0; i < imageData.length; i++)
+                        if (imageData[i] & 0xff000000) {
+                            isRender = false
+                            break
+                        }
+                }
+
+                if(isRender) {
+                    ctx.fillText(label.label,
+                        label.x - (!isContainsBar ? this.#x.step / 2 : 0),
+                        label.y + axisLabelOffset)
+
+                    if (isContainsBar) {
+                        ctx.beginPath()
+
+                        ctx.moveTo(label.x, label.y)
+                        ctx.lineTo(label.x, this.#paddings.top)
+
+                        ctx.lineWidth = 1
+                        ctx.strokeStyle = axisLineColor
+                        ctx.stroke()
+
+                        ctx.closePath()
+                    }
+
+                    xCounter++
+                }
+            }
+
+            ctx.textAlign = 'right'
+            ctx.textBaseline = 'middle'
+
+            const yCount = this.#y.count > 10 ? 10 : this.#y.count
+
+            let yCounter = isContainsBar ? 1 : 0,
+                yStep = this.#allValuesY.length / yCount
+
+            for (let i = isContainsBar ? 1 : 0; i < this.#allValuesY.length + 1; i++) {
+                const labelY = this.canvas.height - yCounter * yStep * this.#y.step - this.#paddings.bottom,
+                    labelYAsKey = Math.round(this.canvas.height - i * this.#y.step - this.#paddings.bottom)
+
+                if (!this.#labelsY.get(labelYAsKey))
+                    this.#labelsY.set(labelYAsKey,
+                        (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1))
+                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+
+                let isRender = i >= yCounter * yStep
+
+                if (isRender) {
+                    const label = {
+                        x: this.#paddings.left,
+                        y: labelY,
+                        label: (this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1))
+                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    }
+
+                    ctx.fillText(label.label,
+                        label.x - axisLabelOffset,
+                        label.y + (isContainsBar ? this.#y.step / 2 : 0))
+
+                    if (this.data.values.filter(s => s.type === OPlotTypes.column
+                        || s.type === OPlotTypes.stackingColumn
+                        || s.type === OPlotTypes.line)
+                        .length > 0) {
+                        ctx.beginPath()
+
+                        ctx.moveTo(label.x, label.y)
+                        ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
+
+                        ctx.lineWidth = 1
+                        ctx.strokeStyle = axisLineColor
+                        ctx.stroke()
+
+                        ctx.closePath()
+                    }
+
+                    yCounter++
+                }
+            }
+
+            ctx.closePath()
+
+            this.#base = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
+        } else {
+            ctx.putImageData(this.#base, 0, 0)
+        }
 
         let x = 0,
             y = 0
@@ -311,57 +372,7 @@ class OPlotRenderer extends ORenderer {
         let x1111 = 0,
             y1111 = 0
 
-        const yCount = this.#y.count > 10 ? 10 : this.#y.count
-
-        let yCounter = isContainsBar ? 1 : 0,
-            yStep = this.#allValuesY.length / yCount
-
-        for (let i = isContainsBar ? 1 : 0; i < this.#allValuesY.length + 1; i++) {
-            const labelY = this.canvas.height - yCounter * yStep * this.#y.step - this.#paddings.bottom,
-                labelYAsKey = Math.round(this.canvas.height - i * this.#y.step - this.#paddings.bottom)
-
-            if (!this.#labelsY.get(labelYAsKey))
-                this.#labelsY.set(labelYAsKey,
-                    (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1))
-                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
-
-            let isRender = i >= yCounter * yStep
-
-            if (isRender) {
-                const label = {
-                    x: this.#paddings.left,
-                    y: labelY,
-                    label: (this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1))
-                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                }
-
-                ctx.fillText(label.label,
-                    label.x - axisLabelOffset,
-                    label.y + (isContainsBar ? this.#y.step / 2 : 0))
-
-                if (this.data.values.filter(s => s.type === OPlotTypes.column
-                    || s.type === OPlotTypes.stackingColumn
-                    || s.type === OPlotTypes.line)
-                    .length > 0) {
-                    ctx.beginPath()
-
-                    ctx.moveTo(label.x, label.y)
-                    ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
-
-                    ctx.lineWidth = 1
-                    ctx.strokeStyle = axisLineColor
-                    ctx.stroke()
-
-                    ctx.closePath()
-                }
-
-                yCounter++
-            }
-        }
-
         let isFirst = true
-
-        ctx.closePath()
 
         let columnsIndex = 0,
             columnsCount = this.data.values.filter(s => s.type === OPlotTypes.column).length
