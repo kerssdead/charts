@@ -228,7 +228,10 @@ class OPlotRenderer extends ORenderer {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
 
-        let xSkipCount = 0
+        const xCount = this.#x.count > 10 ? 10 : this.#x.count
+
+        let xCounter = 1,
+            xStep = this.#x.count / xCount
 
         for (let i = !isContainsBar ? 1 : 0; i < this.#allValuesX.length + 1; i++) {
             const labelX = this.#paddings.left + i * this.#x.step,
@@ -247,35 +250,38 @@ class OPlotRenderer extends ORenderer {
                 label: this.#labelsX.get(labelXAsKey)
             }
 
-            let isBusy = xSkipCount !== 0 ? i % xSkipCount !== 0 : false
+            let isRender = i >= xCounter * xStep
 
-            const textWidth = OHelper.stringWidth(label.label),
-                imageDataX = label.x,
-                imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth > 0 ? textWidth : 1, 24).data.buffer)
+            if (isRender) {
+                const textWidth = OHelper.stringWidth(label.label),
+                    imageDataX = label.x,
+                    imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth > 0 ? textWidth : 1, 24).data.buffer)
 
-            if (!isBusy)
                 for (let i = 0; i < imageData.length; i++)
                     if (imageData[i] & 0xff000000) {
-                        isBusy = true
-                        xSkipCount++
+                        isRender = false
                         break
                     }
+            }
 
-            if(!isBusy)
+            if(isRender) {
                 ctx.fillText(label.label,
                     label.x - (!isContainsBar ? this.#x.step / 2 : 0),
                     label.y + axisLabelOffset)
 
-            ctx.beginPath()
+                ctx.beginPath()
 
-            ctx.moveTo(label.x, label.y)
-            ctx.lineTo(label.x, this.#paddings.top)
+                ctx.moveTo(label.x, label.y)
+                ctx.lineTo(label.x, this.#paddings.top)
 
-            ctx.lineWidth = 1
-            ctx.strokeStyle = axisLineColor
-            ctx.stroke()
+                ctx.lineWidth = 1
+                ctx.strokeStyle = axisLineColor
+                ctx.stroke()
 
-            ctx.closePath()
+                ctx.closePath()
+
+                xCounter++
+            }
         }
 
         ctx.textAlign = 'right'
