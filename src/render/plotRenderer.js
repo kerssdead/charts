@@ -379,6 +379,8 @@ class OPlotRenderer extends ORenderer {
 
                                         const transition = passed / duration
 
+                                        yValue = value.y > this.data.yMax ? this.data.yMax : value.y
+
                                         x = this.#paddings.left + xIndex * this.#x.step
                                         y = this.canvas.height - this.#paddings.bottom - yValue / this.#y.unit * this.#y.step + yCorrection
 
