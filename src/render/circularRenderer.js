@@ -360,7 +360,6 @@ class OCircularRenderer extends ORenderer {
             this.animations.add(value,
                 OAnimationTypes.click,
                 {
-                    timer: null,
                     duration: 100,
                     before: () => {
                         if (!!this.#onClickEvent) {
@@ -407,7 +406,6 @@ class OCircularRenderer extends ORenderer {
             this.animations.add(value,
                 OAnimationTypes.mouseleave,
                 {
-                    timer: null,
                     duration: 100,
                     before: () => {
                         return !this.#isInsideSector(this.#onMouseMoveEvent, value)
@@ -445,7 +443,6 @@ class OCircularRenderer extends ORenderer {
             this.animations.add(value,
                 OAnimationTypes.mouseover,
                 {
-                    timer: null,
                     duration: 100,
                     before: () => {
                         return this.#isInsideSector(this.#onMouseMoveEvent, value)

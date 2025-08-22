@@ -1,6 +1,6 @@
 class OAnimationItem {
     /**
-     * @type {Date}
+     * @type {Date|null}
      */
     timer
 

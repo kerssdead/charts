@@ -82,7 +82,6 @@ class ODropdown {
             this.animations.add({ id: 'animation-dropdown' },
                 OAnimationTypes.mouseover,
                 {
-                    timer: null,
                     duration: 300,
                     before: () => {
                         return clickEvent === undefined
@@ -102,11 +101,7 @@ class ODropdown {
             this.animations.add({ id: 'animation-dropdown' },
                 OAnimationTypes.mouseleave,
                 {
-                    timer: null,
                     duration: 300,
-                    before: () => {
-                        return true
-                    },
                     body: (passed, duration) => {
                         this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseover)
 
@@ -158,7 +153,6 @@ class ODropdown {
                     this.animations.add({ id: 'animation-dropdown' + item.text },
                         OAnimationTypes.mouseover,
                         {
-                            timer: null,
                             duration: 300,
                             before: () => {
                                 return clickEvent === undefined
@@ -185,11 +179,7 @@ class ODropdown {
                     this.animations.add({ id: 'animation-dropdown' + item.text },
                         OAnimationTypes.mouseleave,
                         {
-                            timer: null,
                             duration: 300,
-                            before: () => {
-                                return true
-                            },
                             body: (passed, duration) => {
                                 this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseover)
 

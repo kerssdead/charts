@@ -185,7 +185,6 @@ class OLegend {
             this.animations.add(value,
                 OAnimationTypes.click,
                 {
-                    timer: null,
                     duration: 220,
                     continuous: true,
                     before: () => {
@@ -210,7 +209,6 @@ class OLegend {
             this.animations.add(value,
                 OAnimationTypes.mouseleave,
                 {
-                    timer: null,
                     duration: 100,
                     before: () => {
                         return !isHover(this.#onMouseMoveEvent) && !this.#isInit
@@ -231,7 +229,6 @@ class OLegend {
             this.animations.add(value,
                 OAnimationTypes.mouseover,
                 {
-                    timer: null,
                     duration: 100,
                     before: () => {
                         return isHover(this.#onMouseMoveEvent)

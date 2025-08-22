@@ -145,11 +145,7 @@ class OGaugeRenderer extends ORenderer {
             this.animations.add({ id: value.id },
                 OAnimationTypes.init,
                 {
-                    timer: null,
                     duration: 450,
-                    before: () => {
-                        return true
-                    },
                     body: (passed, duration) => {
                         if (passed > duration)
                             passed = duration

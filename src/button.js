@@ -77,7 +77,6 @@ class OButton {
             this.animations.add({ id: 'animation-button' },
                 OAnimationTypes.mouseover,
                 {
-                    timer: null,
                     duration: 300,
                     before: () => {
                         return clickEvent === undefined
@@ -97,11 +96,7 @@ class OButton {
             this.animations.add({ id: 'animation-button-leave' },
                 OAnimationTypes.mouseleave,
                 {
-                    timer: null,
                     duration: 300,
-                    before: () => {
-                        return true
-                    },
                     body: (passed, duration) => {
                         this.animations.reload({ id: 'animation-button' }, OAnimationTypes.mouseover)
 

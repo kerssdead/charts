@@ -176,7 +176,6 @@ class OTreeRenderer extends ORenderer {
                     this.animations.add({ id: cell.id },
                         OAnimationTypes.init,
                         {
-                            timer: null,
                             duration: 125 + (this.chart.data.values.indexOf(item) + 1) / this.chart.data.values.length * 175,
                             before: (item, passed, duration) => {
                                 return passed <= duration
@@ -214,7 +213,6 @@ class OTreeRenderer extends ORenderer {
                     this.animations.add({ id: cell.id },
                         OAnimationTypes.mouseover,
                         {
-                            timer: null,
                             duration: 140,
                             before: () => {
                                 return this.#isInCell(cell)

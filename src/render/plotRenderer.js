@@ -262,7 +262,6 @@ class OPlotRenderer extends ORenderer {
                             this.animations.add({ id: value.id },
                                 OAnimationTypes.init,
                                 {
-                                    timer: null,
                                     duration: index * pointDuration,
                                     before: (item, passed, duration) => {
                                         return passed < duration && index > 0
@@ -330,7 +329,6 @@ class OPlotRenderer extends ORenderer {
                             this.animations.add({ id: value.id },
                                 OAnimationTypes.init,
                                 {
-                                    timer: null,
                                     duration: 1500,
                                     before: (item, passed, duration) => {
                                         return passed < duration && index > 0
@@ -374,7 +372,6 @@ class OPlotRenderer extends ORenderer {
                             this.animations.add({ id: value.id + columnsIndex },
                                 OAnimationTypes.init,
                                 {
-                                    timer: null,
                                     duration: 800,
                                     body: (passed, duration) => {
                                         if (passed > duration)
@@ -431,7 +428,6 @@ class OPlotRenderer extends ORenderer {
                             this.animations.add({ id: value.id + barsIndex },
                                 OAnimationTypes.init,
                                 {
-                                    timer: null,
                                     duration: 800,
                                     body: (passed, duration) => {
                                         if (passed > duration)
@@ -488,7 +484,6 @@ class OPlotRenderer extends ORenderer {
                             this.animations.add({ id: value.id + index },
                                 OAnimationTypes.init,
                                 {
-                                    timer: null,
                                     duration: 800,
                                     body: (passed, duration) => {
                                         if (passed > duration)
