@@ -51,3 +51,12 @@ const OPlotTypes = Object.freeze({
     bar: 3,
     stackingColumn: 4
 })
+
+/**
+ * @readonly
+ * @enum {string}
+ */
+const OPlotAxisType = Object.freeze({
+    number: 0,
+    date: 1
+})

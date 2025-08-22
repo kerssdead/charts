@@ -105,6 +105,9 @@ class OPlotRenderer extends ORenderer {
         if (settings.title)
             this.#paddings.top += 50
 
+        if (this.data.xType === OPlotAxisType.date)
+            xValues.sort((a, b) => a.getTime() - b.getTime())
+
         yValues.sort((a, b) => b - a)
 
         this.#allValuesX = [...new Set(xValues.filter(x => x !== undefined))]
@@ -239,18 +242,22 @@ class OPlotRenderer extends ORenderer {
 
             if (!this.#labelsX.has(labelXAsKey))
                 this.#labelsX.set(labelXAsKey,
-                    isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                        ? this.#allValuesX[i - 1]
-                        : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
-                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+                    this.data.xType === OPlotAxisType.date
+                        ? this.#allValuesX[i - 1].toLocaleDateString()
+                        : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
+                            ? this.#allValuesX[i - 1]
+                            : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
+                                .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
 
             const label = {
                 x: labelX,
                 y: this.canvas.height - this.#paddings.bottom,
-                label: isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                    ? this.#allValuesX[i - 1]
-                    : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
-                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                label: this.data.xType === OPlotAxisType.date
+                    ? this.#allValuesX[i - 1].toLocaleDateString()
+                    : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
+                        ? this.#allValuesX[i - 1]
+                        : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
+                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
             }
 
             let isRender = i >= xCounter * xStep
@@ -332,7 +339,10 @@ class OPlotRenderer extends ORenderer {
                     label.x - axisLabelOffset,
                     label.y + (isContainsBar ? this.#y.step / 2 : 0))
 
-                if (this.data.values.filter(s => s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn).length > 0) {
+                if (this.data.values.filter(s => s.type === OPlotTypes.column
+                    || s.type === OPlotTypes.stackingColumn
+                    || s.type === OPlotTypes.line)
+                    .length > 0) {
                     ctx.beginPath()
 
                     ctx.moveTo(label.x, label.y)

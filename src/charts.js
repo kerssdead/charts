@@ -76,8 +76,15 @@ class OChart {
 
             if (isPlot) {
                 item.type ??= OPlotTypes.line
-                for (let it of item.values)
+                for (let it of item.values) {
                     it.id = OHelper.guid()
+                    if (this.settings.data.xType === OPlotAxisType.date) {
+                        if (OHelper.isISOString(it.x))
+                            it.x = new Date(it.x)
+                        else
+                            console.warn(`${it.x} is not a date in ISO format.`)
+                    }
+                }
             }
         }
 
