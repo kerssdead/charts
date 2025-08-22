@@ -82,7 +82,7 @@ class OButton {
                         return clickEvent === undefined
                     },
                     body: (passed, duration) => {
-                        this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseleave)
+                        this.animations.reload({ id: 'animation-button-leave' }, OAnimationTypes.mouseleave)
 
                         if (passed > duration)
                             passed = duration
