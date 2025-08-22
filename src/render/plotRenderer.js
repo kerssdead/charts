@@ -299,6 +299,11 @@ class OPlotRenderer extends ORenderer {
         let x1111 = 0,
             y1111 = 0
 
+        const yCount = this.#y.count > 10 ? 10 : this.#y.count
+
+        let yCounter = 1,
+            yStep = this.#y.count / yCount
+
         for (let i = isContainsBar ? 1 : 0; i < this.#allValuesY.length + 1; i++) {
             const labelY = this.canvas.height - i * this.#y.step - this.#paddings.bottom,
                 labelYAsKey = Math.round(labelY)
@@ -308,26 +313,32 @@ class OPlotRenderer extends ORenderer {
                     (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1))
                         .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
 
-            const label = {
-                x: this.#paddings.left,
-                y: labelY,
-                label: this.#labelsY.get(labelYAsKey)
+            let isRender = i >= yCounter * yStep
+
+            if (isRender) {
+                const label = {
+                    x: this.#paddings.left,
+                    y: labelY,
+                    label: this.#labelsY.get(labelYAsKey)
+                }
+
+                ctx.fillText(label.label,
+                    label.x - axisLabelOffset,
+                    label.y + (isContainsBar ? this.#y.step / 2 : 0))
+
+                ctx.beginPath()
+
+                ctx.moveTo(label.x, label.y)
+                ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
+
+                ctx.lineWidth = 1
+                ctx.strokeStyle = axisLineColor
+                ctx.stroke()
+
+                ctx.closePath()
+
+                yCounter++
             }
-
-            ctx.fillText(label.label,
-                label.x - axisLabelOffset,
-                label.y + (isContainsBar ? this.#y.step / 2 : 0))
-
-            ctx.beginPath()
-
-            ctx.moveTo(label.x, label.y)
-            ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
-
-            ctx.lineWidth = 1
-            ctx.strokeStyle = axisLineColor
-            ctx.stroke()
-
-            ctx.closePath()
         }
 
         let isFirst = true
