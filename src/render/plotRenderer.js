@@ -60,6 +60,16 @@ class OPlotRenderer extends ORenderer {
     #labelsY
 
     /**
+     * @type {any[]}
+     */
+    #allValuesX
+
+    /**
+     * @type {any[]}
+     */
+    #allValuesY
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -95,12 +105,17 @@ class OPlotRenderer extends ORenderer {
         if (settings.title)
             this.#paddings.top += 50
 
+        yValues.sort((a, b) => b - a)
+
+        this.#allValuesX = [...new Set(xValues.filter(x => x !== undefined))]
+        this.#allValuesY = [...new Set(yValues.filter(y => y !== undefined))]
+
         this.#x = {
             min: Math.min(...xValues),
             max: Math.max(...xValues),
-            unit: (Math.abs(Math.min(...xValues)) + Math.abs(Math.max(...xValues))) / (this.data.values[0].values.length - 1),
-            step: (this.canvas.width - this.#paddings.left - this.#paddings.right) / (this.data.values[0].values.length),
-            count: this.data.values[0].values.length
+            unit: (Math.abs(Math.min(...xValues)) + Math.abs(Math.max(...xValues))) / (this.#allValuesX.length - 1),
+            step: (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length,
+            count: this.#allValuesX.length
         }
 
         let yMin = Math.min(...yValues)
@@ -110,9 +125,9 @@ class OPlotRenderer extends ORenderer {
         this.#y = {
             min: yMin,
             max: this.data.yMax ?? Math.max(...yValues),
-            unit: (Math.abs(yMin) + Math.abs(this.data.yMax ?? Math.max(...yValues))) / (this.data.values[0].values.length - 1),
-            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / (this.data.values[0].values.length),
-            count: this.data.values[0].values.length
+            unit: (Math.abs(yMin) + Math.abs(this.data.yMax ?? Math.max(...yValues))) / (this.#allValuesY.length - 1),
+            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / (this.#allValuesY.length),
+            count: this.#allValuesY.length
         }
 
         let stackingColumns = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn)
@@ -139,7 +154,7 @@ class OPlotRenderer extends ORenderer {
         const yMaxWidth = OHelper.stringWidth(this.#y.max.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
         if (yMaxWidth > this.#paddings.left - 40) {
             this.#paddings.left += yMaxWidth - this.#paddings.left + 40
-            this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / (this.data.values[0].values.length)
+            this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length
         }
 
         this.tooltip = new OTooltip(this.canvas, this.settings)
@@ -215,14 +230,14 @@ class OPlotRenderer extends ORenderer {
 
         let xSkipCount = 0
 
-        for (let i = !isContainsBar ? 1 : 0; i < this.data.values[0].values.length + 1; i++) {
+        for (let i = !isContainsBar ? 1 : 0; i < this.#allValuesX.length + 1; i++) {
             const labelX = this.#paddings.left + i * this.#x.step,
                 labelXAsKey = Math.round(labelX)
 
             if (!this.#labelsX.has(labelXAsKey))
                 this.#labelsX.set(labelXAsKey,
                     isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                        ? this.data.values[0].values[i - 1].x
+                        ? this.#allValuesX[i - 1]
                         : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
                             .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
 
@@ -278,7 +293,7 @@ class OPlotRenderer extends ORenderer {
         let x1111 = 0,
             y1111 = 0
 
-        for (let i = isContainsBar ? 1 : 0; i < this.data.values[0].values.length + 1; i++) {
+        for (let i = isContainsBar ? 1 : 0; i < this.#allValuesY.length + 1; i++) {
             const labelY = this.canvas.height - i * this.#y.step - this.#paddings.bottom,
                 labelYAsKey = Math.round(labelY)
 
@@ -322,8 +337,10 @@ class OPlotRenderer extends ORenderer {
 
         let stackingAccumulator = []
 
-        for (let i = 0; i < this.data.values.filter(s => !s.disabled)[0].values.length; i++)
+        for (let i = 0; i < this.#allValuesY.length; i++)
             stackingAccumulator.push(0)
+
+        let isLast = false
 
         for (const series of this.data.values.filter(s => !s.disabled)) {
             let hoverX
@@ -335,7 +352,9 @@ class OPlotRenderer extends ORenderer {
             ctx.lineWidth = series.width
 
             for (const value of series.values) {
-                const index = series.values.indexOf(value)
+                const index = series.values.indexOf(value),
+                    xIndex = this.#allValuesX.indexOf(value.x),
+                    yIndex = this.#allValuesY.indexOf(value.y)
 
                 const tooltipXValue = value.x ? (+value.x).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0',
                     tooltipYValue = value.y ? (+value.y).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0'
@@ -344,7 +363,7 @@ class OPlotRenderer extends ORenderer {
                     case OPlotTypes.line:
                         const yCorrection = this.#y.min / this.#y.unit * this.#y.step
 
-                        x = this.#paddings.left + (index + .5) * this.#x.step
+                        x = this.#paddings.left + (xIndex + .5) * this.#x.step
                         y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection - this.#y.step / 2
 
                         const pointDuration = 1500 / series.values.length * 1.2
@@ -372,13 +391,13 @@ class OPlotRenderer extends ORenderer {
 
                                         const transition = passed / duration
 
-                                        x = this.#paddings.left + (index + .5) * this.#x.step
+                                        x = this.#paddings.left + (xIndex + .5) * this.#x.step
                                         y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection - this.#y.step / 2
 
                                         const next = series.values[index - 1]
 
                                         let prevValue = {
-                                            x: this.#paddings.left + (index - .5) * this.#x.step,
+                                            x: this.#paddings.left + (xIndex - .5) * this.#x.step,
                                             y: this.canvas.height - this.#paddings.bottom - next.y / this.#y.unit * this.#y.step + yCorrection - this.#y.step / 2
                                         }
 
@@ -454,7 +473,7 @@ class OPlotRenderer extends ORenderer {
 
                         let yValue11 = value.y > this.data.yMax ? this.data.yMax : value.y
 
-                        x1 = this.#paddings.left + index * this.#x.step
+                        x1 = this.#paddings.left + xIndex * this.#x.step
                         y1 = this.canvas.height - this.#paddings.bottom - yValue11 / this.#y.unit * this.#y.step + yCorr
 
                         let columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
@@ -473,7 +492,7 @@ class OPlotRenderer extends ORenderer {
 
                                         const transition = passed / duration
 
-                                        x1 = this.#paddings.left + index * this.#x.step
+                                        x1 = this.#paddings.left + xIndex * this.#x.step
                                         y1 = this.canvas.height - this.#paddings.bottom - yValue11 / this.#y.unit * this.#y.step + yCorr
 
                                         columnsIndex = this.data.values.filter(s => s.type === OPlotTypes.column)
@@ -495,6 +514,10 @@ class OPlotRenderer extends ORenderer {
                                 y1 - this.canvas.height + this.#paddings.bottom)
 
                             if (this.#isOnX(x1 + this.#x.step / 2)) {
+                                isLast = this.data.values.filter(s => (s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn)
+                                        && s.values.filter(v => v.x === value.x).length > 0).length - 1
+                                    <= columnsIndex
+
                                 hoverX = {
                                     x: x1,
                                     y: y1,
@@ -510,7 +533,7 @@ class OPlotRenderer extends ORenderer {
 
                     case OPlotTypes.bar:
                         x11 = this.#paddings.left
-                        y11 = this.#paddings.top + index * this.#y.step + this.#y.step / 2
+                        y11 = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
 
                         const isInitInProgress1 = !this.#isInit || this.animations.contains({ id: value.id + barsIndex }, OAnimationTypes.init)
 
@@ -527,7 +550,7 @@ class OPlotRenderer extends ORenderer {
                                         const transition = passed / duration
 
                                         x11 = this.#paddings.left
-                                        y11 = this.#paddings.top + index * this.#y.step + this.#y.step / 2
+                                        y11 = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
 
                                         barsIndex = this.data.values.filter(s => s.type === OPlotTypes.bar)
                                             .indexOf(series)
@@ -564,7 +587,7 @@ class OPlotRenderer extends ORenderer {
                     case OPlotTypes.stackingColumn:
                         const yCorr22 = this.#y.min / this.#y.unit * this.#y.step
 
-                        x1111 = this.#paddings.left + index * this.#x.step
+                        x1111 = this.#paddings.left + xIndex * this.#x.step
                         y1111 = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorr22
 
                         let columnWidth1 = this.#x.step * (series.width ? series.width / 100 : .5)
@@ -583,17 +606,17 @@ class OPlotRenderer extends ORenderer {
 
                                         const transition = passed / duration
 
-                                        columnsIndex = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn)
+                                        columnsIndex = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn && s.values.filter(v => v.x === value.x).length > 0)
                                             .indexOf(series)
 
-                                        x1111 = this.#paddings.left + index * this.#x.step
+                                        x1111 = this.#paddings.left + xIndex * this.#x.step
                                         y1111 = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorr22
 
                                         if (columnsIndex === 0)
-                                            stackingAccumulator[index] = 0
+                                            stackingAccumulator[xIndex] = 0
 
-                                        let offset = stackingAccumulator[index] !== undefined
-                                            ? stackingAccumulator[index]
+                                        let offset = stackingAccumulator[xIndex] !== undefined
+                                            ? stackingAccumulator[xIndex]
                                             : 0
 
                                         let yValue2 = this.canvas.height - this.#paddings.bottom + offset,
@@ -609,15 +632,15 @@ class OPlotRenderer extends ORenderer {
                                                 yHeight2)
                                         }
 
-                                        stackingAccumulator[index] += (y1111 - this.canvas.height + this.#paddings.bottom) * transition
+                                        stackingAccumulator[xIndex] += (y1111 - this.canvas.height + this.#paddings.bottom) * transition
 
                                         if (passed === duration)
                                             this.animations.delete({ id: value.id + index }, OAnimationTypes.init)
                                     }
                                 })
                         } else {
-                            let offset = stackingAccumulator[index] !== undefined
-                                ? stackingAccumulator[index]
+                            let offset = stackingAccumulator[xIndex] !== undefined
+                                ? stackingAccumulator[xIndex]
                                 : 0
 
                             let yValue22 = this.canvas.height - this.#paddings.bottom + offset,
@@ -634,13 +657,17 @@ class OPlotRenderer extends ORenderer {
                                     yHeight22)
                             }
 
-                            stackingAccumulator[index] += (y1111 - this.canvas.height + this.#paddings.bottom)
+                            stackingAccumulator[xIndex] += (y1111 - this.canvas.height + this.#paddings.bottom)
 
                             if (this.#isOnX(x1111 + this.#x.step / 2)) {
+                                isLast = this.data.values.filter(s => (s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn)
+                                    && s.values.filter(v => v.x === value.x).length > 0).length - 1
+                                    <= columnsIndex
+
                                 hoverX = {
                                     x: x1111,
                                     y: y1111,
-                                    index: index
+                                    index: xIndex
                                 }
 
                                 tooltipText += `\n${series.label}: ${tooltipYValue}`
@@ -683,9 +710,7 @@ class OPlotRenderer extends ORenderer {
 
                 case OPlotTypes.column:
                 case OPlotTypes.stackingColumn:
-                    columnsCount = this.data.values.filter(s => s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn).length
-
-                    if (hoverX && columnsIndex + 1 === columnsCount) {
+                    if (hoverX && isLast) {
                         let offset = stackingAccumulator[hoverX.index] !== undefined
                             ? stackingAccumulator[hoverX.index]
                             : 0
