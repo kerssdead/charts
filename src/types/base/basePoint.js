@@ -30,11 +30,10 @@ class OBasePoint {
     data
 
     /**
-     * @param passed {int}
-     * @param duration {int}
+     * @param transition {number}
      */
-    toggle(passed, duration) {
-        if (passed === 0)
+    toggle(transition) {
+        if (transition === 0)
             this.disabled = !this.disabled
     }
 

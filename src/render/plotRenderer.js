@@ -262,21 +262,9 @@ class OPlotRenderer extends ORenderer {
                                 {
                                     duration: index * pointDuration,
                                     continuous: true,
-                                    body: (passed, duration) => {
-                                        if (passed > duration)
-                                            passed = duration
-
-                                        if (index > 0) {
-                                            passed -= (index - 1) * pointDuration
-                                            duration = pointDuration
-                                        } else {
+                                    body: transition => {
+                                        if (index === 0 || transition * index * pointDuration - index * pointDuration < 0)
                                             return
-                                        }
-
-                                        if (passed < 0)
-                                            return
-
-                                        const transition = passed / duration
 
                                         x = this.#paddings.left + (xIndex + .5) * this.#x.step
                                         y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection - this.#y.step / 2
@@ -323,16 +311,8 @@ class OPlotRenderer extends ORenderer {
                                 {
                                     duration: 1500,
                                     continuous: true,
-                                    body: (passed, duration) => {
-                                        if (passed > duration)
-                                            passed = duration
-
-                                        if (passed < 0)
-                                            return
-
-                                        const transition = 1 - passed / duration
-
-                                        ctx.lineTo(this.canvas.width - this.#paddings.right - (this.canvas.width - this.#paddings.left - this.#paddings.right) * transition,
+                                    body: transition => {
+                                        ctx.lineTo(this.canvas.width - this.#paddings.right - (this.canvas.width - this.#paddings.left - this.#paddings.right) * (1 - transition),
                                             yValue)
                                     }
                                 })
@@ -359,12 +339,7 @@ class OPlotRenderer extends ORenderer {
                                 {
                                     duration: 800,
                                     continuous: true,
-                                    body: (passed, duration) => {
-                                        if (passed > duration)
-                                            passed = duration
-
-                                        const transition = passed / duration
-
+                                    body: transition => {
                                         yValue = value.y > this.data.yMax ? this.data.yMax : value.y
 
                                         x = this.#paddings.left + xIndex * this.#x.step
@@ -415,12 +390,7 @@ class OPlotRenderer extends ORenderer {
                                 {
                                     duration: 800,
                                     continuous: true,
-                                    body: (passed, duration) => {
-                                        if (passed > duration)
-                                            passed = duration
-
-                                        const transition = passed / duration
-
+                                    body: transition => {
                                         x = this.#paddings.left
                                         y = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
 
@@ -469,12 +439,7 @@ class OPlotRenderer extends ORenderer {
                                 {
                                     duration: 800,
                                     continuous: true,
-                                    body: (passed, duration) => {
-                                        if (passed > duration)
-                                            passed = duration
-
-                                        const transition = passed / duration
-
+                                    body: transition => {
                                         columnsIndex = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn && s.values.filter(v => v.x === value.x).length > 0)
                                             .indexOf(series)
 

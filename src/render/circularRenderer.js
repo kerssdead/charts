@@ -357,12 +357,7 @@ class OCircularRenderer extends ORenderer {
                     timer: new Date(),
                     duration: 125 + (this.chart.data.values.indexOf(value) + 1) / this.chart.data.values.length * 175,
                     continuous: true,
-                    body: (passed, duration) => {
-                        if (passed > duration)
-                            passed = duration
-
-                        const transition = passed / duration
-
+                    body: transition => {
                         const centerOfSector = {
                             x: this.#center.x + this.#radius / 2 * Math.cos(this.#accumulator + angle / 2),
                             y: this.#center.y + this.#radius / 2 * Math.sin(this.#accumulator + angle / 2)
@@ -406,25 +401,22 @@ class OCircularRenderer extends ORenderer {
                     before: () => {
                         return !this.#isInsideSector(this.#onMouseMoveEvent, value)
                     },
-                    body: (passed, duration) => {
+                    body: transition => {
                         let direction = this.#accumulator + angle / 2
 
-                        if (passed > duration || this.#currentHover === undefined)
-                            passed = duration
-
-                        const transition = {
-                            x: 20 * Math.cos(direction) * (1 - passed / duration),
-                            y: 20 * Math.sin(direction) * (1 - passed / duration)
+                        const transitionPos = {
+                            x: 20 * Math.cos(direction) * (1 - transition),
+                            y: 20 * Math.sin(direction) * (1 - transition)
                         }
 
-                        ctx.translate(transition.x, transition.y)
+                        ctx.translate(transitionPos.x, transitionPos.y)
 
-                        value.transition = transition
+                        value.transition = transitionPos
 
                         this.#drawSector({
                                 value: value.value,
                                 current: value.current,
-                                color: OHelper.adjustColor(value.color, Math.round(33 * (1 - passed / duration))),
+                                color: OHelper.adjustColor(value.color, Math.round(33 * (1 - transition))),
                                 label: value.label,
                                 id: value.id,
                                 disabled: value.disabled,
@@ -443,7 +435,7 @@ class OCircularRenderer extends ORenderer {
                     before: () => {
                         return this.#isInsideSector(this.#onMouseMoveEvent, value)
                     },
-                    body: (passed, duration) => {
+                    body: transition => {
                         const actualPiece = value.current / this.#sum,
                             actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
 
@@ -453,22 +445,19 @@ class OCircularRenderer extends ORenderer {
 
                         let direction = this.#accumulator + actualAngle / 2
 
-                        if (passed > duration)
-                            passed = duration
-
-                        const transition = {
-                            x: 20 * Math.cos(direction) * (passed / duration),
-                            y: 20 * Math.sin(direction) * (passed / duration)
+                        const transitionPos = {
+                            x: 20 * Math.cos(direction) * transition,
+                            y: 20 * Math.sin(direction) * transition
                         }
 
-                        ctx.translate(transition.x, transition.y)
+                        ctx.translate(transitionPos.x, transitionPos.y)
 
-                        value.transition = transition
+                        value.transition = transitionPos
 
                         this.#drawSector({
                                 value: value.value,
                                 current: value.current,
-                                color: OHelper.adjustColor(value.color, Math.round(33 * passed / duration)),
+                                color: OHelper.adjustColor(value.color, Math.round(33 * transition)),
                                 label: value.label,
                                 id: value.id,
                                 disabled: value.disabled,

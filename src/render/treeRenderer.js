@@ -178,12 +178,7 @@ class OTreeRenderer extends ORenderer {
                         {
                             duration: 125 + (this.chart.data.values.indexOf(item) + 1) / this.chart.data.values.length * 175,
                             continuous: true,
-                            body: (passed, duration) => {
-                                if (passed > duration)
-                                    duration = passed
-
-                                const transition = passed / duration
-
+                            body: transition => {
                                 const center = {
                                     x: cell.x + cell.w / 2,
                                     y: cell.y + cell.h / 2
@@ -215,11 +210,8 @@ class OTreeRenderer extends ORenderer {
                             before: () => {
                                 return this.#isInCell(cell)
                             },
-                            body: (passed, duration) => {
-                                if (passed > duration)
-                                    passed = duration
-
-                                const transition = 1 - passed / duration
+                            body: transition => {
+                                transition = 1 - transition
 
                                 const center = {
                                     x: cell.x + cell.w / 2,
@@ -245,12 +237,7 @@ class OTreeRenderer extends ORenderer {
                             before: () => {
                                 return !this.#isInCell(cell)
                             },
-                            body: (passed, duration) => {
-                                if (passed > duration)
-                                    passed = duration
-
-                                const transition = passed / duration
-
+                            body: transition => {
                                 const center = {
                                     x: cell.x + cell.w / 2,
                                     y: cell.y + cell.h / 2

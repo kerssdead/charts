@@ -29,16 +29,15 @@ class OSector extends OBasePoint {
     }
 
     /**
-     * @param passed {int}
-     * @param duration {int}
+     * @param transition {number}
      */
-    toggle(passed, duration) {
-        super.toggle(passed, duration)
+    toggle(transition) {
+        super.toggle(transition)
 
         if (this.disabled)
-            this.current = this.value * (1 - passed / duration)
+            this.current = this.value * (1 - transition)
         else
-            this.current = this.value * passed / duration
+            this.current = this.value * transition
     }
 
     /**

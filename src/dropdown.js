@@ -86,13 +86,10 @@ class ODropdown {
                     before: () => {
                         return clickEvent === undefined
                     },
-                    body: (passed, duration) => {
+                    body: transition => {
                         this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseleave)
 
-                        if (passed > duration)
-                            passed = duration
-
-                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(passed / duration * 100))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(transition * 100))
                     }
                 })
         } else {
@@ -102,13 +99,10 @@ class ODropdown {
                 OAnimationTypes.mouseleave,
                 {
                     duration: 300,
-                    body: (passed, duration) => {
+                    body: transition => {
                         this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseover)
 
-                        if (passed > duration)
-                            passed = duration
-
-                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(100 - passed / duration * 100))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round((1 - transition) * 100))
                     }
                 })
         }
@@ -157,13 +151,10 @@ class ODropdown {
                             before: () => {
                                 return clickEvent === undefined
                             },
-                            body: (passed, duration) => {
+                            body: transition => {
                                 this.animations.reload({ id: 'animation-dropdown' + item.text }, OAnimationTypes.mouseleave)
 
-                                if (passed > duration)
-                                    passed = duration
-
-                                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(passed / duration * 100))
+                                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(transition * 100))
                             }
                         })
 
@@ -180,13 +171,10 @@ class ODropdown {
                         OAnimationTypes.mouseleave,
                         {
                             duration: 300,
-                            body: (passed, duration) => {
+                            body: transition => {
                                 this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseover)
 
-                                if (passed > duration)
-                                    passed = duration
-
-                                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(100 - passed / duration * 100))
+                                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round((1 - transition) * 100))
                             }
                         })
                 }

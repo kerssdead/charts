@@ -61,8 +61,8 @@ class OAnimations {
     #process(key) {
         let item = this.#queue.get(key)
 
-        const stamp = new Date(),
-            passed = stamp - (item.timer ?? stamp)
+        const stamp = new Date()
+        let passed = stamp - (item.timer ?? stamp)
 
         const before = item.before ? item.before(item, passed, item.duration) : true
 
@@ -70,7 +70,9 @@ class OAnimations {
             item.timer = new Date()
 
         if (before || (item.inProgress && item.continuous)) {
-            item.body(passed, item.duration)
+            if (passed > item.duration)
+                passed = item.duration
+            item.body(passed / item.duration)
             item.inProgress = true
         }
 

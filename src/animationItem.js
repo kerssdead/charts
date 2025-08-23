@@ -10,7 +10,7 @@ class OAnimationItem {
     before
 
     /**
-     * @type {function(arg1:number, arg2:number)}
+     * @type {function(arg1:number)}
      */
     body
 

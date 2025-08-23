@@ -24,11 +24,10 @@ class OPlotSeries extends OBasePoint {
     }
 
     /**
-     * @param passed {int}
-     * @param duration {int}
+     * @param transition {number}
      */
-    toggle(passed, duration) {
-        super.toggle(passed, duration)
+    toggle(transition) {
+        super.toggle(transition)
     }
 
     /**

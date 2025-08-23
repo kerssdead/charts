@@ -190,13 +190,10 @@ class OLegend {
                     before: () => {
                         return isHover(this.#onClickEvent) && value.checkCondition()
                     },
-                    body: (passed, duration) => {
-                        if (passed > duration)
-                            passed = duration
+                    body: transition => {
+                        value.toggle(transition)
 
-                        value.toggle(passed, duration)
-
-                        if (passed === duration)
+                        if (transition === 1)
                             this.#onClickEvent = new PointerEvent('click')
                     }
                 })
@@ -213,15 +210,12 @@ class OLegend {
                     before: () => {
                         return !isHover(this.#onMouseMoveEvent) && !this.#isInit
                     },
-                    body: (passed, duration) => {
-                        if (passed > duration)
-                            passed = duration
-
+                    body: transition => {
                         ctx.beginPath()
 
                         ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
 
-                        ctx.fillStyle = OHelper.adjustColor('#ffffff', Math.round(-50 * (1 - passed / duration)))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', Math.round(-50 * (1 - transition)))
                         ctx.fill()
                     }
                 })
@@ -233,15 +227,12 @@ class OLegend {
                     before: () => {
                         return isHover(this.#onMouseMoveEvent)
                     },
-                    body: (passed, duration) => {
-                        if (passed > duration)
-                            passed = duration
-
+                    body: transition => {
                         ctx.beginPath()
 
                         ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
 
-                        ctx.fillStyle = OHelper.adjustColor('#ffffff', Math.round(-50 * passed / duration))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', Math.round(-50 * transition))
                         ctx.fill()
                     }
                 })
