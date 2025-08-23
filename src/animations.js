@@ -24,23 +24,11 @@ class OAnimations {
     /**
      * @param object {Object}
      * @param type {number}
-     */
-    delete(object, type) {
-        this.#queue.delete(this.#getKey(object, type))
-    }
-
-    /**
-     * @param object {Object}
-     * @param type {number}
      *
      * @return {boolean}
      */
     contains(object, type) {
         return this.#queue.has(this.#getKey(object, type))
-    }
-
-    any() {
-        return this.#queue.size > 0
     }
 
     /**
@@ -59,27 +47,20 @@ class OAnimations {
      * @param key {string}
      */
     #process(key) {
-        let item = this.#queue.get(key)
-
-        const stamp = new Date()
-        let passed = stamp - (item.timer ?? stamp)
-
-        const before = item.before ? item.before(item, passed, item.duration) : true
+        const item = this.#queue.get(key),
+            stamp = new Date(),
+            passed = stamp - (item.timer ?? stamp),
+            transition = passed > item.duration ? 1 : passed / item.duration,
+            before = item.before ? item.before() : true
 
         if (!item.timer && before)
-            item.timer = new Date()
+            item.timer = stamp
 
-        if (before || (item.inProgress && item.continuous)) {
-            if (passed > item.duration)
-                passed = item.duration
-            item.body(passed / item.duration)
-            item.inProgress = true
-        }
+        if (before)
+            item.body(transition)
 
-        if (passed >= item.duration && (!before || item.continuous)) {
+        if (transition === 1 && (!before || item.continuous))
             this.#queue.delete(key)
-            item.inProgress = false
-        }
     }
 
     /**

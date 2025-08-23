@@ -5,7 +5,7 @@ class OAnimationItem {
     timer
 
     /**
-     * @type {function(arg1:OAnimationItem, arg2:number, arg3:number):boolean}
+     * @type {function():boolean}
      */
     before
 
@@ -18,11 +18,6 @@ class OAnimationItem {
      * @type {number}
      */
     duration
-
-    /**
-     * @type {boolean}
-     */
-    inProgress
 
     /**
      * @type {boolean}

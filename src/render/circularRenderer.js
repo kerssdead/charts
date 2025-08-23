@@ -193,7 +193,7 @@ class OCircularRenderer extends ORenderer {
     }
 
     #draw() {
-        if (this.animations.any() || this.#onMouseMoveEvent || !!this.#isInit === false) {
+        if (this.#onMouseMoveEvent || !!this.#isInit === false) {
             this.#sum = this.data.values.reduce((acc, v) => acc + v.current, 0)
 
             let anglesSum = this.#startAngle
