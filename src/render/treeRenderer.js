@@ -177,9 +177,7 @@ class OTreeRenderer extends ORenderer {
                         OAnimationTypes.init,
                         {
                             duration: 125 + (this.chart.data.values.indexOf(item) + 1) / this.chart.data.values.length * 175,
-                            before: (item, passed, duration) => {
-                                return passed <= duration
-                            },
+                            continuous: true,
                             body: (passed, duration) => {
                                 if (passed > duration)
                                     duration = passed

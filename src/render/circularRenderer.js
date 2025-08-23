@@ -305,54 +305,6 @@ class OCircularRenderer extends ORenderer {
             y: this.#center.y + this.#radius * Math.sin(this.#accumulator + angle)
         }
 
-        if (!isInner && (!this.#isInit || this.animations.contains(value, OAnimationTypes.init))) {
-            this.animations.add(value,
-                OAnimationTypes.init,
-                {
-                    timer: new Date(),
-                    duration: 125 + (this.chart.data.values.indexOf(value) + 1) / this.chart.data.values.length * 175,
-                    before: (item, passed, duration) => {
-                        return passed <= duration
-                    },
-                    body: (passed, duration) => {
-                        if (passed > duration)
-                            passed = duration
-
-                        const transition = passed / duration
-
-                        const centerOfSector = {
-                            x: this.#center.x + this.#radius / 2 * Math.cos(this.#accumulator + angle / 2),
-                            y: this.#center.y + this.#radius / 2 * Math.sin(this.#accumulator + angle / 2)
-                        }
-
-                        const minSize = .7,
-                            rest = 1 - minSize
-
-                        ctx.translate(centerOfSector.x - centerOfSector.x * (minSize + transition * rest),
-                            centerOfSector.y - centerOfSector.y * (minSize + transition * rest))
-                        ctx.scale((minSize + transition * rest), (minSize + transition * rest))
-
-                        let opacity = Math.round(255 * transition).toString(16)
-
-                        if (opacity.length < 2)
-                            opacity = 0 + opacity
-
-                        this.#drawSector({
-                                value: value.value,
-                                current: value.current,
-                                color: value.color + opacity,
-                                label: value.label,
-                                id: value.id,
-                                disabled: value.disabled,
-                                innerRadius: value.innerRadius
-                            },
-                            true)
-
-                        ctx.resetTransform()
-                    }
-                })
-        }
-
         if (!!this.#onClickEvent
             && !isInner
             && !this.animations.contains(value, OAnimationTypes.init)
@@ -398,7 +350,51 @@ class OCircularRenderer extends ORenderer {
             this.#isHover = true
         }
 
-        if (this.#onMouseMoveEvent
+        if (!isInner && (!this.#isInit || this.animations.contains(value, OAnimationTypes.init))) {
+            this.animations.add(value,
+                OAnimationTypes.init,
+                {
+                    timer: new Date(),
+                    duration: 125 + (this.chart.data.values.indexOf(value) + 1) / this.chart.data.values.length * 175,
+                    continuous: true,
+                    body: (passed, duration) => {
+                        if (passed > duration)
+                            passed = duration
+
+                        const transition = passed / duration
+
+                        const centerOfSector = {
+                            x: this.#center.x + this.#radius / 2 * Math.cos(this.#accumulator + angle / 2),
+                            y: this.#center.y + this.#radius / 2 * Math.sin(this.#accumulator + angle / 2)
+                        }
+
+                        const minSize = .7,
+                            rest = 1 - minSize
+
+                        ctx.translate(centerOfSector.x - centerOfSector.x * (minSize + transition * rest),
+                            centerOfSector.y - centerOfSector.y * (minSize + transition * rest))
+                        ctx.scale((minSize + transition * rest), (minSize + transition * rest))
+
+                        let opacity = Math.round(255 * transition).toString(16)
+
+                        if (opacity.length < 2)
+                            opacity = 0 + opacity
+
+                        this.#drawSector({
+                                value: value.value,
+                                current: value.current,
+                                color: value.color + opacity,
+                                label: value.label,
+                                id: value.id,
+                                disabled: value.disabled,
+                                innerRadius: value.innerRadius
+                            },
+                            true)
+
+                        ctx.resetTransform()
+                    }
+                })
+        } else if (this.#onMouseMoveEvent
             && !isInner
             && !this.animations.contains(value, OAnimationTypes.init)
             && !this.#pinned.includes(value.id)

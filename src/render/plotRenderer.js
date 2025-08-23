@@ -216,8 +216,6 @@ class OPlotRenderer extends ORenderer {
             columnWidth = 0,
             isInitInProgress = false
 
-        let isFirst = true
-
         let columnsIndex = 0,
             columnsCount = this.data.values.filter(s => s.type === OPlotTypes.column).length
 
@@ -263,9 +261,7 @@ class OPlotRenderer extends ORenderer {
                                 OAnimationTypes.init,
                                 {
                                     duration: index * pointDuration,
-                                    before: (item, passed, duration) => {
-                                        return passed < duration && index > 0
-                                    },
+                                    continuous: true,
                                     body: (passed, duration) => {
                                         if (passed > duration)
                                             passed = duration
@@ -273,6 +269,8 @@ class OPlotRenderer extends ORenderer {
                                         if (index > 0) {
                                             passed -= (index - 1) * pointDuration
                                             duration = pointDuration
+                                        } else {
+                                            return
                                         }
 
                                         if (passed < 0)
@@ -295,6 +293,8 @@ class OPlotRenderer extends ORenderer {
                                     }
                                 })
                         } else {
+                            ctx.lineTo(x, y)
+
                             if (this.#isOnX(x)) {
                                 hoverX = {
                                     x: x,
@@ -307,14 +307,6 @@ class OPlotRenderer extends ORenderer {
                             }
                         }
 
-                        if (isFirst) {
-                            ctx.moveTo(x, y)
-                            isFirst = false
-                        } else {
-                            if (!(!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)))
-                                ctx.lineTo(x, y)
-                        }
-
                         break
 
                     case OPlotTypes.attentionLine:
@@ -325,14 +317,12 @@ class OPlotRenderer extends ORenderer {
 
                         ctx.moveTo(this.#paddings.left, yValue)
 
-                        if (!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)) {
+                        if (!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init))
                             this.animations.add({ id: value.id },
                                 OAnimationTypes.init,
                                 {
                                     duration: 1500,
-                                    before: (item, passed, duration) => {
-                                        return passed < duration && index > 0
-                                    },
+                                    continuous: true,
                                     body: (passed, duration) => {
                                         if (passed > duration)
                                             passed = duration
@@ -344,14 +334,9 @@ class OPlotRenderer extends ORenderer {
 
                                         ctx.lineTo(this.canvas.width - this.#paddings.right - (this.canvas.width - this.#paddings.left - this.#paddings.right) * transition,
                                             yValue)
-
-                                        if (passed === duration)
-                                            this.animations.delete({ id: value.id }, OAnimationTypes.init)
                                     }
                                 })
-                        }
-
-                        if (!(!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init)))
+                        else
                             ctx.lineTo(this.canvas.width - this.#paddings.right, yValue)
 
                         break
@@ -373,6 +358,7 @@ class OPlotRenderer extends ORenderer {
                                 OAnimationTypes.init,
                                 {
                                     duration: 800,
+                                    continuous: true,
                                     body: (passed, duration) => {
                                         if (passed > duration)
                                             passed = duration
@@ -391,9 +377,6 @@ class OPlotRenderer extends ORenderer {
                                             this.canvas.height - this.#paddings.bottom,
                                             columnWidth,
                                             (y - this.canvas.height + this.#paddings.bottom) * transition)
-
-                                        if (passed === duration)
-                                            this.animations.delete({ id: value.id + columnsIndex }, OAnimationTypes.init)
                                     }
                                 })
                         } else {
@@ -431,6 +414,7 @@ class OPlotRenderer extends ORenderer {
                                 OAnimationTypes.init,
                                 {
                                     duration: 800,
+                                    continuous: true,
                                     body: (passed, duration) => {
                                         if (passed > duration)
                                             passed = duration
@@ -447,9 +431,6 @@ class OPlotRenderer extends ORenderer {
                                             y - this.#y.step / 4 + barsIndex * barHeight,
                                             value.x / this.#x.unit * this.#x.step * transition,
                                             barHeight)
-
-                                        if (passed === duration)
-                                            this.animations.delete({ id: value.id + barsIndex }, OAnimationTypes.init)
                                     }
                                 })
                         } else {
@@ -487,6 +468,7 @@ class OPlotRenderer extends ORenderer {
                                 OAnimationTypes.init,
                                 {
                                     duration: 800,
+                                    continuous: true,
                                     body: (passed, duration) => {
                                         if (passed > duration)
                                             passed = duration
@@ -520,9 +502,6 @@ class OPlotRenderer extends ORenderer {
                                         }
 
                                         stackingAccumulator[xIndex] += (y - this.canvas.height + this.#paddings.bottom) * transition
-
-                                        if (passed === duration)
-                                            this.animations.delete({ id: value.id + index }, OAnimationTypes.init)
                                     }
                                 })
                         } else {
@@ -632,8 +611,6 @@ class OPlotRenderer extends ORenderer {
 
                     break
             }
-
-            isFirst = true
         }
 
         ctx.beginPath()

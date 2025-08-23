@@ -146,14 +146,12 @@ class OGaugeRenderer extends ORenderer {
                 OAnimationTypes.init,
                 {
                     duration: 450,
+                    continuous: true,
                     body: (passed, duration) => {
                         if (passed > duration)
                             passed = duration
 
                         value.current = value.value * (passed / duration)
-
-                        if (passed === duration)
-                            this.animations.delete({ id: value.id }, OAnimationTypes.init)
                     }
                 })
 
