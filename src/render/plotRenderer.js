@@ -263,7 +263,9 @@ class OPlotRenderer extends ORenderer {
                                     duration: index * pointDuration,
                                     continuous: true,
                                     body: transition => {
-                                        if (index === 0 || transition * index * pointDuration - index * pointDuration < 0)
+                                        transition = (transition * index * pointDuration - (index - 1) * pointDuration) / pointDuration
+
+                                        if (index === 0 || transition < 0)
                                             return
 
                                         x = this.#paddings.left + (xIndex + .5) * this.#x.step
