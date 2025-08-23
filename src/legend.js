@@ -30,11 +30,6 @@ class OLegend {
     #onClickEvent
 
     /**
-     * @type {Date}
-     */
-    #globalTimer
-
-    /**
      * @type {boolean}
      */
     #isInit = false
@@ -90,8 +85,6 @@ class OLegend {
         }
 
         chart.node.append(this.canvas)
-
-        this.#globalTimer = new Date()
 
         this.animations = new OAnimations()
 
