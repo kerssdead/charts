@@ -200,6 +200,7 @@ class OPlotRenderer extends ORenderer {
         ctx.font = '14px serif'
         ctx.fillStyle = '#000000'
         ctx.shadowBlur = null
+        ctx.lineJoin = 'round'
 
         const axisLineHoverColor = '#00000088'
 
