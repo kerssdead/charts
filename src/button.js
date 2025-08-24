@@ -88,8 +88,6 @@ class OButton {
                     }
                 })
         } else {
-            this.#canvas.style.cursor = 'default'
-
             this.animations.add({ id: 'animation-button-leave' },
                 OAnimationTypes.mouseleave,
                 {

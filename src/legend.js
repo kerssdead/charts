@@ -99,12 +99,11 @@ class OLegend {
                         value.reset()
                 }
             })
+
+        this.#initInteractions()
     }
 
     render() {
-        if (!this.#isInit)
-            this.#initInteractions()
-
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -112,6 +111,11 @@ class OLegend {
         let nextPoint = { x: 20, y: 20 }
 
         this.canvas.style.cursor = 'default'
+
+        ctx.font = '14px serif'
+        ctx.textAlign = 'start'
+        ctx.textBaseline = 'alphabetic'
+        ctx.strokeStyle = '#000000'
 
         const offsetX = OLegend.getOffsetToCenter(this.chart.data.values, this.canvas.width),
             offsetY = (this.canvas.height - OLegend.getLegendHeight(this.chart.data.values, this.canvas.width)) / 2
@@ -125,15 +129,7 @@ class OLegend {
 
         requestAnimationFrame(this.render.bind(this))
 
-        if (!this.#isInit)
-            this.canvas.dispatchEvent(new MouseEvent('mousemove'))
-
-        const isCursorPointer = this.canvas.style.cursor === 'pointer'
-
         this.#onClickEvent = this.#button.render(this.#onMouseMoveEvent, this.#onClickEvent)
-
-        if (isCursorPointer)
-            this.canvas.style.cursor = 'pointer'
 
         this.#isInit = true
     }
@@ -238,9 +234,6 @@ class OLegend {
         ctx.fill()
 
         ctx.fillStyle = '#000000'
-        ctx.font = '14px serif'
-        ctx.textAlign = 'start'
-        ctx.textBaseline = 'alphabetic'
         ctx.fillText(value.label, x + 20, y + 4)
 
         x += 20
@@ -249,8 +242,6 @@ class OLegend {
             ctx.beginPath()
             ctx.moveTo(x - 5, y)
             ctx.lineTo(x + textWidth, y)
-            ctx.fillStyle = '#000000'
-            ctx.strokeStyle = '#000000'
             ctx.stroke()
         }
 
@@ -270,13 +261,6 @@ class OLegend {
 
         this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
         this.canvas.onclick = event => this.#onClickEvent = event
-    }
-
-    /**
-     * @throws {Error}
-     */
-    destroy() {
-        throw new Error('Method not implemented')
     }
 
     refresh() {
