@@ -78,7 +78,7 @@ class OChart {
                 item.type ??= OPlotTypes.line
                 for (let it of item.values) {
                     it.id = OHelper.guid()
-                    if (this.settings.data.xType === OPlotAxisType.date) {
+                    if (this.settings.data.xType === OPlotAxisTypes.date) {
                         if (OHelper.isISOString(it.x))
                             it.x = new Date(it.x)
                         else

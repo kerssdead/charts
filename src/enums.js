@@ -56,7 +56,7 @@ const OPlotTypes = Object.freeze({
  * @readonly
  * @enum {string}
  */
-const OPlotAxisType = Object.freeze({
+const OPlotAxisTypes = Object.freeze({
     number: 0,
     date: 1
 })

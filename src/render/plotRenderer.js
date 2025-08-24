@@ -110,7 +110,7 @@ class OPlotRenderer extends ORenderer {
         if (settings.title)
             this.#paddings.top += 50
 
-        if (this.data.xType === OPlotAxisType.date)
+        if (this.data.xType === OPlotAxisTypes.date)
             xValues.sort((a, b) => a.getTime() - b.getTime())
 
         yValues.sort((a, b) => b - a)
@@ -703,7 +703,7 @@ class OPlotRenderer extends ORenderer {
 
             if (!this.#labelsX.has(labelXAsKey))
                 this.#labelsX.set(labelXAsKey,
-                    this.data.xType === OPlotAxisType.date
+                    this.data.xType === OPlotAxisTypes.date
                         ? this.#allValuesX[i - 1].toLocaleDateString()
                         : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                             ? this.#allValuesX[i - 1]
@@ -713,7 +713,7 @@ class OPlotRenderer extends ORenderer {
             const label = {
                 x: labelX,
                 y: this.canvas.height - this.#paddings.bottom,
-                label: this.data.xType === OPlotAxisType.date
+                label: this.data.xType === OPlotAxisTypes.date
                     ? this.#allValuesX[i - 1].toLocaleDateString()
                     : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                         ? this.#allValuesX[i - 1]
