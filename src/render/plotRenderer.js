@@ -83,12 +83,11 @@ class OPlotRenderer extends ORenderer {
         super(chart, settings, dynSettings)
 
         this.data = chart.data
-        this.data.values = this.data.values.map(v => new OPlotSeries(v))
 
         if (this.data.values.filter(v => v.type === OPlotTypes.bar).length > 0) {
             for (let series of this.data.values) {
                 for (let item of series.values) {
-                    let x = item.x
+                    const x = item.x
                     item['x'] = item.y
                     item['y'] = x
                 }
@@ -101,8 +100,8 @@ class OPlotRenderer extends ORenderer {
             yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
 
         this.#paddings = {
-            top: 40,
-            right: 60,
+            top: 30,
+            right: 40,
             bottom: 50,
             left: 80
         }
@@ -176,17 +175,6 @@ class OPlotRenderer extends ORenderer {
     render() {
         super.render()
 
-        if (this.#onMouseMoveEvent) {
-            let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + window.scrollX,
-                mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
-
-            if (this.#paddings.left > mouseX || mouseX > this.canvas.width - this.#paddings.right
-                || this.#paddings.top > mouseY || mouseY > this.canvas.height - this.#paddings.bottom) {
-                this.#tooltipX = undefined
-                this.#tooltipY = undefined
-            }
-        }
-
         let tooltipText = this.#tooltipX
             ? this.#labelsX.get(Math.round(this.#tooltipX))
             : this.#tooltipY
@@ -204,18 +192,13 @@ class OPlotRenderer extends ORenderer {
 
         const axisLineHoverColor = '#00000088'
 
-        if (!this.#base)
-            this.#base = this.#renderBase()
-        else
-            ctx.putImageData(this.#base, 0, 0)
+        this.#renderBase()
 
         let x = 0,
             y = 0,
             yValue = 0,
             yHeight = 0,
-            yCorrection = 0,
-            columnWidth = 0,
-            isInitInProgress = false
+            columnWidth = 0
 
         let columnsIndex = 0,
             columnsCount = this.data.values.filter(s => s.type === OPlotTypes.column).length
@@ -225,7 +208,6 @@ class OPlotRenderer extends ORenderer {
             barHeight = this.#y.step / (2 * barsCount)
 
         let stackingAccumulator = []
-
         for (let i = 0; i < this.#allValuesY.length; i++)
             stackingAccumulator.push(0)
 
@@ -241,19 +223,23 @@ class OPlotRenderer extends ORenderer {
             ctx.lineWidth = series.width
 
             for (const value of series.values) {
-                const index = series.values.indexOf(value),
+                let index = series.values.indexOf(value),
                     xIndex = this.#allValuesX.indexOf(value.x),
                     yIndex = this.#allValuesY.indexOf(value.y)
 
                 const tooltipXValue = value.x ? this.#allValuesX[xIndex] : '0',
                     tooltipYValue = value.y ? this.#allValuesY[yIndex] : '0'
 
+                if (series.type === OPlotTypes.line)
+                    xIndex += 1
+
+                x = this.#paddings.left
+                if (series.type !== OPlotTypes.bar)
+                    x += xIndex * this.#x.step
+
                 switch (series.type) {
                     case OPlotTypes.line:
-                        yCorrection = this.#y.min / this.#y.unit * this.#y.step
-
-                        x = this.#paddings.left + (xIndex + .5) * this.#x.step
-                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection - this.#y.step / 2
+                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step - this.#y.step / 2
 
                         const pointDuration = 1500 / series.values.length * 1.2
 
@@ -269,14 +255,14 @@ class OPlotRenderer extends ORenderer {
                                         if (index === 0 || transition < 0)
                                             return
 
-                                        x = this.#paddings.left + (xIndex + .5) * this.#x.step
-                                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection - this.#y.step / 2
+                                        x = this.#paddings.left + xIndex * this.#x.step
+                                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step - this.#y.step / 2
 
                                         const next = series.values[index - 1]
 
                                         let prevValue = {
-                                            x: this.#paddings.left + (xIndex - .5) * this.#x.step,
-                                            y: this.canvas.height - this.#paddings.bottom - next.y / this.#y.unit * this.#y.step + yCorrection - this.#y.step / 2
+                                            x: this.#paddings.left + (xIndex - 1) * this.#x.step,
+                                            y: this.canvas.height - this.#paddings.bottom - next.y / this.#y.unit * this.#y.step - this.#y.step / 2
                                         }
 
                                         ctx.lineTo(prevValue.x + (x - prevValue.x) * transition,
@@ -303,19 +289,16 @@ class OPlotRenderer extends ORenderer {
                     case OPlotTypes.attentionLine:
                         yValue = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step
 
-                        ctx.strokeStyle = series.color
-                        ctx.lineWidth = series.width
-
                         ctx.moveTo(this.#paddings.left, yValue)
 
-                        if (!this.#isInit || this.animations.contains({ id: value.id }, OAnimationTypes.init))
-                            this.animations.add({ id: value.id },
+                        if (!this.#isInit || this.animations.contains(value, OAnimationTypes.init))
+                            this.animations.add(value,
                                 OAnimationTypes.init,
                                 {
                                     duration: 1500,
                                     continuous: true,
                                     body: transition => {
-                                        ctx.lineTo(this.canvas.width - this.#paddings.right - (this.canvas.width - this.#paddings.left - this.#paddings.right) * (1 - transition),
+                                        ctx.lineTo(this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) * transition,
                                             yValue)
                                     }
                                 })
@@ -325,18 +308,13 @@ class OPlotRenderer extends ORenderer {
                         break
 
                     case OPlotTypes.column:
-                        yCorrection = this.#y.min / this.#y.unit * this.#y.step
-
                         yValue = value.y > this.data.yMax ? this.data.yMax : value.y
 
-                        x = this.#paddings.left + xIndex * this.#x.step
-                        y = this.canvas.height - this.#paddings.bottom - yValue / this.#y.unit * this.#y.step + yCorrection
+                        y = this.canvas.height - this.#paddings.bottom - yValue / this.#y.unit * this.#y.step
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
 
-                        isInitInProgress = !this.#isInit || this.animations.contains({ id: value.id + columnsIndex }, OAnimationTypes.init)
-
-                        if (isInitInProgress) {
+                        if (!this.#isInit || this.animations.contains({ id: value.id + columnsIndex }, OAnimationTypes.init)) {
                             this.animations.add({ id: value.id + columnsIndex },
                                 OAnimationTypes.init,
                                 {
@@ -346,7 +324,7 @@ class OPlotRenderer extends ORenderer {
                                         yValue = value.y > this.data.yMax ? this.data.yMax : value.y
 
                                         x = this.#paddings.left + xIndex * this.#x.step
-                                        y = this.canvas.height - this.#paddings.bottom - yValue / this.#y.unit * this.#y.step + yCorrection
+                                        y = this.canvas.height - this.#paddings.bottom - yValue / this.#y.unit * this.#y.step
 
                                         columnsIndex = this.data.values.filter(s => s.type === OPlotTypes.column)
                                             .indexOf(series)
@@ -382,19 +360,15 @@ class OPlotRenderer extends ORenderer {
                         break
 
                     case OPlotTypes.bar:
-                        x = this.#paddings.left
                         y = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
 
-                        isInitInProgress = !this.#isInit || this.animations.contains({ id: value.id + barsIndex }, OAnimationTypes.init)
-
-                        if (isInitInProgress) {
+                        if (!this.#isInit || this.animations.contains({ id: value.id + barsIndex }, OAnimationTypes.init)) {
                             this.animations.add({ id: value.id + barsIndex },
                                 OAnimationTypes.init,
                                 {
                                     duration: 800,
                                     continuous: true,
                                     body: transition => {
-                                        x = this.#paddings.left
                                         y = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
 
                                         barsIndex = this.data.values.filter(s => s.type === OPlotTypes.bar)
@@ -427,16 +401,11 @@ class OPlotRenderer extends ORenderer {
                         break
 
                     case OPlotTypes.stackingColumn:
-                        yCorrection = this.#y.min / this.#y.unit * this.#y.step
-
-                        x = this.#paddings.left + xIndex * this.#x.step
-                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection
+                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5)
 
-                        isInitInProgress = !this.#isInit || this.animations.contains({ id: value.id + index }, OAnimationTypes.init)
-
-                        if (isInitInProgress) {
+                        if (!this.#isInit || this.animations.contains({ id: value.id + index }, OAnimationTypes.init)) {
                             this.animations.add({ id: value.id + index },
                                 OAnimationTypes.init,
                                 {
@@ -447,7 +416,7 @@ class OPlotRenderer extends ORenderer {
                                             .indexOf(series)
 
                                         x = this.#paddings.left + xIndex * this.#x.step
-                                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step + yCorrection
+                                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step
 
                                         if (columnsIndex === 0)
                                             stackingAccumulator[xIndex] = 0
@@ -517,8 +486,6 @@ class OPlotRenderer extends ORenderer {
                 case OPlotTypes.line:
                     ctx.stroke()
 
-                    ctx.closePath()
-
                     if (hoverX) {
                         ctx.beginPath()
                         ctx.arc(hoverX.x, hoverX.y, 5, 0, 2 * Math.PI)
@@ -529,10 +496,8 @@ class OPlotRenderer extends ORenderer {
 
                 case OPlotTypes.attentionLine:
                     ctx.stroke()
-                    ctx.closePath()
 
                     ctx.fillStyle = '#000000'
-                    ctx.font = '14px serif'
                     ctx.textBaseline = 'top'
                     ctx.textAlign = 'center'
 
@@ -594,19 +559,11 @@ class OPlotRenderer extends ORenderer {
         ctx.lineTo(this.#paddings.left, this.#paddings.top)
         ctx.stroke()
 
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'top'
-        ctx.font = '14px serif'
-
-        this.tooltip.render(!!tooltipText, this.#onMouseMoveEvent, tooltipText)
+        this.tooltip.render(tooltipText && tooltipText.includes('\n'), this.#onMouseMoveEvent, tooltipText)
 
         requestAnimationFrame(this.render.bind(this))
 
         this.#isInit = true
-    }
-
-    destroy() {
-
     }
 
     refresh() {
@@ -656,17 +613,19 @@ class OPlotRenderer extends ORenderer {
             && this.#paddings.left <= mouseX && mouseX <= this.canvas.width - this.#paddings.right
     }
 
-    /**
-     * @return {ImageData}
-     */
     #renderBase() {
+        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
+
+        if (this.#base) {
+            ctx.putImageData(this.#base, 0, 0)
+            return
+        }
+
         const axisLabelOffset = 12
         const axisLineColor = '#0000001e'
 
-        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-
-        const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0
-        const isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
+        const isContainsColumn = this.data.values.filter(s => s.type === OPlotTypes.column).length > 0,
+            isContainsBar = this.data.values.filter(s => s.type === OPlotTypes.bar).length > 0
 
         if (this.data.xTitle || this.data.yTitle) {
             ctx.textAlign = 'center'
@@ -750,8 +709,6 @@ class OPlotRenderer extends ORenderer {
                     ctx.lineWidth = 1
                     ctx.strokeStyle = axisLineColor
                     ctx.stroke()
-
-                    ctx.closePath()
                 }
 
                 xCounter++
@@ -801,16 +758,12 @@ class OPlotRenderer extends ORenderer {
                     ctx.lineWidth = 1
                     ctx.strokeStyle = axisLineColor
                     ctx.stroke()
-
-                    ctx.closePath()
                 }
 
                 yCounter++
             }
         }
 
-        ctx.closePath()
-
-        return ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
+        this.#base = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
     }
 }
