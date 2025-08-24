@@ -244,8 +244,8 @@ class OPlotRenderer extends ORenderer {
                     xIndex = this.#allValuesX.indexOf(value.x),
                     yIndex = this.#allValuesY.indexOf(value.y)
 
-                const tooltipXValue = value.x ? (+value.x).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0',
-                    tooltipYValue = value.y ? (+value.y).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0'
+                const tooltipXValue = value.x ? this.#allValuesX[xIndex] : '0',
+                    tooltipYValue = value.y ? this.#allValuesY[yIndex] : '0'
 
                 switch (series.type) {
                     case OPlotTypes.line:
