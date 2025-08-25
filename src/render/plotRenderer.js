@@ -299,7 +299,7 @@ class OPlotRenderer extends ORenderer {
                                     continuous: true,
                                     body: transition => {
                                         ctx.lineTo(this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) * transition,
-                                            yValue)
+                                            this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step)
                                     }
                                 })
                         else
