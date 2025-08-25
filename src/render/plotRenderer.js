@@ -227,8 +227,18 @@ class OPlotRenderer extends ORenderer {
                     xIndex = this.#allValuesX.indexOf(value.x),
                     yIndex = this.#allValuesY.indexOf(value.y)
 
-                const tooltipXValue = value.x ? this.#allValuesX[xIndex] : '0',
-                    tooltipYValue = value.y ? this.#allValuesY[yIndex] : '0'
+                const getTooltipValue = () => {
+                    return {
+                        x: value.x
+                            ? this.data.xType === OPlotAxisTypes.date
+                                ? this.#allValuesX[xIndex]
+                                : this.#allValuesX[xIndex].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            : '0',
+                        y: value.y
+                            ? this.#allValuesY[yIndex].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            : '0'
+                    }
+                }
 
                 if (series.type === OPlotTypes.line)
                     xIndex += 1
@@ -279,7 +289,7 @@ class OPlotRenderer extends ORenderer {
                                     index: index
                                 }
 
-                                tooltipText += `\n${series.label}: ${tooltipYValue}`
+                                tooltipText += `\n${series.label}: ${getTooltipValue().y}`
                                 this.#tooltipX = x + this.#x.step / 2
                             }
                         }
@@ -352,7 +362,7 @@ class OPlotRenderer extends ORenderer {
                                     index: index
                                 }
 
-                                tooltipText += `\n${series.label}: ${tooltipYValue}`
+                                tooltipText += `\n${series.label}: ${getTooltipValue().y}`
                                 this.#tooltipX = x + this.#x.step
                             }
                         }
@@ -393,7 +403,7 @@ class OPlotRenderer extends ORenderer {
                                     index: index
                                 }
 
-                                tooltipText += `\n${series.label}: ${tooltipXValue}`
+                                tooltipText += `\n${series.label}: ${getTooltipValue().x}`
                                 this.#tooltipY = y - this.#y.step / 2
                             }
                         }
@@ -473,7 +483,7 @@ class OPlotRenderer extends ORenderer {
                                     index: xIndex
                                 }
 
-                                tooltipText += `\n${series.label}: ${tooltipYValue}`
+                                tooltipText += `\n${series.label}: ${getTooltipValue().y}`
                                 this.#tooltipX = x + this.#x.step
                             }
                         }
