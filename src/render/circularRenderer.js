@@ -640,6 +640,7 @@ class OCircularRenderer extends ORenderer {
             ctx.font = '16px serif'
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
+            ctx.shadowBlur = null
             ctx.fillText(this.data.innerTitle, this.#center.x, this.#center.y)
 
             ctx.closePath()
