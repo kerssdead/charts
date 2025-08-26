@@ -218,7 +218,7 @@ class OTreeRenderer extends ORenderer {
                                     y: cell.y + cell.h / 2
                                 }
 
-                                const minSize = .9,
+                                const minSize = .95,
                                     rest = 1 - minSize
 
                                 ctx.translate(center.x - center.x * (minSize + transition * rest),
@@ -243,7 +243,7 @@ class OTreeRenderer extends ORenderer {
                                     y: cell.y + cell.h / 2
                                 }
 
-                                const minSize = .9,
+                                const minSize = .95,
                                     rest = 1 - minSize
 
                                 ctx.translate(center.x - center.x * (minSize + transition * rest),
@@ -253,9 +253,13 @@ class OTreeRenderer extends ORenderer {
                         })
                 }
 
-                ctx.fillRect(x, y, cell.w, cell.h)
+                const gap = 4
 
-                if (cell.label && OHelper.stringWidth(cell.label) < cell.w && cell.h > 16) {
+                ctx.roundRect(x + gap, y + gap, cell.w - gap, cell.h - gap, gap * 2)
+                ctx.fill()
+
+                if (cell.label && OHelper.stringWidth(cell.label) < cell.w - gap && cell.h - gap > 16) {
+                    ctx.beginPath()
                     ctx.fillStyle = !OHelper.isColorVisible(cell.color, '#ffffff')
                         ? '#000000'
                         : '#ffffff'
