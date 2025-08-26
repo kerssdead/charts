@@ -324,6 +324,8 @@ class OCircularRenderer extends ORenderer {
                                 this.#onClickEvent = new PointerEvent('click')
                             }
                         }
+
+                        return true
                     },
                     body: () => {
                         if (!this.#pinned.includes(value.id))
