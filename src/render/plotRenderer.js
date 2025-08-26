@@ -83,6 +83,7 @@ class OPlotRenderer extends ORenderer {
         super(chart, settings, dynSettings)
 
         this.data = chart.data
+        this.data.values = this.data.values.map(v => new OPlotSeries(v))
 
         if (this.data.values.filter(v => v.type === OPlotTypes.bar).length > 0) {
             for (let series of this.data.values) {
