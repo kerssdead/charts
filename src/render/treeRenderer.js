@@ -176,13 +176,35 @@ export class OTreeRenderer extends ORenderer {
 
                 const groupInited = this.#isInit && !this.animations.contains({ id: cell.id }, OAnimationTypes.init)
 
+                const cellIndex = i + cells.indexOf(cell) + (isLast && isSingle ? 1 : 0),
+                    duration = 260
+
+                const getPrev = () => {
+                    let acc = 0
+                    for (let i = 0; i < cellIndex; i++)
+                        acc += duration - duration * (i / this.data.values.length) / Math.E
+
+                    return acc
+                }
+
+                const initAnimationDuration = duration - duration * cellIndex / (this.data.values.length + 1)
+
                 if (!groupInited) {
                     this.animations.add({ id: cell.id },
                         OAnimationTypes.init,
                         {
-                            duration: 125 + (this.chart.data.values.indexOf(item) + 1) / this.chart.data.values.length * 175,
+                            duration: getPrev(),
                             continuous: true,
                             body: transition => {
+                                if (transition * getPrev() - getPrev() + initAnimationDuration < 0) {
+                                    ctx.fillStyle = cell.color + '00'
+                                    return
+                                }
+
+                                transition = (transition * getPrev() - getPrev() + initAnimationDuration) / initAnimationDuration
+
+                                transition = ((Math.log(transition) + 1) / Math.E + 1) / Math.E * 2
+
                                 const center = {
                                     x: cell.x + cell.w / 2,
                                     y: cell.y + cell.h / 2
@@ -262,7 +284,9 @@ export class OTreeRenderer extends ORenderer {
                 ctx.roundRect(x + gap, y + gap, cell.w - gap, cell.h - gap, gap * 2)
                 ctx.fill()
 
-                if (cell.label && OHelper.stringWidth(cell.label) < cell.w - gap && cell.h - gap > 16) {
+                if (cell.label
+                    && OHelper.stringWidth(cell.label) < cell.w - gap && cell.h - gap > 16
+                    && !this.animations.contains({ id: cell.id }, OAnimationTypes.init)) {
                     ctx.beginPath()
                     ctx.fillStyle = !OHelper.isColorVisible(cell.color, '#ffffff')
                         ? '#000000'
