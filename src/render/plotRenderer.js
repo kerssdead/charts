@@ -571,13 +571,15 @@ export class OPlotRenderer extends ORenderer {
         ctx.strokeStyle = '#000000'
         ctx.lineWidth = 1
 
-        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
-        ctx.lineTo(this.canvas.width - this.#paddings.right, this.canvas.height - this.#paddings.bottom)
-        ctx.stroke()
-
-        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
-        ctx.lineTo(this.#paddings.left, this.#paddings.top)
-        ctx.stroke()
+        if (this.data.values.filter(v => v.type === OPlotTypes.bar).length > 0) {
+            ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
+            ctx.lineTo(this.#paddings.left, this.#paddings.top)
+            ctx.stroke()
+        } else {
+            ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
+            ctx.lineTo(this.canvas.width - this.#paddings.right, this.canvas.height - this.#paddings.bottom)
+            ctx.stroke()
+        }
 
         this.tooltip.render(tooltipText && tooltipText.includes('\n'), this.#onMouseMoveEvent, tooltipText)
 
