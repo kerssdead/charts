@@ -1,4 +1,10 @@
-class OChart {
+import { OChartProperties } from "/src/const/properties.js"
+import { OHelper } from '/src/helper.js'
+import { OChartTypes, OLegendPlaces, OPlotAxisTypes, OPlotTypes } from '/src/enums.js'
+import { ODynSettings } from '/src/dynSettings.js'
+import { OLegend } from '/src/legend.js'
+
+export class OChart {
     /**
      * @type {HTMLElement}
      */

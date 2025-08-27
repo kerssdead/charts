@@ -1,4 +1,10 @@
-class ODynSettings {
+import { OChartTypes } from '/src/enums.js'
+import { OPlotRenderer } from '/src/render/plotRenderer.js'
+import { OCircularRenderer } from '/src/render/circularRenderer.js'
+import { OGaugeRenderer } from '/src/render/gaugeRenderer.js'
+import { OTreeRenderer } from '/src/render/treeRenderer.js'
+
+export class ODynSettings {
     /**
      * @type {ORenderer}
      */

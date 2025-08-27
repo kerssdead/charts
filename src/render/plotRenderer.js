@@ -1,4 +1,10 @@
-class OPlotRenderer extends ORenderer {
+import { ORenderer } from '/src/types/base/renderer.js'
+import { OPlotAxisTypes, OPlotTypes, OAnimationTypes } from '/src/enums.js'
+import { OPlotSeries } from '/src/types/plotSeries.js'
+import { OHelper } from '/src/helper.js'
+import { OTooltip } from '/src/tooltip.js'
+
+export class OPlotRenderer extends ORenderer {
     /**
      * @type {OPlotData}
      */

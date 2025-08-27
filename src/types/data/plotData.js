@@ -1,4 +1,6 @@
-class OPlotData extends OData {
+import { OData } from '/src/types/base/data.js'
+
+export class OPlotData extends OData {
     /**
      * @type {OPlotSeries[]}
      */

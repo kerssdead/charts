@@ -1,4 +1,8 @@
-class OButton {
+import { OAnimations } from '/src/animations.js'
+import { OHelper } from '/src/helper.js'
+import { OAnimationTypes } from '/src/enums.js'
+
+export class OButton {
     /**
      * @type {OChart}
      */

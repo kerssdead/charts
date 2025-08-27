@@ -1,4 +1,8 @@
-class OTreeRenderer extends ORenderer {
+import { ORenderer } from '/src/types/base/renderer.js'
+import { OHelper } from '/src/helper.js'
+import { OAnimationTypes } from '/src/enums.js'
+
+export class OTreeRenderer extends ORenderer {
     /**
      * @type {OTreeData}
      */

@@ -1,4 +1,4 @@
-class OAnimations {
+export class OAnimations {
     /**
      * @type {Map<string, OAnimationItem>}
      */

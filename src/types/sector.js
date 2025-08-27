@@ -1,4 +1,6 @@
-class OSector extends OBasePoint {
+import { OBasePoint } from '/src/types/base/basePoint.js'
+
+export class OSector extends OBasePoint {
     /**
      * @type {number}
      */

@@ -1,4 +1,6 @@
-class OCircularData extends OData {
+import { OData } from '/src/types/base/data.js'
+
+export class OCircularData extends OData {
     /**
      * @type {int}
      */

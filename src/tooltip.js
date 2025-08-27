@@ -1,4 +1,6 @@
-class OTooltip {
+import { OHelper } from '/src/helper.js'
+
+export class OTooltip {
     /**
      * @type {HTMLCanvasElement}
      */

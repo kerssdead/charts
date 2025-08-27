@@ -6,46 +6,16 @@
         Stacking Column Plot Example
     </title>
 
-    <script src="/src/helper.js"></script>
-    <script src="/src/enums.js"></script>
-    <script src="/src/dynSettings.js"></script>
-    <script src="/src/settings.js"></script>
-    <script src="/src/const/properties.js"></script>
-    <script src="/src/types/base/basePoint.js"></script>
-    <script src="/src/types/base/data.js"></script>
-    <script src="/src/types/base/renderer.js"></script>
-    <script src="/src/render/circularRenderer.js"></script>
-    <script src="/src/render/plotRenderer.js"></script>
-    <script src="/src/render/gaugeRenderer.js"></script>
-    <script src="/src/render/treeRenderer.js"></script>
-    <script src="/src/types/sector.js"></script>
-    <script src="/src/types/point.js"></script>
-    <script src="/src/types/treeCell.js"></script>
-    <script src="/src/types/plotPoint.js"></script>
-    <script src="/src/types/plotSeries.js"></script>
-    <script src="/src/types/plotAxis.js"></script>
-    <script src="/src/types/paddings.js"></script>
-    <script src="/src/types/data/circularData.js"></script>
-    <script src="/src/types/data/gaugeData.js"></script>
-    <script src="/src/types/data/treeData.js"></script>
-    <script src="/src/types/data/plotData.js"></script>
-    <script src="/src/legend.js"></script>
-    <script src="/src/charts.js"></script>
-    <script src="/src/animationItem.js"></script>
-    <script src="/src/animations.js"></script>
-    <script src="/src/dropdownItem.js"></script>
-    <script src="/src/dropdownOptions.js"></script>
-    <script src="/src/dropdown.js"></script>
-    <script src="/src/buttonOptions.js"></script>
-    <script src="/src/button.js"></script>
-    <script src="/src/tooltip.js"></script>
+    <script type="module" src="../main.mjs"></script>
 </head>
 
 <body>
 <div id="line-example" style="text-align: center"></div>
 </body>
 
-<script>
+<script type="module">
+    import OCharts from '../main.mjs'
+
     const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
 
     let values = [],
@@ -75,7 +45,7 @@
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
-    let chart = new OChart(document.getElementById('line-example'), {
+    let chart = new OCharts.Chart(document.getElementById('line-example'), {
         width: 1600,
         height: 940,
         title: 'Stacking Column Plot',
@@ -85,21 +55,21 @@
             values: [
                 {
                     values: values,
-                    type: OPlotTypes.stackingColumn,
+                    type: OCharts.PlotTypes.stackingColumn,
                     label: 'Column',
                     color: '#0000ff',
                     width: 80
                 },
                 {
                     values: values1,
-                    type: OPlotTypes.stackingColumn,
+                    type: OCharts.PlotTypes.stackingColumn,
                     label: 'Column 2',
                     color: '#0088ff',
                     width: 80
                 },
                 {
                     values: values2,
-                    type: OPlotTypes.stackingColumn,
+                    type: OCharts.PlotTypes.stackingColumn,
                     label: 'Column 3',
                     color: '#00ccff',
                     width: 80
@@ -108,7 +78,7 @@
             xTitle: 'X-Axis',
             yTitle: 'Y-Axis'
         },
-        type: OChartTypes.plot
+        type: OCharts.ChartTypes.plot
     })
 
     chart.render()

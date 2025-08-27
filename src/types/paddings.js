@@ -1,4 +1,4 @@
-class OPaddings {
+export class OPaddings {
     /**
      * @type {number}
      */

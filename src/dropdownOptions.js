@@ -1,4 +1,4 @@
-class ODropdownOptions {
+export class ODropdownOptions {
     /**
      * @type {ODropdownItem[]}
      */

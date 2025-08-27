@@ -1,4 +1,4 @@
-class OPoint {
+export class OPoint {
     /**
      * @type {number}
      */

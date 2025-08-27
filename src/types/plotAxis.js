@@ -1,4 +1,4 @@
-class OPlotAxis {
+export class OPlotAxis {
     /**
      * @type {number}
      */
