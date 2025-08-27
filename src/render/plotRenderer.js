@@ -257,6 +257,7 @@ export class OPlotRenderer extends ORenderer {
                 switch (series.type) {
                     case OPlotTypes.line:
                         y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step - this.#y.step / 2
+                            - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
 
                         const pointDuration = 1500 / series.values.length * 1.2
 
@@ -274,12 +275,14 @@ export class OPlotRenderer extends ORenderer {
 
                                         x = this.#paddings.left + xIndex * this.#x.step
                                         y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step - this.#y.step / 2
+                                            - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
 
                                         const next = series.values[index - 1]
 
                                         let prevValue = {
                                             x: this.#paddings.left + (xIndex - 1) * this.#x.step,
                                             y: this.canvas.height - this.#paddings.bottom - next.y / this.#y.unit * this.#y.step - this.#y.step / 2
+                                                - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
                                         }
 
                                         ctx.lineTo(prevValue.x + (x - prevValue.x) * transition,
