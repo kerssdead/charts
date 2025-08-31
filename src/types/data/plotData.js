@@ -25,4 +25,9 @@ export class OPlotData extends OData {
      * @type {number}
      */
     xType
+
+    /**
+     * @type {boolean}
+     */
+    shortLabels
 }

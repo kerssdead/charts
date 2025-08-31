@@ -802,8 +802,35 @@ export class OPlotRenderer extends ORenderer {
                 const label = {
                     x: this.#paddings.left,
                     y: labelY,
-                    label: (Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)) / this.#yAxisStep) * this.#yAxisStep)
-                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    label: Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)) / this.#yAxisStep) * this.#yAxisStep
+                }
+
+                if (this.data.shortLabels) {
+                    let countOfTens = 0
+                    while (label.label >= 1000) {
+                        label.label /= 1000
+                        countOfTens++
+                    }
+
+                    let postfix = ''
+                    switch (countOfTens) {
+                        case 1:
+                            postfix = 'K'
+                            break
+
+                        case 2:
+                            postfix = 'M'
+                            break
+
+                        case 3:
+                            postfix = 'B'
+                            break
+                    }
+
+                    label.label = label.label.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        + postfix
+                } else {
+                    label.label = label.label.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                 }
 
                 ctx.fillText(label.label,
