@@ -158,11 +158,17 @@ export class OTooltip {
         if (tooltip.style.visibility === 'hidden')
             updateVisibility()
 
-        let x = event.clientX + 10,
-            y = event.clientY + 10
+        let x = event.clientX - this.#canvasPosition.x + 10,
+            y = event.clientY - this.#canvasPosition.y + window.scrollY + 10
 
-        tooltip.style.left = x + 'px'
-        tooltip.style.top = y + 'px'
+        if (x + tooltip.position.width > this.#canvasPosition.width)
+            x = this.#canvasPosition.width - tooltip.position.width
+
+        if (y + tooltip.position.height > this.#canvasPosition.height)
+            y = this.#canvasPosition.height - tooltip.position.height
+
+        tooltip.style.left = x + 50 + 'px'
+        tooltip.style.top = y + 10 + 'px'
     }
 
     refresh() {
