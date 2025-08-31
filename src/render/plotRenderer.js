@@ -81,6 +81,16 @@ export class OPlotRenderer extends ORenderer {
     #base
 
     /**
+     * @type {number}
+     */
+    #yAxisStep
+
+    /**
+     * @type {DOMRect}
+     */
+    #plot
+
+    /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
      * @param {ODynSettings} dynSettings
@@ -146,10 +156,12 @@ export class OPlotRenderer extends ORenderer {
 
         let stackingColumns = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn)
 
+        let max
+
         if (stackingColumns.length > 0) {
             let values = stackingColumns.map(s => s.values.flatMap(v => +v.y))
 
-            let max = this.#y.max
+            max = this.#y.max
 
             for (let i = 0; i < values[0].length; i++) {
                 let sum = 0
@@ -169,6 +181,36 @@ export class OPlotRenderer extends ORenderer {
         if (yMaxWidth > this.#paddings.left - 40) {
             this.#paddings.left += yMaxWidth - this.#paddings.left + 40
             this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length
+        }
+
+        this.#yAxisStep = Math.abs(this.#y.min) + Math.abs(this.#y.max)
+
+        if (10 <= this.#yAxisStep && this.#yAxisStep < 100)
+            this.#yAxisStep = 2
+        else if (100 <= this.#yAxisStep && this.#yAxisStep < 1000)
+            this.#yAxisStep = 20
+        else if (1000 <= this.#yAxisStep && this.#yAxisStep < 10000)
+            this.#yAxisStep = 50
+        else if (10000 <= this.#yAxisStep && this.#yAxisStep < 100000)
+            this.#yAxisStep = 1000
+        else if (100000 <= this.#yAxisStep && this.#yAxisStep < 1000000)
+            this.#yAxisStep = 10000
+        else if (1000000 <= this.#yAxisStep && this.#yAxisStep < 10000000)
+            this.#yAxisStep = 50000
+        else
+            this.#yAxisStep = 1
+
+        if (this.#yAxisStep !== 1) {
+            max = yValues.length > 10
+                ? (this.#y.max / 10 + this.#yAxisStep - (this.#y.max / 10) % this.#yAxisStep) * 10
+                : Math.ceil(this.#y.max / this.#yAxisStep) * this.#yAxisStep
+
+            this.#y.max = max > this.data.yMax ? this.data.yMax : max
+        }
+
+        this.#plot = {
+            width: this.canvas.width - this.#paddings.left - this.#paddings.right,
+            height: this.canvas.height - this.#paddings.top - this.#paddings.bottom,
         }
 
         this.tooltip = new OTooltip(this.canvas, this.settings)
@@ -330,7 +372,7 @@ export class OPlotRenderer extends ORenderer {
                     case OPlotTypes.column:
                         yValue = value.y > this.data.yMax ? this.data.yMax : value.y
 
-                        y = this.canvas.height - this.#paddings.bottom - yValue / this.#y.unit * this.#y.step
+                        y = this.#plot.height * yValue / this.#y.max
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
 
@@ -344,22 +386,22 @@ export class OPlotRenderer extends ORenderer {
                                         yValue = value.y > this.data.yMax ? this.data.yMax : value.y
 
                                         x = this.#paddings.left + xIndex * this.#x.step
-                                        y = this.canvas.height - this.#paddings.bottom - yValue / this.#y.unit * this.#y.step
+                                        y = this.#plot.height * yValue / this.#y.max * transition
 
                                         columnsIndex = this.data.values.filter(s => s.type === OPlotTypes.column)
                                             .indexOf(series)
 
                                         ctx.fillRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                            this.canvas.height - this.#paddings.bottom,
+                                            this.canvas.height - this.#paddings.bottom - y,
                                             columnWidth,
-                                            (y - this.canvas.height + this.#paddings.bottom) * transition)
+                                            y)
                                     }
                                 })
                         } else {
                             ctx.fillRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                this.canvas.height - this.#paddings.bottom,
+                                this.canvas.height - this.#paddings.bottom - y,
                                 columnWidth,
-                                y - this.canvas.height + this.#paddings.bottom)
+                                y)
 
                             if (this.#isOnX(x + this.#x.step / 2)) {
                                 isLast = this.data.values.filter(s => (s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn)
@@ -760,7 +802,7 @@ export class OPlotRenderer extends ORenderer {
                 const label = {
                     x: this.#paddings.left,
                     y: labelY,
-                    label: (this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1))
+                    label: (Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)) / this.#yAxisStep) * this.#yAxisStep)
                         .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                 }
 
