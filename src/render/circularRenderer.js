@@ -246,8 +246,6 @@ export class OCircularRenderer extends ORenderer {
         const isSingle = this.data.values.filter(s => !s.disabled).length === 1
 
         ctx.fillStyle = value.color
-        ctx.shadowBlur = null
-        ctx.shadowColor = null
 
         if (isInner && value.current > 0) {
             let labelStartPoint = {
@@ -648,7 +646,6 @@ export class OCircularRenderer extends ORenderer {
             ctx.font = '16px serif'
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
-            ctx.shadowBlur = null
             ctx.fillText(this.data.innerTitle, this.#center.x, this.#center.y)
 
             ctx.closePath()

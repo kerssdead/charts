@@ -90,8 +90,6 @@ export class OTooltip {
         ctx.beginPath()
         ctx.roundRect(x, y, textWidth + 16, 16 + 16 * split.length, 20)
         ctx.fillStyle = '#00000077'
-        ctx.shadowColor = '#00000077'
-        ctx.shadowBlur = 20
         ctx.fill()
 
         for (let line of split) {

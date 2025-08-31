@@ -111,7 +111,6 @@ export class ODropdown {
                 })
         }
 
-        ctx.shadowBlur = null
         ctx.strokeStyle = '#ffffff'
         ctx.roundRect(x, y, width, height, 4)
         ctx.fill()

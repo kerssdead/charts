@@ -77,7 +77,6 @@ export class ORenderer {
         if (this.settings.title) {
             ctx.beginPath()
 
-            ctx.shadowBlur = null
             ctx.fillStyle = '#000000'
             ctx.textAlign = 'center'
             ctx.textBaseline = 'top'
