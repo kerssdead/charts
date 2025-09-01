@@ -284,6 +284,8 @@ export class OPlotRenderer extends ORenderer {
                         yValue = value.y > this.data.yMax ? this.data.yMax : value.y
 
                         y = this.#plot.height * yValue / this.#y.max
+                        if (y < this.#y.minStep)
+                            y = this.#y.minStep
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
 
@@ -298,6 +300,9 @@ export class OPlotRenderer extends ORenderer {
 
                                         x = this.#paddings.left + xIndex * this.#x.step
                                         y = this.#plot.height * yValue / this.#y.max * transition
+
+                                        if (y < this.#y.minStep)
+                                            y = this.#y.minStep * transition
 
                                         columnsIndex = this.data.values.filter(s => s.type === OPlotTypes.column)
                                             .indexOf(series)
@@ -867,5 +872,8 @@ export class OPlotRenderer extends ORenderer {
             width: this.canvas.width - this.#paddings.left - this.#paddings.right,
             height: this.canvas.height - this.#paddings.top - this.#paddings.bottom,
         }
+
+        this.#x.minStep = this.#plot.width * 0.002
+        this.#y.minStep = this.#plot.height * 0.002
     }
 }
