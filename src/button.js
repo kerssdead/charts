@@ -88,7 +88,7 @@ export class OButton {
                     body: transition => {
                         this.animations.reload({ id: 'animation-button-leave' }, OAnimationTypes.mouseleave)
 
-                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(transition * 100))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', -Math.round(transition * 40))
                     }
                 })
         } else {
@@ -99,7 +99,7 @@ export class OButton {
                     body: transition => {
                         this.animations.reload({ id: 'animation-button' }, OAnimationTypes.mouseover)
 
-                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round((1 - transition) * 100))
+                        ctx.fillStyle = OHelper.adjustColor('#ffffff', -Math.round((1 - transition) * 40))
                     }
                 })
         }
