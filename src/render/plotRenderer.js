@@ -784,15 +784,32 @@ export class OPlotRenderer extends ORenderer {
     }
 
     #calculateSizes() {
-        const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
+        let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
             yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
 
-        if (this.data.xType === OPlotAxisTypes.date)
+        const isDate = this.data.xType === OPlotAxisTypes.date
+
+        if (isDate) {
+            let tempDate = new Date(Math.min(...xValues))
+
+            function addDays(date, days) {
+                let result = new Date(date)
+                result.setDate(result.getDate() + days)
+                return result
+            }
+
+            while (tempDate < Math.max(...xValues)) {
+                if (!xValues.includes(tempDate)) {
+                    xValues.push(tempDate)
+                }
+
+                tempDate = addDays(tempDate, 1)
+            }
+
             xValues.sort((a, b) => a.getTime() - b.getTime())
+        }
 
         yValues.sort((a, b) => b - a)
-
-        const isDate = this.data.xType === OPlotAxisTypes.date
 
         this.#allValuesX = [...new Set(xValues.filter(x => x !== undefined).map(x => isDate ? x.toString() : x))]
         this.#allValuesY = [...new Set(yValues.filter(y => y !== undefined))]
