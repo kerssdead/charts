@@ -183,7 +183,7 @@ export class OPlotRenderer extends ORenderer {
 
             for (const value of series.values) {
                 let index = series.values.indexOf(value),
-                    xIndex = this.#allValuesX.indexOf(value.x),
+                    xIndex = this.#allValuesX.indexOf(value.x.toString()),
                     yIndex = this.#allValuesY.indexOf(value.y)
 
                 const getTooltipValue = () => {
@@ -653,7 +653,7 @@ export class OPlotRenderer extends ORenderer {
             if (!this.#labelsX.has(labelXAsKey))
                 this.#labelsX.set(labelXAsKey,
                     this.data.xType === OPlotAxisTypes.date
-                        ? this.#allValuesX[i - 1].toLocaleDateString()
+                        ? new Date(this.#allValuesX[i - 1]).toLocaleDateString()
                         : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                             ? this.#allValuesX[i - 1]
                             : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
@@ -663,7 +663,7 @@ export class OPlotRenderer extends ORenderer {
                 x: labelX,
                 y: this.canvas.height - this.#paddings.bottom,
                 label: this.data.xType === OPlotAxisTypes.date
-                    ? this.#allValuesX[i - 1].toLocaleDateString()
+                    ? new Date(this.#allValuesX[i - 1]).toLocaleDateString()
                     : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                         ? this.#allValuesX[i - 1]
                         : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
@@ -792,7 +792,9 @@ export class OPlotRenderer extends ORenderer {
 
         yValues.sort((a, b) => b - a)
 
-        this.#allValuesX = [...new Set(xValues.filter(x => x !== undefined))]
+        const isDate = this.data.xType === OPlotAxisTypes.date
+
+        this.#allValuesX = [...new Set(xValues.filter(x => x !== undefined).map(x => isDate ? x.toString() : x))]
         this.#allValuesY = [...new Set(yValues.filter(y => y !== undefined))]
 
         this.#x = {
