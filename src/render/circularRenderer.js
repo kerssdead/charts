@@ -223,9 +223,8 @@ export class OCircularRenderer extends ORenderer {
 
     /**
      * @param value {OSector}
-     * @param isInner {boolean?}
      */
-    #drawSector(value, isInner = false) {
+    #drawSector(value) {
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         const piece = value.current / this.#sum,
@@ -233,72 +232,7 @@ export class OCircularRenderer extends ORenderer {
 
         const isSingle = this.data.values.filter(s => !s.disabled).length === 1
 
-        ctx.fillStyle = value.color
-
-        if (isInner && value.current > 0) {
-            let labelStartPoint = {
-                x: this.#center.x + (this.#radius + 10) * Math.cos(this.#accumulator + angle / 2),
-                y: this.#center.y + (this.#radius + 10) * Math.sin(this.#accumulator + angle / 2)
-            }
-
-            let labelMidPoint = {
-                x: this.#center.x + (this.#radius + 20) * Math.cos(this.#accumulator + angle / 2),
-                y: this.#center.y + (this.#radius + 20) * Math.sin(this.#accumulator + angle / 2)
-            }
-
-            const dir = labelStartPoint.x > this.#center.x ? 1 : -1
-
-            let endPoint = {
-                x: labelMidPoint.x + 10 * dir,
-                y: labelMidPoint.y
-            }
-
-            let isBusy = false
-
-            const textWidth = OHelper.stringWidth(value.label),
-                imageDataX = dir === 1 ? endPoint.x + 8 : endPoint.x - textWidth - 8,
-                imageData = new Uint32Array(ctx.getImageData(imageDataX, endPoint.y - 12, textWidth, 24).data.buffer)
-
-            if (imageDataX < 0 || imageDataX + textWidth > this.canvas.width
-                || endPoint.y - 12 < 0 || endPoint.y + 12 > this.canvas.height)
-                isBusy = true
-
-            if (!isBusy)
-                for (let i = 0; i < imageData.length; i++)
-                    if (imageData[i] & 0xff000000) {
-                        isBusy = true
-                        break
-                    }
-
-            if (!isBusy) {
-                ctx.beginPath()
-                ctx.moveTo(labelStartPoint.x, labelStartPoint.y)
-
-                ctx.quadraticCurveTo(labelMidPoint.x, labelMidPoint.y, endPoint.x, endPoint.y)
-
-                ctx.strokeStyle = '#000000'
-                ctx.stroke()
-
-                let opacity = Math.round(255 * (value.current / value.value)).toString(16)
-
-                if (opacity.length < 2)
-                    opacity = 0 + opacity
-
-                ctx.fillStyle = '#000000' + opacity
-                ctx.textAlign = dir === 1 ? 'start' : 'end'
-                ctx.textBaseline = 'alphabetic'
-                ctx.font = '14px serif'
-                ctx.fillText(value.label, endPoint.x + 8 * dir, endPoint.y + 4)
-            }
-        }
-
-        let point2 = {
-            x: this.#center.x + this.#radius * Math.cos(this.#accumulator + angle),
-            y: this.#center.y + this.#radius * Math.sin(this.#accumulator + angle)
-        }
-
         if (!!this.#onClickEvent
-            && !isInner
             && !this.animations.contains(value, OAnimationTypes.init)
             && !isSingle) {
             this.animations.add(value,
@@ -331,10 +265,6 @@ export class OCircularRenderer extends ORenderer {
                         }
 
                         ctx.translate(transition.x, transition.y)
-
-                        this.#drawSector(value, true)
-
-                        ctx.resetTransform()
                     }
                 })
         }
@@ -344,7 +274,7 @@ export class OCircularRenderer extends ORenderer {
             this.#isHover = true
         }
 
-        if (!isInner && (!this.#isInit || this.animations.contains(value, OAnimationTypes.init))) {
+        if (!this.#isInit || this.animations.contains(value, OAnimationTypes.init)) {
             this.animations.add(value,
                 OAnimationTypes.init,
                 {
@@ -369,22 +299,11 @@ export class OCircularRenderer extends ORenderer {
                         if (opacity.length < 2)
                             opacity = 0 + opacity
 
-                        this.#drawSector({
-                                value: value.value,
-                                current: value.current,
-                                color: value.color + opacity,
-                                label: value.label,
-                                id: value.id,
-                                disabled: value.disabled,
-                                innerRadius: value.innerRadius
-                            },
-                            true)
-
-                        ctx.resetTransform()
+                        ctx.fillStyle = value.color + opacity
+                        ctx.strokeStyle = value.color + opacity
                     }
                 })
         } else if (this.#onMouseMoveEvent
-            && !isInner
             && !this.animations.contains(value, OAnimationTypes.init)
             && !this.#pinned.includes(value.id)
             && !isSingle) {
@@ -407,18 +326,8 @@ export class OCircularRenderer extends ORenderer {
 
                         value.transition = transitionPos
 
-                        this.#drawSector({
-                                value: value.value,
-                                current: value.current,
-                                color: OHelper.adjustColor(value.color, Math.round(33 * (1 - transition))),
-                                label: value.label,
-                                id: value.id,
-                                disabled: value.disabled,
-                                innerRadius: value.innerRadius
-                            },
-                            true)
-
-                        ctx.resetTransform()
+                        ctx.fillStyle = OHelper.adjustColor(value.color, Math.round(33 * (1 - transition)))
+                        ctx.strokeStyle = OHelper.adjustColor(value.color, Math.round(33 * (1 - transition)))
                     }
                 })
 
@@ -448,23 +357,79 @@ export class OCircularRenderer extends ORenderer {
 
                         value.transition = transitionPos
 
-                        this.#drawSector({
-                                value: value.value,
-                                current: value.current,
-                                color: OHelper.adjustColor(value.color, Math.round(33 * transition)),
-                                label: value.label,
-                                id: value.id,
-                                disabled: value.disabled,
-                                innerRadius: value.innerRadius
-                            },
-                            true)
-
-                        ctx.resetTransform()
+                        ctx.fillStyle = OHelper.adjustColor(value.color, Math.round(33 * transition))
+                        ctx.strokeStyle = OHelper.adjustColor(value.color, Math.round(33 * transition))
                     }
                 })
         }
 
-        if ((isInner || (isSingle && !this.animations.contains(value, OAnimationTypes.init))) && angle > 0) {
+        let point2 = {
+            x: this.#center.x + this.#radius * Math.cos(this.#accumulator + angle),
+            y: this.#center.y + this.#radius * Math.sin(this.#accumulator + angle)
+        }
+
+        if (angle > 0) {
+            ctx.save()
+
+            if (value.current > 0) {
+                let labelStartPoint = {
+                    x: this.#center.x + (this.#radius + 10) * Math.cos(this.#accumulator + angle / 2),
+                    y: this.#center.y + (this.#radius + 10) * Math.sin(this.#accumulator + angle / 2)
+                }
+
+                let labelMidPoint = {
+                    x: this.#center.x + (this.#radius + 20) * Math.cos(this.#accumulator + angle / 2),
+                    y: this.#center.y + (this.#radius + 20) * Math.sin(this.#accumulator + angle / 2)
+                }
+
+                const dir = labelStartPoint.x > this.#center.x ? 1 : -1
+
+                let endPoint = {
+                    x: labelMidPoint.x + 10 * dir,
+                    y: labelMidPoint.y
+                }
+
+                let isBusy = false
+
+                const textWidth = OHelper.stringWidth(value.label),
+                    imageDataX = dir === 1 ? endPoint.x + 8 : endPoint.x - textWidth - 8,
+                    imageData = new Uint32Array(ctx.getImageData(imageDataX, endPoint.y - 12, textWidth, 24).data.buffer)
+
+                if (imageDataX < 0 || imageDataX + textWidth > this.canvas.width
+                    || endPoint.y - 12 < 0 || endPoint.y + 12 > this.canvas.height)
+                    isBusy = true
+
+                if (!isBusy)
+                    for (let i = 0; i < imageData.length; i++)
+                        if (imageData[i] & 0xff000000) {
+                            isBusy = true
+                            break
+                        }
+
+                if (!isBusy) {
+                    ctx.beginPath()
+                    ctx.moveTo(labelStartPoint.x, labelStartPoint.y)
+
+                    ctx.quadraticCurveTo(labelMidPoint.x, labelMidPoint.y, endPoint.x, endPoint.y)
+
+                    ctx.strokeStyle = '#000000'
+                    ctx.stroke()
+
+                    let opacity = Math.round(255 * (value.current / value.value)).toString(16)
+
+                    if (opacity.length < 2)
+                        opacity = 0 + opacity
+
+                    ctx.fillStyle = '#000000' + opacity
+                    ctx.textAlign = dir === 1 ? 'start' : 'end'
+                    ctx.textBaseline = 'alphabetic'
+                    ctx.font = '14px serif'
+                    ctx.fillText(value.label, endPoint.x + 8 * dir, endPoint.y + 4)
+                }
+            }
+
+            ctx.restore()
+
             ctx.beginPath()
 
             if (this.chart.data.type === OCircularTypes.pie)
@@ -539,13 +504,13 @@ export class OCircularRenderer extends ORenderer {
 
             ctx.closePath()
 
-            ctx.fillStyle = value.color
-            ctx.strokeStyle = value.color
             ctx.fill()
             ctx.stroke()
 
             this.#accumulator += angle
         }
+
+        ctx.resetTransform()
 
         this.#startPoint = point2
     }
