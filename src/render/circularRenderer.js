@@ -310,6 +310,7 @@ export class OCircularRenderer extends ORenderer {
             this.animations.add(value,
                 OAnimationTypes.mouseleave,
                 {
+                    timer: new Date(2000, 1, 1),
                     duration: 100,
                     before: () => {
                         return !this.#isInsideSector(this.#onMouseMoveEvent, value)
