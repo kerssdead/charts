@@ -83,29 +83,35 @@ export class ODropdown {
                 clickEvent = undefined
             }
 
-            this.animations.add({ id: 'animation-dropdown' },
-                OAnimationTypes.mouseover,
-                {
-                    duration: 300,
-                    body: transition => {
-                        this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseleave)
+            if (!this.isActive)
+                this.animations.add({ id: 'animation-dropdown' },
+                    OAnimationTypes.mouseover,
+                    {
+                        duration: 300,
+                        body: transition => {
+                            this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseleave)
 
-                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(transition * 100))
-                    }
-                })
+                            ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(transition * 100))
+                        }
+                    })
+            else
+                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(100))
         } else {
             this.#canvas.style.cursor = 'default'
 
-            this.animations.add({ id: 'animation-dropdown' },
-                OAnimationTypes.mouseleave,
-                {
-                    duration: 300,
-                    body: transition => {
-                        this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseover)
+            if (!this.isActive)
+                this.animations.add({ id: 'animation-dropdown' },
+                    OAnimationTypes.mouseleave,
+                    {
+                        duration: 300,
+                        body: transition => {
+                            this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseover)
 
-                        ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round((1 - transition) * 100))
-                    }
-                })
+                            ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round((1 - transition) * 100))
+                        }
+                    })
+            else
+                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(100))
         }
 
         ctx.strokeStyle = '#ffffff'
