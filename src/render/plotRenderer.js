@@ -624,7 +624,7 @@ export class OPlotRenderer extends ORenderer {
                     this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
                     this.canvas.height - 4)
 
-            if (this.data.yMax) {
+            if (this.data.yTitle) {
                 ctx.rotate(-Math.PI / 2)
 
                 ctx.textBaseline = 'top'
