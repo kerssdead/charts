@@ -205,6 +205,8 @@ export class OPlotRenderer extends ORenderer {
                 x = this.#paddings.left
                 if (series.type !== OPlotTypes.bar)
                     x += xIndex * this.#x.step
+                if (series.type === OPlotTypes.line)
+                    x -= this.#x.step / 2
 
                 switch (series.type) {
                     case OPlotTypes.line:
@@ -225,14 +227,14 @@ export class OPlotRenderer extends ORenderer {
                                         if (index === 0 || transition < 0)
                                             return
 
-                                        x = this.#paddings.left + xIndex * this.#x.step
+                                        x = this.#paddings.left + xIndex * this.#x.step - this.#x.step / 2
                                         y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step - this.#y.step / 2
                                             - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
 
                                         const next = series.values[index - 1]
 
                                         let prevValue = {
-                                            x: this.#paddings.left + (xIndex - 1) * this.#x.step,
+                                            x: this.#paddings.left + (xIndex - 1) * this.#x.step - this.#x.step / 2,
                                             y: this.canvas.height - this.#paddings.bottom - next.y / this.#y.unit * this.#y.step - this.#y.step / 2
                                                 - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
                                         }
