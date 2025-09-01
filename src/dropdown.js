@@ -78,7 +78,7 @@ export class ODropdown {
         if (isOnButton) {
             this.#canvas.style.cursor = 'pointer'
 
-            if (clickEvent) {
+            if (clickEvent && moveEvent.x === clickEvent.x && moveEvent.y === clickEvent.y) {
                 this.isActive = !this.isActive
                 clickEvent = undefined
             }
@@ -87,9 +87,6 @@ export class ODropdown {
                 OAnimationTypes.mouseover,
                 {
                     duration: 300,
-                    before: () => {
-                        return clickEvent === undefined
-                    },
                     body: transition => {
                         this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseleave)
 

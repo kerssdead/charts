@@ -232,7 +232,7 @@ export class OCircularRenderer extends ORenderer {
 
         const isSingle = this.data.values.filter(s => !s.disabled).length === 1
 
-        if (!!this.#onClickEvent
+        if ((!!this.#onClickEvent || this.#pinned.includes(value.id))
             && !this.animations.contains(value, OAnimationTypes.init)
             && !isSingle) {
             this.animations.add(value,
