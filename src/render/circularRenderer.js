@@ -306,61 +306,58 @@ export class OCircularRenderer extends ORenderer {
             && !this.animations.contains(value, OAnimationTypes.init)
             && !this.#pinned.includes(value.id)
             && !isSingle) {
-            this.animations.add(value,
-                OAnimationTypes.mouseleave,
-                {
-                    timer: new Date(2000, 1, 1),
-                    duration: 100,
-                    before: () => {
-                        return !this.#isInsideSector(this.#onMouseMoveEvent, value)
-                    },
-                    body: transition => {
-                        let direction = this.#accumulator + angle / 2
+            if (!this.#isInsideSector(this.#onMouseMoveEvent, value))
+                this.animations.add(value,
+                    OAnimationTypes.mouseleave,
+                    {
+                        timer: new Date(2000, 1, 1),
+                        duration: 100,
+                        body: transition => {
+                            let direction = this.#accumulator + angle / 2
 
-                        const transitionPos = {
-                            x: 20 * Math.cos(direction) * (1 - transition),
-                            y: 20 * Math.sin(direction) * (1 - transition)
+                            const transitionPos = {
+                                x: 20 * Math.cos(direction) * (1 - transition),
+                                y: 20 * Math.sin(direction) * (1 - transition)
+                            }
+
+                            ctx.translate(transitionPos.x, transitionPos.y)
+
+                            value.transition = transitionPos
+
+                            ctx.fillStyle = OHelper.adjustColor(value.color, Math.round(33 * (1 - transition)))
+                            ctx.strokeStyle = OHelper.adjustColor(value.color, Math.round(33 * (1 - transition)))
+
+                            this.animations.reload(value, OAnimationTypes.mouseover)
                         }
+                    })
+            else
+                this.animations.add(value,
+                    OAnimationTypes.mouseover,
+                    {
+                        duration: 100,
+                        body: transition => {
+                            const actualPiece = value.current / this.#sum,
+                                actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
 
-                        ctx.translate(transitionPos.x, transitionPos.y)
+                            this.canvas.style.cursor = 'pointer'
 
-                        value.transition = transitionPos
+                            let direction = this.#accumulator + actualAngle / 2
 
-                        ctx.fillStyle = OHelper.adjustColor(value.color, Math.round(33 * (1 - transition)))
-                        ctx.strokeStyle = OHelper.adjustColor(value.color, Math.round(33 * (1 - transition)))
-                    }
-                })
+                            const transitionPos = {
+                                x: 20 * Math.cos(direction) * transition,
+                                y: 20 * Math.sin(direction) * transition
+                            }
 
-            this.animations.add(value,
-                OAnimationTypes.mouseover,
-                {
-                    duration: 100,
-                    before: () => {
-                        return this.#isInsideSector(this.#onMouseMoveEvent, value)
-                    },
-                    body: transition => {
-                        const actualPiece = value.current / this.#sum,
-                            actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
+                            ctx.translate(transitionPos.x, transitionPos.y)
 
-                        this.animations.reload(value, OAnimationTypes.mouseleave)
+                            value.transition = transitionPos
 
-                        this.canvas.style.cursor = 'pointer'
+                            ctx.fillStyle = OHelper.adjustColor(value.color, Math.round(33 * transition))
+                            ctx.strokeStyle = OHelper.adjustColor(value.color, Math.round(33 * transition))
 
-                        let direction = this.#accumulator + actualAngle / 2
-
-                        const transitionPos = {
-                            x: 20 * Math.cos(direction) * transition,
-                            y: 20 * Math.sin(direction) * transition
+                            this.animations.reload(value, OAnimationTypes.mouseleave)
                         }
-
-                        ctx.translate(transitionPos.x, transitionPos.y)
-
-                        value.transition = transitionPos
-
-                        ctx.fillStyle = OHelper.adjustColor(value.color, Math.round(33 * transition))
-                        ctx.strokeStyle = OHelper.adjustColor(value.color, Math.round(33 * transition))
-                    }
-                })
+                    })
         }
 
         let point2 = {
