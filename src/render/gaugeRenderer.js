@@ -48,10 +48,9 @@ export class OGaugeRenderer extends ORenderer {
     /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
-     * @param {ODynSettings} dynSettings
      */
-    constructor(chart, settings, dynSettings) {
-        super(chart, settings, dynSettings)
+    constructor(chart, settings) {
+        super(chart, settings)
 
         this.data = chart.data
 

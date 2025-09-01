@@ -20,11 +20,6 @@ export class ORenderer {
     settings
 
     /**
-     * @type {ODynSettings}
-     */
-    dynSettings
-
-    /**
      * @type {OChart}
      */
     chart
@@ -42,12 +37,10 @@ export class ORenderer {
     /**
      * @param {OChart} chart
      * @param {OChartSettings} settings
-     * @param {ODynSettings} dynSettings
      */
-    constructor(chart, settings, dynSettings) {
+    constructor(chart, settings) {
         this.node = chart.node
         this.settings = settings
-        this.dynSettings = dynSettings
         this.chart = chart
         this.animations = new OAnimations()
 

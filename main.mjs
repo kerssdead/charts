@@ -1,6 +1,5 @@
 import { OHelper } from '/src/helper.js'
 import { OChartTypes, OCircularTypes, OAnimationTypes, OLegendPlaces, OPlotTypes, OPlotAxisTypes } from '/src/enums.js'
-import { ODynSettings } from '/src/dynSettings.js'
 import { OChartSettings } from '/src/settings.js'
 import { OChartProperties } from '/src/const/properties.js'
 import { OBasePoint } from '/src/types/base/basePoint.js'

@@ -1,8 +1,11 @@
 import { OChartProperties } from "/src/const/properties.js"
 import { OHelper } from '/src/helper.js'
 import { OChartTypes, OLegendPlaces, OPlotAxisTypes, OPlotTypes } from '/src/enums.js'
-import { ODynSettings } from '/src/dynSettings.js'
 import { OLegend } from '/src/legend.js'
+import { OPlotRenderer } from '/src/render/plotRenderer.js'
+import { OCircularRenderer } from '/src/render/circularRenderer.js'
+import { OGaugeRenderer } from '/src/render/gaugeRenderer.js'
+import { OTreeRenderer } from '/src/render/treeRenderer.js'
 
 export class OChart {
     /**
@@ -21,9 +24,9 @@ export class OChart {
     settings
 
     /**
-     * @type {ODynSettings}
+     * @type {ORenderer}
      */
-    #dynSettings
+    #renderer
 
     /**
      * @type {OLegend}
@@ -52,14 +55,12 @@ export class OChart {
 
         this.#prepareSettings()
 
-        this.#dynSettings = new ODynSettings(this, this.settings)
-
         if (this.settings.enableLegend)
             this.#legend = new OLegend(this, context)
     }
 
     render() {
-        this.#dynSettings.renderer.render()
+        this.#renderer.render()
         this.#legend?.render()
 
         this.#observer = new ResizeObserver(() => this.#resize())
@@ -113,15 +114,33 @@ export class OChart {
             this.settings.height = dimension.height
 
         this.settings.legendPlace ??= OLegendPlaces.bottom
+
+        switch (this.settings.type) {
+            case OChartTypes.plot:
+                this.#renderer = new OPlotRenderer(this, this.settings)
+                break
+
+            case OChartTypes.circular:
+                this.#renderer = new OCircularRenderer(this, this.settings)
+                break
+
+            case OChartTypes.gauge:
+                this.#renderer = new OGaugeRenderer(this, this.settings)
+                break
+
+            case OChartTypes.treemap:
+                this.#renderer = new OTreeRenderer(this, this.settings)
+                break
+        }
     }
 
     #refresh() {
-        this.#dynSettings.renderer.refresh()
+        this.#renderer.refresh()
         this.#legend?.refresh()
     }
 
     #resize() {
-        this.#dynSettings.renderer.resize()
+        this.#renderer.resize()
         this.#legend?.resize()
     }
 }
