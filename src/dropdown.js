@@ -91,11 +91,11 @@ export class ODropdown {
                         body: transition => {
                             this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseleave)
 
-                            ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(transition * 100))
+                            ctx.fillStyle = OHelper.adjustColor('#ffffff', -Math.round(40 * transition))
                         }
                     })
             else
-                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(100))
+                ctx.fillStyle = OHelper.adjustColor('#ffffff', -40)
         } else {
             this.#canvas.style.cursor = 'default'
 
@@ -107,11 +107,11 @@ export class ODropdown {
                         body: transition => {
                             this.animations.reload({ id: 'animation-dropdown' }, OAnimationTypes.mouseover)
 
-                            ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round((1 - transition) * 100))
+                            ctx.fillStyle = OHelper.adjustColor('#ffffff', -Math.round((1 - transition) * 40))
                         }
                     })
             else
-                ctx.fillStyle = OHelper.adjustColor('#ffffff', 60 - Math.round(100))
+                ctx.fillStyle = OHelper.adjustColor('#ffffff', -40)
         }
 
         ctx.strokeStyle = '#ffffff'
