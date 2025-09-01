@@ -1,5 +1,5 @@
 import { OHelper } from '/src/helper.js'
-import { OLegendPlaces } from '/src/enums.js'
+import { OLegendPlaces, OAnimationTypes } from '/src/enums.js'
 import { OAnimations } from '/src/animations.js'
 import { OButton } from '/src/button.js'
 
@@ -264,12 +264,18 @@ export class OLegend {
         this.#canvasPosition.x += window.scrollX
         this.#canvasPosition.y += window.scrollY
 
-        this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
-        this.canvas.onclick = event => this.#onClickEvent = event
+        if (!this.#isInit) {
+            this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
+            this.canvas.onclick = event => this.#onClickEvent = event
+        }
     }
 
     refresh() {
         this.#isInit = false
+    }
+
+    resize() {
+        this.#initInteractions()
     }
 
     /**

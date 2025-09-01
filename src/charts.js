@@ -31,6 +31,11 @@ export class OChart {
     #legend
 
     /**
+     * @type {ResizeObserver}
+     */
+    #observer
+
+    /**
      * @param {HTMLElement} context
      * @param {OChartSettings} settings
      */
@@ -56,6 +61,9 @@ export class OChart {
     render() {
         this.#dynSettings.renderer.render()
         this.#legend?.render()
+
+        this.#observer = new ResizeObserver(() => this.#resize())
+        this.#observer.observe(this.node)
 
         this.#refresh()
     }
@@ -110,5 +118,10 @@ export class OChart {
     #refresh() {
         this.#dynSettings.renderer.refresh()
         this.#legend?.refresh()
+    }
+
+    #resize() {
+        this.#dynSettings.renderer.resize()
+        this.#legend?.resize()
     }
 }

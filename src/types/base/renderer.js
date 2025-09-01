@@ -53,16 +53,7 @@ export class ORenderer {
 
         this.canvas = document.createElement('canvas')
 
-        this.canvas.width = chart.settings.width
-        this.canvas.height = chart.settings.height
-
-        if (settings.enableLegend) {
-            if (settings.legendPlace === OLegendPlaces.top || settings.legendPlace === OLegendPlaces.bottom)
-                this.canvas.height -= OLegend.getLegendHeight(this.settings.data.values, this.canvas.width)
-
-            if (settings.legendPlace === OLegendPlaces.left || settings.legendPlace === OLegendPlaces.right)
-                this.canvas.width -= 500
-        }
+        this.#calculateSizes()
 
         this.node.append(this.canvas)
 
@@ -96,5 +87,29 @@ export class ORenderer {
 
     refresh() {
         this.tooltip.refresh()
+    }
+
+    resize() {
+        this.#calculateSizes()
+        this.tooltip.refresh()
+    }
+
+    #calculateSizes() {
+        let domRect = this.node.getBoundingClientRect()
+
+        this.canvas.width = this.chart.settings.width < domRect.width || domRect.width === 0
+            ? this.chart.settings.width
+            : domRect.width
+        this.canvas.height = this.chart.settings.height < domRect.height || domRect.height === 0
+            ? this.chart.settings.height
+            : domRect.height
+
+        if (this.settings.enableLegend) {
+            if (this.settings.legendPlace === OLegendPlaces.top || this.settings.legendPlace === OLegendPlaces.bottom)
+                this.canvas.height -= OLegend.getLegendHeight(this.settings.data.values, this.canvas.width)
+
+            if (this.settings.legendPlace === OLegendPlaces.left || this.settings.legendPlace === OLegendPlaces.right)
+                this.canvas.width -= 500
+        }
     }
 }

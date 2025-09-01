@@ -1,3 +1,5 @@
+import { OAnimationTypes } from '/src/enums.js'
+
 export class OAnimations {
     /**
      * @type {Map<string, OAnimationItem>}
@@ -43,6 +45,10 @@ export class OAnimations {
         }
     }
 
+    clear() {
+        this.#queue.forEach((value, key) => !this.#is(key, OAnimationTypes.init) && this.#queue.delete(key))
+    }
+
     /**
      * @param key {string}
      */
@@ -70,6 +76,14 @@ export class OAnimations {
      * @return string
      */
     #getKey(object, type) {
-        return object.id + type
+        return object.id + '_' + type
+    }
+
+    /**
+     * @param key {string}
+     * @param type {number}
+     */
+    #is(key, type) {
+        return key.endsWith('_' + type)
     }
 }

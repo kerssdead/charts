@@ -113,9 +113,6 @@ export class OPlotRenderer extends ORenderer {
             }
         }
 
-        const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
-            yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
-
         this.#paddings = {
             top: 30,
             right: 40,
@@ -126,92 +123,7 @@ export class OPlotRenderer extends ORenderer {
         if (settings.title)
             this.#paddings.top += 50
 
-        if (this.data.xType === OPlotAxisTypes.date)
-            xValues.sort((a, b) => a.getTime() - b.getTime())
-
-        yValues.sort((a, b) => b - a)
-
-        this.#allValuesX = [...new Set(xValues.filter(x => x !== undefined))]
-        this.#allValuesY = [...new Set(yValues.filter(y => y !== undefined))]
-
-        this.#x = {
-            min: Math.min(...xValues),
-            max: Math.max(...xValues),
-            unit: (Math.abs(Math.min(...xValues)) + Math.abs(Math.max(...xValues))) / (this.#allValuesX.length - 1),
-            step: (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length,
-            count: this.#allValuesX.length
-        }
-
-        let yMin = Math.min(...yValues)
-        if (yMin > 0)
-            yMin = 0
-
-        this.#y = {
-            min: yMin,
-            max: this.data.yMax ?? Math.max(...yValues),
-            unit: (Math.abs(yMin) + Math.abs(this.data.yMax ?? Math.max(...yValues))) / (this.#allValuesY.length - 1),
-            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / this.#allValuesY.length,
-            count: this.#allValuesY.length
-        }
-
-        let stackingColumns = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn)
-
-        let max
-
-        if (stackingColumns.length > 0) {
-            let values = stackingColumns.map(s => s.values.flatMap(v => +v.y))
-
-            max = this.#y.max
-
-            for (let i = 0; i < values[0].length; i++) {
-                let sum = 0
-
-                for (const v of values)
-                    sum += v[i]
-
-                if (sum > max)
-                    max = sum
-            }
-
-            this.#y.max = max > this.data.yMax ? this.data.yMax : max
-            this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
-        }
-
-        const yMaxWidth = OHelper.stringWidth(this.#y.max.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
-        if (yMaxWidth > this.#paddings.left - 40) {
-            this.#paddings.left += yMaxWidth - this.#paddings.left + 40
-            this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length
-        }
-
-        this.#yAxisStep = Math.abs(this.#y.min) + Math.abs(this.#y.max)
-
-        if (10 <= this.#yAxisStep && this.#yAxisStep < 100)
-            this.#yAxisStep = 2
-        else if (100 <= this.#yAxisStep && this.#yAxisStep < 1000)
-            this.#yAxisStep = 20
-        else if (1000 <= this.#yAxisStep && this.#yAxisStep < 10000)
-            this.#yAxisStep = 50
-        else if (10000 <= this.#yAxisStep && this.#yAxisStep < 100000)
-            this.#yAxisStep = 1000
-        else if (100000 <= this.#yAxisStep && this.#yAxisStep < 1000000)
-            this.#yAxisStep = 10000
-        else if (1000000 <= this.#yAxisStep && this.#yAxisStep < 10000000)
-            this.#yAxisStep = 50000
-        else
-            this.#yAxisStep = 1
-
-        if (this.#yAxisStep !== 1) {
-            max = yValues.length > 10
-                ? (this.#y.max / 10 + this.#yAxisStep - (this.#y.max / 10) % this.#yAxisStep) * 10
-                : Math.ceil(this.#y.max / this.#yAxisStep) * this.#yAxisStep
-
-            this.#y.max = max > this.data.yMax ? this.data.yMax : max
-        }
-
-        this.#plot = {
-            width: this.canvas.width - this.#paddings.left - this.#paddings.right,
-            height: this.canvas.height - this.#paddings.top - this.#paddings.bottom,
-        }
+        this.#calculateSizes()
 
         this.tooltip = new OTooltip(this.canvas, this.settings)
 
@@ -633,6 +545,14 @@ export class OPlotRenderer extends ORenderer {
         super.refresh()
     }
 
+    resize() {
+        super.resize()
+
+        this.#base = null
+
+        this.#calculateSizes()
+    }
+
     #initAnimations() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
 
@@ -855,5 +775,97 @@ export class OPlotRenderer extends ORenderer {
         }
 
         this.#base = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
+    }
+
+    #calculateSizes() {
+        const xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
+            yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
+
+        if (this.data.xType === OPlotAxisTypes.date)
+            xValues.sort((a, b) => a.getTime() - b.getTime())
+
+        yValues.sort((a, b) => b - a)
+
+        this.#allValuesX = [...new Set(xValues.filter(x => x !== undefined))]
+        this.#allValuesY = [...new Set(yValues.filter(y => y !== undefined))]
+
+        this.#x = {
+            min: Math.min(...xValues),
+            max: Math.max(...xValues),
+            unit: (Math.abs(Math.min(...xValues)) + Math.abs(Math.max(...xValues))) / (this.#allValuesX.length - 1),
+            step: (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length,
+            count: this.#allValuesX.length
+        }
+
+        let yMin = Math.min(...yValues)
+        if (yMin > 0)
+            yMin = 0
+
+        this.#y = {
+            min: yMin,
+            max: this.data.yMax ?? Math.max(...yValues),
+            unit: (Math.abs(yMin) + Math.abs(this.data.yMax ?? Math.max(...yValues))) / (this.#allValuesY.length - 1),
+            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / this.#allValuesY.length,
+            count: this.#allValuesY.length
+        }
+
+        let stackingColumns = this.data.values.filter(s => s.type === OPlotTypes.stackingColumn)
+
+        let max
+
+        if (stackingColumns.length > 0) {
+            let values = stackingColumns.map(s => s.values.flatMap(v => +v.y))
+
+            max = this.#y.max
+
+            for (let i = 0; i < values[0].length; i++) {
+                let sum = 0
+
+                for (const v of values)
+                    sum += v[i]
+
+                if (sum > max)
+                    max = sum
+            }
+
+            this.#y.max = max > this.data.yMax ? this.data.yMax : max
+            this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
+        }
+
+        const yMaxWidth = OHelper.stringWidth(this.#y.max.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+        if (yMaxWidth > this.#paddings.left - 40) {
+            this.#paddings.left += yMaxWidth - this.#paddings.left + 40
+            this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length
+        }
+
+        this.#yAxisStep = Math.abs(this.#y.min) + Math.abs(this.#y.max)
+
+        if (10 <= this.#yAxisStep && this.#yAxisStep < 100)
+            this.#yAxisStep = 2
+        else if (100 <= this.#yAxisStep && this.#yAxisStep < 1000)
+            this.#yAxisStep = 20
+        else if (1000 <= this.#yAxisStep && this.#yAxisStep < 10000)
+            this.#yAxisStep = 50
+        else if (10000 <= this.#yAxisStep && this.#yAxisStep < 100000)
+            this.#yAxisStep = 1000
+        else if (100000 <= this.#yAxisStep && this.#yAxisStep < 1000000)
+            this.#yAxisStep = 10000
+        else if (1000000 <= this.#yAxisStep && this.#yAxisStep < 10000000)
+            this.#yAxisStep = 50000
+        else
+            this.#yAxisStep = 1
+
+        if (this.#yAxisStep !== 1) {
+            max = yValues.length > 10
+                ? (this.#y.max / 10 + this.#yAxisStep - (this.#y.max / 10) % this.#yAxisStep) * 10
+                : Math.ceil(this.#y.max / this.#yAxisStep) * this.#yAxisStep
+
+            this.#y.max = max > this.data.yMax ? this.data.yMax : max
+        }
+
+        this.#plot = {
+            width: this.canvas.width - this.#paddings.left - this.#paddings.right,
+            height: this.canvas.height - this.#paddings.top - this.#paddings.bottom,
+        }
     }
 }

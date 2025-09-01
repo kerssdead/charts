@@ -2,6 +2,7 @@ import { ORenderer } from '/src/types/base/renderer.js'
 import { ODropdown } from '/src/dropdown.js'
 import { OAnimations } from '/src/animations.js'
 import { OAnimationTypes } from '/src/enums.js'
+import { OHelper } from '/src/helper.js'
 
 export class OGaugeRenderer extends ORenderer {
     /**
@@ -69,9 +70,7 @@ export class OGaugeRenderer extends ORenderer {
             })
         }
 
-        this.#radius = this.canvas.width > this.canvas.height
-            ? this.canvas.width / 3
-            : this.canvas.height / 3
+        this.#calculateSizes()
 
         this.#dropdown = new ODropdown(this.chart,
             this.canvas,
@@ -105,11 +104,6 @@ export class OGaugeRenderer extends ORenderer {
                     }
                 ]
             })
-
-        this.#center = {
-            x: this.canvas.width / 2,
-            y: this.canvas.height - this.#radius / 3
-        }
 
         if (this.data.values.length > 0) {
             if (this.data.values[0].value < this.data.min)
@@ -266,11 +260,33 @@ export class OGaugeRenderer extends ORenderer {
         this.#canvasPosition.x += window.scrollX
         this.#canvasPosition.y += window.scrollY
 
-        this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
-        this.canvas.onclick = event => this.#onClickEvent = event
+        if (!this.#isInit) {
+            this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
+            this.canvas.onclick = event => this.#onClickEvent = event
+        }
+    }
+
+    #calculateSizes() {
+        const longSide = this.canvas.width < this.canvas.height
+            ? this.canvas.height - 250
+            : this.canvas.width
+
+        this.#radius = longSide / 3
+
+        this.#center = {
+            x: this.canvas.width / 2,
+            y: this.canvas.height - this.#radius / 3
+        }
     }
 
     refresh() {
         super.refresh()
+    }
+
+    resize() {
+        super.resize()
+
+        this.#initAnimations()
+        this.#calculateSizes()
     }
 }

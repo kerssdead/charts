@@ -226,57 +226,54 @@ export class OTreeRenderer extends ORenderer {
                             }
                         })
                 } else {
-                    if (this.#isInCell(cell))
+                    if (this.#isInCell(cell)) {
                         tooltipCell = cell
 
-                    this.animations.add({ id: cell.id },
-                        OAnimationTypes.mouseover,
-                        {
-                            duration: 140,
-                            before: () => {
-                                return this.#isInCell(cell)
-                            },
-                            body: transition => {
-                                transition = 1 - transition
+                        this.animations.add({ id: cell.id },
+                            OAnimationTypes.mouseover,
+                            {
+                                duration: 140,
+                                body: transition => {
+                                    transition = 1 - transition
 
-                                const center = {
-                                    x: cell.x + cell.w / 2,
-                                    y: cell.y + cell.h / 2
+                                    const center = {
+                                        x: cell.x + cell.w / 2,
+                                        y: cell.y + cell.h / 2
+                                    }
+
+                                    const minSize = .95,
+                                        rest = 1 - minSize
+
+                                    ctx.translate(center.x - center.x * (minSize + transition * rest),
+                                        center.y - center.y * (minSize + transition * rest))
+                                    ctx.scale((minSize + transition * rest), (minSize + transition * rest))
+
+                                    this.animations.reload({ id: cell.id }, OAnimationTypes.mouseleave)
                                 }
+                            })
+                    } else {
+                        this.animations.add({ id: cell.id },
+                            OAnimationTypes.mouseleave,
+                            {
+                                timer: new Date(2000, 1, 1),
+                                duration: 140,
+                                body: transition => {
+                                    const center = {
+                                        x: cell.x + cell.w / 2,
+                                        y: cell.y + cell.h / 2
+                                    }
 
-                                const minSize = .95,
-                                    rest = 1 - minSize
+                                    const minSize = .95,
+                                        rest = 1 - minSize
 
-                                ctx.translate(center.x - center.x * (minSize + transition * rest),
-                                    center.y - center.y * (minSize + transition * rest))
-                                ctx.scale((minSize + transition * rest), (minSize + transition * rest))
+                                    ctx.translate(center.x - center.x * (minSize + transition * rest),
+                                        center.y - center.y * (minSize + transition * rest))
+                                    ctx.scale((minSize + transition * rest), (minSize + transition * rest))
 
-                                this.animations.reload({ id: cell.id }, OAnimationTypes.mouseleave)
-                            }
-                        })
-
-                    this.animations.add({ id: cell.id },
-                        OAnimationTypes.mouseleave,
-                        {
-                            timer: new Date(2000, 1, 1),
-                            duration: 140,
-                            before: () => {
-                                return !this.#isInCell(cell)
-                            },
-                            body: transition => {
-                                const center = {
-                                    x: cell.x + cell.w / 2,
-                                    y: cell.y + cell.h / 2
+                                    this.animations.reload({ id: cell.id }, OAnimationTypes.mouseover)
                                 }
-
-                                const minSize = .95,
-                                    rest = 1 - minSize
-
-                                ctx.translate(center.x - center.x * (minSize + transition * rest),
-                                    center.y - center.y * (minSize + transition * rest))
-                                ctx.scale((minSize + transition * rest), (minSize + transition * rest))
-                            }
-                        })
+                            })
+                    }
                 }
 
                 const gap = 4
@@ -338,8 +335,10 @@ export class OTreeRenderer extends ORenderer {
         this.#canvasPosition.x += window.scrollX
         this.#canvasPosition.y += window.scrollY
 
-        this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
-        this.canvas.onclick = event => this.#onClickEvent = event
+        if (!this.#isInit) {
+            this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
+            this.canvas.onclick = event => this.#onClickEvent = event
+        }
     }
 
     /**
@@ -374,5 +373,12 @@ export class OTreeRenderer extends ORenderer {
 
     refresh() {
         super.refresh()
+    }
+
+    resize() {
+        super.resize()
+
+        this.#initAnimations()
+        this.animations.clear()
     }
 }

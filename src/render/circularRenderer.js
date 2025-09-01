@@ -157,29 +157,20 @@ export class OCircularRenderer extends ORenderer {
                     }
                 ]
             })
+
+        this.#calculateSizes()
+
+        this.#startAngle = Math.random() % (Math.PI * 2)
+
+        this.#pinned = []
+
+        this.#initAnimations()
+
+        this.canvas.dispatchEvent(new MouseEvent('mousemove'))
     }
 
     render() {
         super.render()
-
-        if (!this.#isInit) {
-            const shortSide = this.canvas.width > this.canvas.height
-                ? this.canvas.height
-                : this.canvas.width
-
-            this.#center = {
-                x: this.canvas.width / 2,
-                y: this.canvas.height / 2
-            }
-
-            this.#startAngle = Math.random() % (Math.PI * 2)
-
-            this.#radius = shortSide / 3
-
-            this.#pinned = []
-
-            this.#initAnimations()
-        }
 
         this.#accumulator = this.#startAngle
         this.#isHover = false
@@ -189,9 +180,6 @@ export class OCircularRenderer extends ORenderer {
             this.#drawEmpty()
         else
             this.#draw()
-
-        if (!this.#isInit)
-            this.canvas.dispatchEvent(new MouseEvent('mousemove'))
 
         this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
 
@@ -568,8 +556,10 @@ export class OCircularRenderer extends ORenderer {
         this.#canvasPosition.x += window.scrollX
         this.#canvasPosition.y += window.scrollY
 
-        this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
-        this.canvas.onclick = event => this.#onClickEvent = event
+        if (!this.#isInit) {
+            this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
+            this.canvas.onclick = event => this.#onClickEvent = event
+        }
     }
 
     /**
@@ -652,6 +642,19 @@ export class OCircularRenderer extends ORenderer {
         }
     }
 
+    #calculateSizes() {
+        const shortSide = this.canvas.width > this.canvas.height
+            ? this.canvas.height
+            : this.canvas.width
+
+        this.#center = {
+            x: this.canvas.width / 2,
+            y: this.canvas.height / 2
+        }
+
+        this.#radius = shortSide / 3
+    }
+
     destroy() {
         super.destroy()
     }
@@ -662,5 +665,12 @@ export class OCircularRenderer extends ORenderer {
         this.#isInit = false
 
         this.#dropdown.refresh()
+    }
+
+    resize() {
+        super.resize()
+
+        this.#initAnimations()
+        this.#calculateSizes()
     }
 }
