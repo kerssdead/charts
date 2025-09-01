@@ -287,7 +287,7 @@ export class OTreeRenderer extends ORenderer {
                     ctx.fillStyle = !OHelper.isColorVisible(cell.color, '#ffffff')
                         ? '#000000'
                         : '#ffffff'
-                    ctx.font = '14px serif'
+                    ctx.font = '16px serif'
                     ctx.textAlign = 'center'
                     ctx.textBaseline = 'middle'
                     ctx.fillText(cell.label, x + cell.w / 2, y + cell.h / 2)
