@@ -87,6 +87,8 @@ export class ORenderer {
         this.tooltip.refresh()
     }
 
+    resetMouse() { }
+
     #calculateSizes() {
         let domRect = this.node.getBoundingClientRect()
 

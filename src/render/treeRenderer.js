@@ -380,4 +380,11 @@ export class OTreeRenderer extends ORenderer {
         this.#initAnimations()
         this.animations.clear()
     }
+
+    resetMouse() {
+        super.resetMouse()
+
+        this.#onMouseMoveEvent = new MouseEvent('mousemove')
+        this.#onClickEvent = new MouseEvent('click')
+    }
 }

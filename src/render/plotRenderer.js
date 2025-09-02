@@ -559,6 +559,13 @@ export class OPlotRenderer extends ORenderer {
         this.#calculateSizes()
     }
 
+    resetMouse() {
+        super.resetMouse()
+
+        this.#onMouseMoveEvent = new MouseEvent('mousemove')
+        this.#onClickEvent = new MouseEvent('click')
+    }
+
     #initAnimations() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
 

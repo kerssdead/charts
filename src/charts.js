@@ -57,6 +57,9 @@ export class OChart {
 
         if (this.settings.enableLegend)
             this.#legend = new OLegend(this, context)
+
+        document.addEventListener('visibilitychange', () => this.#renderer.resetMouse())
+        window.addEventListener('blur', () => this.#renderer.resetMouse())
     }
 
     render() {

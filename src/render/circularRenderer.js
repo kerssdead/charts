@@ -635,4 +635,11 @@ export class OCircularRenderer extends ORenderer {
         this.#initAnimations()
         this.#calculateSizes()
     }
+
+    resetMouse() {
+        super.resetMouse()
+
+        this.#onMouseMoveEvent = new MouseEvent('mousemove')
+        this.#onClickEvent = new MouseEvent('click')
+    }
 }
