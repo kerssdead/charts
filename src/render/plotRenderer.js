@@ -322,7 +322,8 @@ export class OPlotRenderer extends ORenderer {
 
                             if (this.#isOnX(x + this.#x.step / 2)) {
                                 isLast = this.data.values.filter(s => (s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn)
-                                        && s.values.filter(v => v.x === value.x).length > 0).length - 1
+                                        && s.values.filter(v => v.x === value.x).length > 0
+                                        && !s.disabled).length - 1
                                     <= columnsIndex
 
                                 hoverX = {
@@ -443,7 +444,8 @@ export class OPlotRenderer extends ORenderer {
 
                             if (this.#isOnX(x + this.#x.step / 2)) {
                                 isLast = this.data.values.filter(s => (s.type === OPlotTypes.column || s.type === OPlotTypes.stackingColumn)
-                                    && s.values.filter(v => v.x === value.x).length > 0).length - 1
+                                    && s.values.filter(v => v.x === value.x).length > 0
+                                    && !s.disabled).length - 1
                                     <= columnsIndex
 
                                 hoverX = {
