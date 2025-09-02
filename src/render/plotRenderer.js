@@ -183,7 +183,7 @@ export class OPlotRenderer extends ORenderer {
 
             for (const value of series.values) {
                 let index = series.values.indexOf(value),
-                    xIndex = this.#allValuesX.indexOf(value.x.toString()),
+                    xIndex = this.#allValuesX.indexOf(this.data.xType === OPlotAxisTypes.date ? value.x.toString() : value.x),
                     yIndex = this.#allValuesY.indexOf(value.y)
 
                 const getTooltipValue = () => {
