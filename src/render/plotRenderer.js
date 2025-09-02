@@ -650,7 +650,7 @@ export class OPlotRenderer extends ORenderer {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
 
-        const xCount = this.#x.count > 10 ? 10 : this.#x.count
+        const xCount = this.#x.count > 20 ? 20 : this.#x.count
 
         let xCounter = !isContainsBar ? 1 : 0,
             xStep = this.#allValuesX.length / xCount
