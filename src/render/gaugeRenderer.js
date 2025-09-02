@@ -146,7 +146,7 @@ class OGaugeRenderer extends ORenderer {
 
         ctx.beginPath()
 
-        ctx.strokeStyle = '#0288d1'
+        ctx.strokeStyle = value.color
         ctx.lineCap = 'round'
         ctx.lineWidth = 40
 
