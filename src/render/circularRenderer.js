@@ -491,6 +491,11 @@ class OCircularRenderer extends ORenderer {
 
                     localAngle += Math.PI / 6
                 }
+
+                point2 = {
+                    x: this.#center.x + this.#radius * Math.cos(this.#accumulator + angle),
+                    y: this.#center.y + this.#radius * Math.sin(this.#accumulator + angle)
+                }
             }
 
             ctx.closePath()
