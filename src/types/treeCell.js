@@ -1,4 +1,4 @@
-export class OTreeCell {
+class OTreeCell {
     /**
      * @type {number}
      */

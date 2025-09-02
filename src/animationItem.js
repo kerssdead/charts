@@ -1,4 +1,4 @@
-export class OAnimationItem {
+class OAnimationItem {
     /**
      * @type {Date|null}
      */

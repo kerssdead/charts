@@ -1,9 +1,4 @@
-import { OAnimations } from '/src/animations.js'
-import { OTooltip } from '/src/tooltip.js'
-import { OLegend } from '/src/legend.js'
-import { OLegendPlaces } from '/src/enums.js'
-
-export class ORenderer {
+class ORenderer {
     /**
      * @type {HTMLElement}
      */

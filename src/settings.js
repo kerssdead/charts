@@ -1,4 +1,4 @@
-export class OChartSettings {
+class OChartSettings {
     /**
      * @type {OData}
      */

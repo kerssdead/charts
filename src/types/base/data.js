@@ -1,4 +1,4 @@
-export class OData {
+class OData {
     /**
      * @type {OBasePoint[]}
      */

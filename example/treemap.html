@@ -6,7 +6,7 @@
         Tree Map Example
     </title>
 
-    <script type="module" src="../main.mjs"></script>
+    <script src="/ch.min.js"></script>
 </head>
 
 <body>
@@ -27,9 +27,7 @@
     </div>
 </template>
 
-<script type="module">
-    import OCharts from '../main.mjs'
-
+<script>
     document.getElementById('pie-example').innerHTML = ''
 
     const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
@@ -48,7 +46,7 @@
             }
         })
 
-    let chart = new OCharts.Chart(document.getElementById('pie-example'), {
+    let chart = new OChart(document.getElementById('pie-example'), {
         width: 1600,
         height: 940,
         title: 'Tree Map',
@@ -58,7 +56,7 @@
             padding: 20,
             color: 'red'
         },
-        type: OCharts.ChartTypes.treemap,
+        type: OChartTypes.treemap,
         templateId: 'pie-chart-tooltip'
     })
 

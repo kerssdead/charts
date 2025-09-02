@@ -1,13 +1,4 @@
-import { OChartProperties } from "/src/const/properties.js"
-import { OHelper } from '/src/helper.js'
-import { OChartTypes, OLegendPlaces, OPlotAxisTypes, OPlotTypes } from '/src/enums.js'
-import { OLegend } from '/src/legend.js'
-import { OPlotRenderer } from '/src/render/plotRenderer.js'
-import { OCircularRenderer } from '/src/render/circularRenderer.js'
-import { OGaugeRenderer } from '/src/render/gaugeRenderer.js'
-import { OTreeRenderer } from '/src/render/treeRenderer.js'
-
-export class OChart {
+class OChart {
     /**
      * @type {HTMLElement}
      */

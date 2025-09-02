@@ -1,6 +1,4 @@
-import { OBasePoint } from '/src/types/base/basePoint.js'
-
-export class OPlotSeries extends OBasePoint {
+class OPlotSeries extends OBasePoint {
     /**
      * @type {OPlotPoint[]}
      */

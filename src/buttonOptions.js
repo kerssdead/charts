@@ -1,4 +1,4 @@
-export class OButtonOptions {
+class OButtonOptions {
     /**
      * @type {number}
      */

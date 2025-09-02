@@ -1,10 +1,4 @@
-import { ORenderer } from '/src/types/base/renderer.js'
-import { OSector } from '/src/types/sector.js'
-import { OCircularTypes, OAnimationTypes } from '/src/enums.js'
-import { ODropdown } from '/src/dropdown.js'
-import { OHelper } from '/src/helper.js'
-
-export class OCircularRenderer extends ORenderer {
+class OCircularRenderer extends ORenderer {
     /**
      * @type {boolean}
      */

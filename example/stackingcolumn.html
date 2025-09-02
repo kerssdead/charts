@@ -6,16 +6,14 @@
         Stacking Column Plot Example
     </title>
 
-    <script type="module" src="../main.mjs"></script>
+    <script src="/ch.min.js"></script>
 </head>
 
 <body>
 <div id="line-example" style="text-align: center"></div>
 </body>
 
-<script type="module">
-    import OCharts from '../main.mjs'
-
+<script>
     const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
 
     let values = [],
@@ -45,7 +43,7 @@
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
-    let chart = new OCharts.Chart(document.getElementById('line-example'), {
+    let chart = new OChart(document.getElementById('line-example'), {
         width: 1600,
         height: 940,
         title: 'Stacking Column Plot',
@@ -55,21 +53,21 @@
             values: [
                 {
                     values: values,
-                    type: OCharts.PlotTypes.stackingColumn,
+                    type: OPlotTypes.stackingColumn,
                     label: 'Column',
                     color: '#0000ff',
                     width: 80
                 },
                 {
                     values: values1,
-                    type: OCharts.PlotTypes.stackingColumn,
+                    type: OPlotTypes.stackingColumn,
                     label: 'Column 2',
                     color: '#0088ff',
                     width: 80
                 },
                 {
                     values: values2,
-                    type: OCharts.PlotTypes.stackingColumn,
+                    type: OPlotTypes.stackingColumn,
                     label: 'Column 3',
                     color: '#00ccff',
                     width: 80
@@ -78,7 +76,7 @@
             xTitle: 'X-Axis',
             yTitle: 'Y-Axis'
         },
-        type: OCharts.ChartTypes.plot
+        type: OChartTypes.plot
     })
 
     chart.render()

@@ -1,10 +1,4 @@
-import { ORenderer } from '/src/types/base/renderer.js'
-import { ODropdown } from '/src/dropdown.js'
-import { OAnimations } from '/src/animations.js'
-import { OAnimationTypes } from '/src/enums.js'
-import { OHelper } from '/src/helper.js'
-
-export class OGaugeRenderer extends ORenderer {
+class OGaugeRenderer extends ORenderer {
     /**
      * @type {OGaugeData}
      */

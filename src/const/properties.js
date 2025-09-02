@@ -1,4 +1,4 @@
-export class OChartProperties {
+class OChartProperties {
     /**
      * @readonly
      * @type {string}

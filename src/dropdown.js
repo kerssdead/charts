@@ -1,8 +1,4 @@
-import { OAnimations } from '/src/animations.js'
-import { OAnimationTypes } from '/src/enums.js'
-import { OHelper } from '/src/helper.js'
-
-export class ODropdown {
+class ODropdown {
     /**
      * @type {OChart}
      */

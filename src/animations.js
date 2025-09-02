@@ -1,6 +1,4 @@
-import { OAnimationTypes } from '/src/enums.js'
-
-export class OAnimations {
+class OAnimations {
     /**
      * @type {Map<string, OAnimationItem>}
      */

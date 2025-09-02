@@ -1,9 +1,4 @@
-import { OHelper } from '/src/helper.js'
-import { OLegendPlaces, OAnimationTypes } from '/src/enums.js'
-import { OAnimations } from '/src/animations.js'
-import { OButton } from '/src/button.js'
-
-export class OLegend {
+class OLegend {
     /**
      * @type {HTMLCanvasElement}
      */

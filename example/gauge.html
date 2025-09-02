@@ -6,17 +6,15 @@
     Gauge Example
   </title>
 
-  <script type="module" src="../main.mjs"></script>
+  <script src="/ch.min.js"></script>
 </head>
 
 <body>
 <div id="pie-example" style="text-align: center"></div>
 </body>
 
-<script type="module">
-  import OCharts from '../main.mjs'
-
-  let chart = new OCharts.Chart(document.getElementById('pie-example'), {
+<script>
+  let chart = new OChart(document.getElementById('pie-example'), {
     width: 1600,
     height: 940,
     enableTooltip: true,
@@ -30,7 +28,7 @@
       ],
       max: 200
     },
-    type: OCharts.ChartTypes.gauge
+    type: OChartTypes.gauge
   })
 
   chart.render()

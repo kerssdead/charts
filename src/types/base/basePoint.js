@@ -1,4 +1,4 @@
-export class OBasePoint {
+class OBasePoint {
     /**
      * @type {string}
      */

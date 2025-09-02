@@ -1,4 +1,4 @@
-export class ODropdownItem {
+class ODropdownItem {
     /**
      * @type {string}
      */

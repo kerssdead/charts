@@ -2,7 +2,7 @@
  * @readonly
  * @enum {string}
  */
-export const OChartTypes = Object.freeze({
+const OChartTypes = Object.freeze({
     plot: 0,
     circular: 1,
     gauge: 2,
@@ -13,7 +13,7 @@ export const OChartTypes = Object.freeze({
  * @readonly
  * @enum {string}
  */
-export const OCircularTypes = Object.freeze({
+const OCircularTypes = Object.freeze({
     pie: 0,
     donut: 1
 })
@@ -22,7 +22,7 @@ export const OCircularTypes = Object.freeze({
  * @readonly
  * @enum {string}
  */
-export const OAnimationTypes = Object.freeze({
+const OAnimationTypes = Object.freeze({
     mouseover: 0,
     mouseleave: 1,
     init: 2,
@@ -33,7 +33,7 @@ export const OAnimationTypes = Object.freeze({
  * @readonly
  * @enum {string}
  */
-export const OLegendPlaces = Object.freeze({
+const OLegendPlaces = Object.freeze({
     bottom: 0,
     left: 1,
     top: 2,
@@ -44,7 +44,7 @@ export const OLegendPlaces = Object.freeze({
  * @readonly
  * @enum {string}
  */
-export const OPlotTypes = Object.freeze({
+const OPlotTypes = Object.freeze({
     line: 0,
     attentionLine: 1,
     column: 2,
@@ -56,7 +56,7 @@ export const OPlotTypes = Object.freeze({
  * @readonly
  * @enum {string}
  */
-export const OPlotAxisTypes = Object.freeze({
+const OPlotAxisTypes = Object.freeze({
     number: 0,
     date: 1
 })

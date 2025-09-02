@@ -6,16 +6,14 @@
         Donut Example
     </title>
 
-    <script type="module" src="../main.mjs"></script>
+    <script src="/ch.min.js"></script>
 </head>
 
 <body>
     <div id="pie-example" style="text-align: center"></div>
 </body>
 
-<script type="module">
-    import OCharts from '../main.mjs'
-
+<script>
     const labelsPool = ['test 1', 'test 2', 'some label', 'another one', 'label', 'test 3', 'chart label', 'custom']
 
     let values = []
@@ -31,19 +29,19 @@
         label: 'null'
     })
 
-    let chart = new OCharts.Chart(document.getElementById('pie-example'), {
+    let chart = new OChart(document.getElementById('pie-example'), {
         width: 1600,
         height: 940,
         enableLegend: true,
         enableTooltip: true,
         title: 'Donut Chart',
         data: {
-            type: OCharts.CircularTypes.donut,
+            type: OCircularTypes.donut,
             values: values,
             innerRadius: 50,
             innerTitle: `Average: ${(values.filter(v => v.value !== undefined).map(v => v.value).reduce((a, b) => a + b) / values.length).toPrecision(2)}`
         },
-        type: OCharts.ChartTypes.circular
+        type: OChartTypes.circular
     })
 
     chart.render()
