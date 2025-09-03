@@ -721,7 +721,7 @@ class OPlotRenderer extends ORenderer {
 
             if (!this.#labelsY.get(labelYAsKey))
                 this.#labelsY.set(labelYAsKey,
-                    (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1))
+                    (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count)
                         .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
 
             let isRender = i >= yCounter * yStep
@@ -731,8 +731,8 @@ class OPlotRenderer extends ORenderer {
                     x: this.#paddings.left,
                     y: labelY,
                     label: this.#yAxisStep >= 1
-                        ? Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)) / this.#yAxisStep) * this.#yAxisStep
-                        : Math.round(this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1) / this.#yAxisStep) * this.#yAxisStep
+                        ? Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count) / this.#yAxisStep) * this.#yAxisStep
+                        : Math.round(this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count / this.#yAxisStep) * this.#yAxisStep
                 }
 
                 if (this.data.shortLabels) {
@@ -893,6 +893,7 @@ class OPlotRenderer extends ORenderer {
                 : Math.ceil(this.#y.max / this.#yAxisStep) * this.#yAxisStep
 
             this.#y.max = max > this.data.yMax ? this.data.yMax : max
+            this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / this.#allValuesY.length
         }
 
         this.#plot = {
