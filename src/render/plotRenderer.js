@@ -730,7 +730,9 @@ class OPlotRenderer extends ORenderer {
                 const label = {
                     x: this.#paddings.left,
                     y: labelY,
-                    label: Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)) / this.#yAxisStep) * this.#yAxisStep
+                    label: this.#yAxisStep >= 1
+                        ? Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1)) / this.#yAxisStep) * this.#yAxisStep
+                        : Math.round(this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / (this.#y.count - 1) / this.#yAxisStep) * this.#yAxisStep
                 }
 
                 if (this.data.shortLabels) {
@@ -868,7 +870,9 @@ class OPlotRenderer extends ORenderer {
 
         this.#yAxisStep = Math.abs(this.#y.min) + Math.abs(this.#y.max)
 
-        if (10 <= this.#yAxisStep && this.#yAxisStep < 100)
+        if (1 <= this.#yAxisStep && this.#yAxisStep < 10)
+            this.#yAxisStep = .1
+        else if (10 <= this.#yAxisStep && this.#yAxisStep < 100)
             this.#yAxisStep = 2
         else if (100 <= this.#yAxisStep && this.#yAxisStep < 1000)
             this.#yAxisStep = 20
