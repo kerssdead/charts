@@ -144,7 +144,7 @@ class OCircularRenderer extends ORenderer {
 
                             let download = document.createElement('a')
                             download.href = destinationCanvas.toDataURL('image/png')
-                            download.download = this.settings.title + '.png'
+                            download.download = (this.settings.title ?? 'chart') + '.png'
                             download.click()
                         }
                     }
