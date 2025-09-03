@@ -204,7 +204,7 @@ class OPlotRenderer extends ORenderer {
 
                 switch (series.type) {
                     case OPlotTypes.line:
-                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step - this.#y.step / 2
+                        y = this.#paddings.top + this.#plot.height - value.y / this.#y.unit * this.#y.step
                             - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
 
                         const pointDuration = 1500 / series.values.length * 1.2
@@ -222,14 +222,14 @@ class OPlotRenderer extends ORenderer {
                                             return
 
                                         x = this.#paddings.left + xIndex * this.#x.step - this.#x.step / 2
-                                        y = this.canvas.height - this.#paddings.bottom - value.y / this.#y.unit * this.#y.step - this.#y.step / 2
+                                        y = this.#paddings.top + this.#plot.height - value.y / this.#y.unit * this.#y.step
                                             - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
 
                                         const next = series.values[index - 1]
 
                                         let prevValue = {
                                             x: this.#paddings.left + (xIndex - 1) * this.#x.step - this.#x.step / 2,
-                                            y: this.canvas.height - this.#paddings.bottom - next.y / this.#y.unit * this.#y.step - this.#y.step / 2
+                                            y: this.#paddings.top + this.#plot.height - next.y / this.#y.unit * this.#y.step
                                                 - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
                                         }
 
