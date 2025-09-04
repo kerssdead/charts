@@ -139,14 +139,11 @@ class PlotRenderer extends Renderer {
                     }
                 }
 
-                if (series.type === PlotType.Line)
-                    xIndex += 1
-
                 x = this.#paddings.left
                 if (series.type !== PlotType.Bar)
                     x += xIndex * this.#x.step
                 if (series.type === PlotType.Line)
-                    x -= this.#x.step / 2
+                    x -= this.#x.step / 2 - this.#x.step
 
                 switch (series.type) {
                     case PlotType.Line:
@@ -162,7 +159,7 @@ class PlotRenderer extends Renderer {
                                     duration: index * pointDuration,
                                     continuous: true,
                                     body: transition => {
-                                        transition = (transition * index * pointDuration - (index - 1) * pointDuration) / pointDuration
+                                        transition = (transition * index * pointDuration - index * pointDuration) / pointDuration
 
                                         if (index === 0 || transition < 0)
                                             return
@@ -174,7 +171,7 @@ class PlotRenderer extends Renderer {
                                         const next = series.values[index - 1]
 
                                         let prevValue = {
-                                            x: this.#paddings.left + (xIndex - 1) * this.#x.step - this.#x.step / 2,
+                                            x: this.#paddings.left + xIndex * this.#x.step - this.#x.step / 2,
                                             y: this.#paddings.top + this.#plot.height - <number>next.y / this.#y.unit * this.#y.step
                                                 - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
                                         }
