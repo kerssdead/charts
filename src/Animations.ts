@@ -26,7 +26,7 @@ class Animations {
     }
 
     clear() {
-        this.#queue.forEach((value, key) => !this.#is(key, AnimationType.Init) && this.#queue.delete(key))
+        this.#queue.forEach((_value, key) => !this.#is(key, AnimationType.Init) && this.#queue.delete(key))
     }
 
     #process(key: string) {

@@ -1,6 +1,4 @@
 class Button {
-    #chart: Chart
-
     #canvas: HTMLCanvasElement
 
     #options: ButtonOptions
@@ -11,8 +9,7 @@ class Button {
 
     #isInit: boolean
 
-    constructor(chart: Chart, canvas: HTMLCanvasElement, options: ButtonOptions) {
-        this.#chart = chart
+    constructor(canvas: HTMLCanvasElement, options: ButtonOptions) {
         this.#canvas = canvas
         this.#options = options
 
@@ -109,9 +106,5 @@ class Button {
 
         return trueX >= x && trueX <= x + w
             && trueY >= y && trueY <= y + h
-    }
-
-    refresh() {
-        this.#isInit = false
     }
 }

@@ -60,8 +60,7 @@ class Legend {
 
         this.animations = new Animations()
 
-        this.#button = new Button(this.chart,
-            this.canvas,
+        this.#button = new Button(this.canvas,
             {
                 x: this.canvas.width - 110,
                 y: 10,

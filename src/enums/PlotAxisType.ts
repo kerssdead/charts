@@ -1,5 +1,3 @@
 enum PlotAxisType {
-    Number,
-
-    Date
+    Date = 1
 }

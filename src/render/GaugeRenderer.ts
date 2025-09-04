@@ -22,8 +22,7 @@ class GaugeRenderer extends Renderer {
 
         this.#calculateSizes()
 
-        this.#dropdown = new Dropdown(this.chart,
-            this.canvas,
+        this.#dropdown = new Dropdown(this.canvas,
             {
                 x: this.canvas.width - 10,
                 y: 10,

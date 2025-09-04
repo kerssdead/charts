@@ -16,7 +16,7 @@ class CircularRenderer extends Renderer {
 
     #onClickEvent: MouseEvent | undefined
 
-    #startAngle: number
+    readonly #startAngle: number
 
     #currentHover: string
 
@@ -60,8 +60,7 @@ class CircularRenderer extends Renderer {
                 : 0
         }
 
-        this.#dropdown = new Dropdown(this.chart,
-            this.canvas,
+        this.#dropdown = new Dropdown(this.canvas,
             {
                 x: this.canvas.width - 10,
                 y: 10,
@@ -135,7 +134,7 @@ class CircularRenderer extends Renderer {
     }
 
     #draw() {
-        if (this.#onMouseMoveEvent || !!this.#isInit === false) {
+        if (this.#onMouseMoveEvent || !this.#isInit) {
             this.#sum = this.data.values.reduce((acc, v) => acc + v.current, 0)
 
             let anglesSum = this.#startAngle

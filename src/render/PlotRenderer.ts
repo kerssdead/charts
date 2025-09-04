@@ -11,8 +11,6 @@ class PlotRenderer extends Renderer {
 
     #onMouseMoveEvent: MouseEvent
 
-    #onClickEvent: MouseEvent
-
     #isInit: boolean
 
     #tooltipX: number
@@ -507,7 +505,6 @@ class PlotRenderer extends Renderer {
         super.resetMouse()
 
         this.#onMouseMoveEvent = new MouseEvent('mousemove')
-        this.#onClickEvent = new MouseEvent('click')
     }
 
     #initAnimations() {
@@ -517,13 +514,9 @@ class PlotRenderer extends Renderer {
         this.#canvasPosition.y += window.scrollY
 
         this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
-        this.canvas.onclick = event => this.#onClickEvent = event
     }
 
-    /**
-     * @returns {boolean}
-     */
-    #isOnX(x: number) {
+    #isOnX(x: number): boolean {
         if (!this.#onMouseMoveEvent)
             return false
 
@@ -535,10 +528,7 @@ class PlotRenderer extends Renderer {
             && this.#paddings.left < mouseX
     }
 
-    /**
-     * @returns {boolean}
-     */
-    #isOnY(y: number) {
+    #isOnY(y: number): boolean {
         if (!this.#onMouseMoveEvent)
             return false
 

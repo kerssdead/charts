@@ -1,6 +1,4 @@
 class Dropdown {
-    #chart: Chart
-
     #canvas: HTMLCanvasElement
 
     #options: DropdownOptions
@@ -13,8 +11,7 @@ class Dropdown {
 
     #isInit: boolean
 
-    constructor(chart: Chart, canvas: HTMLCanvasElement, options: DropdownOptions) {
-        this.#chart = chart
+    constructor(canvas: HTMLCanvasElement, options: DropdownOptions) {
         this.#canvas = canvas
         this.#options = options
 
@@ -185,10 +182,7 @@ class Dropdown {
         this.#canvasPosition.y += window.scrollY
     }
 
-    /**
-     * @return {boolean}
-     */
-    #isOnButton(event: MouseEvent, x: number, y: number, w: number, h: number) {
+    #isOnButton(event: MouseEvent, x: number, y: number, w: number, h: number): boolean {
         if (!event)
             return false
 

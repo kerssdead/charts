@@ -5,8 +5,6 @@ class TreeRenderer extends Renderer {
 
     #onMouseMoveEvent: MouseEvent
 
-    #onClickEvent: MouseEvent
-
     #isInit: boolean
 
     constructor(chart: Chart, settings: ChartSettings) {
@@ -157,7 +155,7 @@ class TreeRenderer extends Renderer {
 
                 ctx.fillStyle = cell.color
 
-                const groupInited = this.#isInit && !this.animations.contains(cell.id, AnimationType.Init)
+                const cellInit = this.#isInit && !this.animations.contains(cell.id, AnimationType.Init)
 
                 const cellIndex = i + cells.indexOf(cell) + (isLast && isSingle ? 1 : 0),
                     duration = 260
@@ -172,7 +170,7 @@ class TreeRenderer extends Renderer {
 
                 const initAnimationDuration = duration - duration * cellIndex / (this.data.values.length + 1)
 
-                if (!groupInited) {
+                if (!cellInit) {
                     this.animations.add(cell.id,
                         AnimationType.Init,
                         {
@@ -318,10 +316,8 @@ class TreeRenderer extends Renderer {
         this.#canvasPosition.x += window.scrollX
         this.#canvasPosition.y += window.scrollY
 
-        if (!this.#isInit) {
+        if (!this.#isInit)
             this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
-            this.canvas.onclick = event => this.#onClickEvent = event
-        }
     }
 
     #isInCell(cell: TreeCell) {
@@ -350,10 +346,6 @@ class TreeRenderer extends Renderer {
             this.canvas.height / 2)
     }
 
-    destroy() {
-
-    }
-
     refresh() {
         super.refresh()
     }
@@ -369,6 +361,5 @@ class TreeRenderer extends Renderer {
         super.resetMouse()
 
         this.#onMouseMoveEvent = new MouseEvent('mousemove')
-        this.#onClickEvent = new MouseEvent('click')
     }
 }
