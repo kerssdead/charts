@@ -123,17 +123,22 @@ class Tooltip {
         if (tooltip.style.visibility === 'hidden')
             updateVisibility()
 
-        let x = event.clientX - this.#canvasPosition.x + 10,
-            y = event.clientY - this.#canvasPosition.y + window.scrollY + 10
+        if (tooltip.position.height === 0)
+            tooltip.position = tooltip.getBoundingClientRect()
 
-        if (x + tooltip.position.width > this.#canvasPosition.width)
-            x = this.#canvasPosition.width - tooltip.position.width
+        const offset = 10
 
-        if (y + tooltip.position.height > this.#canvasPosition.height)
-            y = this.#canvasPosition.height - tooltip.position.height
+        let x = event.clientX,
+            y = event.clientY + window.scrollY
 
-        tooltip.style.left = x + 50 + 'px'
-        tooltip.style.top = y + 10 + 'px'
+        if (x + tooltip.position.width - this.#canvasPosition.x > this.#canvasPosition.width - offset)
+            x = this.#canvasPosition.width - tooltip.position.width + this.#canvasPosition.x - offset
+
+        if (y + tooltip.position.height - this.#canvasPosition.y > this.#canvasPosition.height - offset)
+            y = this.#canvasPosition.height - tooltip.position.height + this.#canvasPosition.y - offset
+
+        tooltip.style.left = x + offset + 'px'
+        tooltip.style.top = y + offset + 'px'
     }
 
     refresh() {
