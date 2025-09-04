@@ -1,1 +1,1 @@
-`https://cdn.jsdelivr.net/gh/kerssdead/charts/ch.min.js`
+`https://cdn.jsdelivr.net/gh/kerssdead/charts/dist/ocharts.js`
