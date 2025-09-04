@@ -26,11 +26,11 @@ class Tooltip {
     render(condition: boolean, event: MouseEvent, text: string, value?: BasePoint) {
         this.#hideAll()
 
-        if (!this.#enabled || !event || !value)
+        if (!this.#enabled || !event)
             return
 
         if (condition) {
-            if (this.#isCustom)
+            if (this.#isCustom && value)
                 this.#renderCustom(event, value)
             else
                 this.#renderRegular(event, text)
