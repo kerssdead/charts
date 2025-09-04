@@ -24,6 +24,8 @@ class Tooltip {
     }
 
     render(condition: boolean, event: MouseEvent, text: string, value?: BasePoint) {
+        this.#hideAll()
+
         if (!this.#enabled || !event || !value)
             return
 
@@ -32,8 +34,6 @@ class Tooltip {
                 this.#renderCustom(event, value)
             else
                 this.#renderRegular(event, text)
-        } else {
-            this.#hideAll()
         }
     }
 
