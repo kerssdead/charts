@@ -6,11 +6,11 @@
         Attention Line Plot Example
     </title>
 
-    <script src="/ch.min.js"></script>
+    <script src="/dist/ocharts.js"></script>
 </head>
 
 <body>
-<div id="line-example" style="text-align: center"></div>
+    <div id="line-example" style="text-align: center"></div>
 </body>
 
 <script>
@@ -35,7 +35,7 @@
 
     values.sort((a, b) => a.x - b.x)
 
-    let chart = new OChart(document.getElementById('line-example'), {
+    let chart = OCharts.chart(document.getElementById('line-example'), {
         width: 1600,
         height: 940,
         title: 'Attention Line Plot',
@@ -44,21 +44,21 @@
             values: [
                 {
                     values: values,
-                    type: OPlotTypes.line,
+                    type: 0,
                     width: 3,
                     label: 'Line series',
                     color: '#00a5ff'
                 },
                 {
                     values: values1,
-                    type: OPlotTypes.attentionLine,
+                    type: 1,
                     width: 1,
                     label: 'Attention Line',
                     color: '#ff0000'
                 }
             ]
         },
-        type: OChartTypes.plot
+        type: 0
     })
 
     chart.render()

@@ -6,7 +6,7 @@
     Gauge Example
   </title>
 
-  <script src="/ch.min.js"></script>
+  <script src="/dist/ocharts.js"></script>
 </head>
 
 <body>
@@ -14,7 +14,7 @@
 </body>
 
 <script>
-  let chart = new OChart(document.getElementById('pie-example'), {
+  let chart = OCharts.chart(document.getElementById('pie-example'), {
     width: 1600,
     height: 940,
     enableTooltip: true,
@@ -28,7 +28,7 @@
       ],
       max: 200
     },
-    type: OChartTypes.gauge
+    type: 2
   })
 
   chart.render()

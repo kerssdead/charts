@@ -6,7 +6,7 @@
         Bar Plot Example
     </title>
 
-    <script src="/ch.min.js"></script>
+    <script src="/dist/ocharts.js"></script>
 </head>
 
 <body>
@@ -36,7 +36,7 @@
 
     values.sort((a, b) => a.x - b.x)
 
-    let chart = new OChart(document.getElementById('line-example'), {
+    let chart = OCharts.chart(document.getElementById('line-example'), {
         width: 1600,
         height: 940,
         title: 'Bar Plot',
@@ -45,13 +45,13 @@
             values: [
                 {
                     values: values,
-                    type: OPlotTypes.bar,
+                    type: 3,
                     label: 'Bar',
                     color: '#ffa500'
                 },
                 {
                     values: values1,
-                    type: OPlotTypes.bar,
+                    type: 3,
                     label: 'Bar 2',
                     color: '#ff5a00'
                 }
@@ -59,7 +59,7 @@
             xTitle: 'X-Axis',
             yTitle: 'Y-Axis'
         },
-        type: OChartTypes.plot
+        type: 0
     })
 
     chart.render()

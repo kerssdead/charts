@@ -6,7 +6,7 @@
         Line Plot Example
     </title>
 
-    <script src="/ch.min.js"></script>
+    <script src="/dist/ocharts.js"></script>
 </head>
 
 <body>
@@ -35,7 +35,7 @@
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
-    let chart = new OChart(document.getElementById('line-example'), {
+    let chart = OCharts.chart(document.getElementById('line-example'), {
         width: 1600,
         height: 940,
         title: 'Line Plot',
@@ -44,21 +44,21 @@
             values: [
                 {
                     values: values,
-                    type: OPlotTypes.line,
+                    type: 0,
                     width: 3,
                     label: 'Line series',
                     color: '#ff0000'
                 },
                 {
                     values: values1,
-                    type: OPlotTypes.line,
+                    type: 0,
                     width: 3,
                     label: 'Line series 2',
                     color: '#ffa500'
                 }
             ]
         },
-        type: OChartTypes.plot
+        type: 0
     })
 
     chart.render()

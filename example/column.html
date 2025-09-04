@@ -6,7 +6,7 @@
         Column Plot Example
     </title>
 
-    <script src="/ch.min.js"></script>
+    <script src="/dist/ocharts.js"></script>
 </head>
 
 <body>
@@ -38,7 +38,7 @@
     values.sort((a, b) => a.x - b.x)
     values1.sort((a, b) => b.x - a.x)
 
-    let chart = new OChart(document.getElementById('line-example'), {
+    let chart = OCharts.chart(document.getElementById('line-example'), {
         width: 1600,
         height: 940,
         title: 'Column Plot',
@@ -47,14 +47,14 @@
             values: [
                 {
                     values: values,
-                    type: OPlotTypes.column,
+                    type: 2,
                     label: 'Column',
                     color: '#0000ff',
                     width: 80
                 },
                 {
                     values: values1,
-                    type: OPlotTypes.column,
+                    type: 2,
                     label: 'Column 2',
                     color: '#00a5ff',
                     width: 80
@@ -63,7 +63,7 @@
             xTitle: 'X-Axis',
             yTitle: 'Y-Axis'
         },
-        type: OChartTypes.plot
+        type: 0
     })
 
     chart.render()

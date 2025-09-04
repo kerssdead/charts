@@ -6,7 +6,7 @@
         Pie Example
     </title>
 
-    <script src="/ch.min.js"></script>
+    <script src="/dist/ocharts.js"></script>
 </head>
 
 <body>
@@ -29,7 +29,7 @@
         label: 'null'
     })
 
-    let chart = new OChart(document.getElementById('pie-example'), {
+    let chart = OCharts.chart(document.getElementById('pie-example'), {
         width: 1600,
         height: 940,
         enableLegend: true,
@@ -37,11 +37,11 @@
         baseColor: '#024fa1',
         title: 'Pie Chart',
         data: {
-            type: OCircularTypes.pie,
+            type: 0,
             values: values
         },
-        type: OChartTypes.circular,
-        legendPlace: OLegendPlaces.left
+        type: 1,
+        legendPlace: 1
     })
 
     chart.render()

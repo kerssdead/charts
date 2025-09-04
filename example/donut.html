@@ -6,7 +6,7 @@
         Donut Example
     </title>
 
-    <script src="/ch.min.js"></script>
+    <script src="/dist/ocharts.js"></script>
 </head>
 
 <body>
@@ -29,19 +29,19 @@
         label: 'null'
     })
 
-    let chart = new OChart(document.getElementById('pie-example'), {
+    let chart = OCharts.chart(document.getElementById('pie-example'), {
         width: 1600,
         height: 940,
         enableLegend: true,
         enableTooltip: true,
         title: 'Donut Chart',
         data: {
-            type: OCircularTypes.donut,
+            type: 1,
             values: values,
             innerRadius: 50,
             innerTitle: `Average: ${(values.filter(v => v.value !== undefined).map(v => v.value).reduce((a, b) => a + b) / values.length).toPrecision(2)}`
         },
-        type: OChartTypes.circular
+        type: 1
     })
 
     chart.render()

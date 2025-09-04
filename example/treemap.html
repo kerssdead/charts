@@ -6,7 +6,7 @@
         Tree Map Example
     </title>
 
-    <script src="/ch.min.js"></script>
+    <script src="/dist/ocharts.js"></script>
 </head>
 
 <body>
@@ -46,7 +46,7 @@
             }
         })
 
-    let chart = new OChart(document.getElementById('pie-example'), {
+    let chart = OCharts.chart(document.getElementById('pie-example'), {
         width: 1600,
         height: 940,
         title: 'Tree Map',
@@ -56,7 +56,7 @@
             padding: 20,
             color: 'red'
         },
-        type: OChartTypes.treemap,
+        type: 3,
         templateId: 'pie-chart-tooltip'
     })
 

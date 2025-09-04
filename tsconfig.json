@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "none",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictPropertyInitialization": false,
+    "strict": true,
+    "skipLibCheck": true,
+    "outFile": "./build/charts.js",
+    "sourceMap": true,
+    "removeComments": true
+  },
+  "files": [
+    "src/types/base/BasePoint.ts",
+    "src/types/base/Data.ts",
+    "src/types/base/Renderer.ts"
+  ],
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
