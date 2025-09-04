@@ -8,6 +8,7 @@ module.exports = {
         filename: 'ocharts.js'
     },
     mode: 'production',
+    devtool: 'source-map',
     module: {
         rules: [
             {
