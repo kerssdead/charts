@@ -30,7 +30,7 @@ class Tooltip {
             return
 
         if (condition) {
-            if (this.#isCustom && value)
+            if (this.#isCustom)
                 this.#renderCustom(event, value)
             else
                 this.#renderRegular(event, text)
@@ -72,7 +72,10 @@ class Tooltip {
         }
     }
 
-    #renderCustom(event: MouseEvent, value: BasePoint) {
+    #renderCustom(event: MouseEvent, value?: BasePoint) {
+        if (value === undefined)
+            return
+
         const id = this.#template.id + value.id
 
         let tooltip = <HTMLTooltipElement>document.getElementById(id)
