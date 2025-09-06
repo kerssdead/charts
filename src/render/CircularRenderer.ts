@@ -175,6 +175,7 @@ class CircularRenderer extends Renderer {
             throw Helpers.Errors.nullContext
 
         ctx.fillStyle = value.color
+        ctx.strokeStyle = value.color
 
         const piece = value.current / this.#sum,
             angle = (isNaN(piece) ? 1 : piece) * 2 * Math.PI
