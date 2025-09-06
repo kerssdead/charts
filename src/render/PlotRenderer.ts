@@ -272,11 +272,6 @@ class PlotRenderer extends Renderer {
                                     }
                                 })
                         } else {
-                            ctx.fillRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                this.canvas.height - this.#paddings.bottom - y,
-                                columnWidth,
-                                y)
-
                             if (this.#isOnX(x + this.#x.step / 2)) {
                                 isLast = this.data.values.filter(s => (s.type === PlotType.Column || s.type === PlotType.StackingColumn)
                                         && s.values.filter(v => v.x === value.x).length > 0
@@ -291,7 +286,16 @@ class PlotRenderer extends Renderer {
 
                                 tooltipText += `\n${series.label}: ${getTooltipValue().y}`
                                 this.#tooltipX = x + this.#x.step
+
+                                ctx.fillStyle += '88'
+                            } else {
+                                ctx.fillStyle = series.color
                             }
+
+                            ctx.fillRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
+                                this.canvas.height - this.#paddings.bottom - y,
+                                columnWidth,
+                                y)
                         }
 
                         break
@@ -379,6 +383,26 @@ class PlotRenderer extends Renderer {
                                     }
                                 })
                         } else {
+                            if (this.#isOnX(x + this.#x.step / 2)) {
+                                isLast = this.data.values.filter(s => (s.type === PlotType.Column || s.type === PlotType.StackingColumn)
+                                    && s.values.filter(v => v.x === value.x).length > 0
+                                    && !s.disabled).length - 1
+                                    <= columnsIndex
+
+                                hoverX = {
+                                    x: x,
+                                    y: y,
+                                    index: xIndex
+                                }
+
+                                tooltipText += `\n${series.label}: ${getTooltipValue().y}`
+                                this.#tooltipX = x + this.#x.step
+
+                                ctx.fillStyle += '88'
+                            } else {
+                                ctx.fillStyle = series.color
+                            }
+
                             let offset = stackingAccumulator[xIndex] !== undefined
                                 ? stackingAccumulator[xIndex]
                                 : 0
@@ -398,22 +422,6 @@ class PlotRenderer extends Renderer {
                             }
 
                             stackingAccumulator[xIndex] += (y - this.canvas.height + this.#paddings.bottom)
-
-                            if (this.#isOnX(x + this.#x.step / 2)) {
-                                isLast = this.data.values.filter(s => (s.type === PlotType.Column || s.type === PlotType.StackingColumn)
-                                    && s.values.filter(v => v.x === value.x).length > 0
-                                    && !s.disabled).length - 1
-                                    <= columnsIndex
-
-                                hoverX = {
-                                    x: x,
-                                    y: y,
-                                    index: xIndex
-                                }
-
-                                tooltipText += `\n${series.label}: ${getTooltipValue().y}`
-                                this.#tooltipX = x + this.#x.step
-                            }
                         }
 
                         break
