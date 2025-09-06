@@ -36,7 +36,13 @@ class GaugeRenderer extends Renderer {
                             if (!ctx)
                                 throw Helpers.Errors.nullContext
 
-                            ctx.clearRect(this.#center.x + this.#radius, 0, this.canvas.width, this.canvas.height)
+                            let width = Helper.stringWidth('Export PNG') + 16,
+                                height = 64
+
+                            if (width < 50)
+                                width = 50
+
+                            ctx.clearRect(this.canvas.width - width, 0, width, height)
 
                             let leftEmpty = 0,
                                 rightEmpty = 0
