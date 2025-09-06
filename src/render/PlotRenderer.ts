@@ -839,7 +839,9 @@ class PlotRenderer extends Renderer {
 
         this.#yAxisStep = Math.abs(this.#y.min) + Math.abs(this.#y.max)
 
-        if (1 <= this.#yAxisStep && this.#yAxisStep < 10)
+        if (.5 <= this.#yAxisStep && this.#yAxisStep < 1)
+            this.#yAxisStep = .05
+        else if (1 <= this.#yAxisStep && this.#yAxisStep < 10)
             this.#yAxisStep = .1
         else if (10 <= this.#yAxisStep && this.#yAxisStep < 100)
             this.#yAxisStep = 2
