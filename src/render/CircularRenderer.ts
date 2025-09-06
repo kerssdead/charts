@@ -212,6 +212,8 @@ class CircularRenderer extends Renderer {
                         }
 
                         ctx.translate(transition.x, transition.y)
+
+                        ctx.fillStyle = value.color
                     }
                 })
         }
