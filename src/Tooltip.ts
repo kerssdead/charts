@@ -11,6 +11,14 @@ class Tooltip {
 
     #template: HTMLTemplateElement
 
+    #inProgress: boolean
+
+    #toHide: boolean
+
+    #timer: Date | undefined
+
+    #animationDuration: number = 120
+
     constructor(canvas: HTMLCanvasElement, settings: ChartSettings) {
         this.canvas = canvas
         this.data = settings.data
@@ -29,11 +37,37 @@ class Tooltip {
         if (!this.#enabled || !event)
             return
 
-        if (condition) {
+        if (condition || this.#inProgress || this.#toHide) {
+            if (!this.#timer)
+                this.#timer = new Date()
+
+            if (!this.#toHide)
+                this.#inProgress = true
+            else if (this.#inProgress)
+                this.#timer = new Date()
+
             if (this.#isCustom)
                 this.#renderCustom(event, value)
             else
                 this.#renderRegular(event, text)
+
+            const opacityValue = this.#getOpacityValue()
+
+            if (this.#toHide && opacityValue >= 1) {
+                this.#inProgress = false
+                this.#toHide = false
+            }
+
+            if (this.#toHide && opacityValue <= 0) {
+                this.#inProgress = false
+                this.#toHide = false
+                this.#timer = undefined
+            }
+
+            if (!condition && this.#timer != undefined)
+                this.#toHide = true
+        } else {
+            this.#timer = undefined
         }
     }
 
@@ -58,7 +92,10 @@ class Tooltip {
 
         ctx.beginPath()
         ctx.roundRect(x, y, textWidth + 16, 16 + 16 * split.length, 20)
-        ctx.fillStyle = '#00000077'
+        let opacity = Math.round(this.#getOpacityValue() * 77).toString(16)
+        if (opacity.length == 1)
+            opacity = '0' + opacity
+        ctx.fillStyle = '#000000' + opacity
         ctx.fill()
 
         for (let line of split) {
@@ -158,5 +195,20 @@ class Tooltip {
 
         for (let node of tooltips)
             node.style.visibility = 'hidden'
+    }
+
+    #getOpacityValue(): number {
+        if (!this.#timer)
+            return 0
+
+        let opacityValue = this.#toHide
+            ? 1 - (new Date().getTime() - this.#timer.getTime()) / this.#animationDuration
+            : (new Date().getTime() - this.#timer.getTime()) / this.#animationDuration
+        if (opacityValue > 1)
+            opacityValue = 1
+        if (opacityValue < 0)
+            opacityValue = 0
+
+        return opacityValue
     }
 }
