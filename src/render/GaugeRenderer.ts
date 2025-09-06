@@ -55,7 +55,9 @@ class GaugeRenderer extends Renderer {
         const value = <Sector>this.data.values[0]
         this.tooltip.render(this.#isInsideSector(this.#onMouseMoveEvent, value),
             this.#onMouseMoveEvent,
-            `${value?.label}: ${value?.current.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+            [
+                new TooltipValue(`${value?.label}: ${value?.current.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+            ])
 
         this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
 

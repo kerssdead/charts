@@ -92,11 +92,10 @@ class PlotRenderer extends Renderer {
     render() {
         super.render()
 
-        let tooltipText = this.#tooltipX
-            ? this.#labelsX.get(Math.round(this.#tooltipX))
-            : this.#tooltipY
-                ? this.#labelsY.get(Math.round(this.#tooltipY))
-                : undefined
+        let tooltipLines = [
+            new TooltipValue(this.#labelsX.get(Math.round(this.#tooltipX))
+                ?? this.#labelsY.get(Math.round(this.#tooltipY)))
+        ]
 
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
@@ -210,7 +209,7 @@ class PlotRenderer extends Renderer {
                                     index: index
                                 }
 
-                                tooltipText += `\n${series.label}: ${getTooltipValue().y}`
+                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color))
                                 this.#tooltipX = x + this.#x.step / 2
                             }
                         }
@@ -284,7 +283,7 @@ class PlotRenderer extends Renderer {
                                     index: index
                                 }
 
-                                tooltipText += `\n${series.label}: ${getTooltipValue().y}`
+                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color))
                                 this.#tooltipX = x + this.#x.step
 
                                 ctx.fillStyle += '88'
@@ -334,7 +333,7 @@ class PlotRenderer extends Renderer {
                                     index: index
                                 }
 
-                                tooltipText += `\n${series.label}: ${getTooltipValue().x}`
+                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().x}`, series.color))
                                 this.#tooltipY = y - this.#y.step / 2
                             }
                         }
@@ -395,7 +394,7 @@ class PlotRenderer extends Renderer {
                                     index: xIndex
                                 }
 
-                                tooltipText += `\n${series.label}: ${getTooltipValue().y}`
+                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color))
                                 this.#tooltipX = x + this.#x.step
 
                                 ctx.fillStyle += '88'
@@ -507,7 +506,7 @@ class PlotRenderer extends Renderer {
             ctx.stroke()
         }
 
-        this.tooltip.render(!!tooltipText && tooltipText.includes('\n'), this.#onMouseMoveEvent, <string>tooltipText)
+        this.tooltip.render(tooltipLines.length > 1, this.#onMouseMoveEvent, tooltipLines)
 
         this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
 

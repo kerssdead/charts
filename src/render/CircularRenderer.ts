@@ -130,7 +130,9 @@ class CircularRenderer extends Renderer {
             const value = this.data.values.find(v => v.id === this.#currentHover)
             this.tooltip.render(this.#isHover && !!this.#currentHover,
                 this.#onMouseMoveEvent,
-                `${value?.label}: ${value?.current.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+                [
+                    new TooltipValue(`${value?.label}: ${value?.current.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+                ])
 
             this.#drawInnerTitle()
         }

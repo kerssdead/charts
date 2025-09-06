@@ -300,7 +300,9 @@ class TreeRenderer extends Renderer {
 
         this.tooltip.render(!!tooltipCell,
             this.#onMouseMoveEvent,
-            `${tooltipCell?.label}: ${tooltipCell?.value?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            [
+                new TooltipValue(`${tooltipCell?.label}: ${tooltipCell?.value?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+            ],
             this.data.values.find(v => v.id === tooltipCell?.id))
 
         requestAnimationFrame(this.render.bind(this))

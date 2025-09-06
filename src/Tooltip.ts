@@ -31,7 +31,7 @@ class Tooltip {
         this.refresh()
     }
 
-    render(condition: boolean, event: MouseEvent, text: string, value?: BasePoint) {
+    render(condition: boolean, event: MouseEvent, lines: TooltipValue[], value?: BasePoint) {
         this.#hideAll()
 
         if (!this.#enabled || !event)
@@ -49,7 +49,7 @@ class Tooltip {
             if (this.#isCustom)
                 this.#renderCustom(event, value)
             else
-                this.#renderRegular(event, text)
+                this.#renderRegular(event, lines)
 
             const opacityValue = this.#getOpacityValue()
 
@@ -71,15 +71,13 @@ class Tooltip {
         }
     }
 
-    #renderRegular(event: MouseEvent, text: string) {
+    #renderRegular(event: MouseEvent, lines: TooltipValue[]) {
         const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
 
         if (!ctx)
             throw Helpers.Errors.nullContext
 
-        const split = text.split('\n').filter(line => !!line)
-
-        const textWidth = Math.max(...split.map(line => Helper.stringWidth(line)))
+        const textWidth = Math.max(...lines.map(line => Helper.stringWidth(line.text ?? '') + (line.color ? 8 : 0)))
 
         let x = event.clientX - this.#canvasPosition.x + 10,
             y = event.clientY - this.#canvasPosition.y + window.scrollY + 10
@@ -87,23 +85,34 @@ class Tooltip {
         if (x + textWidth + 16 > this.#canvasPosition.width)
             x = this.#canvasPosition.width - (textWidth + 16)
 
-        if (y + 10 + split.length * 18 > this.#canvasPosition.height)
-            y = this.#canvasPosition.height - 10 - split.length * 18
+        if (y + 10 + lines.length * 18 > this.#canvasPosition.height)
+            y = this.#canvasPosition.height - 10 - lines.length * 18
 
         ctx.beginPath()
-        ctx.roundRect(x, y, textWidth + 16, 16 + 16 * split.length, 20)
+        ctx.roundRect(x, y, textWidth + 16, 16 + 16 * lines.length, 20)
         let opacity = Math.round(this.#getOpacityValue() * 77).toString(16)
         if (opacity.length == 1)
             opacity = '0' + opacity
         ctx.fillStyle = '#000000' + opacity
         ctx.fill()
 
-        for (let line of split) {
+        for (let line of lines) {
+            let offset = 0
+
+            if (line.color) {
+                offset = 12
+
+                ctx.beginPath()
+                ctx.fillStyle = line.color
+                ctx.arc(x + 16, y + 17, 5, 0, Math.PI * 2)
+                ctx.fill()
+            }
+
             ctx.fillStyle = '#ffffff'
             ctx.font = '14px serif'
             ctx.textAlign = 'start'
             ctx.textBaseline = 'alphabetic'
-            ctx.fillText(line, x + 12, y + 22)
+            ctx.fillText(line.text ?? '', x + offset + 12, y + 22)
 
             y += 16
         }
