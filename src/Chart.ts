@@ -12,6 +12,8 @@ class Chart {
     #observer: ResizeObserver
 
     constructor(context: HTMLChartElement, settings: ChartSettings) {
+        this.#initialize()
+
         context.chart = this
 
         this.node = context
@@ -117,5 +119,9 @@ class Chart {
     #resize() {
         this.#renderer.resize()
         this.#legend?.resize()
+    }
+
+    #initialize() {
+        Animations.initializeTransitions()
     }
 }

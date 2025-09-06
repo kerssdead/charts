@@ -184,8 +184,6 @@ class TreeRenderer extends Renderer {
 
                                 transition = (transition * getPrev() - getPrev() + initAnimationDuration) / initAnimationDuration
 
-                                transition = ((Math.log(transition) + 1) / Math.E + 1) / Math.E * 2
-
                                 const center = {
                                     x: cell.x + cell.w / 2,
                                     y: cell.y + cell.h / 2
