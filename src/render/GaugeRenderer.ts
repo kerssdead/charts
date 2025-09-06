@@ -38,8 +38,55 @@ class GaugeRenderer extends Renderer {
 
                             ctx.clearRect(this.#center.x + this.#radius, 0, this.canvas.width, this.canvas.height)
 
+                            let leftEmpty = 0,
+                                rightEmpty = 0
+
+                            const imageData = new Uint32Array(ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data.buffer)
+
+                            let isBusy = false
+
+                            for (let i = 0; i < this.canvas.width; i++) {
+                                for (let j = 0; j < this.canvas.height; j++) {
+                                    if (imageData[i + j * this.canvas.width] & 0xff000000) {
+                                        isBusy = true
+                                        break
+                                    }
+                                }
+
+                                if (isBusy)
+                                    break
+
+                                leftEmpty++
+                            }
+
+                            isBusy = false
+
+                            for (let i = this.canvas.width; i >= 0; i--) {
+                                for (let j = 0; j < this.canvas.height; j++) {
+                                    if (imageData[i + j * this.canvas.width] & 0xff000000) {
+                                        isBusy = true
+                                        break
+                                    }
+                                }
+
+                                if (isBusy)
+                                    break
+
+                                rightEmpty++
+                            }
+
+                            if (leftEmpty > 4)
+                                leftEmpty -= 4
+                            if (rightEmpty > 4)
+                                rightEmpty -= 4
+
+                            if (leftEmpty > rightEmpty)
+                                leftEmpty = rightEmpty
+                            if (rightEmpty > leftEmpty)
+                                rightEmpty = leftEmpty
+
                             let destinationCanvas = document.createElement('canvas')
-                            destinationCanvas.width = this.canvas.width
+                            destinationCanvas.width = this.canvas.width - leftEmpty - rightEmpty
                             destinationCanvas.height = this.canvas.height
 
                             let destCtx = destinationCanvas.getContext('2d')
@@ -50,7 +97,7 @@ class GaugeRenderer extends Renderer {
                             destCtx.fillStyle = "#FFFFFF"
                             destCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
-                            destCtx.drawImage(this.canvas, 0, 0)
+                            destCtx.drawImage(this.canvas, -leftEmpty, 0)
 
                             let download = document.createElement('a')
                             download.href = destinationCanvas.toDataURL('image/png')
