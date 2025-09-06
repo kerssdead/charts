@@ -11,6 +11,10 @@ class PlotRenderer extends Renderer {
 
     #onMouseMoveEvent: MouseEvent
 
+    #onClickEvent: MouseEvent | undefined
+
+    #dropdown: Dropdown
+
     #isInit: boolean
 
     #tooltipX: number
@@ -58,6 +62,22 @@ class PlotRenderer extends Renderer {
 
         if (settings.title)
             this.#paddings.top += 50
+
+        this.#dropdown = new Dropdown(this.canvas,
+            {
+                x: this.canvas.width - 10,
+                y: 10,
+                text: 'Menu',
+                items: [
+                    {
+                        text: 'Export PNG',
+                        action: () => {
+                            Export.asPng(this.canvas, this.settings.title)
+                        }
+                    }
+                ]
+            })
+
 
         this.#calculateSizes()
 
@@ -481,6 +501,8 @@ class PlotRenderer extends Renderer {
 
         this.tooltip.render(!!tooltipText && tooltipText.includes('\n'), this.#onMouseMoveEvent, <string>tooltipText)
 
+        this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
+
         requestAnimationFrame(this.render.bind(this))
 
         this.#isInit = true
@@ -502,6 +524,7 @@ class PlotRenderer extends Renderer {
         super.resetMouse()
 
         this.#onMouseMoveEvent = new MouseEvent('mousemove')
+        this.#onClickEvent = new MouseEvent('click')
     }
 
     #initAnimations() {
@@ -511,6 +534,7 @@ class PlotRenderer extends Renderer {
         this.#canvasPosition.y += window.scrollY
 
         this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
+        this.canvas.onclick = event => this.#onClickEvent = event
     }
 
     #isOnX(x: number): boolean {
