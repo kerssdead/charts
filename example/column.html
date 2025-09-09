@@ -6,6 +6,8 @@
         Column Plot Example
     </title>
 
+    <link rel="stylesheet" href="./css/styles.css">
+
     <script src="/dist/ocharts.js"></script>
 </head>
 
@@ -39,8 +41,6 @@
     values1.sort((a, b) => b.x - a.x)
 
     let chart = OCharts.chart(document.getElementById('line-example'), {
-        width: 1600,
-        height: 940,
         title: 'Column Plot',
         enableTooltip: true,
         data: {

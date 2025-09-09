@@ -11,6 +11,8 @@ class Dropdown {
 
     #isInit: boolean
 
+    #position: DOMRect
+
     constructor(canvas: HTMLCanvasElement, options: DropdownOptions) {
         this.#canvas = canvas
         this.#options = options
@@ -18,31 +20,43 @@ class Dropdown {
         this.animations = new Animations()
 
         this.#initAnimations()
+
+        const width = Helper.stringWidth(this.#options.text) + 20,
+            height = 24
+
+        this.#position = <DOMRect>{
+            x: this.#options.x + width > this.#canvas.width
+                ? this.#canvas.width - width
+                : this.#options.x < 0
+                    ? this.#canvas.width + this.#options.x - width
+                    : this.#options.x,
+            y: this.#options.y + height > this.#canvas.height
+                ? this.#canvas.height - height
+                : this.#options.y < 0
+                    ? this.#canvas.height + this.#options.y - height
+                    : this.#options.y,
+            width: width,
+            height: height
+        }
     }
 
     render(moveEvent: MouseEvent, clickEvent: MouseEvent | undefined) {
         if (!this.#isInit)
             this.#initAnimations()
 
-        let ctx = this.#canvas.getContext('2d', {willReadFrequently: true})
-
-        if (!ctx)
-            throw Helpers.Errors.nullContext
-
-        const width = Helper.stringWidth(this.#options.text) + 20,
-            height = 24
+        const ctx = Helpers.Canvas.getContext(this.#canvas)
 
         ctx.beginPath()
 
-        let x = this.#options.x + width > this.#canvas.width ? this.#canvas.width - width : this.#options.x,
-            y = this.#options.y + height > this.#canvas.height ? this.#canvas.height - height : this.#options.y
+        let x = this.#position.x,
+            y = this.#position.y,
+            width = this.#position.width,
+            height = this.#position.height
 
-        const isOnButton = this.#isOnButton(moveEvent, x, y, width, height)
-
-        if (isOnButton) {
+        if (this.#isOnButton(moveEvent, x, y, width, height)) {
             this.#canvas.style.cursor = 'pointer'
 
-            if (clickEvent && moveEvent.x === clickEvent.x && moveEvent.y === clickEvent.y) {
+            if (clickEvent && moveEvent.x == clickEvent.x && moveEvent.y == clickEvent.y) {
                 this.isActive = !this.isActive
                 clickEvent = undefined
             }
@@ -81,13 +95,9 @@ class Dropdown {
         ctx.strokeStyle = '#ffffff'
         ctx.roundRect(x, y, width, height, 4)
         ctx.fill()
-        ctx.fillStyle = '#000000'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.font = '14px serif'
-        ctx.fillText(this.#options.text, x + width / 2, y + height / 2)
 
-        ctx.closePath()
+        Helpers.TextStyles.regular(ctx)
+        ctx.fillText(this.#options.text, x + width / 2, y + height / 2)
 
         if (this.isActive) {
             y += height
@@ -107,7 +117,6 @@ class Dropdown {
             ctx.fill()
             ctx.stroke()
 
-            ctx.closePath()
             ctx.beginPath()
 
             y += 4
@@ -119,7 +128,7 @@ class Dropdown {
                         {
                             duration: 300,
                             before: () => {
-                                return clickEvent === undefined
+                                return clickEvent == undefined
                             },
                             body: transition => {
                                 this.animations.reload('animation-dropdown' + item.text, AnimationType.MouseLeave)
@@ -159,13 +168,9 @@ class Dropdown {
 
                 y += 20
             }
-
-            ctx.closePath()
-
-            ctx.fillStyle = '#000000'
         }
 
-        if (clickEvent !== undefined && this.isActive) {
+        if (clickEvent != undefined && this.isActive) {
             this.isActive = false
             clickEvent = undefined
         }
@@ -178,16 +183,16 @@ class Dropdown {
     #initAnimations() {
         this.#canvasPosition = this.#canvas.getBoundingClientRect()
 
-        this.#canvasPosition.x += window.scrollX
-        this.#canvasPosition.y += window.scrollY
+        this.#canvasPosition.x += scrollX
+        this.#canvasPosition.y += scrollY
     }
 
     #isOnButton(event: MouseEvent, x: number, y: number, w: number, h: number): boolean {
         if (!event)
             return false
 
-        let trueX = event.clientX - this.#canvasPosition.x + window.scrollX,
-            trueY = event.clientY - this.#canvasPosition.y + window.scrollY
+        let trueX = event.clientX - this.#canvasPosition.x + scrollX,
+            trueY = event.clientY - this.#canvasPosition.y + scrollY
 
         return trueX >= x && trueX <= x + w
             && trueY >= y && trueY <= y + h
@@ -195,5 +200,9 @@ class Dropdown {
 
     refresh() {
         this.#isInit = false
+    }
+
+    resize() {
+        this.#initAnimations()
     }
 }

@@ -1,5 +1,5 @@
 interface Data {
-    values: BasePoint[]
+    values: Value[]
 
     type: number
 }

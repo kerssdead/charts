@@ -1,5 +1,5 @@
 class GaugeData implements Data {
-    values: BasePoint[]
+    values: Sector[]
 
     type: number
 

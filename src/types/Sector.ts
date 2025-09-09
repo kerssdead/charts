@@ -1,4 +1,4 @@
-class Sector extends BasePoint {
+class Sector extends Value {
     value: number
 
     current: number
@@ -25,7 +25,7 @@ class Sector extends BasePoint {
     checkCondition(): boolean {
         super.checkCondition()
 
-        return (this.current === 0 && !this.disabled) || this.value !== 0
+        return (this.current == 0 && !this.disabled) || this.value != 0
     }
 
     reset() {

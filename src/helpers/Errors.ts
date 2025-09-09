@@ -1,5 +1,7 @@
 namespace Helpers {
     export class Errors {
-        static nullContext = new Error('Can\'t find context')
+        static throw(error: ErrorType): never {
+            throw new Error(error)
+        }
     }
 }

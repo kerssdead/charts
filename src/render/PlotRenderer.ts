@@ -1,6 +1,4 @@
-class PlotRenderer extends Renderer {
-    data: PlotData
-
+class PlotRenderer extends Renderer<PlotData> {
     #x: PlotAxis
 
     #y: PlotAxis
@@ -15,8 +13,6 @@ class PlotRenderer extends Renderer {
 
     #dropdown: Dropdown
 
-    #isInit: boolean
-
     #tooltipX: number
 
     #tooltipY: number
@@ -29,19 +25,18 @@ class PlotRenderer extends Renderer {
 
     #allValuesY: any[]
 
-    #base: ImageData | null
+    #base: ImageData | undefined
 
     #yAxisStep: number
 
     #plot: DOMRect
 
-    constructor(chart: Chart, settings: ChartSettings) {
-        super(chart, settings)
+    constructor(node: HTMLElement, settings: ChartSettings) {
+        super(node, settings)
 
-        this.data = <PlotData>chart.data
-        this.data.values = this.data.values.map(v => new OPlotSeries(v))
+        this.data.values = this.data.values.map(v => new PlotSeries(v))
 
-        if (this.data.values.filter(v => v.type === PlotType.Bar).length > 0) {
+        if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0) {
             for (let series of this.data.values) {
                 for (let item of series.values) {
                     const x = item.x
@@ -65,7 +60,7 @@ class PlotRenderer extends Renderer {
 
         this.#dropdown = new Dropdown(this.canvas,
             {
-                x: this.canvas.width - 10,
+                x: -10,
                 y: 10,
                 text: 'Menu',
                 items: [
@@ -97,15 +92,9 @@ class PlotRenderer extends Renderer {
                 ?? this.#labelsY.get(Math.round(this.#tooltipY)))
         ]
 
-        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
+        const ctx = Helpers.Canvas.getContext(this.canvas)
 
-        if (!ctx)
-            throw Helpers.Errors.nullContext
-
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'top'
-        ctx.font = '14px serif'
-        ctx.fillStyle = '#000000'
+        Helpers.TextStyles.regular(ctx)
         ctx.lineJoin = 'round'
 
         const axisLineHoverColor = '#00000088'
@@ -119,10 +108,10 @@ class PlotRenderer extends Renderer {
             columnWidth = 0
 
         let columnsIndex = 0,
-            columnsCount = this.data.values.filter(s => s.type === PlotType.Column).length
+            columnsCount = this.data.values.filter(s => s.type == PlotType.Column).length
 
         let barsIndex = 0,
-            barsCount = this.data.values.filter(s => s.type === PlotType.Bar).length,
+            barsCount = this.data.values.filter(s => s.type == PlotType.Bar).length,
             barHeight = this.#y.step / (2 * barsCount)
 
         let stackingAccumulator = []
@@ -142,26 +131,32 @@ class PlotRenderer extends Renderer {
 
             for (const value of series.values) {
                 let index = series.values.indexOf(value),
-                    xIndex = this.#allValuesX.indexOf(this.data.xType === PlotAxisType.Date ? value.x.toString() : value.x),
+                    xIndex = this.#allValuesX.indexOf(this.data.xType == PlotAxisType.Date ? value.x.toString() : value.x),
                     yIndex = this.#allValuesY.indexOf(value.y)
 
                 const getTooltipValue = () => {
                     return {
                         x: value.x
-                            ? this.data.xType === PlotAxisType.Date
+                            ? this.data.xType == PlotAxisType.Date
                                 ? this.#allValuesX[xIndex]
-                                : this.#allValuesX[xIndex].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                : this.#allValuesX[xIndex].toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })
                             : '0',
                         y: value.y
-                            ? this.#allValuesY[yIndex].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            ? this.#allValuesY[yIndex].toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })
                             : '0'
                     }
                 }
 
                 x = this.#paddings.left
-                if (series.type !== PlotType.Bar)
+                if (series.type != PlotType.Bar)
                     x += xIndex * this.#x.step
-                if (series.type === PlotType.Line)
+                if (series.type == PlotType.Line)
                     x -= this.#x.step / 2 - this.#x.step
 
                 switch (series.type) {
@@ -171,7 +166,7 @@ class PlotRenderer extends Renderer {
 
                         const pointDuration = 1500 / series.values.length * 1.2
 
-                        if (!this.#isInit || this.animations.contains(value.id, AnimationType.Init)) {
+                        if (!this.isInit || this.animations.contains(value.id, AnimationType.Init)) {
                             this.animations.add(value.id,
                                 AnimationType.Init,
                                 {
@@ -180,7 +175,7 @@ class PlotRenderer extends Renderer {
                                     body: transition => {
                                         transition = (transition * index * pointDuration - index * pointDuration) / pointDuration
 
-                                        if (index === 0 || transition < 0)
+                                        if (index == 0 || transition < 0)
                                             return
 
                                         x = this.#paddings.left + xIndex * this.#x.step - this.#x.step / 2
@@ -209,7 +204,7 @@ class PlotRenderer extends Renderer {
                                     index: index
                                 }
 
-                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color))
+                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
                                 this.#tooltipX = x + this.#x.step / 2
                             }
                         }
@@ -221,7 +216,7 @@ class PlotRenderer extends Renderer {
 
                         ctx.moveTo(this.#paddings.left, yValue)
 
-                        if (!this.#isInit || this.animations.contains(value.id, AnimationType.Init))
+                        if (!this.isInit || this.animations.contains(value.id, AnimationType.Init))
                             this.animations.add(value.id,
                                 AnimationType.Init,
                                 {
@@ -246,7 +241,7 @@ class PlotRenderer extends Renderer {
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
 
-                        if (!this.#isInit || this.animations.contains(value.id + columnsIndex, AnimationType.Init)) {
+                        if (!this.isInit || this.animations.contains(value.id + columnsIndex, AnimationType.Init)) {
                             this.animations.add(value.id + columnsIndex,
                                 AnimationType.Init,
                                 {
@@ -261,8 +256,8 @@ class PlotRenderer extends Renderer {
                                         if (y < this.#y.minStep)
                                             y = this.#y.minStep * transition
 
-                                        columnsIndex = this.data.values.filter(s => s.type === PlotType.Column)
-                                            .indexOf(series)
+                                        columnsIndex = this.data.values.filter(s => s.type == PlotType.Column)
+                                                           .indexOf(series)
 
                                         ctx.fillRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
                                             this.canvas.height - this.#paddings.bottom - y,
@@ -272,8 +267,8 @@ class PlotRenderer extends Renderer {
                                 })
                         } else {
                             if (this.#isOnX(x + this.#x.step / 2)) {
-                                isLast = this.data.values.filter(s => (s.type === PlotType.Column || s.type === PlotType.StackingColumn)
-                                        && s.values.filter(v => v.x === value.x).length > 0
+                                isLast = this.data.values.filter(s => (s.type == PlotType.Column || s.type == PlotType.StackingColumn)
+                                        && s.values.filter(v => v.x == value.x).length > 0
                                         && !s.disabled).length - 1
                                     <= columnsIndex
 
@@ -283,7 +278,7 @@ class PlotRenderer extends Renderer {
                                     index: index
                                 }
 
-                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color))
+                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
                                 this.#tooltipX = x + this.#x.step
 
                                 ctx.fillStyle += '88'
@@ -302,7 +297,7 @@ class PlotRenderer extends Renderer {
                     case PlotType.Bar:
                         y = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
 
-                        if (!this.#isInit || this.animations.contains(value.id + barsIndex, AnimationType.Init)) {
+                        if (!this.isInit || this.animations.contains(value.id + barsIndex, AnimationType.Init)) {
                             this.animations.add(value.id + barsIndex,
                                 AnimationType.Init,
                                 {
@@ -311,8 +306,8 @@ class PlotRenderer extends Renderer {
                                     body: transition => {
                                         y = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
 
-                                        barsIndex = this.data.values.filter(s => s.type === PlotType.Bar)
-                                            .indexOf(series)
+                                        barsIndex = this.data.values.filter(s => s.type == PlotType.Bar)
+                                                        .indexOf(series)
 
                                         ctx.fillRect(x,
                                             y - this.#y.step / 4 + barsIndex * barHeight,
@@ -333,7 +328,7 @@ class PlotRenderer extends Renderer {
                                     index: index
                                 }
 
-                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().x}`, series.color))
+                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().x }`, series.color))
                                 this.#tooltipY = y - this.#y.step / 2
                             }
                         }
@@ -345,23 +340,23 @@ class PlotRenderer extends Renderer {
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5)
 
-                        if (!this.#isInit || this.animations.contains(value.id + index, AnimationType.Init)) {
+                        if (!this.isInit || this.animations.contains(value.id + index, AnimationType.Init)) {
                             this.animations.add(value.id + index,
                                 AnimationType.Init,
                                 {
                                     duration: 800,
                                     continuous: true,
                                     body: transition => {
-                                        columnsIndex = this.data.values.filter(s => s.type === PlotType.StackingColumn && s.values.filter(v => v.x === value.x).length > 0)
-                                            .indexOf(series)
+                                        columnsIndex = this.data.values.filter(s => s.type == PlotType.StackingColumn && s.values.filter(v => v.x == value.x).length > 0)
+                                                           .indexOf(series)
 
                                         x = this.#paddings.left + xIndex * this.#x.step
                                         y = this.canvas.height - this.#paddings.bottom - <number>value.y / this.#y.unit * this.#y.step
 
-                                        if (columnsIndex === 0)
+                                        if (columnsIndex == 0)
                                             stackingAccumulator[xIndex] = 0
 
-                                        let offset = stackingAccumulator[xIndex] !== undefined
+                                        let offset = stackingAccumulator[xIndex] != undefined
                                             ? stackingAccumulator[xIndex]
                                             : 0
 
@@ -383,9 +378,9 @@ class PlotRenderer extends Renderer {
                                 })
                         } else {
                             if (this.#isOnX(x + this.#x.step / 2)) {
-                                isLast = this.data.values.filter(s => (s.type === PlotType.Column || s.type === PlotType.StackingColumn)
-                                    && s.values.filter(v => v.x === value.x).length > 0
-                                    && !s.disabled).length - 1
+                                isLast = this.data.values.filter(s => (s.type == PlotType.Column || s.type == PlotType.StackingColumn)
+                                        && s.values.filter(v => v.x == value.x).length > 0
+                                        && !s.disabled).length - 1
                                     <= columnsIndex
 
                                 hoverX = {
@@ -394,7 +389,7 @@ class PlotRenderer extends Renderer {
                                     index: xIndex
                                 }
 
-                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color))
+                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
                                 this.#tooltipX = x + this.#x.step
 
                                 ctx.fillStyle += '88'
@@ -402,7 +397,7 @@ class PlotRenderer extends Renderer {
                                 ctx.fillStyle = series.color
                             }
 
-                            let offset = stackingAccumulator[xIndex] !== undefined
+                            let offset = stackingAccumulator[xIndex] != undefined
                                 ? stackingAccumulator[xIndex]
                                 : 0
 
@@ -442,20 +437,17 @@ class PlotRenderer extends Renderer {
                 case PlotType.AttentionLine:
                     ctx.stroke()
 
-                    ctx.fillStyle = '#000000'
-                    ctx.textBaseline = 'top'
-                    ctx.textAlign = 'center'
-
+                    Helpers.TextStyles.regular(ctx)
                     ctx.fillText(series.label,
                         this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
-                        this.canvas.height - this.#paddings.bottom - <number>series.values[0].y / this.#y.unit * this.#y.step + 8)
+                        this.canvas.height - this.#paddings.bottom - <number>series.values[0].y / this.#y.unit * this.#y.step + 16)
 
                     break
 
                 case PlotType.Column:
                 case PlotType.StackingColumn:
                     if (hoverX && isLast) {
-                        let offset = stackingAccumulator[hoverX.index] !== undefined
+                        let offset = stackingAccumulator[hoverX.index] != undefined
                             ? stackingAccumulator[hoverX.index]
                             : 0
 
@@ -496,7 +488,7 @@ class PlotRenderer extends Renderer {
         ctx.strokeStyle = '#000000'
         ctx.lineWidth = 1
 
-        if (this.data.values.filter(v => v.type === PlotType.Bar).length > 0) {
+        if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0) {
             ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
             ctx.lineTo(this.#paddings.left, this.#paddings.top)
             ctx.stroke()
@@ -512,7 +504,7 @@ class PlotRenderer extends Renderer {
 
         requestAnimationFrame(this.render.bind(this))
 
-        this.#isInit = true
+        this.isInit = true
     }
 
     refresh() {
@@ -522,7 +514,7 @@ class PlotRenderer extends Renderer {
     resize() {
         super.resize()
 
-        this.#base = null
+        this.#base = undefined
 
         this.#calculateSizes()
     }
@@ -537,8 +529,8 @@ class PlotRenderer extends Renderer {
     #initAnimations() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
 
-        this.#canvasPosition.x += window.scrollX
-        this.#canvasPosition.y += window.scrollY
+        this.#canvasPosition.x += scrollX
+        this.#canvasPosition.y += scrollY
 
         this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
         this.canvas.onclick = event => this.#onClickEvent = event
@@ -548,8 +540,8 @@ class PlotRenderer extends Renderer {
         if (!this.#onMouseMoveEvent)
             return false
 
-        let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + window.scrollX,
-            mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
+        let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + scrollX,
+            mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + scrollY
 
         return x - this.#x.step / 2 <= mouseX && mouseX < x + this.#x.step / 2
             && this.#paddings.top <= mouseY && mouseY <= this.canvas.height - this.#paddings.bottom
@@ -560,18 +552,15 @@ class PlotRenderer extends Renderer {
         if (!this.#onMouseMoveEvent)
             return false
 
-        let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + window.scrollX,
-            mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
+        let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + scrollX,
+            mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + scrollY
 
         return y - this.#y.step / 2 <= mouseY && mouseY < y + this.#y.step / 2
             && this.#paddings.left <= mouseX && mouseX <= this.canvas.width - this.#paddings.right
     }
 
     #renderBase() {
-        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-
-        if (!ctx)
-            throw Helpers.Errors.nullContext
+        const ctx = Helpers.Canvas.getContext(this.canvas)
 
         if (this.#base) {
             ctx.putImageData(this.#base, 0, 0)
@@ -581,8 +570,8 @@ class PlotRenderer extends Renderer {
         const axisLabelOffset = 12
         const axisLineColor = '#0000001e'
 
-        const isContainsColumn = this.data.values.filter(s => s.type === PlotType.Column).length > 0,
-            isContainsBar = this.data.values.filter(s => s.type === PlotType.Bar).length > 0
+        const isContainsColumn = this.data.values.filter(s => s.type == PlotType.Column).length > 0,
+            isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0
 
         if (this.data.xTitle || this.data.yTitle) {
             ctx.textAlign = 'center'
@@ -620,17 +609,20 @@ class PlotRenderer extends Renderer {
 
             if (!this.#labelsX.has(labelXAsKey))
                 this.#labelsX.set(labelXAsKey,
-                    this.data.xType === PlotAxisType.Date
+                    this.data.xType == PlotAxisType.Date
                         ? new Date(this.#allValuesX[i - 1]).toLocaleDateString()
                         : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                             ? this.#allValuesX[i - 1]
                             : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
-                                .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+                                .toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }))
 
             const label = {
                 x: labelX,
                 y: this.canvas.height - this.#paddings.bottom,
-                label: this.data.xType === PlotAxisType.Date
+                label: this.data.xType == PlotAxisType.Date
                     ? new Date(this.#allValuesX[i - 1]).toLocaleDateString()
                     : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                         ? this.#allValuesX[i - 1]
@@ -652,7 +644,7 @@ class PlotRenderer extends Renderer {
                     }
             }
 
-            if(isRender) {
+            if (isRender) {
                 ctx.fillText(label.label,
                     label.x - (!isContainsBar ? this.#x.step / 2 : 0),
                     label.y + axisLabelOffset)
@@ -687,7 +679,10 @@ class PlotRenderer extends Renderer {
             if (!this.#labelsY.get(labelYAsKey))
                 this.#labelsY.set(labelYAsKey,
                     (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count)
-                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+                        .toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }))
 
             let isRender = i >= yCounter * yStep
 
@@ -724,19 +719,25 @@ class PlotRenderer extends Renderer {
                             break
                     }
 
-                    labelText = label.label.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    labelText = label.label.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        })
                         + postfix
                 } else {
-                    labelText = label.label.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    labelText = label.label.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })
                 }
 
                 ctx.fillText(labelText,
                     label.x - axisLabelOffset,
                     label.y + (isContainsBar ? this.#y.step / 2 : 0))
 
-                if (this.data.values.filter(s => s.type === PlotType.Column
-                    || s.type === PlotType.StackingColumn
-                    || s.type === PlotType.Line)
+                if (this.data.values.filter(s => s.type == PlotType.Column
+                    || s.type == PlotType.StackingColumn
+                    || s.type == PlotType.Line)
                     .length > 0) {
                     ctx.beginPath()
 
@@ -759,7 +760,7 @@ class PlotRenderer extends Renderer {
         let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
             yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
 
-        const isDate = this.data.xType === PlotAxisType.Date
+        const isDate = this.data.xType == PlotAxisType.Date
 
         if (isDate) {
             let tempDate = new Date(Math.min(...(<number[]>xValues)))
@@ -782,8 +783,8 @@ class PlotRenderer extends Renderer {
 
         yValues.sort((a, b) => b > a ? -1 : 1)
 
-        this.#allValuesX = [...new Set(xValues.filter(x => x !== undefined).map(x => isDate ? x.toString() : x))]
-        this.#allValuesY = [...new Set(yValues.filter(y => y !== undefined))]
+        this.#allValuesX = [...new Set(xValues.filter(x => x != undefined).map(x => isDate ? x.toString() : x))]
+        this.#allValuesY = [...new Set(yValues.filter(y => y != undefined))]
 
         this.#x = {
             min: Math.min(...(<number[]>xValues)),
@@ -807,7 +808,7 @@ class PlotRenderer extends Renderer {
             count: this.#allValuesY.length
         }
 
-        let stackingColumns = this.data.values.filter(s => s.type === PlotType.StackingColumn)
+        let stackingColumns = this.data.values.filter(s => s.type == PlotType.StackingColumn)
 
         let max
 
@@ -830,7 +831,10 @@ class PlotRenderer extends Renderer {
             this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
         }
 
-        const yMaxWidth = Helper.stringWidth(this.#y.max.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+        const yMaxWidth = Helper.stringWidth(this.#y.max.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }))
         if (yMaxWidth > this.#paddings.left - 40) {
             this.#paddings.left += yMaxWidth - this.#paddings.left + 40
             this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length
@@ -857,7 +861,7 @@ class PlotRenderer extends Renderer {
         else
             this.#yAxisStep = 1
 
-        if (this.#yAxisStep !== 1) {
+        if (this.#yAxisStep != 1) {
             max = yValues.length > 10
                 ? (this.#y.max / 10 + this.#yAxisStep - (this.#y.max / 10) % this.#yAxisStep) * 10
                 : Math.ceil(this.#y.max / this.#yAxisStep) * this.#yAxisStep
@@ -875,10 +879,31 @@ class PlotRenderer extends Renderer {
             bottom: 0,
             right: 0,
             top: 0,
-            toJSON(): any { }
+            toJSON(): any {
+            }
         }
 
         this.#x.minStep = this.#plot.width * 0.002
         this.#y.minStep = this.#plot.height * 0.002
+    }
+
+    prepareSettings() {
+        super.prepareSettings()
+
+        for (let item of this.data.values) {
+            item.disabled = !item.values
+            item.type ??= PlotType.Line
+
+            for (let it of item.values) {
+                it.id = Helper.guid()
+
+                if (this.data.xType == PlotAxisType.Date) {
+                    if (typeof it.x == 'string' && Helper.isISOString(it.x))
+                        it.x = new Date(it.x)
+                    else
+                        console.warn(`${ it.x } is not a date in ISO format.`)
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,7 @@
+enum Tag {
+    Canvas = 'canvas',
+
+    A = 'a',
+
+    Div = 'div'
+}

@@ -1,16 +1,10 @@
-class TreeRenderer extends Renderer {
-    data: TreeData
-
+class TreeRenderer extends Renderer<TreeData> {
     #canvasPosition: DOMRect
 
     #onMouseMoveEvent: MouseEvent
 
-    #isInit: boolean
-
-    constructor(chart: Chart, settings: ChartSettings) {
-        super(chart, settings)
-
-        this.data = <TreeData>chart.data
+    constructor(node: HTMLElement, settings: ChartSettings) {
+        super(node, settings)
 
         this.data.values.sort((a, b) => b.value > a.value ? 1 : -1)
 
@@ -30,7 +24,7 @@ class TreeRenderer extends Renderer {
     render() {
         super.render()
 
-        if (this.data.values.filter(v => v.value > 0).length === 0) {
+        if (this.data.values.filter(v => v.value > 0).length == 0) {
             this.#drawEmpty()
             return
         }
@@ -51,10 +45,7 @@ class TreeRenderer extends Renderer {
 
         let tooltipCell = new TreeCell()
 
-        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-
-        if (!ctx)
-            throw Helpers.Errors.nullContext
+        const ctx = Helpers.Canvas.getContext(this.canvas)
 
         let isVertical = true
         for (let i = 0; i < this.data.values.length; i++) {
@@ -95,8 +86,8 @@ class TreeRenderer extends Renderer {
                 i++
             }
 
-            const isSingle = cells.length === 1,
-                isLast = i === this.data.values.length - 1
+            const isSingle = cells.length == 1,
+                isLast = i == this.data.values.length - 1
 
             if (isVertical) {
                 for (let j = 1; j <= remainWidth + i * i; j++) {
@@ -155,7 +146,7 @@ class TreeRenderer extends Renderer {
 
                 ctx.fillStyle = cell.color
 
-                const cellInit = this.#isInit && !this.animations.contains(cell.id, AnimationType.Init)
+                const cellInit = this.isInit && !this.animations.contains(cell.id, AnimationType.Init)
 
                 const cellIndex = i + cells.indexOf(cell) + (isLast && isSingle ? 1 : 0),
                     duration = 260
@@ -264,12 +255,10 @@ class TreeRenderer extends Renderer {
                     && Helper.stringWidth(cell.label) < cell.w - gap && cell.h - gap > 16
                     && !this.animations.contains(cell.id, AnimationType.Init)) {
                     ctx.beginPath()
+                    Helpers.TextStyles.large(ctx)
                     ctx.fillStyle = !Helper.isColorVisible(cell.color, '#ffffff')
                         ? '#000000'
                         : '#ffffff'
-                    ctx.font = '16px serif'
-                    ctx.textAlign = 'center'
-                    ctx.textBaseline = 'middle'
                     ctx.fillText(cell.label, x + cell.w / 2, y + cell.h / 2)
                 }
 
@@ -301,22 +290,25 @@ class TreeRenderer extends Renderer {
         this.tooltip.render(!!tooltipCell,
             this.#onMouseMoveEvent,
             [
-                new TooltipValue(`${tooltipCell?.label}: ${tooltipCell?.value?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+                new TooltipValue(`${ tooltipCell?.label }: ${ tooltipCell?.value?.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) }`)
             ],
-            this.data.values.find(v => v.id === tooltipCell?.id))
+            this.data.values.find(v => v.id == tooltipCell?.id))
 
         requestAnimationFrame(this.render.bind(this))
 
-        this.#isInit = true
+        this.isInit = true
     }
 
     #initAnimations() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
 
-        this.#canvasPosition.x += window.scrollX
-        this.#canvasPosition.y += window.scrollY
+        this.#canvasPosition.x += scrollX
+        this.#canvasPosition.y += scrollY
 
-        if (!this.#isInit)
+        if (!this.isInit)
             this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
     }
 
@@ -324,23 +316,17 @@ class TreeRenderer extends Renderer {
         if (!this.#onMouseMoveEvent || !cell)
             return false
 
-        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + window.scrollX,
-            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + window.scrollY
+        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + scrollX,
+            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + scrollY
 
         return cell.x <= x && x <= cell.x + cell.w
             && cell.y <= y && y <= cell.y + cell.h
     }
 
     #drawEmpty() {
-        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
+        const ctx = Helpers.Canvas.getContext(this.canvas)
 
-        if (!ctx)
-            return Helpers.Errors.nullContext
-
-        ctx.font = '14px serif'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillStyle = '#000000'
+        Helpers.TextStyles.regular(ctx)
         ctx.fillText('Incorrect values',
             this.canvas.width / 2,
             this.canvas.height / 2)
@@ -361,5 +347,14 @@ class TreeRenderer extends Renderer {
         super.resetMouse()
 
         this.#onMouseMoveEvent = new MouseEvent('mousemove')
+    }
+
+    prepareSettings() {
+        super.prepareSettings()
+
+        for (let item of this.data.values) {
+            item.disabled = !item.value
+            item.value ??= 0
+        }
     }
 }

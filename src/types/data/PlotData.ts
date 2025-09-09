@@ -1,5 +1,5 @@
 class PlotData implements Data {
-    values: OPlotSeries[]
+    values: PlotSeries[]
 
     type: number
 

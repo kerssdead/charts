@@ -1,5 +1,5 @@
 class TreeData implements Data {
-    values: BasePoint[]
+    values: Value[]
 
     type: number
 

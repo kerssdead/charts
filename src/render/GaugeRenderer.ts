@@ -1,30 +1,17 @@
-class GaugeRenderer extends Renderer {
-    data: GaugeData
-
+class GaugeRenderer extends Renderer<GaugeData> {
     #radius: number
 
     #center: Point
 
-    #dropdown: Dropdown
-
-    #canvasPosition: DOMRect
-
-    #onMouseMoveEvent: MouseEvent
-
-    #onClickEvent: MouseEvent | undefined
-
-    #isInit: boolean
-
-    constructor(chart: Chart, settings: ChartSettings) {
-        super(chart, settings)
-
-        this.data = <GaugeData>chart.data
+    constructor(node: HTMLElement, settings: ChartSettings) {
+        super(node, settings)
 
         this.#calculateSizes()
+        this.initAnimations()
 
-        this.#dropdown = new Dropdown(this.canvas,
+        this.dropdown = new Dropdown(this.canvas,
             {
-                x: this.canvas.width - 10,
+                x: -10,
                 y: 10,
                 text: 'Menu',
                 items: [
@@ -36,15 +23,6 @@ class GaugeRenderer extends Renderer {
                     }
                 ]
             })
-
-        if (this.data.values.length > 0) {
-            if ((<Sector>this.data.values[0]).value > this.data.max)
-                (<Sector>this.data.values[0]).value = this.data.max
-        }
-
-        this.animations = new Animations()
-
-        this.#initAnimations()
     }
 
     render() {
@@ -52,29 +30,27 @@ class GaugeRenderer extends Renderer {
 
         this.#draw()
 
-        const value = <Sector>this.data.values[0]
-        this.tooltip.render(this.#isInsideSector(this.#onMouseMoveEvent, value),
-            this.#onMouseMoveEvent,
+        const value = this.data.values[0]
+        this.tooltip.render(this.#isInsideSector(this.onMouseMoveEvent, value),
+            this.onMouseMoveEvent,
             [
-                new TooltipValue(`${value?.label}: ${value?.current.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+                new TooltipValue(`${ value?.label }: ${ value?.current.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) }`)
             ])
-
-        this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
 
         requestAnimationFrame(this.render.bind(this))
 
-        this.#isInit = true
+        this.isInit = true
     }
 
     #draw() {
-        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
+        const ctx = Helpers.Canvas.getContext(this.canvas)
 
-        if (!ctx)
-            throw Helpers.Errors.nullContext
+        const value = this.data.values[0] ?? { id: Helper.guid() }
 
-        const value = <Sector>(this.data.values[0] ?? { id: Helper.guid() })
-
-        if (!this.#isInit || this.animations.contains(value.id, AnimationType.Init))
+        if (!this.isInit || this.animations.contains(value.id, AnimationType.Init))
             this.animations.add(value.id,
                 AnimationType.Init,
                 {
@@ -112,20 +88,16 @@ class GaugeRenderer extends Renderer {
                 ? Math.PI / 10
                 : localAngle
 
-            let point1 = {
-                x: this.#center.x + (this.#radius + 50) * Math.cos(Math.PI + localAccumulator),
-                y: this.#center.y + (this.#radius + 50) * Math.sin(Math.PI + localAccumulator)
+            const getPoint = (offset: number) => {
+                return {
+                    x: this.#center.x + (this.#radius + offset) * Math.cos(Math.PI + localAccumulator),
+                    y: this.#center.y + (this.#radius + offset) * Math.sin(Math.PI + localAccumulator)
+                }
             }
 
-            let point2 = {
-                x: this.#center.x + (this.#radius + 90) * Math.cos(Math.PI + localAccumulator),
-                y: this.#center.y + (this.#radius + 90) * Math.sin(Math.PI + localAccumulator)
-            }
-
-            let point3 = {
-                x: this.#center.x + (this.#radius + 115) * Math.cos(Math.PI + localAccumulator),
-                y: this.#center.y + (this.#radius + 115) * Math.sin(Math.PI + localAccumulator)
-            }
+            let point1 = getPoint(50),
+                point2 = getPoint(90),
+                point3 = getPoint(115)
 
             const opacity = Math.PI - localAngle > angle ? '66' : 'ff'
 
@@ -134,8 +106,7 @@ class GaugeRenderer extends Renderer {
             ctx.strokeStyle = '#000000' + opacity
             ctx.stroke()
 
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
+            Helpers.TextStyles.regular(ctx)
             ctx.fillStyle = '#000000' + opacity
             ctx.fillText((this.data.max - localAngle / Math.PI * this.data.max).toString(), point3.x, point3.y)
 
@@ -168,30 +139,17 @@ class GaugeRenderer extends Renderer {
                 && v.x * v.x + v.y * v.y >= innerRadius * innerRadius
         }
 
-        let x = event.clientX - this.#canvasPosition.x + window.scrollX,
-            y = event.clientY - this.#canvasPosition.y + window.scrollY
+        let x = event.clientX - this.canvasPosition.x + scrollX,
+            y = event.clientY - this.canvasPosition.y + scrollY
 
         let point = { x: x, y: y }
 
         const inner = {
-                x: point.x - this.#center.x,
-                y: point.y - this.#center.y
-            }
+            x: point.x - this.#center.x,
+            y: point.y - this.#center.y
+        }
 
         return isAngle(point) && isWithinRadius(inner)
-    }
-
-
-    #initAnimations() {
-        this.#canvasPosition = this.canvas.getBoundingClientRect()
-
-        this.#canvasPosition.x += window.scrollX
-        this.#canvasPosition.y += window.scrollY
-
-        if (!this.#isInit) {
-            this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
-            this.canvas.onclick = event => this.#onClickEvent = event
-        }
     }
 
     #calculateSizes() {
@@ -214,14 +172,19 @@ class GaugeRenderer extends Renderer {
     resize() {
         super.resize()
 
-        this.#initAnimations()
+        this.initAnimations()
         this.#calculateSizes()
     }
 
-    resetMouse() {
-        super.resetMouse()
+    prepareSettings() {
+        super.prepareSettings()
 
-        this.#onMouseMoveEvent = new MouseEvent('mousemove')
-        this.#onClickEvent = new MouseEvent('click')
+        for (let item of this.data.values) {
+            item.disabled = !item.value
+            item.value ??= 0
+        }
+
+        if (this.data.values.length > 0 && this.data.values[0].value > this.data.max)
+            this.data.values[0].value = this.data.max
     }
 }

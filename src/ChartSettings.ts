@@ -1,7 +1,9 @@
 class ChartSettings {
-    data: Data
+    enableLegend: boolean
 
-    type: ChartType
+    enableTooltip: boolean
+
+    enableOther: boolean
 
     width: number
 
@@ -11,13 +13,11 @@ class ChartSettings {
 
     title: string
 
-    enableLegend: boolean
+    templateId: string
 
-    enableTooltip: boolean
-
-    enableOther: boolean
+    type: ChartType
 
     legendPlace: LegendPlace
 
-    templateId: string
+    data: Data
 }

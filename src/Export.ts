@@ -1,9 +1,6 @@
 class Export {
     static asPng(canvas: HTMLCanvasElement, title: string) {
-        const ctx = canvas.getContext('2d', { willReadFrequently: true })
-
-        if (!ctx)
-            throw Helpers.Errors.nullContext
+        const ctx = Helpers.Canvas.getContext(canvas)
 
         let width = Helper.stringWidth('Export PNG') + 16,
             height = 64
@@ -60,21 +57,18 @@ class Export {
         if (rightEmpty > leftEmpty)
             rightEmpty = leftEmpty
 
-        let destinationCanvas = document.createElement('canvas')
+        let destinationCanvas = document.createElement(Tag.Canvas)
         destinationCanvas.width = canvas.width - leftEmpty - rightEmpty
         destinationCanvas.height = canvas.height
 
-        let destCtx = destinationCanvas.getContext('2d')
+        const destCtx = Helpers.Canvas.getContext(destinationCanvas)
 
-        if (!destCtx)
-            throw Helpers.Errors.nullContext
-
-        destCtx.fillStyle = "#FFFFFF"
+        destCtx.fillStyle = '#FFFFFF'
         destCtx.fillRect(0, 0, canvas.width, canvas.height)
 
         destCtx.drawImage(canvas, -leftEmpty, 0)
 
-        let download = document.createElement('a')
+        let download = document.createElement(Tag.A)
         download.href = destinationCanvas.toDataURL('image/png')
         download.download = (title ?? 'chart') + '.png'
         download.click()

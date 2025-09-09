@@ -31,7 +31,7 @@ class Tooltip {
         this.refresh()
     }
 
-    render(condition: boolean, event: MouseEvent, lines: TooltipValue[], value?: BasePoint) {
+    render(condition: boolean, event: MouseEvent, lines: TooltipValue[], value?: Value) {
         this.#hideAll()
 
         if (!this.#enabled || !event)
@@ -72,15 +72,12 @@ class Tooltip {
     }
 
     #renderRegular(event: MouseEvent, lines: TooltipValue[]) {
-        const ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-
-        if (!ctx)
-            throw Helpers.Errors.nullContext
+        const ctx = Helpers.Canvas.getContext(this.canvas)
 
         const textWidth = Math.max(...lines.map(line => Helper.stringWidth(line.text ?? '') + (line.color ? 8 : 0)))
 
         let x = event.clientX - this.#canvasPosition.x + 10,
-            y = event.clientY - this.#canvasPosition.y + window.scrollY + 10
+            y = event.clientY - this.#canvasPosition.y + scrollY + 10
 
         if (x + textWidth + 16 > this.#canvasPosition.width)
             x = this.#canvasPosition.width - (textWidth + 16)
@@ -118,8 +115,8 @@ class Tooltip {
         }
     }
 
-    #renderCustom(event: MouseEvent, value?: BasePoint) {
-        if (value === undefined)
+    #renderCustom(event: MouseEvent, value?: Value) {
+        if (value == undefined)
             return
 
         const id = this.#template.id + value.id
@@ -137,7 +134,7 @@ class Tooltip {
 
             let content = <HTMLElement>this.#template.cloneNode(true)
 
-            tooltip = <HTMLTooltipElement>document.createElement('div')
+            tooltip = <HTMLTooltipElement>document.createElement(Tag.Div)
 
             tooltip.innerHTML = content.innerHTML
 
@@ -154,8 +151,8 @@ class Tooltip {
 
             for (const match of matches) {
                 const property = match[0].replace('${', '')
-                    .replace('}', '')
-                    .replaceAll(' ', '')
+                                         .replace('}', '')
+                                         .replaceAll(' ', '')
 
                 html = html.replaceAll(match[0], value.data[property])
             }
@@ -169,16 +166,16 @@ class Tooltip {
             updateVisibility()
         }
 
-        if (tooltip.style.visibility === 'hidden')
+        if (tooltip.style.visibility == 'hidden')
             updateVisibility()
 
-        if (tooltip.position.height === 0)
+        if (tooltip.position.height == 0)
             tooltip.position = tooltip.getBoundingClientRect()
 
         const offset = 10
 
         let x = event.clientX,
-            y = event.clientY + window.scrollY
+            y = event.clientY + scrollY
 
         if (x + tooltip.position.width - this.#canvasPosition.x > this.#canvasPosition.width - offset)
             x = this.#canvasPosition.width - tooltip.position.width + this.#canvasPosition.x - offset
@@ -192,8 +189,8 @@ class Tooltip {
 
     refresh() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
-        this.#canvasPosition.x += window.scrollX
-        this.#canvasPosition.y += window.scrollY
+        this.#canvasPosition.x += scrollX
+        this.#canvasPosition.y += scrollY
     }
 
     #hideAll() {

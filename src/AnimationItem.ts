@@ -1,5 +1,5 @@
 class AnimationItem {
-    timer?: Date | null
+    timer?: Date | undefined
 
     before?: () => boolean
 

@@ -12,8 +12,8 @@
     "removeComments": true
   },
   "files": [
-    "src/types/base/BasePoint.ts",
-    "src/types/base/Data.ts",
+    "src/types/base/Value.ts",
+    "src/types/interfaces/Data.ts",
     "src/types/base/Renderer.ts"
   ],
   "include": [

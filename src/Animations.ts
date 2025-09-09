@@ -7,7 +7,7 @@ class Animations {
         this.#queue = new Map()
     }
 
-    add(id: string, type: number, value: AnimationItem) {
+    add(id: string, type: AnimationType, value: AnimationItem) {
         const key = this.#getKey(id, type)
         if (!this.#queue.has(key))
             this.#queue.set(key, value)
@@ -44,7 +44,7 @@ class Animations {
         if (before)
             item.body(transition)
 
-        if (transition === 1 && (!before || item.continuous))
+        if (transition == 1 && (!before || item.continuous))
             this.#queue.delete(key)
     }
 

@@ -1,4 +1,5 @@
-class OPlotSeries extends BasePoint {
+///<reference path="base/Value.ts"/>
+class PlotSeries extends Value {
     values: PlotPoint[]
 
     type: number
@@ -15,7 +16,7 @@ class OPlotSeries extends BasePoint {
         super.toggle(transition)
     }
 
-    checkCondition() : boolean {
+    checkCondition(): boolean {
         super.checkCondition()
 
         return true

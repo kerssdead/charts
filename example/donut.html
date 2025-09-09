@@ -6,6 +6,8 @@
         Donut Example
     </title>
 
+    <link rel="stylesheet" href="./css/styles.css">
+
     <script src="/dist/ocharts.js"></script>
 </head>
 
@@ -25,13 +27,7 @@
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
-    values.unshift({
-        label: 'null'
-    })
-
     let chart = OCharts.chart(document.getElementById('pie-example'), {
-        width: 1600,
-        height: 940,
         enableLegend: true,
         enableTooltip: true,
         title: 'Donut Chart',

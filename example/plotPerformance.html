@@ -6,6 +6,8 @@
         Stacking Column Plot Example
     </title>
 
+    <link rel="stylesheet" href="./css/styles.css">
+
     <script src="/dist/ocharts.js"></script>
 </head>
 
@@ -20,8 +22,6 @@
         value4 = JSON.parse('{"width":3,"label":"short","color":"#76b7b1","values":[{"x":"2010-02-22T00:00:00.0000000","y":"2.0000"},{"x":"2010-02-23T00:00:00.0000000","y":"8.0000"},{"x":"2010-02-24T00:00:00.0000000","y":"4.0000"},{"x":"2010-02-25T00:00:00.0000000","y":"4.0000"},{"x":"2010-02-26T00:00:00.0000000","y":"4.0000"}]}')
 
     let chart = OCharts.chart(document.getElementById('line-example'), {
-        width: 1600,
-        height: 940,
         title: 'Performance Test',
         enableTooltip: true,
         enableLegend: true,

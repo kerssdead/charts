@@ -6,17 +6,17 @@
     Gauge Example
   </title>
 
+  <link rel="stylesheet" href="./css/styles.css">
+
   <script src="/dist/ocharts.js"></script>
 </head>
 
 <body>
-<div id="pie-example" style="text-align: center"></div>
+<div id="pie-example"></div>
 </body>
 
 <script>
   let chart = OCharts.chart(document.getElementById('pie-example'), {
-    width: 1600,
-    height: 940,
     enableTooltip: true,
     title: 'Gauge Chart',
     data: {

@@ -1,4 +1,4 @@
-class BasePoint {
+class Value {
     id: string
 
     color: string
@@ -14,11 +14,11 @@ class BasePoint {
     value: number
 
     toggle(transition: number) {
-        if (transition === 0)
+        if (transition == 0)
             this.disabled = !this.disabled
     }
 
-    checkCondition() : boolean {
+    checkCondition(): boolean {
         return false
     }
 

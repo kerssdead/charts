@@ -1,0 +1,9 @@
+enum Events {
+    VisibilityChanged = 'visibilitychange',
+
+    Blur = 'blur',
+
+    MouseMove = 'mousemove',
+
+    Click = 'click'
+}
