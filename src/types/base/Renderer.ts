@@ -54,12 +54,8 @@ class Renderer<T extends Data> extends Renderable {
     #calculateSizes() {
         let domRect = this.node.getBoundingClientRect()
 
-        this.canvas.width = this.settings.width < domRect.width || domRect.width == 0
-            ? this.settings.width
-            : domRect.width
-        this.canvas.height = this.settings.height < domRect.height || domRect.height == 0
-            ? this.settings.height
-            : domRect.height
+        this.canvas.width = domRect.width
+        this.canvas.height = domRect.height
 
         if (this.settings.enableLegend) {
             if (this.settings.legendPlace == LegendPlace.Top
