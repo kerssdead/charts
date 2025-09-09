@@ -1,46 +1,21 @@
-class Renderer<T extends Data> {
-    node: HTMLElement
-
-    canvas: HTMLCanvasElement
-
-    settings: ChartSettings
-
-    animations: Animations
-
-    tooltip: Tooltip
-
+///<reference path="Renderable.ts"/>
+class Renderer<T extends Data> extends Renderable {
     dropdown: Dropdown
 
     data: T
 
-    protected isInit = false
-
-    protected canvasPosition: DOMRect
-
-    protected onMouseMoveEvent: MouseEvent
-
-    protected onClickEvent: MouseEvent | undefined
-
     constructor(node: HTMLElement, settings: ChartSettings) {
-        this.node = node
-        this.settings = settings
-        this.animations = new Animations()
+        super(node, settings)
 
         this.data = <T>settings.data
 
-        this.canvas = document.createElement(Tag.Canvas)
-
-        this.node.append(this.canvas)
-
         this.#calculateSizes()
-
-        this.tooltip = new Tooltip(this.canvas, settings)
     }
 
     render() {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        super.render()
 
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        const ctx = Helpers.Canvas.getContext(this.canvas)
 
         if (this.settings.title) {
             Helpers.TextStyles.title(ctx)
@@ -50,19 +25,9 @@ class Renderer<T extends Data> {
         this.onClickEvent = this.dropdown?.render(this.onMouseMoveEvent, this.onClickEvent)
     }
 
-    refresh() {
-        this.tooltip.refresh()
-        this.isInit = false
-    }
-
     resize() {
         this.tooltip.refresh()
         this.#calculateSizes()
-    }
-
-    resetMouse() {
-        this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
-        this.onClickEvent = new MouseEvent(Events.Click)
     }
 
     prepareSettings() {
@@ -83,18 +48,6 @@ class Renderer<T extends Data> {
         for (let item of this.settings.data.values) {
             item.id = Helper.guid()
             item.color ??= Helper.adjustColor(baseColor, adjustAmount += adjustStep)
-        }
-    }
-
-    initAnimations() {
-        this.canvasPosition = this.canvas.getBoundingClientRect()
-
-        this.canvasPosition.x += scrollX
-        this.canvasPosition.y += scrollY
-
-        if (!this.isInit) {
-            this.canvas.onmousemove = event => this.onMouseMoveEvent = event
-            this.canvas.onclick = event => this.onClickEvent = event
         }
     }
 

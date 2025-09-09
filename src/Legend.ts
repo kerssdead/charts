@@ -1,26 +1,10 @@
-class Legend {
-    canvas: HTMLCanvasElement
-
-    animations: Animations
-
-    #canvasPosition: DOMRect
-
-    #onMouseMoveEvent: MouseEvent
-
-    #onClickEvent: MouseEvent | undefined
-
-    #isInit: boolean = false
-
+class Legend extends Renderable {
     #button: Button
-
-    #settings: ChartSettings
 
     #offset: Point
 
-    constructor(settings: ChartSettings, context: HTMLElement) {
-        this.#settings = settings
-
-        this.canvas = document.createElement(Tag.Canvas)
+    constructor(node: HTMLElement, settings: ChartSettings) {
+        super(node, settings)
 
         switch (settings.legendPlace) {
             case LegendPlace.Bottom:
@@ -28,7 +12,7 @@ class Legend {
                 this.canvas.width = settings.width
                 this.canvas.height = Legend.getLegendHeight(settings.data.values, this.canvas.width)
 
-                context.style.flexDirection = 'column'
+                node.style.flexDirection = 'column'
 
                 break
 
@@ -36,7 +20,7 @@ class Legend {
                 this.canvas.width = settings.width
                 this.canvas.height = Legend.getLegendHeight(settings.data.values, this.canvas.width)
 
-                context.style.flexDirection = 'column-reverse'
+                node.style.flexDirection = 'column-reverse'
 
                 break
 
@@ -44,7 +28,7 @@ class Legend {
                 this.canvas.width = 500
                 this.canvas.height = settings.height
 
-                context.style.flexDirection = 'row'
+                node.style.flexDirection = 'row'
 
                 break
 
@@ -52,14 +36,10 @@ class Legend {
                 this.canvas.width = 500
                 this.canvas.height = settings.height
 
-                context.style.flexDirection = 'row-reverse'
+                node.style.flexDirection = 'row-reverse'
 
                 break
         }
-
-        context.append(this.canvas)
-
-        this.animations = new Animations()
 
         this.#button = new Button(this.canvas,
             {
@@ -72,13 +52,16 @@ class Legend {
                 }
             })
 
-        this.#initInteractions()
+        this.#offset = {
+            x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
+            y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width)) / 2
+        }
     }
 
     render() {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        super.render()
 
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        const ctx = Helpers.Canvas.getContext(this.canvas)
 
         let nextPoint = { x: 20, y: 20 }
 
@@ -88,23 +71,18 @@ class Legend {
         ctx.textAlign = 'start'
         ctx.textBaseline = 'alphabetic'
 
-        this.#offset = {
-            x: Legend.getOffsetToCenter(this.#settings.data.values, this.canvas.width),
-            y: (this.canvas.height - Legend.getLegendHeight(this.#settings.data.values, this.canvas.width)) / 2
-        }
-
         ctx.translate(this.#offset.x, this.#offset.y)
 
-        for (const value of this.#settings.data.values.filter(v => !v.hideInLegend))
+        for (const value of this.settings.data.values.filter(v => !v.hideInLegend))
             nextPoint = this.#draw(value, nextPoint.x, nextPoint.y)
 
         ctx.translate(-this.#offset.x, -this.#offset.y)
 
         requestAnimationFrame(this.render.bind(this))
 
-        this.#onClickEvent = this.#button.render(this.#onMouseMoveEvent, this.#onClickEvent)
+        this.onClickEvent = this.#button.render(this.onMouseMoveEvent, this.onClickEvent)
 
-        this.#isInit = true
+        this.isInit = true
     }
 
     #draw(value: Value, x: number, y: number): Point {
@@ -127,33 +105,33 @@ class Legend {
             if (!event)
                 return false
 
-            const px = event.clientX - this.#canvasPosition.x + scrollX - this.#offset.x,
-                py = event.clientY - this.#canvasPosition.y + scrollY - this.#offset.y
+            const px = event.clientX - this.canvasPosition.x + scrollX - this.#offset.x,
+                py = event.clientY - this.canvasPosition.y + scrollY - this.#offset.y
 
             return px >= rectX && px <= rectX + rectW
                 && py >= rectY && py <= rectY + rectH
         }
 
-        if (this.#onClickEvent) {
+        if (this.onClickEvent) {
             this.animations.add(value.id,
                 AnimationType.Click,
                 {
                     duration: 220,
                     continuous: true,
                     before: () => {
-                        return isHover(this.#onClickEvent) && value.checkCondition()
+                        return isHover(this.onClickEvent) && value.checkCondition()
                     },
                     body: transition => {
                         value.toggle(transition)
 
                         if (transition == 1)
-                            this.#onClickEvent = new PointerEvent(Events.Click)
+                            this.onClickEvent = new PointerEvent(Events.Click)
                     }
                 })
         }
 
-        if (this.#onMouseMoveEvent) {
-            if (isHover(this.#onMouseMoveEvent))
+        if (this.onMouseMoveEvent) {
+            if (isHover(this.onMouseMoveEvent))
                 this.canvas.style.cursor = 'pointer'
 
             this.animations.add(value.id,
@@ -161,7 +139,7 @@ class Legend {
                 {
                     duration: 100,
                     before: () => {
-                        return !isHover(this.#onMouseMoveEvent) && !this.#isInit
+                        return !isHover(this.onMouseMoveEvent) && !this.isInit
                     },
                     body: transition => {
                         ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
@@ -176,7 +154,7 @@ class Legend {
                 {
                     duration: 100,
                     before: () => {
-                        return isHover(this.#onMouseMoveEvent)
+                        return isHover(this.onMouseMoveEvent)
                     },
                     body: transition => {
                         ctx.beginPath()
@@ -215,24 +193,12 @@ class Legend {
         }
     }
 
-    #initInteractions() {
-        this.#canvasPosition = this.canvas.getBoundingClientRect()
-
-        this.#canvasPosition.x += scrollX
-        this.#canvasPosition.y += scrollY
-
-        if (!this.#isInit) {
-            this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
-            this.canvas.onclick = event => this.#onClickEvent = event
-        }
-    }
-
     refresh() {
-        this.#isInit = false
+        this.isInit = false
     }
 
     resize() {
-        this.#initInteractions()
+        this.initAnimations()
     }
 
     static getOffsetToCenter(values: Value[], width: number): number {

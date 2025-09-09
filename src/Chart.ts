@@ -24,7 +24,7 @@ class Chart {
         this.#prepareSettings()
 
         if (settings.enableLegend) {
-            this.#legend = new Legend(settings, context)
+            this.#legend = new Legend(context, settings)
 
             if (settings.legendPlace == undefined
                 || settings.legendPlace == LegendPlace.Bottom
