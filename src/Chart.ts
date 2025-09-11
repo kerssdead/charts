@@ -79,6 +79,7 @@ class Chart {
     }
 
     #initialize() {
+        Theme.initialize()
         Animations.initializeTransitions()
     }
 }

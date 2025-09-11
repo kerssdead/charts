@@ -144,7 +144,7 @@ class Legend extends Renderable {
                     body: transition => {
                         ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
 
-                        ctx.fillStyle = Helper.adjustColor('#ffffff', Math.round(-50 * (1 - transition)))
+                        ctx.fillStyle = Helper.adjustColor(Theme.background, Math.round(-50 * (1 - transition)))
                         ctx.fill()
                     }
                 })
@@ -161,7 +161,7 @@ class Legend extends Renderable {
 
                         ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
 
-                        ctx.fillStyle = Helper.adjustColor('#ffffff', Math.round(-50 * transition))
+                        ctx.fillStyle = Helper.adjustColor(Theme.background, Math.round(-50 * transition))
                         ctx.fill()
                     }
                 })
@@ -173,7 +173,7 @@ class Legend extends Renderable {
         ctx.fillStyle = value.disabled ? Helper.grayScale(value.color) : value.color
         ctx.fill()
 
-        ctx.fillStyle = '#000000'
+        ctx.fillStyle = Theme.text
         ctx.fillText(value.label, x + 20, y + 4)
 
         x += 20
@@ -181,7 +181,7 @@ class Legend extends Renderable {
         if (value.disabled) {
             ctx.moveTo(x - 5, y)
             ctx.lineTo(x + textWidth, y)
-            ctx.strokeStyle = '#000000'
+            ctx.strokeStyle = Theme.text
             ctx.stroke()
         }
 

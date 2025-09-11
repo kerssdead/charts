@@ -97,7 +97,7 @@ class PlotRenderer extends Renderer<PlotData> {
         Helpers.TextStyles.regular(ctx)
         ctx.lineJoin = 'round'
 
-        const axisLineHoverColor = '#00000088'
+        const axisLineHoverColor = Theme.lineActive
 
         this.#renderBase()
 
@@ -485,7 +485,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
         ctx.beginPath()
 
-        ctx.strokeStyle = '#000000'
+        ctx.strokeStyle = Theme.line
         ctx.lineWidth = 1
 
         if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0) {
@@ -568,7 +568,7 @@ class PlotRenderer extends Renderer<PlotData> {
         }
 
         const axisLabelOffset = 12
-        const axisLineColor = '#0000001e'
+        const axisLineColor = Theme.lineAxis
 
         const isContainsColumn = this.data.values.filter(s => s.type == PlotType.Column).length > 0,
             isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0

@@ -103,11 +103,11 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
             ctx.moveTo(point1.x, point1.y)
             ctx.lineTo(point2.x, point2.y)
-            ctx.strokeStyle = '#000000' + opacity
+            ctx.strokeStyle = Theme.text + opacity
             ctx.stroke()
 
             Helpers.TextStyles.regular(ctx)
-            ctx.fillStyle = '#000000' + opacity
+            ctx.fillStyle = Theme.text + opacity
             ctx.fillText((this.data.max - localAngle / Math.PI * this.data.max).toString(), point3.x, point3.y)
 
             localAccumulator += currentAngle

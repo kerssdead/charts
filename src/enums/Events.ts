@@ -5,5 +5,7 @@ enum Events {
 
     MouseMove = 'mousemove',
 
-    Click = 'click'
+    Click = 'click',
+
+    Change = 'change'
 }

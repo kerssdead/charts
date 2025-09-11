@@ -279,7 +279,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
                     ctx.quadraticCurveTo(labelMidPoint.x, labelMidPoint.y, endPoint.x, endPoint.y)
 
-                    ctx.strokeStyle = '#000000'
+                    ctx.strokeStyle = Theme.text
                     ctx.stroke()
 
                     let opacity = Math.round(255 * (value.current / value.value)).toString(16)
@@ -287,7 +287,7 @@ class CircularRenderer extends Renderer<CircularData> {
                     if (opacity.length < 2)
                         opacity = 0 + opacity
 
-                    ctx.fillStyle = '#000000' + opacity
+                    ctx.fillStyle = Theme.text + opacity
                     ctx.textAlign = dir == 1 ? 'start' : 'end'
                     ctx.textBaseline = 'alphabetic'
                     ctx.font = '14px serif'

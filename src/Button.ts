@@ -64,7 +64,7 @@ class Button {
                     body: transition => {
                         this.animations.reload('animation-button-leave', AnimationType.MouseLeave)
 
-                        ctx.fillStyle = Helper.adjustColor('#ffffff', -Math.round(transition * 40))
+                        ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(transition * 40))
                     }
                 })
         } else {
@@ -75,12 +75,12 @@ class Button {
                     body: transition => {
                         this.animations.reload('animation-button', AnimationType.MouseOver)
 
-                        ctx.fillStyle = Helper.adjustColor('#ffffff', -Math.round((1 - transition) * 40))
+                        ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round((1 - transition) * 40))
                     }
                 })
         }
 
-        ctx.strokeStyle = '#ffffff'
+        ctx.strokeStyle = Theme.background
         ctx.roundRect(this.#position.x, this.#position.y, this.#position.width, this.#position.height, 4)
         ctx.fill()
 

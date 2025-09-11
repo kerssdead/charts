@@ -69,11 +69,11 @@ class Dropdown {
                         body: transition => {
                             this.animations.reload('animation-dropdown', AnimationType.MouseLeave)
 
-                            ctx.fillStyle = Helper.adjustColor('#ffffff', -Math.round(40 * transition))
+                            ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(40 * transition))
                         }
                     })
             else
-                ctx.fillStyle = Helper.adjustColor('#ffffff', -40)
+                ctx.fillStyle = Helper.adjustColor(Theme.background, -40)
         } else {
             this.#canvas.style.cursor = 'default'
 
@@ -85,14 +85,14 @@ class Dropdown {
                         body: transition => {
                             this.animations.reload('animation-dropdown', AnimationType.MouseOver)
 
-                            ctx.fillStyle = Helper.adjustColor('#ffffff', -Math.round((1 - transition) * 40))
+                            ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round((1 - transition) * 40))
                         }
                     })
             else
-                ctx.fillStyle = Helper.adjustColor('#ffffff', -40)
+                ctx.fillStyle = Helper.adjustColor(Theme.background, -40)
         }
 
-        ctx.strokeStyle = '#ffffff'
+        ctx.strokeStyle = Theme.background
         ctx.roundRect(x, y, width, height, 4)
         ctx.fill()
 
@@ -112,7 +112,7 @@ class Dropdown {
 
             ctx.beginPath()
             ctx.roundRect(x, y, maxWidth, this.#options.items.length * 20 + 8, 4)
-            ctx.fillStyle = '#ffffff'
+            ctx.fillStyle = Theme.background
             ctx.strokeStyle = '#353535'
             ctx.fill()
             ctx.stroke()
@@ -133,7 +133,7 @@ class Dropdown {
                             body: transition => {
                                 this.animations.reload('animation-dropdown' + item.text, AnimationType.MouseLeave)
 
-                                ctx.fillStyle = Helper.adjustColor('#ffffff', 60 - Math.round(transition * 100))
+                                ctx.fillStyle = Helper.adjustColor(Theme.background, 60 - Math.round(transition * 100))
                             }
                         })
 
@@ -153,7 +153,7 @@ class Dropdown {
                             body: transition => {
                                 this.animations.reload('animation-dropdown', AnimationType.MouseOver)
 
-                                ctx.fillStyle = Helper.adjustColor('#ffffff', 60 - Math.round((1 - transition) * 100))
+                                ctx.fillStyle = Helper.adjustColor(Theme.background, 60 - Math.round((1 - transition) * 100))
                             }
                         })
                 }
@@ -161,7 +161,7 @@ class Dropdown {
                 ctx.rect(x, y, maxWidth, 20)
                 ctx.fill()
 
-                ctx.fillStyle = '#000000'
+                ctx.fillStyle = Theme.text
                 ctx.textAlign = 'center'
                 ctx.textBaseline = 'hanging'
                 ctx.fillText(item.text, x + maxWidth / 2, y + 4)
