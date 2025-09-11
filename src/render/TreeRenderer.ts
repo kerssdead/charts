@@ -211,7 +211,10 @@ class TreeRenderer extends Renderer<TreeData> {
                                         y: cell.y + cell.h / 2
                                     }
 
-                                    const minSize = .95,
+                                    const margin = 12,
+                                        minSize = cell.w > cell.h
+                                        ? 1 - margin / cell.w
+                                        : 1 - margin / cell.h,
                                         rest = 1 - minSize
 
                                     ctx.translate(center.x - center.x * (minSize + transition * rest),
@@ -233,7 +236,10 @@ class TreeRenderer extends Renderer<TreeData> {
                                         y: cell.y + cell.h / 2
                                     }
 
-                                    const minSize = .95,
+                                    const margin = 12,
+                                        minSize = cell.w > cell.h
+                                            ? 1 - margin / cell.w
+                                            : 1 - margin / cell.h,
                                         rest = 1 - minSize
 
                                     ctx.translate(center.x - center.x * (minSize + transition * rest),
