@@ -85,7 +85,7 @@ class CircularRenderer extends Renderer<CircularData> {
                 this.#drawSector(value)
 
             const value = this.data.values.find(v => v.id == this.#currentHover)
-            this.tooltip.render(!!this.#currentHover,
+            this.tooltip.render(!!value,
                 this.onMouseMoveEvent,
                 [
                     new TooltipValue(`${ value?.label }: ${ value?.current.toLocaleString(undefined, {

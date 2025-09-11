@@ -19,6 +19,8 @@ class Tooltip {
 
     #animationDuration: number = 120
 
+    #lines: TooltipValue[]
+
     constructor(canvas: HTMLCanvasElement, settings: ChartSettings) {
         this.canvas = canvas
         this.data = settings.data
@@ -38,6 +40,9 @@ class Tooltip {
             return
 
         if (condition || this.#inProgress || this.#toHide) {
+            if (condition)
+                this.#lines = lines
+
             if (!this.#timer)
                 this.#timer = new Date()
 
@@ -49,7 +54,7 @@ class Tooltip {
             if (this.#isCustom)
                 this.#renderCustom(event, value)
             else
-                this.#renderRegular(event, lines)
+                this.#renderRegular(event)
 
             const opacityValue = this.#getOpacityValue()
 
@@ -71,10 +76,10 @@ class Tooltip {
         }
     }
 
-    #renderRegular(event: MouseEvent, lines: TooltipValue[]) {
+    #renderRegular(event: MouseEvent) {
         const ctx = Helpers.Canvas.getContext(this.canvas)
 
-        const textWidth = Math.max(...lines.map(line => Helper.stringWidth(line.text ?? '') + (line.color ? 8 : 0)))
+        const textWidth = Math.max(...this.#lines.map(line => Helper.stringWidth(line.text ?? '') + (line.color ? 8 : 0)))
 
         let x = event.clientX - this.#canvasPosition.x + 10,
             y = event.clientY - this.#canvasPosition.y + scrollY + 10
@@ -82,18 +87,18 @@ class Tooltip {
         if (x + textWidth + 16 > this.#canvasPosition.width)
             x = this.#canvasPosition.width - (textWidth + 16)
 
-        if (y + 10 + lines.length * 18 > this.#canvasPosition.height)
-            y = this.#canvasPosition.height - 10 - lines.length * 18
+        if (y + 10 + this.#lines.length * 18 > this.#canvasPosition.height)
+            y = this.#canvasPosition.height - 10 - this.#lines.length * 18
 
         ctx.beginPath()
-        ctx.roundRect(x, y, textWidth + 16, 16 + 16 * lines.length, 20)
+        ctx.roundRect(x, y, textWidth + 16, 16 + 16 * this.#lines.length, 20)
         let opacity = Math.round(this.#getOpacityValue() * 77).toString(16)
         if (opacity.length == 1)
             opacity = '0' + opacity
         ctx.fillStyle = '#000000' + opacity
         ctx.fill()
 
-        for (let line of lines) {
+        for (let line of this.#lines) {
             let offset = 0
 
             if (line.color) {
