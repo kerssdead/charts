@@ -351,6 +351,8 @@ class TreeRenderer extends Renderer<TreeData> {
     }
 
     prepareSettings() {
+        this.data.values.sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
+
         super.prepareSettings()
 
         for (let item of this.data.values) {
