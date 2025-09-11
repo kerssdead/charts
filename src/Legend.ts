@@ -9,7 +9,7 @@ class Legend extends Renderable {
         switch (settings.legendPlace) {
             case LegendPlace.Bottom:
             default:
-                this.canvas.width = settings.width
+                this.canvas.width = settings.width ?? settings.maxWidth
                 this.canvas.height = Legend.getLegendHeight(settings.data.values, this.canvas.width)
 
                 node.style.flexDirection = 'column'

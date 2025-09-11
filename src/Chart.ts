@@ -29,7 +29,7 @@ class Chart {
             if (settings.legendPlace == undefined
                 || settings.legendPlace == LegendPlace.Bottom
                 || settings.legendPlace == LegendPlace.Top)
-                settings.height -= this.#legend.canvas.height
+                settings.maxHeight -= this.#legend.canvas.height
         }
 
         document.addEventListener(Events.VisibilityChanged, () => this.#renderer.resetMouse())
