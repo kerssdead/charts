@@ -161,7 +161,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
         this.#center = {
             x: this.canvas.width / 2,
-            y: this.canvas.height - this.#radius / 3
+            y: this.canvas.height - this.#radius / 5
         }
     }
 
