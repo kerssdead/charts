@@ -79,7 +79,7 @@ class Chart {
     }
 
     #initialize() {
-        Theme.initialize()
+        Theme.initialize(() => this.#resize())
         Animations.initializeTransitions()
     }
 }
