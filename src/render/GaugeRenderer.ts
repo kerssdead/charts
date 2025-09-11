@@ -43,6 +43,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
         requestAnimationFrame(this.render.bind(this))
 
         this.isInit = true
+
+        super.renderDropdown()
     }
 
     #draw() {

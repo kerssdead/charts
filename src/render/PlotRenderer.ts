@@ -5,14 +5,6 @@ class PlotRenderer extends Renderer<PlotData> {
 
     #paddings: Paddings
 
-    #canvasPosition: DOMRect
-
-    #onMouseMoveEvent: MouseEvent
-
-    #onClickEvent: MouseEvent | undefined
-
-    #dropdown: Dropdown
-
     #tooltipX: number
 
     #tooltipY: number
@@ -58,7 +50,7 @@ class PlotRenderer extends Renderer<PlotData> {
         if (settings.title)
             this.#paddings.top += 50
 
-        this.#dropdown = new Dropdown(this.canvas,
+        this.dropdown = new Dropdown(this.canvas,
             {
                 x: -10,
                 y: 10,
@@ -498,13 +490,13 @@ class PlotRenderer extends Renderer<PlotData> {
             ctx.stroke()
         }
 
-        this.tooltip.render(tooltipLines.length > 1, this.#onMouseMoveEvent, tooltipLines)
-
-        this.#onClickEvent = this.#dropdown.render(this.#onMouseMoveEvent, this.#onClickEvent)
+        this.tooltip.render(tooltipLines.length > 1, this.onMouseMoveEvent, tooltipLines)
 
         requestAnimationFrame(this.render.bind(this))
 
         this.isInit = true
+
+        super.renderDropdown()
     }
 
     refresh() {
@@ -522,26 +514,26 @@ class PlotRenderer extends Renderer<PlotData> {
     resetMouse() {
         super.resetMouse()
 
-        this.#onMouseMoveEvent = new MouseEvent('mousemove')
-        this.#onClickEvent = new MouseEvent('click')
+        this.onMouseMoveEvent = new MouseEvent('mousemove')
+        this.onClickEvent = new MouseEvent('click')
     }
 
     #initAnimations() {
-        this.#canvasPosition = this.canvas.getBoundingClientRect()
+        this.canvasPosition = this.canvas.getBoundingClientRect()
 
-        this.#canvasPosition.x += scrollX
-        this.#canvasPosition.y += scrollY
+        this.canvasPosition.x += scrollX
+        this.canvasPosition.y += scrollY
 
-        this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
-        this.canvas.onclick = event => this.#onClickEvent = event
+        this.canvas.onmousemove = event => this.onMouseMoveEvent = event
+        this.canvas.onclick = event => this.onClickEvent = event
     }
 
     #isOnX(x: number): boolean {
-        if (!this.#onMouseMoveEvent)
+        if (!this.onMouseMoveEvent)
             return false
 
-        let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + scrollX,
-            mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + scrollY
+        let mouseX = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
+            mouseY = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
 
         return x - this.#x.step / 2 <= mouseX && mouseX < x + this.#x.step / 2
             && this.#paddings.top <= mouseY && mouseY <= this.canvas.height - this.#paddings.bottom
@@ -549,11 +541,11 @@ class PlotRenderer extends Renderer<PlotData> {
     }
 
     #isOnY(y: number): boolean {
-        if (!this.#onMouseMoveEvent)
+        if (!this.onMouseMoveEvent)
             return false
 
-        let mouseX = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + scrollX,
-            mouseY = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + scrollY
+        let mouseX = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
+            mouseY = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
 
         return y - this.#y.step / 2 <= mouseY && mouseY < y + this.#y.step / 2
             && this.#paddings.left <= mouseX && mouseX <= this.canvas.width - this.#paddings.right

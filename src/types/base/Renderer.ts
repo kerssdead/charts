@@ -21,7 +21,9 @@ class Renderer<T extends Data> extends Renderable {
             Helpers.TextStyles.title(ctx)
             ctx.fillText(this.settings.title, this.canvas.width / 2, 40)
         }
+    }
 
+    renderDropdown() {
         this.onClickEvent = this.dropdown?.render(this.onMouseMoveEvent, this.onClickEvent)
     }
 

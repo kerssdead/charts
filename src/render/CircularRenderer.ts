@@ -61,6 +61,8 @@ class CircularRenderer extends Renderer<CircularData> {
             this.#draw()
 
         this.isInit = true
+
+        super.renderDropdown()
     }
 
     #draw() {
