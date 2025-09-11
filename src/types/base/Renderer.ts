@@ -33,17 +33,15 @@ class Renderer<T extends Data> extends Renderable {
     prepareSettings() {
         const dimension = this.node.parentElement!.getBoundingClientRect()
 
-        if (+this.settings.width != 0)
-            this.settings.maxWidth = this.settings.width
-        if (+this.settings.height != 0)
-            this.settings.maxHeight = this.settings.height
+        this.settings.maxWidth = this.settings.width ?? dimension.width
+        this.settings.maxHeight = this.settings.height ?? dimension.height
 
         if (+this.settings.width == 0)
-            this.settings.width = dimension.width > this.settings.maxWidth
+            this.settings.width = dimension.width > this.settings.maxWidth && +this.settings.maxWidth != 0
                 ? this.settings.maxWidth
                 : dimension.width
         if (+this.settings.height == 0)
-            this.settings.height = dimension.height > this.settings.maxHeight
+            this.settings.height = dimension.height > this.settings.maxHeight && +this.settings.maxHeight != 0
                 ? this.settings.maxHeight
                 : dimension.height
 

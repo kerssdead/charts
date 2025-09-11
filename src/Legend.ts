@@ -17,7 +17,7 @@ class Legend extends Renderable {
                 break
 
             case LegendPlace.Top:
-                this.canvas.width = settings.width
+                this.canvas.width = settings.width ?? settings.maxWidth
                 this.canvas.height = Legend.getLegendHeight(settings.data.values, this.canvas.width)
 
                 node.style.flexDirection = 'column-reverse'
@@ -26,7 +26,7 @@ class Legend extends Renderable {
 
             case LegendPlace.Left:
                 this.canvas.width = 500
-                this.canvas.height = settings.height
+                this.canvas.height = settings.height ?? settings.maxHeight
 
                 node.style.flexDirection = 'row'
 
@@ -34,7 +34,7 @@ class Legend extends Renderable {
 
             case LegendPlace.Right:
                 this.canvas.width = 500
-                this.canvas.height = settings.height
+                this.canvas.height = settings.height ?? settings.maxHeight
 
                 node.style.flexDirection = 'row-reverse'
 
