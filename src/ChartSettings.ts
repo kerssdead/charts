@@ -9,6 +9,10 @@ class ChartSettings {
 
     height: number
 
+    maxWidth: number
+
+    maxHeight: number
+
     baseColor: string
 
     title: string

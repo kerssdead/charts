@@ -33,10 +33,19 @@ class Renderer<T extends Data> extends Renderable {
     prepareSettings() {
         const dimension = this.node.parentElement!.getBoundingClientRect()
 
-        if (!this.settings.width || +this.settings.width == 0)
-            this.settings.width = dimension.width
-        if (!this.settings.height || +this.settings.height == 0)
-            this.settings.height = dimension.height
+        if (+this.settings.width != 0)
+            this.settings.maxWidth = this.settings.width
+        if (+this.settings.height != 0)
+            this.settings.maxHeight = this.settings.height
+
+        if (+this.settings.width == 0)
+            this.settings.width = dimension.width > this.settings.maxWidth
+                ? this.settings.maxWidth
+                : dimension.width
+        if (+this.settings.height == 0)
+            this.settings.height = dimension.height > this.settings.maxHeight
+                ? this.settings.maxHeight
+                : dimension.height
 
         const baseColor = this.settings.baseColor ?? Helper.randomColor()
         let adjustStep = Math.round(100 / this.settings.data.values.length),
@@ -54,8 +63,12 @@ class Renderer<T extends Data> extends Renderable {
     #calculateSizes() {
         let domRect = this.node.getBoundingClientRect()
 
-        this.canvas.width = domRect.width
-        this.canvas.height = domRect.height
+        this.canvas.width = domRect.width > this.settings.maxWidth
+            ? this.settings.maxWidth
+            : domRect.width
+        this.canvas.height = domRect.height > this.settings.maxHeight
+            ? this.settings.maxHeight
+            : domRect.height
 
         if (this.settings.enableLegend) {
             if (this.settings.legendPlace == LegendPlace.Top
