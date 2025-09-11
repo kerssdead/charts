@@ -144,6 +144,8 @@ class TreeRenderer extends Renderer<TreeData> {
                     }
                 }
 
+                ctx.beginPath()
+
                 ctx.fillStyle = cell.color
 
                 const cellInit = this.isInit && !this.animations.contains(cell.id, AnimationType.Init)
@@ -168,10 +170,8 @@ class TreeRenderer extends Renderer<TreeData> {
                             duration: getPrev(),
                             continuous: true,
                             body: transition => {
-                                if (transition * getPrev() - getPrev() + initAnimationDuration < 0) {
-                                    ctx.fillStyle = cell.color + '00'
-                                    return
-                                }
+                                if (transition * getPrev() - getPrev() + initAnimationDuration < 0)
+                                    return ctx.fillStyle += '00'
 
                                 transition = (transition * getPrev() - getPrev() + initAnimationDuration) / initAnimationDuration
 
@@ -216,7 +216,7 @@ class TreeRenderer extends Renderer<TreeData> {
 
                                     ctx.translate(center.x - center.x * (minSize + transition * rest),
                                         center.y - center.y * (minSize + transition * rest))
-                                    ctx.scale((minSize + transition * rest), (minSize + transition * rest))
+                                    ctx.scale(minSize + transition * rest, minSize + transition * rest)
 
                                     this.animations.reload(cell.id, AnimationType.MouseLeave)
                                 }
@@ -252,7 +252,8 @@ class TreeRenderer extends Renderer<TreeData> {
                 ctx.fill()
 
                 if (cell.label
-                    && Helper.stringWidth(cell.label) < cell.w - gap && cell.h - gap > 16
+                    && Helper.stringWidth(cell.label) < cell.w - gap
+                    && cell.h - gap > 16
                     && !this.animations.contains(cell.id, AnimationType.Init)) {
                     ctx.beginPath()
                     Helpers.TextStyles.large(ctx)
