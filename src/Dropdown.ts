@@ -122,6 +122,8 @@ class Dropdown {
             y += 4
 
             for (const item of this.#options.items) {
+                ctx.beginPath()
+
                 if (this.#isOnButton(moveEvent, x, y, maxWidth, 20)) {
                     this.animations.add('animation-dropdown' + item.text,
                         AnimationType.MouseOver,
