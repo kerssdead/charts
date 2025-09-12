@@ -1,5 +1,5 @@
 class Decomposition {
-    static toTable<T extends Data>(values: TableData) {
+    static toTable(values: TableData) {
         let table = document.createElement(Tag.Table)
         let totals = new Map<string, number>()
         let rows = '',
@@ -57,7 +57,7 @@ class Decomposition {
 
         let totalColumns = ''
 
-        for (const [key, value] of totals) {
+        for (const [, value] of totals) {
             totalColumns += `
                 <td>
                     ${ value == undefined ? '' : value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
