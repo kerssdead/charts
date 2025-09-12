@@ -30,13 +30,13 @@ class CircularRenderer extends Renderer<CircularData> {
                 text: 'Menu',
                 items: [
                     {
-                        text: 'Export PNG',
+                        text: TextResources.exportPNG,
                         action: () => {
                             Export.asPng(this.canvas, this.settings.title)
                         }
                     },
                     {
-                        text: 'Decompose to Table',
+                        text: TextResources.decomposeToTable,
                         action: () => {
                             new Modal(Decomposition.toTable(CircularData.getRows(this.data))).open()
                         }

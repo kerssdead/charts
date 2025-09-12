@@ -16,7 +16,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
                 text: 'Menu',
                 items: [
                     {
-                        text: 'Export PNG',
+                        text: TextResources.exportPNG,
                         action: () => {
                             Export.asPng(this.canvas, this.settings.title)
                         }

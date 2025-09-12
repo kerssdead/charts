@@ -2,7 +2,7 @@ class Export {
     static asPng(canvas: HTMLCanvasElement, title: string) {
         const ctx = Helpers.Canvas.getContext(canvas)
 
-        let width = Helper.stringWidth('Export PNG') + 16,
+        let width = Helper.stringWidth(TextResources.exportPNG) + 16,
             height = 64
 
         if (width < 50)

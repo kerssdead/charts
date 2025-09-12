@@ -45,7 +45,7 @@ class Legend extends Renderable {
             {
                 x: -10,
                 y: 10,
-                text: 'Reset',
+                text: TextResources.reset,
                 action: () => {
                     for (let value of settings.data.values)
                         value.reset()
