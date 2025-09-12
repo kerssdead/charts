@@ -1,6 +1,9 @@
 class Decomposition {
     static toTable(values: TableData) {
         let table = document.createElement(Tag.Table)
+
+        table.classList.add('o-table')
+
         let totals = new Map<string, number>()
         let rows = '',
             headers = ''
@@ -46,7 +49,7 @@ class Decomposition {
 
             rows += `
                 <tr>
-                    <td>
+                    <td class="o-table-label">
                         ${ key }
                     </td>
                     
@@ -68,9 +71,7 @@ class Decomposition {
         table.innerHTML = `
             <thead>
                 <tr>
-                    <th>
-                        Label
-                    </th>
+                    <th></th>
                 
                     ${ headers }
                 </tr>

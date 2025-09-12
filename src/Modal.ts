@@ -1,18 +1,18 @@
 class Modal {
     modal: HTMLDialogElement | undefined
 
+    #content: HTMLDivElement | undefined
+
     constructor(content?: HTMLElement) {
         this.modal = document.createElement(Tag.Dialog)
 
-        this.modal.style.top = '0'
-        this.modal.style.left = '0'
+        this.modal.classList.add('o-modal')
 
         document.body.appendChild(this.modal)
 
         this.#setHeader()
 
-        if (content != undefined)
-            this.modal.appendChild(content)
+        this.#setContent(content)
     }
 
     open() {
@@ -39,11 +39,24 @@ class Modal {
 
         let closeButton = document.createElement('button')
 
-        closeButton.style.cursor = 'pointer'
-        closeButton.innerHTML = 'Close'
+        closeButton.classList.add('o-modal-close')
+        closeButton.innerHTML = 'x'
 
         this.modal.appendChild(closeButton)
 
         closeButton.onclick = () => this.close()
+    }
+
+    #setContent(content: HTMLElement | undefined) {
+        if (this.#content == undefined) {
+            this.#content = document.createElement(Tag.Div)
+
+            this.#content.classList.add('o-modal-content')
+
+            this.modal?.appendChild(this.#content)
+        }
+
+        if (content != undefined)
+            this.#content.appendChild(content)
     }
 }

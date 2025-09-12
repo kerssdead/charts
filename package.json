@@ -18,6 +18,8 @@
     "watch": "webpack --watch"
   },
   "devDependencies": {
+    "css-loader": "^7.1.2",
+    "mini-css-extract-plugin": "^2.9.4",
     "terser-webpack-plugin": "^5.3.14",
     "ts-loader": "^9.5.4",
     "webpack-cli": "^6.0.1"

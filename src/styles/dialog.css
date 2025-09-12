@@ -1,0 +1,29 @@
+.o-modal {
+    max-width:  80vw;
+    border-radius: 8px;
+    padding: 8px;
+    border: 2px solid #aeaeae;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.o-modal::backdrop {
+    background-color: #000000;
+    opacity: .2;
+}
+
+.o-modal-close {
+    cursor: pointer;
+    position: sticky;
+    margin-left: auto;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    width: fit-content;
+}
+
+.o-modal-content {
+    width: 100%;
+    overflow: auto;
+}
