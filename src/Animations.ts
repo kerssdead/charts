@@ -60,8 +60,8 @@ class Animations {
         const valuesCount = 20000,
             offset = .23,
             p0 = { x: 0, y: 0 },
-            p1 = { x: offset, y: 1 - offset },
-            p2 = { x: 1 - offset, y: offset },
+            p1 = { x: 1 - offset, y: offset },
+            p2 = { x: offset, y: 1 - offset },
             p3 = { x: 1, y: 1 }
 
         for (let i = 0; i < valuesCount; i++) {
