@@ -57,7 +57,7 @@ class Animations {
     }
 
     static initializeTransitions() {
-        const valuesCount = 20000,
+        const valuesCount = 30000,
             offset = .23,
             p0 = { x: 0, y: 0 },
             p1 = { x: 1 - offset, y: offset },
