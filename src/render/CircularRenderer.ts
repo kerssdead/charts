@@ -36,6 +36,12 @@ class CircularRenderer extends Renderer<CircularData> {
                         }
                     },
                     {
+                        text: TextResources.exportCSV,
+                        action: () => {
+                            Export.asCsv(Decomposition.toTable(CircularData.getRows(this.data)), this.settings.title)
+                        }
+                    },
+                    {
                         text: TextResources.decomposeToTable,
                         action: () => {
                             new Modal(Decomposition.toTable(CircularData.getRows(this.data))).open()

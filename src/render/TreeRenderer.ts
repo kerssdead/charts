@@ -21,6 +21,12 @@ class TreeRenderer extends Renderer<TreeData> {
                 text: 'Menu',
                 items: [
                     {
+                        text: TextResources.exportCSV,
+                        action: () => {
+                            Export.asCsv(Decomposition.toTable(TreeData.getRows(this.data)), this.settings.title)
+                        }
+                    },
+                    {
                         text: 'Decompose to Table',
                         action: () => {
                             new Modal(Decomposition.toTable(TreeData.getRows(this.data))).open()

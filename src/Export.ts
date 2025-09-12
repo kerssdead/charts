@@ -73,4 +73,30 @@ class Export {
         download.download = (title ?? 'chart') + '.png'
         download.click()
     }
+
+    static asCsv(table: HTMLTableElement, title: string) {
+        let rows = table.querySelectorAll('tr'),
+            csv = []
+
+        for (let i = 0; i < rows.length; i++) {
+            let row = [],
+                cols = rows[i].querySelectorAll('td, th')
+
+            for (let j = 0; j < cols.length; j++) {
+                let data = cols[j].innerHTML
+                    .replace(/(\r\n|\n|\r)/gm, '')
+                    .replace(/(\s\s)/gm, ' ')
+
+                data = data.replace(/"/g, '""')
+                row.push('"' + data + '"')
+            }
+
+            csv.push(row.join(','))
+        }
+
+        let download = document.createElement('a')
+        download.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv.join('\n'))
+        download.download = (title ?? 'table') + '.csv'
+        download.click()
+    }
 }

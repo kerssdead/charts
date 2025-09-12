@@ -4,4 +4,6 @@ class TextResources {
     static decomposeToTable = 'Decompose to Table'
 
     static reset = 'Reset'
+
+    static exportCSV = 'Export CSV'
 }

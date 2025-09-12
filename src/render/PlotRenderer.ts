@@ -63,6 +63,12 @@ class PlotRenderer extends Renderer<PlotData> {
                         }
                     },
                     {
+                        text: TextResources.exportCSV,
+                        action: () => {
+                            Export.asCsv(Decomposition.toTable(PlotData.getRows(this.data)), this.settings.title)
+                        }
+                    },
+                    {
                         text: TextResources.decomposeToTable,
                         action: () => {
                             new Modal(Decomposition.toTable(PlotData.getRows(this.data))).open()

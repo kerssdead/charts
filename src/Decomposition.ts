@@ -67,11 +67,13 @@ class Decomposition {
 
         table.innerHTML = `
             <thead>
-                <th>
-                    Label
-                </th>
-            
-                ${ headers }
+                <tr>
+                    <th>
+                        Label
+                    </th>
+                
+                    ${ headers }
+                </tr>
             </thead>
         
             <tbody>
@@ -79,9 +81,11 @@ class Decomposition {
             </tbody>
             
             <tfoot>
-                <td></td>
-            
-                ${ totalColumns }
+                <tr>
+                    <td></td>
+                
+                    ${ totalColumns }
+                </tr>
             </tfoot>
         `
 
