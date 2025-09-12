@@ -3,5 +3,9 @@ enum Tag {
 
     A = 'a',
 
-    Div = 'div'
+    Div = 'div',
+
+    Dialog = 'dialog',
+
+    Table = 'table'
 }

@@ -11,3 +11,8 @@ html, body {
 div:has(> canvas) {
     height: 100%;
 }
+
+dialog::backdrop {
+    background-color: #000000;
+    opacity: .2;
+}

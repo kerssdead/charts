@@ -4,4 +4,21 @@ class TreeData implements Data {
     type: number
 
     padding: number
+
+    static getRows(data: TreeData): TableData {
+        const key = 'Value'
+
+        let values: TableValue[] = []
+
+        for (const value of data.values)
+            values.push({
+                name: value.label,
+                values: new Map([[key, value.value]])
+            })
+
+        return {
+            headers: [key],
+            values: values
+        }
+    }
 }

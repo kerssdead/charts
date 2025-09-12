@@ -6,4 +6,21 @@ class CircularData implements Data {
     innerRadius: number
 
     innerTitle: string
+
+    static getRows(data: CircularData): TableData {
+        const key = 'Value'
+
+        let values: TableValue[] = []
+
+        for (const value of data.values)
+            values.push({
+                name: value.label,
+                values: new Map([[key, value.value]])
+            })
+
+        return {
+            headers: [key],
+            values: values
+        }
+    }
 }

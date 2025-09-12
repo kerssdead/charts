@@ -57,9 +57,15 @@ class PlotRenderer extends Renderer<PlotData> {
                 text: 'Menu',
                 items: [
                     {
-                        text: 'Export PNG',
+                        text: TextResources.exportPNG,
                         action: () => {
                             Export.asPng(this.canvas, this.settings.title)
+                        }
+                    },
+                    {
+                        text: TextResources.decomposeToTable,
+                        action: () => {
+                            new Modal(Decomposition.toTable(PlotData.getRows(this.data))).open()
                         }
                     }
                 ]

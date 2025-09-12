@@ -34,6 +34,12 @@ class CircularRenderer extends Renderer<CircularData> {
                         action: () => {
                             Export.asPng(this.canvas, this.settings.title)
                         }
+                    },
+                    {
+                        text: 'Decompose to Table',
+                        action: () => {
+                            new Modal(Decomposition.toTable(CircularData.getRows(this.data))).open()
+                        }
                     }
                 ]
             })

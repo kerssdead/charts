@@ -1,8 +1,4 @@
 class TreeRenderer extends Renderer<TreeData> {
-    #canvasPosition: DOMRect
-
-    #onMouseMoveEvent: MouseEvent
-
     constructor(node: HTMLElement, settings: ChartSettings) {
         super(node, settings)
 
@@ -18,7 +14,23 @@ class TreeRenderer extends Renderer<TreeData> {
         for (let item of this.data.values)
             item.color = Helper.adjustColor(baseColor, adjustAmount += adjustStep)
 
-        this.#initAnimations()
+        this.dropdown = new Dropdown(this.canvas,
+            {
+                x: -10,
+                y: 10,
+                text: 'Menu',
+                items: [
+                    {
+                        text: 'Decompose to Table',
+                        action: () => {
+                            new Modal(Decomposition.toTable(TreeData.getRows(this.data))).open()
+                        }
+                    }
+                ]
+            })
+
+
+        this.initAnimations()
     }
 
     render() {
@@ -295,7 +307,7 @@ class TreeRenderer extends Renderer<TreeData> {
         }
 
         this.tooltip.render(!!tooltipCell,
-            this.#onMouseMoveEvent,
+            this.onMouseMoveEvent,
             [
                 new TooltipValue(`${ tooltipCell?.label }: ${ tooltipCell?.value?.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
@@ -307,24 +319,16 @@ class TreeRenderer extends Renderer<TreeData> {
         requestAnimationFrame(this.render.bind(this))
 
         this.isInit = true
-    }
 
-    #initAnimations() {
-        this.#canvasPosition = this.canvas.getBoundingClientRect()
-
-        this.#canvasPosition.x += scrollX
-        this.#canvasPosition.y += scrollY
-
-        if (!this.isInit)
-            this.canvas.onmousemove = event => this.#onMouseMoveEvent = event
+        super.renderDropdown()
     }
 
     #isInCell(cell: TreeCell) {
-        if (!this.#onMouseMoveEvent || !cell)
+        if (!this.onMouseMoveEvent || !cell)
             return false
 
-        let x = this.#onMouseMoveEvent.clientX - this.#canvasPosition.x + scrollX,
-            y = this.#onMouseMoveEvent.clientY - this.#canvasPosition.y + scrollY
+        let x = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
+            y = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
 
         return cell.x <= x && x <= cell.x + cell.w
             && cell.y <= y && y <= cell.y + cell.h
@@ -346,14 +350,8 @@ class TreeRenderer extends Renderer<TreeData> {
     resize() {
         super.resize()
 
-        this.#initAnimations()
+        this.initAnimations()
         this.animations.clear()
-    }
-
-    resetMouse() {
-        super.resetMouse()
-
-        this.#onMouseMoveEvent = new MouseEvent('mousemove')
     }
 
     prepareSettings() {
