@@ -1,4 +1,4 @@
-///<reference path="ThemeOptions.ts"/>
+///<reference path="static/ThemeOptions.ts"/>
 class Theme {
     static text = ThemeOptions.colors[0]
 
