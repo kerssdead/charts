@@ -17,7 +17,12 @@ class TreeData implements Data {
             })
 
         return {
-            headers: [key],
+            headers: [
+                {
+                    value: key,
+                    display: key
+                }
+            ],
             values: values
         }
     }

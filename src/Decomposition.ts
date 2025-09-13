@@ -14,7 +14,7 @@ class Decomposition {
             let allColumns = new Map<string, any>()
 
             for (const header of values.headers)
-                allColumns.set(header, 0)
+                allColumns.set(header.value, 0)
 
             for (const [key, value] of tableValue.values)
                 allColumns.set(key, value)
@@ -25,7 +25,7 @@ class Decomposition {
         for (const tableHeader of values.headers)
             headers += `
                 <th>
-                    ${ tableHeader }
+                    ${ tableHeader.display }
                 </th>
             `
 

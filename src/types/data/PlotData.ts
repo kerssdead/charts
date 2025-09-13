@@ -9,12 +9,12 @@ class PlotData implements Data {
 
     yMax: number
 
-    xType: number
+    xType: PlotAxisType
 
     shortLabels: boolean
 
     static getRows(data: PlotData): TableData {
-        let headers: string[] = []
+        let headers: TableHeaderValue[] = []
 
         let values: TableValue[] = []
 
@@ -23,7 +23,12 @@ class PlotData implements Data {
 
             for (const value of series.values) {
                 seriesValues.set(value.x.toString(), value.y)
-                headers.push(value.x.toString())
+                headers.push({
+                    value: value.x.toString(),
+                    display: data.xType == PlotAxisType.Date
+                        ? new Date(value.x).toLocaleDateString()
+                        : value.x.toString()
+                })
             }
 
             values.push({

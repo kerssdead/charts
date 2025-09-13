@@ -1,5 +1,5 @@
 class TableData {
-    headers: string[]
+    headers: TableHeaderValue[]
 
     values: TableValue[]
 }
