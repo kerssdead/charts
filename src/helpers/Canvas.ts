@@ -4,5 +4,9 @@ namespace Helpers {
             return canvas.getContext('2d', { willReadFrequently: true })
                 ?? Helpers.Errors.throw(ErrorType.NullContext)
         }
+
+        static isPixelBusy(pixel: number) {
+            return pixel & 0xff000000
+        }
     }
 }

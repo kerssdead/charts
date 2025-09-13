@@ -27,7 +27,7 @@ class CircularRenderer extends Renderer<CircularData> {
             {
                 x: -10,
                 y: 10,
-                text: 'Menu',
+                text: TextResources.menu,
                 items: [
                     {
                         text: TextResources.exportPNG,
@@ -140,7 +140,7 @@ class CircularRenderer extends Renderer<CircularData> {
                                 else
                                     this.#pinned.push(value.id)
 
-                                this.onClickEvent = new PointerEvent('click')
+                                this.onClickEvent = new PointerEvent(Events.Click)
                             }
                         }
 
@@ -204,7 +204,7 @@ class CircularRenderer extends Renderer<CircularData> {
                 this.animations.add(value.id,
                     AnimationType.MouseLeave,
                     {
-                        timer: new Date(2000, 1, 1),
+                        timer: Constants.Dates.minDate,
                         duration: 100,
                         body: transition => {
                             let direction = this.#accumulator + angle / 2
@@ -282,7 +282,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
                 if (!isBusy)
                     for (let i = 0; i < imageData.length; i++)
-                        if (imageData[i] & 0xff000000) {
+                        if (Helpers.Canvas.isPixelBusy(imageData[i])) {
                             isBusy = true
                             break
                         }
@@ -359,9 +359,9 @@ class CircularRenderer extends Renderer<CircularData> {
 
                     point2 = this.#getPoint(innerRadius, localAccumulator - currentAngle)
 
-                    const tangentIntersectionAngle = Math.PI - currentAngle
-                    const lengthToTangentIntersection = innerRadius / Math.sin(tangentIntersectionAngle / 2)
-                    const tangentIntersectionPoint = this.#getPoint(lengthToTangentIntersection, localAccumulator - currentAngle / 2)
+                    const tangentIntersectionAngle = Math.PI - currentAngle,
+                        lengthToTangentIntersection = innerRadius / Math.sin(tangentIntersectionAngle / 2),
+                        tangentIntersectionPoint = this.#getPoint(lengthToTangentIntersection, localAccumulator - currentAngle / 2)
 
                     ctx.quadraticCurveTo(tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y)
 
@@ -399,8 +399,8 @@ class CircularRenderer extends Renderer<CircularData> {
             if (a < this.#startAngle)
                 a = Math.PI * 2 - Math.abs(this.#startAngle - a) + this.#startAngle
 
-            let index = this.#angles.findIndex(o => o.id == value.id)
-            let sumBefore = this.#angles[index].sum
+            let index = this.#angles.findIndex(o => o.id == value.id),
+                sumBefore = this.#angles[index].sum
 
             return sumBefore <= a && sumBefore + this.#angles[index].value - a >= 0
         }
@@ -434,11 +434,11 @@ class CircularRenderer extends Renderer<CircularData> {
         ctx.beginPath()
 
         ctx.arc(this.#center.x, this.#center.y, this.#radius, 0, 2 * Math.PI)
-        ctx.strokeStyle = '#000000'
+        ctx.strokeStyle = Theme.text
         ctx.stroke()
 
         Helpers.TextStyles.regular(ctx)
-        ctx.fillText('All data is hidden', this.#center.x, this.#center.y)
+        ctx.fillText(TextResources.allDataIsHidden, this.#center.x, this.#center.y)
 
         requestAnimationFrame(this.render.bind(this))
     }
@@ -504,7 +504,7 @@ class CircularRenderer extends Renderer<CircularData> {
             this.data.values.push(new Sector({
                 value: sum,
                 current: sum,
-                label: 'Other',
+                label: TextResources.other,
                 id: Helper.guid(),
                 color: '#a3a3a3',
                 innerRadius: this.data.innerRadius

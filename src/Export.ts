@@ -19,7 +19,7 @@ class Export {
 
         for (let i = 0; i < canvas.width; i++) {
             for (let j = 0; j < canvas.height; j++) {
-                if (imageData[i + j * canvas.width] & 0xff000000) {
+                if (Helpers.Canvas.isPixelBusy(imageData[i + j * canvas.width])) {
                     isBusy = true
                     break
                 }
@@ -35,7 +35,7 @@ class Export {
 
         for (let i = canvas.width; i >= 0; i--) {
             for (let j = 0; j < canvas.height; j++) {
-                if (imageData[i + j * canvas.width] & 0xff000000) {
+                if (Helpers.Canvas.isPixelBusy(imageData[i + j * canvas.width])) {
                     isBusy = true
                     break
                 }

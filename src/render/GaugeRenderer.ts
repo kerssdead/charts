@@ -13,7 +13,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
             {
                 x: -10,
                 y: 10,
-                text: 'Menu',
+                text: TextResources.menu,
                 items: [
                     {
                         text: TextResources.exportPNG,

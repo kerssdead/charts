@@ -18,7 +18,7 @@ class TreeRenderer extends Renderer<TreeData> {
             {
                 x: -10,
                 y: 10,
-                text: 'Menu',
+                text: TextResources.menu,
                 items: [
                     {
                         text: TextResources.exportCSV,
@@ -27,7 +27,7 @@ class TreeRenderer extends Renderer<TreeData> {
                         }
                     },
                     {
-                        text: 'Decompose to Table',
+                        text: TextResources.decomposeToTable,
                         action: () => {
                             new Modal(Decomposition.toTable(TreeData.getRows(this.data))).open()
                         }
@@ -246,7 +246,7 @@ class TreeRenderer extends Renderer<TreeData> {
                         this.animations.add(cell.id,
                             AnimationType.MouseLeave,
                             {
-                                timer: new Date(2000, 1, 1),
+                                timer: Constants.Dates.minDate,
                                 duration: 140,
                                 body: transition => {
                                     const center = {
@@ -344,7 +344,7 @@ class TreeRenderer extends Renderer<TreeData> {
         const ctx = Helpers.Canvas.getContext(this.canvas)
 
         Helpers.TextStyles.regular(ctx)
-        ctx.fillText('Incorrect values',
+        ctx.fillText(TextResources.incorrectValues,
             this.canvas.width / 2,
             this.canvas.height / 2)
     }

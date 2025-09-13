@@ -54,7 +54,7 @@ class PlotRenderer extends Renderer<PlotData> {
             {
                 x: -10,
                 y: 10,
-                text: 'Menu',
+                text: TextResources.menu,
                 items: [
                     {
                         text: TextResources.exportPNG,
@@ -85,7 +85,7 @@ class PlotRenderer extends Renderer<PlotData> {
         this.#labelsX = new Map()
         this.#labelsY = new Map()
 
-        this.#initAnimations()
+        this.initAnimations()
     }
 
     render() {
@@ -505,15 +505,14 @@ class PlotRenderer extends Renderer<PlotData> {
         ctx.strokeStyle = Theme.line
         ctx.lineWidth = 1
 
-        if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0) {
-            ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
+        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
+
+        if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0)
             ctx.lineTo(this.#paddings.left, this.#paddings.top)
-            ctx.stroke()
-        } else {
-            ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
+        else
             ctx.lineTo(this.canvas.width - this.#paddings.right, this.canvas.height - this.#paddings.bottom)
-            ctx.stroke()
-        }
+
+        ctx.stroke()
 
         this.tooltip.render(tooltipLines.length > 1, this.onMouseMoveEvent, tooltipLines)
 
@@ -539,18 +538,8 @@ class PlotRenderer extends Renderer<PlotData> {
     resetMouse() {
         super.resetMouse()
 
-        this.onMouseMoveEvent = new MouseEvent('mousemove')
-        this.onClickEvent = new MouseEvent('click')
-    }
-
-    #initAnimations() {
-        this.canvasPosition = this.canvas.getBoundingClientRect()
-
-        this.canvasPosition.x += scrollX
-        this.canvasPosition.y += scrollY
-
-        this.canvas.onmousemove = event => this.onMouseMoveEvent = event
-        this.canvas.onclick = event => this.onClickEvent = event
+        this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
+        this.onClickEvent = new MouseEvent(Events.Click)
     }
 
     #isOnX(x: number): boolean {
@@ -655,7 +644,7 @@ class PlotRenderer extends Renderer<PlotData> {
                     imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth > 0 ? textWidth : 1, 24).data.buffer)
 
                 for (let i = 0; i < imageData.length; i++)
-                    if (imageData[i] & 0xff000000) {
+                    if (Helpers.Canvas.isPixelBusy(imageData[i])) {
                         isRender = false
                         break
                     }
