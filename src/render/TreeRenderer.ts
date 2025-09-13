@@ -62,6 +62,7 @@ class TreeRenderer extends Renderer<TreeData> {
             minY = this.data.padding + titleOffset
 
         let tooltipCell = new TreeCell()
+        let contextMenuData = undefined
 
         const ctx = Helpers.Canvas.getContext(this.canvas)
 
@@ -73,7 +74,7 @@ class TreeRenderer extends Renderer<TreeData> {
                 remainHeight = maxHeight - minY + this.data.padding + titleOffset
 
             let cells: TreeCell[] = [
-                {
+                <TreeCell>{
                     color: item.color,
                     label: item.label,
                     s: item.value / sum * totalSquare,
@@ -89,7 +90,7 @@ class TreeRenderer extends Renderer<TreeData> {
             if (i + 1 <= this.data.values.length - 1) {
                 const next = this.data.values[i + 1]
 
-                cells.push({
+                cells.push(<TreeCell>{
                     color: next.color,
                     label: next.label,
                     s: next.value / sum * totalSquare,
@@ -216,6 +217,7 @@ class TreeRenderer extends Renderer<TreeData> {
                 } else {
                     if (this.#isInCell(cell)) {
                         tooltipCell = cell
+                        contextMenuData = cell.data
 
                         this.animations.add(cell.id,
                             AnimationType.MouseOver,
@@ -327,6 +329,8 @@ class TreeRenderer extends Renderer<TreeData> {
         this.isInit = true
 
         super.renderDropdown()
+
+        this.renderContextMenu(contextMenuData)
     }
 
     #isInCell(cell: TreeCell) {

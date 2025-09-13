@@ -206,7 +206,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                 hoverX = {
                                     x: x,
                                     y: y,
-                                    index: index
+                                    index: index,
+                                    data: value.data
                                 }
 
                                 tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
@@ -280,7 +281,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                 hoverX = {
                                     x: x,
                                     y: y,
-                                    index: index
+                                    index: index,
+                                    data: value.data
                                 }
 
                                 tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
@@ -330,7 +332,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                 hoverX = {
                                     x: x,
                                     y: y,
-                                    index: index
+                                    index: index,
+                                    data: value.data
                                 }
 
                                 tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().x }`, series.color))
@@ -391,7 +394,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                 hoverX = {
                                     x: x,
                                     y: y,
-                                    index: xIndex
+                                    index: xIndex,
+                                    data: value.data
                                 }
 
                                 tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
@@ -448,6 +452,8 @@ class PlotRenderer extends Renderer<PlotData> {
                         ctx.beginPath()
                         ctx.arc(hoverX.x, hoverX.y, 5, 0, 2 * Math.PI)
                         ctx.fill()
+
+                        this.renderContextMenu(hoverX.data)
                     }
 
                     break
@@ -478,6 +484,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                 this.canvas.height - this.#paddings.bottom + offset)
                             ctx.stroke()
                         }
+
+                        this.renderContextMenu(hoverX.data)
                     }
 
                     columnsIndex++
@@ -493,6 +501,8 @@ class PlotRenderer extends Renderer<PlotData> {
                         ctx.lineTo(this.canvas.width - this.#paddings.right,
                             this.#tooltipY + this.#y.step / 2)
                         ctx.stroke()
+
+                        this.renderContextMenu(hoverX.data)
                     }
 
                     barsIndex++
@@ -534,13 +544,6 @@ class PlotRenderer extends Renderer<PlotData> {
         this.#base = undefined
 
         this.#calculateSizes()
-    }
-
-    resetMouse() {
-        super.resetMouse()
-
-        this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
-        this.onClickEvent = new MouseEvent(Events.Click)
     }
 
     #isOnX(x: number): boolean {

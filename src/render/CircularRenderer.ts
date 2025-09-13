@@ -75,6 +75,8 @@ class CircularRenderer extends Renderer<CircularData> {
         this.isInit = true
 
         super.renderDropdown()
+
+        this.renderContextMenu(this.data.values.find(v => v.id == this.#currentHover)?.data ?? { })
     }
 
     #draw() {

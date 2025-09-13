@@ -28,14 +28,20 @@
         values.push({
             x: i,
             y: Math.pow(i, 2),
-            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)],
+            data: {
+                test: 1
+            }
         })
 
     for (let i = indexMin; i < valuesCount; i++)
         values1.push({
             x: i,
             y: Math.pow(i, 2.1),
-            label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
+            label: labelsPool[Math.floor(Math.random() * labelsPool.length)],
+            data: {
+                value: 2
+            }
         })
 
     values.sort((a, b) => a.x - b.x)
@@ -64,7 +70,21 @@
             xTitle: 'X-Axis',
             yTitle: 'Y-Axis'
         },
-        type: 0
+        type: 0,
+        contextMenu: [
+            {
+                text: 'Button 1',
+                action: data => {
+                    console.log('Button 1 action', data)
+                }
+            },
+            {
+                text: 'Button 2',
+                action: () => {
+                    console.log('Another action')
+                }
+            }
+        ]
     })
 
     chart.render()

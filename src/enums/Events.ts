@@ -7,5 +7,7 @@ enum Events {
 
     Click = 'click',
 
-    Change = 'change'
+    Change = 'change',
+
+    ContextMenu = 'contextmenu'
 }

@@ -60,6 +60,38 @@ class Renderer<T extends Data> extends Renderable {
         }
     }
 
+    renderContextMenu(data: any) {
+        if (this.onContextMenuEvent != undefined && this.settings.contextMenu?.length != 0) {
+            if (this.contextMenu == undefined && this.settings.contextMenu != undefined) {
+                for (const item of this.settings.contextMenu) {
+                    const action = item.action
+                    item.action = () => {
+                        action(data)
+
+                        this.onContextMenuEvent = undefined
+                        this.contextMenu = undefined
+                    }
+                }
+
+                this.contextMenu = new Dropdown(this.canvas, {
+                    x: this.onContextMenuEvent.x,
+                    y: this.onContextMenuEvent.y,
+                    items: this.settings.contextMenu!,
+                    data: data
+                })
+            }
+
+            const isClick = this.onClickEvent != undefined
+
+            this.onClickEvent = this.contextMenu?.render(this.onMouseMoveEvent, this.onClickEvent)
+
+            if (this.onClickEvent == undefined && isClick) {
+                this.contextMenu = undefined
+                this.onContextMenuEvent = undefined
+            }
+        }
+    }
+
     #calculateSizes() {
         let domRect = this.node.getBoundingClientRect()
 

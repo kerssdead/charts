@@ -1,5 +1,5 @@
 class DropdownItem {
     text: string
 
-    action: () => void
+    action: (arg?: any) => void
 }

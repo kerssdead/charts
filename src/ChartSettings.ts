@@ -24,4 +24,6 @@ class ChartSettings {
     legendPlace: LegendPlace
 
     data: Data
+
+    contextMenu?: DropdownItem[]
 }

@@ -17,6 +17,8 @@ class TreeCell {
 
     id: string
 
+    data: any
+
     constructor() {
     }
 }

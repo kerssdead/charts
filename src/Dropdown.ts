@@ -13,16 +13,20 @@ class Dropdown {
 
     #position: DOMRect
 
+    #isOnlyMenu: boolean
+
     constructor(canvas: HTMLCanvasElement, options: DropdownOptions) {
         this.#canvas = canvas
         this.#options = options
+
+        this.#isOnlyMenu = this.#options.text == undefined
 
         this.animations = new Animations()
 
         this.#initAnimations()
 
-        const width = Helper.stringWidth(this.#options.text) + 20,
-            height = 24
+        const width = this.#isOnlyMenu ? 0 : Helper.stringWidth(this.#options.text ?? '') + 20,
+            height = this.#isOnlyMenu ? 0 : 24
 
         this.#position = <DOMRect>{
             x: this.#options.x + width > this.#canvas.width
@@ -44,60 +48,65 @@ class Dropdown {
         if (!this.#isInit)
             this.#initAnimations()
 
-        const ctx = Helpers.Canvas.getContext(this.#canvas)
+        if (this.#isOnlyMenu)
+            this.isActive = true
 
-        ctx.beginPath()
+        const ctx = Helpers.Canvas.getContext(this.#canvas)
 
         let x = this.#position.x,
             y = this.#position.y,
             width = this.#position.width,
             height = this.#position.height
 
-        if (this.#isOnButton(moveEvent, x, y, width, height)) {
-            this.#canvas.style.cursor = 'pointer'
+        ctx.beginPath()
 
-            if (clickEvent && moveEvent.x == clickEvent.x && moveEvent.y == clickEvent.y) {
-                this.isActive = !this.isActive
-                clickEvent = undefined
+        if (!this.#isOnlyMenu) {
+            if (this.#isOnButton(moveEvent, x, y, width, height)) {
+                this.#canvas.style.cursor = 'pointer'
+
+                if (clickEvent && moveEvent.x == clickEvent.x && moveEvent.y == clickEvent.y) {
+                    this.isActive = !this.isActive
+                    clickEvent = undefined
+                }
+
+                if (!this.isActive)
+                    this.animations.add('animation-dropdown',
+                        AnimationType.MouseOver,
+                        {
+                            duration: 300,
+                            body: transition => {
+                                this.animations.reload('animation-dropdown', AnimationType.MouseLeave)
+
+                                ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(40 * transition))
+                            }
+                        })
+                else
+                    ctx.fillStyle = Helper.adjustColor(Theme.background, -40)
+            } else {
+                this.#canvas.style.cursor = 'default'
+
+                if (!this.isActive)
+                    this.animations.add('animation-dropdown',
+                        AnimationType.MouseLeave,
+                        {
+                            duration: 300,
+                            body: transition => {
+                                this.animations.reload('animation-dropdown', AnimationType.MouseOver)
+
+                                ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round((1 - transition) * 40))
+                            }
+                        })
+                else
+                    ctx.fillStyle = Helper.adjustColor(Theme.background, -40)
             }
 
-            if (!this.isActive)
-                this.animations.add('animation-dropdown',
-                    AnimationType.MouseOver,
-                    {
-                        duration: 300,
-                        body: transition => {
-                            this.animations.reload('animation-dropdown', AnimationType.MouseLeave)
+            ctx.strokeStyle = Theme.background
+            ctx.roundRect(x, y, width, height, 4)
+            ctx.fill()
 
-                            ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(40 * transition))
-                        }
-                    })
-            else
-                ctx.fillStyle = Helper.adjustColor(Theme.background, -40)
-        } else {
-            this.#canvas.style.cursor = 'default'
-
-            if (!this.isActive)
-                this.animations.add('animation-dropdown',
-                    AnimationType.MouseLeave,
-                    {
-                        duration: 300,
-                        body: transition => {
-                            this.animations.reload('animation-dropdown', AnimationType.MouseOver)
-
-                            ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round((1 - transition) * 40))
-                        }
-                    })
-            else
-                ctx.fillStyle = Helper.adjustColor(Theme.background, -40)
+            Helpers.TextStyles.regular(ctx)
+            ctx.fillText(this.#options.text ?? '', x + width / 2, y + height / 2)
         }
-
-        ctx.strokeStyle = Theme.background
-        ctx.roundRect(x, y, width, height, 4)
-        ctx.fill()
-
-        Helpers.TextStyles.regular(ctx)
-        ctx.fillText(this.#options.text, x + width / 2, y + height / 2)
 
         if (this.isActive) {
             y += height
@@ -172,12 +181,17 @@ class Dropdown {
             }
         }
 
-        if (clickEvent != undefined && this.isActive) {
+        if (!this.#isOnlyMenu && clickEvent != undefined && this.isActive) {
             this.isActive = false
             clickEvent = undefined
         }
 
         this.#isInit = true
+
+        if (this.#isOnlyMenu && clickEvent && moveEvent.x == clickEvent.x && moveEvent.y == clickEvent.y) {
+            this.isActive = !this.isActive
+            clickEvent = undefined
+        }
 
         return clickEvent
     }

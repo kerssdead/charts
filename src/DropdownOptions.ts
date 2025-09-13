@@ -5,5 +5,7 @@ class DropdownOptions {
 
     y: number
 
-    text: string
+    text?: string | undefined
+
+    data?: any
 }

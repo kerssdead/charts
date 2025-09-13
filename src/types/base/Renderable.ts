@@ -17,6 +17,10 @@ class Renderable {
 
     protected onClickEvent: MouseEvent | undefined
 
+    protected onContextMenuEvent: MouseEvent | undefined
+
+    protected contextMenu: Dropdown | undefined
+
     constructor(node: HTMLElement, settings: ChartSettings) {
         this.node = node
         this.settings = settings
@@ -45,6 +49,7 @@ class Renderable {
     resetMouse() {
         this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
         this.onClickEvent = new MouseEvent(Events.Click)
+        this.onContextMenuEvent = undefined
     }
 
     initAnimations() {
@@ -56,6 +61,11 @@ class Renderable {
         if (!this.isInit) {
             this.canvas.onmousemove = event => this.onMouseMoveEvent = event
             this.canvas.onclick = event => this.onClickEvent = event
+            this.canvas.oncontextmenu = event => {
+                event.preventDefault()
+                this.contextMenu = undefined
+                this.onContextMenuEvent = event
+            }
         }
     }
 }
