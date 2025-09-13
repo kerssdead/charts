@@ -8,6 +8,8 @@ class Modal {
 
         this.modal.classList.add('o-modal')
 
+        this.modal.oncancel = () => this.close()
+
         document.body.appendChild(this.modal)
 
         this.#setHeader()
