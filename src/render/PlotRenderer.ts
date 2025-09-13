@@ -437,6 +437,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
                         if (Math.abs(trueX - hoverX.x) < 25
                             && Math.abs(trueY - hoverX.y) < 25) {
+                            ctx.beginPath()
                             ctx.lineWidth = 1
                             ctx.strokeStyle = axisLineHoverColor
                             ctx.moveTo(this.#paddings.left, hoverX.y)
