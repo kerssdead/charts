@@ -40,8 +40,8 @@ class Decomposition {
                 `
 
                 if (totals.has(vKey)) {
-                    let totalValue = totals.get(vKey)
-                    totals.set(vKey, (totalValue ?? 0) + +vValue)
+                    let totalValue = +(totals.get(vKey) ?? 0)
+                    totals.set(vKey, totalValue + +vValue)
                 } else {
                     totals.set(vKey, vValue)
                 }
@@ -60,13 +60,12 @@ class Decomposition {
 
         let totalColumns = ''
 
-        for (const [, value] of totals) {
+        for (const [, value] of totals)
             totalColumns += `
                 <td>
                     ${ value == undefined ? '' : value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
                 </td>
             `
-        }
 
         table.innerHTML = `
             <thead>
