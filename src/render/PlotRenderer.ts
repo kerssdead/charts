@@ -194,6 +194,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                                 - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
                                         }
 
+                                        ctx.moveTo(prevValue.x, prevValue.y)
                                         ctx.lineTo(prevValue.x + (x - prevValue.x) * transition,
                                             prevValue.y + (y - prevValue.y) * transition)
                                     }
