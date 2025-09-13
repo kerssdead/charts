@@ -37,8 +37,14 @@ class PlotData implements Data {
             })
         }
 
+        const unique = new Set(),
+            uniqueHeaders = headers.filter(v => !unique.has(v.display) && unique.add(v.display))
+
+        if (data.xType == PlotAxisType.Date)
+            uniqueHeaders.sort((a, b) => new Date(a.value).getTime() - new Date(b.value).getTime())
+
         return {
-            headers: [...new Set(headers)],
+            headers: uniqueHeaders,
             values: values
         }
     }
