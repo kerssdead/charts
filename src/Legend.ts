@@ -116,7 +116,7 @@ class Legend extends Renderable {
             this.animations.add(value.id,
                 AnimationType.Click,
                 {
-                    duration: 220,
+                    duration: Constants.Animations.legend,
                     continuous: true,
                     before: () => {
                         return isHover(this.onClickEvent) && value.checkCondition()

@@ -104,10 +104,7 @@ class CircularRenderer extends Renderer<CircularData> {
             this.tooltip.render(!!value,
                 this.onMouseMoveEvent,
                 [
-                    new TooltipValue(`${ value?.label }: ${ value?.current.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }) }`)
+                    new TooltipValue(`${ value?.label }: ${ Helpers.Formatter.number(value?.current) }`)
                 ])
 
             this.#drawInnerTitle()
@@ -173,7 +170,6 @@ class CircularRenderer extends Renderer<CircularData> {
             this.animations.add(value.id,
                 AnimationType.Init,
                 {
-                    timer: new Date(),
                     duration: Constants.Animations.circular + (this.data.values.indexOf(value) + 1) / this.data.values.length * Constants.Animations.circular,
                     continuous: true,
                     body: transition => {
@@ -211,17 +207,19 @@ class CircularRenderer extends Renderer<CircularData> {
                         body: transition => {
                             let direction = this.#accumulator + angle / 2
 
-                            const transitionPos = {
-                                x: 20 * Math.cos(direction) * (1 - transition),
-                                y: 20 * Math.sin(direction) * (1 - transition)
+                            transition = 1 - transition
+
+                            const translate = {
+                                x: 20 * Math.cos(direction) * transition,
+                                y: 20 * Math.sin(direction) * transition
                             }
 
-                            ctx.translate(transitionPos.x, transitionPos.y)
+                            ctx.translate(translate.x, translate.y)
 
-                            value.transition = transitionPos
+                            value.translate = translate
 
-                            ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * (1 - transition)))
-                            ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * (1 - transition)))
+                            ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
+                            ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
 
                             this.animations.reload(value.id, AnimationType.MouseOver)
                         }
@@ -239,14 +237,14 @@ class CircularRenderer extends Renderer<CircularData> {
 
                             let direction = this.#accumulator + actualAngle / 2
 
-                            const transitionPos = {
+                            const translate = {
                                 x: 20 * Math.cos(direction) * transition,
                                 y: 20 * Math.sin(direction) * transition
                             }
 
-                            ctx.translate(transitionPos.x, transitionPos.y)
+                            ctx.translate(translate.x, translate.y)
 
-                            value.transition = transitionPos
+                            value.translate = translate
 
                             ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
                             ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
@@ -295,13 +293,13 @@ class CircularRenderer extends Renderer<CircularData> {
 
                     ctx.quadraticCurveTo(labelMidPoint.x, labelMidPoint.y, endPoint.x, endPoint.y)
 
-                    ctx.strokeStyle = Theme.text
-                    ctx.stroke()
-
                     let opacity = Math.round(255 * (value.current / value.value)).toString(16)
 
                     if (opacity.length < 2)
                         opacity = 0 + opacity
+
+                    ctx.strokeStyle = Theme.text + opacity
+                    ctx.stroke()
 
                     ctx.fillStyle = Theme.text + opacity
                     ctx.textAlign = dir == 1 ? 'start' : 'end'
@@ -330,9 +328,9 @@ class CircularRenderer extends Renderer<CircularData> {
 
                 point2 = this.#getPoint(this.#radius, localAccumulator + currentAngle)
 
-                const tangentIntersectionAngle = Math.PI - currentAngle
-                const lengthToTangentIntersection = this.#radius / Math.sin(tangentIntersectionAngle / 2)
-                const tangentIntersectionPoint = this.#getPoint(lengthToTangentIntersection, localAccumulator + currentAngle / 2)
+                const tangentIntersectionAngle = Math.PI - currentAngle,
+                    lengthToTangentIntersection = this.#radius / Math.sin(tangentIntersectionAngle / 2),
+                    tangentIntersectionPoint = this.#getPoint(lengthToTangentIntersection, localAccumulator + currentAngle / 2)
 
                 ctx.quadraticCurveTo(tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y)
 
@@ -413,18 +411,14 @@ class CircularRenderer extends Renderer<CircularData> {
                     >= this.#radius * (value.innerRadius / 100) * this.#radius * (value.innerRadius / 100))
         }
 
-        let x = event.clientX - this.canvasPosition.x + scrollX,
-            y = event.clientY - this.canvasPosition.y + scrollY
-
-        let point = { x: x, y: y }
-
-        const inner = {
+        const point = this.getMousePosition(event),
+            inner = {
                 x: point.x - this.#center.x,
                 y: point.y - this.#center.y
             },
             outer = {
-                x: point.x - this.#center.x - value.transition?.x,
-                y: point.y - this.#center.y - value.transition?.y
+                x: point.x - this.#center.x - value.translate?.x,
+                y: point.y - this.#center.y - value.translate?.y
             }
 
         return isAngle(point) && (isWithinRadius(inner) || isWithinRadius(outer))
