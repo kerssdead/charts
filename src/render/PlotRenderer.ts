@@ -23,6 +23,8 @@ class PlotRenderer extends Renderer<PlotData> {
 
     #plot: DOMRect
 
+    #hoverX: HoverItem | undefined
+
     constructor(node: HTMLElement, settings: ChartSettings) {
         super(node, settings)
 
@@ -122,11 +124,7 @@ class PlotRenderer extends Renderer<PlotData> {
         for (let i = 0; i < this.#allValuesY.length; i++)
             stackingAccumulator.push(0)
 
-        let isLast = false
-
         for (const series of this.data.values.filter(s => !s.disabled)) {
-            let hoverX
-
             ctx.beginPath()
 
             ctx.strokeStyle = series.color
@@ -203,7 +201,7 @@ class PlotRenderer extends Renderer<PlotData> {
                             ctx.lineTo(x, y)
 
                             if (this.#isOnX(x)) {
-                                hoverX = {
+                                this.#hoverX = {
                                     x: x,
                                     y: y,
                                     index: index,
@@ -272,13 +270,13 @@ class PlotRenderer extends Renderer<PlotData> {
                                     }
                                 })
                         } else {
-                            if (this.#isOnX(x + this.#x.step / 2)) {
-                                isLast = this.data.values.filter(s => (s.type == PlotType.Column || s.type == PlotType.StackingColumn)
-                                        && s.values.filter(v => v.x == value.x).length > 0
-                                        && !s.disabled).length - 1
-                                    <= columnsIndex
-
-                                hoverX = {
+                            if (this.#isInArea(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
+                                    this.canvas.height - this.#paddings.bottom - y,
+                                    columnWidth,
+                                    y)
+                                && (this.contextMenu?.isActive == undefined
+                                    || this.contextMenu?.isActive == false)) {
+                                this.#hoverX = {
                                     x: x,
                                     y: y,
                                     index: index,
@@ -323,22 +321,29 @@ class PlotRenderer extends Renderer<PlotData> {
                                     }
                                 })
                         } else {
-                            ctx.fillRect(x,
+                            if (this.#isInArea(x,
                                 y - this.#y.step / 4 + barsIndex * barHeight,
                                 <number>value.x / this.#x.unit * this.#x.step,
-                                barHeight)
-
-                            if (this.#isOnY(y)) {
-                                hoverX = {
+                                barHeight)) {
+                                this.#hoverX = {
                                     x: x,
                                     y: y,
                                     index: index,
                                     data: value.data
                                 }
 
+                                ctx.fillStyle += '88'
+
                                 tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().x }`, series.color))
                                 this.#tooltipY = y - this.#y.step / 2
+                            } else {
+                                ctx.fillStyle = series.color
                             }
+
+                            ctx.fillRect(x,
+                                y - this.#y.step / 4 + barsIndex * barHeight,
+                                <number>value.x / this.#x.unit * this.#x.step,
+                                barHeight)
                         }
 
                         break
@@ -385,27 +390,6 @@ class PlotRenderer extends Renderer<PlotData> {
                                     }
                                 })
                         } else {
-                            if (this.#isOnX(x + this.#x.step / 2)) {
-                                isLast = this.data.values.filter(s => (s.type == PlotType.Column || s.type == PlotType.StackingColumn)
-                                        && s.values.filter(v => v.x == value.x).length > 0
-                                        && !s.disabled).length - 1
-                                    <= columnsIndex
-
-                                hoverX = {
-                                    x: x,
-                                    y: y,
-                                    index: xIndex,
-                                    data: value.data
-                                }
-
-                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
-                                this.#tooltipX = x + this.#x.step
-
-                                ctx.fillStyle += '88'
-                            } else {
-                                ctx.fillStyle = series.color
-                            }
-
                             let offset = stackingAccumulator[xIndex] != undefined
                                 ? stackingAccumulator[xIndex]
                                 : 0
@@ -414,8 +398,26 @@ class PlotRenderer extends Renderer<PlotData> {
                             yHeight = y - this.canvas.height + this.#paddings.bottom
 
                             if (yValue > this.#paddings.top) {
-                                if (yValue + yHeight < this.#paddings.top) {
+                                if (yValue + yHeight < this.#paddings.top)
                                     yHeight -= yValue + yHeight - this.#paddings.top
+
+                                if (this.#isInArea(x + (this.#x.step - columnWidth) / 2,
+                                    yValue + yHeight,
+                                    columnWidth,
+                                    Math.abs(yHeight))) {
+                                    this.#hoverX = {
+                                        x: x,
+                                        y: y,
+                                        index: xIndex,
+                                        data: value.data
+                                    }
+
+                                    tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
+                                    this.#tooltipX = x + this.#x.step
+
+                                    ctx.fillStyle += '88'
+                                } else {
+                                    ctx.fillStyle = series.color
                                 }
 
                                 ctx.fillRect(x + (this.#x.step - columnWidth) / 2,
@@ -435,25 +437,25 @@ class PlotRenderer extends Renderer<PlotData> {
                 case PlotType.Line:
                     ctx.stroke()
 
-                    if (hoverX) {
+                    if (this.#hoverX) {
                         const trueX = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
                             trueY = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
 
-                        if (Math.abs(trueX - hoverX.x) < 25
-                            && Math.abs(trueY - hoverX.y) < 25) {
+                        if (Math.abs(trueX - this.#hoverX.x) < 25
+                            && Math.abs(trueY - this.#hoverX.y) < 25) {
                             ctx.beginPath()
                             ctx.lineWidth = 1
                             ctx.strokeStyle = axisLineHoverColor
-                            ctx.moveTo(this.#paddings.left, hoverX.y)
-                            ctx.lineTo(this.canvas.width - this.#paddings.right, hoverX.y)
+                            ctx.moveTo(this.#paddings.left, this.#hoverX.y)
+                            ctx.lineTo(this.canvas.width - this.#paddings.right, this.#hoverX.y)
                             ctx.stroke()
                         }
 
                         ctx.beginPath()
-                        ctx.arc(hoverX.x, hoverX.y, 5, 0, 2 * Math.PI)
+                        ctx.arc(this.#hoverX.x, this.#hoverX.y, 5, 0, 2 * Math.PI)
                         ctx.fill()
 
-                        this.renderContextMenu(hoverX.data)
+                        this.renderContextMenu(this.#hoverX.data)
                     }
 
                     break
@@ -470,9 +472,9 @@ class PlotRenderer extends Renderer<PlotData> {
 
                 case PlotType.Column:
                 case PlotType.StackingColumn:
-                    if (hoverX && isLast) {
-                        let offset = stackingAccumulator[hoverX.index] != undefined
-                            ? stackingAccumulator[hoverX.index]
+                    if (this.#hoverX) {
+                        let offset = stackingAccumulator[this.#hoverX.index] != undefined
+                            ? stackingAccumulator[this.#hoverX.index]
                             : 0
 
                         if (this.canvas.height - this.#paddings.bottom + offset > this.#paddings.top) {
@@ -485,7 +487,9 @@ class PlotRenderer extends Renderer<PlotData> {
                             ctx.stroke()
                         }
 
-                        this.renderContextMenu(hoverX.data)
+                        if (this.renderContextMenu(this.#hoverX.data)
+                            || !this.onContextMenuEvent)
+                            this.#hoverX = undefined
                     }
 
                     columnsIndex++
@@ -493,7 +497,7 @@ class PlotRenderer extends Renderer<PlotData> {
                     break
 
                 case PlotType.Bar:
-                    if (hoverX) {
+                    if (this.#hoverX) {
                         ctx.lineWidth = 1
                         ctx.strokeStyle = axisLineHoverColor
                         ctx.moveTo(this.#paddings.left,
@@ -502,7 +506,9 @@ class PlotRenderer extends Renderer<PlotData> {
                             this.#tooltipY + this.#y.step / 2)
                         ctx.stroke()
 
-                        this.renderContextMenu(hoverX.data)
+                        if (this.renderContextMenu(this.#hoverX.data)
+                            || !this.onContextMenuEvent)
+                            this.#hoverX = undefined
                     }
 
                     barsIndex++
@@ -556,6 +562,17 @@ class PlotRenderer extends Renderer<PlotData> {
         return x - this.#x.step / 2 <= mouseX && mouseX < x + this.#x.step / 2
             && this.#paddings.top <= mouseY && mouseY <= this.canvas.height - this.#paddings.bottom
             && this.#paddings.left < mouseX
+    }
+
+    #isInArea(x: number, y: number, w: number, h: number): boolean {
+        if (!this.onMouseMoveEvent)
+            return false
+
+        let mouseX = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
+            mouseY = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
+
+        return mouseX >= x && mouseX <= x + w
+            && mouseY >= y && mouseY <= y + h
     }
 
     #isOnY(y: number): boolean {

@@ -63,20 +63,23 @@ class Renderer<T extends Data> extends Renderable {
     renderContextMenu(data: any) {
         if (this.onContextMenuEvent != undefined && this.settings.contextMenu?.length != 0) {
             if (this.contextMenu == undefined && this.settings.contextMenu != undefined) {
-                for (const item of this.settings.contextMenu) {
-                    const action = item.action
-                    item.action = () => {
-                        action(data)
+                let clone: DropdownItem[] = []
 
-                        this.onContextMenuEvent = undefined
-                        this.contextMenu = undefined
-                    }
-                }
+                for (const item of this.settings.contextMenu)
+                    clone.push({
+                        text: item.text,
+                        action: () => {
+                            item.action(data)
+
+                            this.onContextMenuEvent = undefined
+                            this.contextMenu = undefined
+                        }
+                    })
 
                 this.contextMenu = new Dropdown(this.canvas, {
                     x: this.onContextMenuEvent.x,
                     y: this.onContextMenuEvent.y,
-                    items: this.settings.contextMenu!,
+                    items: clone,
                     data: data
                 })
             }
@@ -88,8 +91,12 @@ class Renderer<T extends Data> extends Renderable {
             if (this.onClickEvent == undefined && isClick) {
                 this.contextMenu = undefined
                 this.onContextMenuEvent = undefined
+
+                return true
             }
         }
+
+        return false
     }
 
     #calculateSizes() {
