@@ -432,11 +432,10 @@ class PlotRenderer extends Renderer<PlotData> {
                     ctx.stroke()
 
                     if (this.#hoverX) {
-                        const trueX = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
-                            trueY = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
+                        const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
-                        if (Math.abs(trueX - this.#hoverX.x) < 25
-                            && Math.abs(trueY - this.#hoverX.y) < 25) {
+                        if (Math.abs(mouse.x - this.#hoverX.x) < 25
+                            && Math.abs(mouse.y - this.#hoverX.y) < 25) {
                             ctx.beginPath()
                             ctx.lineWidth = 1
                             ctx.strokeStyle = axisLineHoverColor

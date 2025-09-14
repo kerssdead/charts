@@ -35,7 +35,7 @@ class Decomposition {
             for (const [vKey, vValue] of value) {
                 columns += `
                     <td>
-                        ${ vValue == undefined ? '' : vValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+                        ${ vValue == undefined ? '' : Helpers.Formatter.number(vValue) }
                     </td>
                 `
 
@@ -63,7 +63,7 @@ class Decomposition {
         for (const [, value] of totals)
             totalColumns += `
                 <td>
-                    ${ value == undefined ? '' : value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+                    ${ value == undefined ? '' : Helpers.Formatter.number(value) }
                 </td>
             `
 
