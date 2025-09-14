@@ -133,7 +133,7 @@ class CircularRenderer extends Renderer<CircularData> {
             this.animations.add(value.id,
                 AnimationType.Click,
                 {
-                    duration: 100,
+                    duration: Constants.Animations.circular,
                     before: () => {
                         if (!!this.onClickEvent) {
                             if (this.#isInsideSector(this.onClickEvent, value)) {
@@ -174,7 +174,7 @@ class CircularRenderer extends Renderer<CircularData> {
                 AnimationType.Init,
                 {
                     timer: new Date(),
-                    duration: 125 + (this.data.values.indexOf(value) + 1) / this.data.values.length * 175,
+                    duration: Constants.Animations.circular + (this.data.values.indexOf(value) + 1) / this.data.values.length * Constants.Animations.circular,
                     continuous: true,
                     body: transition => {
                         const centerOfSector = {
@@ -207,7 +207,7 @@ class CircularRenderer extends Renderer<CircularData> {
                     AnimationType.MouseLeave,
                     {
                         timer: Constants.Dates.minDate,
-                        duration: 100,
+                        duration: Constants.Animations.circular,
                         body: transition => {
                             let direction = this.#accumulator + angle / 2
 
@@ -230,7 +230,7 @@ class CircularRenderer extends Renderer<CircularData> {
                 this.animations.add(value.id,
                     AnimationType.MouseOver,
                     {
-                        duration: 100,
+                        duration: Constants.Animations.circular,
                         body: transition => {
                             const actualPiece = value.current / this.#sum,
                                 actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
