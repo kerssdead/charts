@@ -61,7 +61,7 @@ class TreeRenderer extends Renderer<TreeData> {
         let minX = this.data.padding,
             minY = this.data.padding + titleOffset
 
-        let tooltipCell = new TreeCell()
+        let tooltipCell: TreeCell | undefined = undefined
         let contextMenuData = undefined
 
         const ctx = Helpers.Canvas.getContext(this.canvas)
