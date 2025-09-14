@@ -34,10 +34,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
         this.tooltip.render(this.#isInsideSector(this.onMouseMoveEvent, value),
             this.onMouseMoveEvent,
             [
-                new TooltipValue(`${ value?.label }: ${ value?.current.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }) }`)
+                new TooltipValue(`${ value?.label }: ${ Helpers.Formatter.number(value?.current) }`)
             ])
 
         requestAnimationFrame(this.render.bind(this))
@@ -141,15 +138,11 @@ class GaugeRenderer extends Renderer<GaugeData> {
                 && v.x * v.x + v.y * v.y >= innerRadius * innerRadius
         }
 
-        let x = event.clientX - this.canvasPosition.x + scrollX,
-            y = event.clientY - this.canvasPosition.y + scrollY
-
-        let point = { x: x, y: y }
-
-        const inner = {
-            x: point.x - this.#center.x,
-            y: point.y - this.#center.y
-        }
+        const point = this.getMousePosition(event),
+            inner = {
+                x: point.x - this.#center.x,
+                y: point.y - this.#center.y
+            }
 
         return isAngle(point) && isWithinRadius(inner)
     }

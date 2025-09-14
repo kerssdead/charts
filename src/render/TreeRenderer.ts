@@ -317,10 +317,7 @@ class TreeRenderer extends Renderer<TreeData> {
         this.tooltip.render(!!tooltipCell,
             this.onMouseMoveEvent,
             [
-                new TooltipValue(`${ tooltipCell?.label }: ${ tooltipCell?.value?.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }) }`)
+                new TooltipValue(`${ tooltipCell?.label }: ${ Helpers.Formatter.number(tooltipCell?.value) }`)
             ],
             this.data.values.find(v => v.id == tooltipCell?.id))
 
@@ -337,11 +334,10 @@ class TreeRenderer extends Renderer<TreeData> {
         if (!this.onMouseMoveEvent || !cell)
             return false
 
-        let x = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
-            y = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
+        const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
-        return cell.x <= x && x <= cell.x + cell.w
-            && cell.y <= y && y <= cell.y + cell.h
+        return cell.x <= mouse.x && mouse.x <= cell.x + cell.w
+            && cell.y <= mouse.y && mouse.y <= cell.y + cell.h
     }
 
     #drawEmpty() {
