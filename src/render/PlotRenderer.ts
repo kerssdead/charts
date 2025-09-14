@@ -141,16 +141,10 @@ class PlotRenderer extends Renderer<PlotData> {
                         x: value.x
                             ? this.data.xType == PlotAxisType.Date
                                 ? this.#allValuesX[xIndex]
-                                : this.#allValuesX[xIndex].toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                })
+                                : Helpers.Formatter.number(this.#allValuesX[xIndex])
                             : '0',
                         y: value.y
-                            ? this.#allValuesY[yIndex].toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            })
+                            ? Helpers.Formatter.number(this.#allValuesY[yIndex])
                             : '0'
                     }
                 }
@@ -454,8 +448,6 @@ class PlotRenderer extends Renderer<PlotData> {
                         ctx.beginPath()
                         ctx.arc(this.#hoverX.x, this.#hoverX.y, 5, 0, 2 * Math.PI)
                         ctx.fill()
-
-                        this.renderContextMenu(this.#hoverX.data)
                     }
 
                     break
@@ -486,10 +478,6 @@ class PlotRenderer extends Renderer<PlotData> {
                                 this.canvas.height - this.#paddings.bottom + offset)
                             ctx.stroke()
                         }
-
-                        if (this.renderContextMenu(this.#hoverX.data)
-                            || !this.onContextMenuEvent)
-                            this.#hoverX = undefined
                     }
 
                     columnsIndex++
@@ -505,16 +493,18 @@ class PlotRenderer extends Renderer<PlotData> {
                         ctx.lineTo(this.canvas.width - this.#paddings.right,
                             this.#tooltipY + this.#y.step / 2)
                         ctx.stroke()
-
-                        if (this.renderContextMenu(this.#hoverX.data)
-                            || !this.onContextMenuEvent)
-                            this.#hoverX = undefined
                     }
 
                     barsIndex++
 
                     break
             }
+
+            if (series.type != PlotType.AttentionLine
+                && this.#hoverX
+                && (this.renderContextMenu(this.#hoverX.data)
+                    || !this.onContextMenuEvent))
+                this.#hoverX = undefined
         }
 
         ctx.beginPath()
@@ -556,34 +546,21 @@ class PlotRenderer extends Renderer<PlotData> {
         if (!this.onMouseMoveEvent)
             return false
 
-        let mouseX = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
-            mouseY = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
+        const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
-        return x - this.#x.step / 2 <= mouseX && mouseX < x + this.#x.step / 2
-            && this.#paddings.top <= mouseY && mouseY <= this.canvas.height - this.#paddings.bottom
-            && this.#paddings.left < mouseX
+        return x - this.#x.step / 2 <= mouse.x && mouse.x < x + this.#x.step / 2
+            && this.#paddings.top <= mouse.y && mouse.y <= this.canvas.height - this.#paddings.bottom
+            && this.#paddings.left < mouse.x
     }
 
     #isInArea(x: number, y: number, w: number, h: number): boolean {
         if (!this.onMouseMoveEvent)
             return false
 
-        let mouseX = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
-            mouseY = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
+        const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
-        return mouseX >= x && mouseX <= x + w
-            && mouseY >= y && mouseY <= y + h
-    }
-
-    #isOnY(y: number): boolean {
-        if (!this.onMouseMoveEvent)
-            return false
-
-        let mouseX = this.onMouseMoveEvent.clientX - this.canvasPosition.x + scrollX,
-            mouseY = this.onMouseMoveEvent.clientY - this.canvasPosition.y + scrollY
-
-        return y - this.#y.step / 2 <= mouseY && mouseY < y + this.#y.step / 2
-            && this.#paddings.left <= mouseX && mouseX <= this.canvas.width - this.#paddings.right
+        return mouse.x >= x && mouse.x <= x + w
+            && mouse.y >= y && mouse.y <= y + h
     }
 
     #renderBase() {
@@ -594,8 +571,8 @@ class PlotRenderer extends Renderer<PlotData> {
             return
         }
 
-        const axisLabelOffset = 12
-        const axisLineColor = Theme.lineAxis
+        const axisLabelOffset = 12,
+            axisLineColor = Theme.lineAxis
 
         const isContainsColumn = this.data.values.filter(s => s.type == PlotType.Column).length > 0,
             isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0
@@ -630,31 +607,22 @@ class PlotRenderer extends Renderer<PlotData> {
         let xCounter = !isContainsBar ? 1 : 0,
             xStep = this.#allValuesX.length / xCount
 
-        for (let i = !isContainsBar ? 1 : 0; i < this.#allValuesX.length + 1; i++) {
+        for (let i = xCounter; i < this.#allValuesX.length + 1; i++) {
             const labelX = this.#paddings.left + xCounter * xStep * this.#x.step,
                 labelXAsKey = Math.round(this.#paddings.left + i * this.#x.step)
 
             if (!this.#labelsX.has(labelXAsKey))
                 this.#labelsX.set(labelXAsKey,
                     this.data.xType == PlotAxisType.Date
-                        ? new Date(this.#allValuesX[i - 1]).toLocaleDateString()
+                        ? Helpers.Formatter.date(new Date(this.#allValuesX[i - 1]))
                         : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                             ? this.#allValuesX[i - 1]
-                            : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
-                                .toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                }))
+                            : Helpers.Formatter.number(this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)))
 
             const label = {
                 x: labelX,
                 y: this.canvas.height - this.#paddings.bottom,
-                label: this.data.xType == PlotAxisType.Date
-                    ? new Date(this.#allValuesX[i - 1]).toLocaleDateString()
-                    : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                        ? this.#allValuesX[i - 1]
-                        : (this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1))
-                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                label: this.#labelsX.get(labelXAsKey) ?? ''
             }
 
             let isRender = i >= xCounter * xStep
@@ -705,15 +673,9 @@ class PlotRenderer extends Renderer<PlotData> {
 
             if (!this.#labelsY.get(labelYAsKey))
                 this.#labelsY.set(labelYAsKey,
-                    (this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count)
-                        .toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }))
+                    Helpers.Formatter.number(this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count))
 
-            let isRender = i >= yCounter * yStep
-
-            if (isRender) {
+            if (i >= yCounter * yStep) {
                 const label = {
                     x: this.#paddings.left,
                     y: labelY,
@@ -722,50 +684,27 @@ class PlotRenderer extends Renderer<PlotData> {
                         : Math.round(this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count / this.#yAxisStep) * this.#yAxisStep
                 }
 
-                let labelText
+                let postfix = ''
 
                 if (this.data.shortLabels) {
-                    let countOfTens = 0
-                    while (label.label >= 1000) {
-                        label.label /= 1000
-                        countOfTens++
+                    const countOfTens = Math.floor(label.label.toString().length / 4)
+
+                    if (countOfTens > 0) {
+                        label.label /= Math.pow(1000, countOfTens)
+
+                        postfix = [
+                            TextResources.ThousandShort,
+                            TextResources.MillionShort,
+                            TextResources.BillionShort
+                        ][countOfTens - 1]
                     }
-
-                    let postfix = ''
-                    switch (countOfTens) {
-                        case 1:
-                            postfix = 'K'
-                            break
-
-                        case 2:
-                            postfix = 'M'
-                            break
-
-                        case 3:
-                            postfix = 'B'
-                            break
-                    }
-
-                    labelText = label.label.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        })
-                        + postfix
-                } else {
-                    labelText = label.label.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })
                 }
 
-                ctx.fillText(labelText,
+                ctx.fillText(Helpers.Formatter.number(label.label) + postfix,
                     label.x - axisLabelOffset,
                     label.y + (isContainsBar ? this.#y.step / 2 : 0))
 
-                if (this.data.values.filter(s => s.type == PlotType.Column
-                    || s.type == PlotType.StackingColumn
-                    || s.type == PlotType.Line)
-                    .length > 0) {
+                if (this.data.values.filter(s => s.type.isAnyEquals(PlotType.Column, PlotType.StackingColumn, PlotType.Line)).length > 0) {
                     ctx.beginPath()
 
                     ctx.moveTo(label.x, label.y)
@@ -792,17 +731,11 @@ class PlotRenderer extends Renderer<PlotData> {
         if (isDate) {
             let tempDate = new Date(Math.min(...(<number[]>xValues)))
 
-            function addDays(date: Date, days: number) {
-                let result = new Date(date)
-                result.setDate(result.getDate() + days)
-                return result
-            }
-
             while (tempDate.getTime() < Math.max(...(<number[]>xValues))) {
                 if (!xValues.includes(tempDate.getTime()))
                     xValues.push(new Date(tempDate.getTime()))
 
-                tempDate = addDays(tempDate, 1)
+                tempDate = tempDate.addDays(1)
             }
 
             xValues.sort((a, b) => a < b ? -1 : 1)
@@ -858,10 +791,7 @@ class PlotRenderer extends Renderer<PlotData> {
             this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
         }
 
-        const yMaxWidth = Helper.stringWidth(this.#y.max.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }))
+        const yMaxWidth = Helper.stringWidth(Helpers.Formatter.number(this.#y.max))
         if (yMaxWidth > this.#paddings.left - 40) {
             this.#paddings.left += yMaxWidth - this.#paddings.left + 40
             this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length
@@ -900,15 +830,7 @@ class PlotRenderer extends Renderer<PlotData> {
         this.#plot = {
             width: this.canvas.width - this.#paddings.left - this.#paddings.right,
             height: this.canvas.height - this.#paddings.top - this.#paddings.bottom,
-            x: 0,
-            y: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            top: 0,
-            toJSON(): any {
-            }
-        }
+        } as DOMRect
 
         this.#x.minStep = this.#plot.width * 0.002
         this.#y.minStep = this.#plot.height * 0.002
@@ -925,7 +847,7 @@ class PlotRenderer extends Renderer<PlotData> {
                 it.id = Helper.guid()
 
                 if (this.data.xType == PlotAxisType.Date) {
-                    if (typeof it.x == 'string' && Helper.isISOString(it.x))
+                    if (Helper.isISOString(it.x as string))
                         it.x = new Date(it.x)
                     else
                         console.warn(`${ it.x } is not a date in ISO format.`)

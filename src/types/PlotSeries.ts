@@ -2,7 +2,7 @@
 class PlotSeries extends Value {
     values: PlotPoint[]
 
-    type: number
+    type: PlotType
 
     width: number
 

@@ -14,4 +14,10 @@ class TextResources {
     static other = 'Other'
 
     static incorrectValues = 'Incorrect values'
+
+    static ThousandShort = 'K'
+
+    static MillionShort = 'M'
+
+    static BillionShort = 'B'
 }
