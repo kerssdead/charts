@@ -3,6 +3,8 @@ class Sector extends Value {
 
     current: number
 
+    transition: number
+
     translate: Point
 
     innerRadius: number

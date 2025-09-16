@@ -205,9 +205,17 @@ class CircularRenderer extends Renderer<CircularData> {
                         timer: Constants.Dates.minDate,
                         duration: Constants.Animations.circular,
                         body: transition => {
+                            this.animations.reload(value.id, AnimationType.MouseOver)
+
                             let direction = this.#accumulator + angle / 2
 
                             transition = 1 - transition
+
+                            if (transition == 0)
+                                return
+
+                            if (value.transition < transition)
+                                transition = value.transition
 
                             const translate = {
                                 x: 20 * Math.cos(direction) * transition,
@@ -217,11 +225,10 @@ class CircularRenderer extends Renderer<CircularData> {
                             ctx.translate(translate.x, translate.y)
 
                             value.translate = translate
+                            value.transition = transition
 
                             ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
                             ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
-
-                            this.animations.reload(value.id, AnimationType.MouseOver)
                         }
                     })
             else
@@ -230,12 +237,17 @@ class CircularRenderer extends Renderer<CircularData> {
                     {
                         duration: Constants.Animations.circular,
                         body: transition => {
+                            this.animations.reload(value.id, AnimationType.MouseLeave)
+
                             const actualPiece = value.current / this.#sum,
                                 actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
 
                             this.canvas.style.cursor = 'pointer'
 
                             let direction = this.#accumulator + actualAngle / 2
+
+                            if (value.transition > transition)
+                                transition = value.transition
 
                             const translate = {
                                 x: 20 * Math.cos(direction) * transition,
@@ -245,11 +257,10 @@ class CircularRenderer extends Renderer<CircularData> {
                             ctx.translate(translate.x, translate.y)
 
                             value.translate = translate
+                            value.transition = transition
 
                             ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
                             ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
-
-                            this.animations.reload(value.id, AnimationType.MouseLeave)
                         }
                     })
         }
