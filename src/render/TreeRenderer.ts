@@ -314,7 +314,7 @@ class TreeRenderer extends Renderer<TreeData> {
             isVertical = !isVertical
         }
 
-        this.tooltip.render(!!tooltipCell,
+        this.tooltip.render(!!tooltipCell && !this.dropdown.isActive,
             this.onMouseMoveEvent,
             [
                 new TooltipValue(`${ tooltipCell?.label }: ${ Helpers.Formatter.number(tooltipCell?.value) }`)

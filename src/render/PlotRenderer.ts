@@ -520,7 +520,9 @@ class PlotRenderer extends Renderer<PlotData> {
 
         ctx.stroke()
 
-        this.tooltip.render(tooltipLines.length > 1, this.onMouseMoveEvent, tooltipLines)
+        this.tooltip.render(tooltipLines.length > 1 && !this.dropdown.isActive,
+            this.onMouseMoveEvent,
+            tooltipLines)
 
         requestAnimationFrame(this.render.bind(this))
 
