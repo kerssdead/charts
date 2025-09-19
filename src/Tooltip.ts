@@ -183,17 +183,24 @@ class Tooltip {
 
         const offset = 10
 
+        let opacity = '1'
+
         let x = event.clientX,
             y = event.clientY + scrollY
 
-        if (x + tooltip.position.width - this.#canvasPosition.x > this.#canvasPosition.width - offset)
+        if (x + tooltip.position.width - this.#canvasPosition.x > this.#canvasPosition.width - offset) {
             x = this.#canvasPosition.width - tooltip.position.width + this.#canvasPosition.x - offset
+            opacity = '.67'
+        }
 
-        if (y + tooltip.position.height - this.#canvasPosition.y > this.#canvasPosition.height - offset)
+        if (y + tooltip.position.height - this.#canvasPosition.y > this.#canvasPosition.height - offset) {
             y = this.#canvasPosition.height - tooltip.position.height + this.#canvasPosition.y - offset
+            opacity = '.67'
+        }
 
         tooltip.style.left = x + offset + 'px'
         tooltip.style.top = y + offset + 'px'
+        tooltip.style.opacity = opacity
     }
 
     refresh() {
