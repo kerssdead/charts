@@ -1,5 +1,9 @@
 ///<reference path="../types/base/Renderer.ts"/>
 class CircularRenderer extends Renderer<CircularData> {
+    #canRenderInnerTitle: boolean
+
+    #innerTitleStyle: Function
+
     #radius: number
 
     #sum: number
@@ -451,10 +455,10 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     #drawInnerTitle() {
-        if (this.data.innerTitle) {
+        if (this.#canRenderInnerTitle) {
             const ctx = Helpers.Canvas.getContext(this.canvas)
 
-            Helpers.TextStyles.large(ctx)
+            this.#innerTitleStyle(ctx)
             ctx.fillText(this.data.innerTitle, this.#center.x, this.#center.y)
         }
     }
@@ -474,6 +478,21 @@ class CircularRenderer extends Renderer<CircularData> {
         }
 
         this.#radius = shortSide / 3
+
+        if (this.data.innerTitle != undefined) {
+            this.#innerTitleStyle = Helpers.TextStyles.large
+            this.#canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 16)
+                < (this.data.innerRadius / 100) * this.#radius * 2
+
+            if (!this.#canRenderInnerTitle) {
+                this.#innerTitleStyle = Helpers.TextStyles.regular
+                this.#canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 14)
+                    < (this.data.innerRadius / 100) * this.#radius * 2
+            }
+
+            if (!this.#canRenderInnerTitle)
+                console.warn(`Inner title is declared, but can't be rendered`)
+        }
     }
 
     refresh() {
