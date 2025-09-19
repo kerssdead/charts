@@ -1,8 +1,6 @@
 class TreeData implements Data {
     values: Value[]
 
-    type: number
-
     padding: number
 
     static getRows(data: TreeData): TableData {

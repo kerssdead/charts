@@ -2,6 +2,8 @@
 class CircularRenderer extends Renderer<CircularData> {
     #canRenderInnerTitle: boolean
 
+    #isDonut: boolean
+
     #radius: number
 
     #sum: number
@@ -330,7 +332,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
             ctx.beginPath()
 
-            if (this.data.type == CircularType.Pie)
+            if (!this.#isDonut)
                 ctx.moveTo(this.#center.x, this.#center.y)
 
             ctx.lineTo(this.#startPoint.x, this.#startPoint.y)
@@ -356,7 +358,7 @@ class CircularRenderer extends Renderer<CircularData> {
                 localAngle -= Math.PI / 6
             }
 
-            if (this.data.type == CircularType.Donut || value.innerRadius != 0) {
+            if (this.#isDonut || value.innerRadius != 0) {
                 const innerRadius = this.#radius * (value.innerRadius / 100)
 
                 const innerPoint2 = {
@@ -424,7 +426,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         const isWithinRadius = (v: Point) => {
             return v.x * v.x + v.y * v.y <= this.#radius * this.#radius
-                && (this.data.type != CircularType.Donut || v.x * v.x + v.y * v.y
+                && (!this.#isDonut || v.x * v.x + v.y * v.y
                     >= this.#radius * (value.innerRadius / 100) * this.#radius * (value.innerRadius / 100))
         }
 
@@ -516,13 +518,13 @@ class CircularRenderer extends Renderer<CircularData> {
     prepareSettings() {
         super.prepareSettings()
 
+        this.#isDonut = (this.data.innerRadius ?? 0) != 0
+
         for (let item of this.data.values) {
             item.disabled = !item.value
             item.value ??= 0
             item.current = item.value
-            item.innerRadius ??= this.data.type == CircularType.Donut
-                ? this.data.innerRadius ?? 50
-                : 0
+            item.innerRadius ??= this.data.innerRadius ?? 0
 
             if (item.value < 0)
                 console.warn(`"${ item.label }" has negative value (${ item.value }) and will not be render`)

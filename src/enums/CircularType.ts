@@ -1,5 +1,0 @@
-enum CircularType {
-    Pie,
-
-    Donut
-}
