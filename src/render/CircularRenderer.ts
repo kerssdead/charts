@@ -2,13 +2,13 @@
 class CircularRenderer extends Renderer<CircularData> {
     #canRenderInnerTitle: boolean
 
-    #innerTitleStyle: Function
-
     #radius: number
 
     #sum: number
 
     #accumulator: number
+
+    #animationOffset: number
 
     #currentHover: string | undefined
 
@@ -19,6 +19,8 @@ class CircularRenderer extends Renderer<CircularData> {
     #startPoint: Point
 
     #angles: CircularAngle[]
+
+    #innerTitleStyle: Function
 
     readonly #startAngle: number
 
@@ -156,8 +158,8 @@ class CircularRenderer extends Renderer<CircularData> {
                         let direction = this.#accumulator + angle / 2
 
                         const transition = {
-                            x: 20 * Math.cos(direction),
-                            y: 20 * Math.sin(direction)
+                            x: this.#animationOffset * Math.cos(direction),
+                            y: this.#animationOffset * Math.sin(direction)
                         }
 
                         ctx.translate(transition.x, transition.y)
@@ -222,8 +224,8 @@ class CircularRenderer extends Renderer<CircularData> {
                                 transition = value.transition
 
                             const translate = {
-                                x: 20 * Math.cos(direction) * transition,
-                                y: 20 * Math.sin(direction) * transition
+                                x: this.#animationOffset * Math.cos(direction) * transition,
+                                y: this.#animationOffset * Math.sin(direction) * transition
                             }
 
                             ctx.translate(translate.x, translate.y)
@@ -254,8 +256,8 @@ class CircularRenderer extends Renderer<CircularData> {
                                 transition = value.transition
 
                             const translate = {
-                                x: 20 * Math.cos(direction) * transition,
-                                y: 20 * Math.sin(direction) * transition
+                                x: this.#animationOffset * Math.cos(direction) * transition,
+                                y: this.#animationOffset * Math.sin(direction) * transition
                             }
 
                             ctx.translate(translate.x, translate.y)
@@ -493,6 +495,8 @@ class CircularRenderer extends Renderer<CircularData> {
             if (!this.#canRenderInnerTitle)
                 console.warn(`Inner title is declared, but can't be rendered`)
         }
+
+        this.#animationOffset = this.#radius * .1
     }
 
     refresh() {
