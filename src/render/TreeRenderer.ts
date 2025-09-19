@@ -286,7 +286,9 @@ class TreeRenderer extends Renderer<TreeData> {
                     ctx.fillStyle = !Helper.isColorVisible(cell.color, '#ffffff')
                         ? '#000000'
                         : '#ffffff'
-                    ctx.fillText(cell.label, x + cell.w / 2, y + cell.h / 2)
+                    ctx.fillText(cell.label,
+                        x + 2 + cell.w / 2,
+                        y + 2 + cell.h / 2)
                 }
 
                 ctx.resetTransform()
