@@ -50,7 +50,7 @@ class PlotRenderer extends Renderer<PlotData> {
         }
 
         if (settings.title)
-            this.#paddings.top += 50
+            this.#paddings.top += Constants.Values.titleOffset
 
         this.dropdown = new Dropdown(this.canvas,
             {

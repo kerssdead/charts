@@ -47,7 +47,7 @@ class TreeRenderer extends Renderer<TreeData> {
             return
         }
 
-        let titleOffset = this.settings.title ? 50 : 0
+        let titleOffset = this.settings.title ? Constants.Values.titleOffset : 0
 
         let maxWidth = this.canvas.width - this.data.padding * 2,
             maxHeight = this.canvas.height - this.data.padding * 2 - titleOffset

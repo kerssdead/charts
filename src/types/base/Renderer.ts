@@ -19,7 +19,7 @@ class Renderer<T extends Data> extends Renderable {
 
         if (this.settings.title) {
             Helpers.TextStyles.title(ctx)
-            ctx.fillText(this.settings.title, this.canvas.width / 2, 40)
+            ctx.fillText(this.settings.title, this.canvas.width / 2, Constants.Values.titleOffset)
         }
     }
 
