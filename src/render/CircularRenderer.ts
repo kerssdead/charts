@@ -468,8 +468,8 @@ class CircularRenderer extends Renderer<CircularData> {
             ? 40
             : 0
 
-        const shortSide = this.canvas.width > this.canvas.height - titleOffset
-            ? this.canvas.height - titleOffset
+        const shortSide = this.canvas.width > this.canvas.height - titleOffset * 2
+            ? this.canvas.height - titleOffset * 2
             : this.canvas.width
 
         this.#center = {
