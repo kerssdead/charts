@@ -460,13 +460,17 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     #calculateSizes() {
-        const shortSide = this.canvas.width > this.canvas.height
-            ? this.canvas.height
+        const titleOffset = this.settings.title
+            ? 40
+            : 0
+
+        const shortSide = this.canvas.width > this.canvas.height - titleOffset
+            ? this.canvas.height - titleOffset
             : this.canvas.width
 
         this.#center = {
             x: this.canvas.width / 2,
-            y: this.canvas.height / 2
+            y: titleOffset + this.canvas.height / 2
         }
 
         this.#radius = shortSide / 3
