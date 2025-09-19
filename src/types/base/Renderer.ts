@@ -28,8 +28,8 @@ class Renderer<T extends Data> extends Renderable {
     }
 
     resize() {
-        this.tooltip.refresh()
         this.#calculateSizes()
+        this.tooltip.refresh()
     }
 
     prepareSettings() {
