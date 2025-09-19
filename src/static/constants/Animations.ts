@@ -3,5 +3,7 @@ namespace Constants {
         static circular = 335
 
         static legend = 500
+
+        static tree = 250
     }
 }

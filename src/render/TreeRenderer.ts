@@ -222,7 +222,7 @@ class TreeRenderer extends Renderer<TreeData> {
                         this.animations.add(cell.id,
                             AnimationType.MouseOver,
                             {
-                                duration: 140,
+                                duration: Constants.Animations.tree,
                                 body: transition => {
                                     transition = 1 - transition
 
@@ -249,7 +249,7 @@ class TreeRenderer extends Renderer<TreeData> {
                             AnimationType.MouseLeave,
                             {
                                 timer: Constants.Dates.minDate,
-                                duration: 140,
+                                duration: Constants.Animations.tree,
                                 body: transition => {
                                     const center = {
                                         x: cell.x + cell.w / 2,
