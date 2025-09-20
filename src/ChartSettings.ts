@@ -26,4 +26,6 @@ class ChartSettings {
     data: Data
 
     contextMenu?: DropdownItem[]
+
+    isDarkThemeFunction: Function
 }

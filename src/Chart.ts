@@ -10,7 +10,7 @@ class Chart {
     #observer: ResizeObserver
 
     constructor(context: HTMLChartElement, settings: ChartSettings) {
-        this.#initialize()
+        this.#initialize(settings)
 
         context.chart = this
 
@@ -78,8 +78,9 @@ class Chart {
         this.#legend?.resize()
     }
 
-    #initialize() {
-        Theme.initialize(() => this.#resize())
+    #initialize(settings: ChartSettings) {
+        Theme.initialize(() => this.#resize(),
+            settings.isDarkThemeFunction)
         Animations.initializeTransitions()
     }
 }

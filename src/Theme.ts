@@ -10,13 +10,15 @@ class Theme {
 
     static lineActive = ThemeOptions.lineActives[0]
 
-    static initialize(callback: Function) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    static initialize(callback: Function, isDark?: Function) {
+        if (window.matchMedia
+            && window.matchMedia('(prefers-color-scheme: dark)').matches
+            && (!isDark || isDark()))
             Theme.setTheme(1)
 
         window.matchMedia('(prefers-color-scheme: dark)')
             .addEventListener(Events.Change, event => {
-                Theme.setTheme(event.matches ? 1 : 0)
+                Theme.setTheme(event.matches && (!isDark || isDark()) ? 1 : 0)
                 callback()
             })
     }
