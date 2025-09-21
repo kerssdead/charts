@@ -15,9 +15,9 @@ class Chart {
         context.chart = this
 
         this.node = context
-        this.node.style.display = 'flex'
-        this.node.style.flexDirection = 'column'
-        this.node.style.alignItems = 'center'
+        this.node.style.display = Styles.Display.Flex
+        this.node.style.flexDirection = Styles.FlexDirection.Column
+        this.node.style.alignItems = Styles.AlignItems.Center
 
         this.settings = settings
 

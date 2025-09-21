@@ -135,7 +135,7 @@ class Tooltip {
         const updateVisibility = () => {
             this.#hideAll()
 
-            tooltip.style.visibility = 'visible'
+            tooltip.style.visibility = Styles.Visibility.Visible
         }
 
         if (!tooltip) {
@@ -148,9 +148,9 @@ class Tooltip {
             tooltip.innerHTML = content.innerHTML
 
             tooltip.id = id
-            tooltip.style.position = 'absolute'
-            tooltip.style.pointerEvents = 'none'
-            tooltip.style.visibility = 'visible'
+            tooltip.style.position = Styles.Position.Absolute
+            tooltip.style.pointerEvents = Styles.PointerEvents.None
+            tooltip.style.visibility = Styles.Visibility.Visible
 
             tooltip.setAttribute('name', this.#template.id)
 
@@ -175,7 +175,7 @@ class Tooltip {
             updateVisibility()
         }
 
-        if (tooltip.style.visibility == 'hidden')
+        if (tooltip.style.visibility == Styles.Visibility.Hidden)
             updateVisibility()
 
         if (tooltip.position.height == 0)
@@ -216,7 +216,7 @@ class Tooltip {
         const tooltips = <NodeListOf<HTMLElement>>document.querySelectorAll(`[name="${ this.#template.id }"]`)
 
         for (let node of tooltips)
-            node.style.visibility = 'hidden'
+            node.style.visibility = Styles.Visibility.Hidden
     }
 
     #getOpacityValue(): number {

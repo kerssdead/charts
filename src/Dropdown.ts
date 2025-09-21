@@ -62,7 +62,7 @@ class Dropdown {
 
         if (!this.#isOnlyMenu) {
             if (this.#isOnButton(moveEvent, x, y, width, height)) {
-                this.#canvas.style.cursor = 'pointer'
+                this.#canvas.style.cursor = Styles.Cursor.Pointer
 
                 if (clickEvent && moveEvent.x == clickEvent.x && moveEvent.y == clickEvent.y) {
                     this.isActive = !this.isActive
@@ -83,7 +83,7 @@ class Dropdown {
                 else
                     ctx.fillStyle = Helper.adjustColor(Theme.background, -40)
             } else {
-                this.#canvas.style.cursor = 'default'
+                this.#canvas.style.cursor = Styles.Cursor.Default
 
                 if (!this.isActive)
                     this.animations.add('animation-dropdown',
@@ -148,7 +148,7 @@ class Dropdown {
                             }
                         })
 
-                    this.#canvas.style.cursor = 'pointer'
+                    this.#canvas.style.cursor = Styles.Cursor.Pointer
 
                     if (clickEvent) {
                         item.action()

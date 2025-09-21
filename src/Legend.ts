@@ -12,7 +12,7 @@ class Legend extends Renderable {
                 this.canvas.width = settings.width ?? settings.maxWidth
                 this.canvas.height = Legend.getLegendHeight(settings.data.values, this.canvas.width)
 
-                node.style.flexDirection = 'column'
+                node.style.flexDirection = Styles.FlexDirection.Column
 
                 break
 
@@ -20,7 +20,7 @@ class Legend extends Renderable {
                 this.canvas.width = settings.width ?? settings.maxWidth
                 this.canvas.height = Legend.getLegendHeight(settings.data.values, this.canvas.width)
 
-                node.style.flexDirection = 'column-reverse'
+                node.style.flexDirection = Styles.FlexDirection.ColumnReverse
 
                 break
 
@@ -28,7 +28,7 @@ class Legend extends Renderable {
                 this.canvas.width = 500
                 this.canvas.height = settings.height ?? settings.maxHeight
 
-                node.style.flexDirection = 'row'
+                node.style.flexDirection = Styles.FlexDirection.Row
 
                 break
 
@@ -36,7 +36,7 @@ class Legend extends Renderable {
                 this.canvas.width = 500
                 this.canvas.height = settings.height ?? settings.maxHeight
 
-                node.style.flexDirection = 'row-reverse'
+                node.style.flexDirection = Styles.FlexDirection.RowReverse
 
                 break
         }
@@ -65,7 +65,7 @@ class Legend extends Renderable {
 
         let nextPoint = { x: 20, y: 20 }
 
-        this.canvas.style.cursor = 'default'
+        this.canvas.style.cursor = Styles.Cursor.Default
 
         Helpers.TextStyles.regular(ctx)
         ctx.textAlign = 'start'
@@ -132,7 +132,7 @@ class Legend extends Renderable {
 
         if (this.onMouseMoveEvent) {
             if (isHover(this.onMouseMoveEvent))
-                this.canvas.style.cursor = 'pointer'
+                this.canvas.style.cursor = Styles.Cursor.Pointer
 
             this.animations.add(value.id,
                 AnimationType.MouseLeave,

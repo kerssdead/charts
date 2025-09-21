@@ -250,7 +250,7 @@ class CircularRenderer extends Renderer<CircularData> {
                             const actualPiece = value.current / this.#sum,
                                 actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
 
-                            this.canvas.style.cursor = 'pointer'
+                            this.canvas.style.cursor = Styles.Cursor.Pointer
 
                             let direction = this.#accumulator + actualAngle / 2
 
