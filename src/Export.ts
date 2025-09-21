@@ -68,10 +68,8 @@ class Export {
 
         destCtx.drawImage(canvas, -leftEmpty, 0)
 
-        let download = document.createElement(Tag.A)
-        download.href = destinationCanvas.toDataURL('image/png')
-        download.download = (title ?? 'chart') + '.png'
-        download.click()
+        Export.saveAs((title ?? 'chart') + '.png',
+            destinationCanvas.toDataURL('image/png'))
     }
 
     static asCsv(table: HTMLTableElement, title: string) {
@@ -94,9 +92,55 @@ class Export {
             csv.push(row.join(','))
         }
 
-        let download = document.createElement('a')
-        download.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv.join('\n'))
-        download.download = (title ?? 'table') + '.csv'
-        download.click()
+        Export.saveAs((title ?? 'table') + '.csv',
+            csv.join('\n'),
+            'data:text/csv;charset=utf-8,' + encodeURIComponent(csv.join('\n')),
+            true)
+    }
+
+    static saveAs(name: string, dataURL: string, href?: string | undefined, isText?: boolean) {
+        if (window.showSaveFilePicker != undefined) {
+            const accept = isText
+                ? { 'text/csv': '.csv' } as FilePickerAcceptType
+                : { 'image/*': '.png' } as FilePickerAcceptType
+
+            const options = {
+                suggestedName: name,
+                types: [
+                    {
+                        accept: accept
+                    }
+                ],
+                excludeAcceptAllOption: true
+            } as SaveFilePickerOptions
+
+            function toBlob(dataURI: string) {
+                const byteString = atob(dataURI.split(',')[1]),
+                    mimeString = dataURI.split(',')[0]
+                        .split(':')[1]
+                        .split(';')[0],
+                    buffer = new ArrayBuffer(byteString.length),
+                    imageArray = new Uint8Array(buffer)
+
+                for (let i = 0; i < byteString.length; i++)
+                    imageArray[i] = byteString.charCodeAt(i)
+
+                return new Blob([buffer], { type: mimeString })
+            }
+
+            window.showSaveFilePicker(options)
+                  .then(fileHandle => {
+                      fileHandle.createWritable()
+                                .then(writableStream => {
+                                    writableStream.write(isText ? dataURL : toBlob(dataURL))
+                                                  .then(() => writableStream.close())
+                                })
+                  })
+        } else {
+            let download = document.createElement(Tag.A)
+            download.href = href ?? dataURL
+            download.download = name
+            download.click()
+        }
     }
 }
