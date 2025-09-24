@@ -109,6 +109,9 @@ class Dropdown {
         }
 
         if (this.isActive) {
+            x -= this.#canvasPosition.left
+            y -= this.#canvasPosition.top
+
             y += height
 
             let maxWidth = Math.max(...this.#options.items.map(value => Helper.stringWidth(value.text))) + 8
