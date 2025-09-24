@@ -58,6 +58,10 @@ class Renderer<T extends Data> extends Renderable {
             item.id = Helper.guid()
             item.color ??= Helper.adjustColor(baseColor, adjustAmount += adjustStep)
         }
+
+        for (let item of this.settings.contextMenu ?? [])
+            if (item.id != undefined)
+                item.action = data => this.node.dispatchEvent(new CustomEvent(item.id ?? '', { detail: data }))
     }
 
     renderContextMenu(data: any) {
@@ -67,6 +71,7 @@ class Renderer<T extends Data> extends Renderable {
 
                 for (const item of this.settings.contextMenu)
                     clone.push({
+                        id: item.id,
                         text: item.text,
                         action: () => {
                             item.action(data)
