@@ -87,6 +87,8 @@ class Renderer<T extends Data> extends Renderable {
                     items: clone,
                     data: data
                 })
+
+                this.onClickEvent = undefined
             }
 
             const isClick = this.onClickEvent != undefined
