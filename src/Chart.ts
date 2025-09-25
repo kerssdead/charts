@@ -18,6 +18,7 @@ class Chart {
         this.node.style.display = Styles.Display.Flex
         this.node.style.flexDirection = Styles.FlexDirection.Column
         this.node.style.alignItems = Styles.AlignItems.Center
+        this.node.style.justifyContent = Styles.JustifyContent.Center
 
         this.settings = settings
 

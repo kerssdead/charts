@@ -36,4 +36,8 @@ namespace Styles {
     export class PointerEvents {
         static None = 'none'
     }
+
+    export class JustifyContent {
+        static Center = 'center'
+    }
 }
