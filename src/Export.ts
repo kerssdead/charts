@@ -63,7 +63,7 @@ class Export {
 
         const destCtx = Helpers.Canvas.getContext(destinationCanvas)
 
-        destCtx.fillStyle = '#FFFFFF'
+        destCtx.fillStyle = Theme.background
         destCtx.fillRect(0, 0, canvas.width, canvas.height)
 
         destCtx.drawImage(canvas, -leftEmpty, 0)
