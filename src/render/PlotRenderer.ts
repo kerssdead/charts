@@ -524,6 +524,9 @@ class PlotRenderer extends Renderer<PlotData> {
 
         super.renderDropdown()
 
+        if (this.onContextMenuEvent && !this.#hoverX)
+            this.onContextMenuEvent = undefined
+
         if (this.#hoverX
             && (this.renderContextMenu(this.#hoverX.data)
                 || !this.onContextMenuEvent))
