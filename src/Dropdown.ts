@@ -119,9 +119,6 @@ class Dropdown {
             if (x + maxWidth > this.#canvas.width - 4)
                 x -= x + maxWidth - this.#canvas.width + 4
 
-            x -= this.#canvasPosition.left
-            y -= this.#canvasPosition.top
-
             ctx.beginPath()
             ctx.roundRect(x, y, maxWidth, this.#options.items.length * 20 + 8, 4)
             ctx.fillStyle = Theme.background

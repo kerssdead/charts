@@ -82,8 +82,8 @@ class Renderer<T extends Data> extends Renderable {
                     })
 
                 this.contextMenu = new Dropdown(this.canvas, {
-                    x: this.onContextMenuEvent.x,
-                    y: this.onContextMenuEvent.y,
+                    x: this.onContextMenuEvent.x - this.canvasPosition.x,
+                    y: this.onContextMenuEvent.y - this.canvasPosition.y,
                     items: clone,
                     data: data
                 })
