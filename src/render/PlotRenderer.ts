@@ -498,12 +498,6 @@ class PlotRenderer extends Renderer<PlotData> {
 
                     break
             }
-
-            if (series.type != PlotType.AttentionLine
-                && this.#hoverX
-                && (this.renderContextMenu(this.#hoverX.data)
-                    || !this.onContextMenuEvent))
-                this.#hoverX = undefined
         }
 
         ctx.beginPath()
@@ -527,6 +521,11 @@ class PlotRenderer extends Renderer<PlotData> {
         requestAnimationFrame(this.render.bind(this))
 
         this.isInit = true
+
+        if (this.#hoverX
+            && (this.renderContextMenu(this.#hoverX.data)
+                || !this.onContextMenuEvent))
+            this.#hoverX = undefined
 
         super.renderDropdown()
     }
