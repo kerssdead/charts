@@ -522,12 +522,12 @@ class PlotRenderer extends Renderer<PlotData> {
 
         this.isInit = true
 
+        super.renderDropdown()
+
         if (this.#hoverX
             && (this.renderContextMenu(this.#hoverX.data)
                 || !this.onContextMenuEvent))
             this.#hoverX = undefined
-
-        super.renderDropdown()
     }
 
     refresh() {
