@@ -215,7 +215,8 @@ class TreeRenderer extends Renderer<TreeData> {
                             }
                         })
                 } else {
-                    if (this.#isInCell(cell)) {
+                    if (this.#isInCell(cell)
+                        && !tooltipCell) {
                         tooltipCell = cell
                         contextMenuData = cell.data
 
