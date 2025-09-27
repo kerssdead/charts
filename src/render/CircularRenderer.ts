@@ -215,7 +215,15 @@ class CircularRenderer extends Renderer<CircularData> {
                    && !this.animations.contains(value.id, AnimationType.Init)
                    && !this.#pinned.includes(value.id)
                    && !isSingle) {
-            const updateStyles = (transition: number) => {
+            const translate = (transition: number, event: AnimationType, swap: boolean) => {
+                this.animations.reload(value.id, event)
+
+                if (transition == 0)
+                    return
+
+                if (swap)
+                    transition = value.transition
+
                 const direction = this.#accumulator + angle / 2,
                     translate = {
                         x: this.#animationOffset * Math.cos(direction) * transition,
@@ -238,15 +246,11 @@ class CircularRenderer extends Renderer<CircularData> {
                     {
                         timer: Constants.Dates.minDate,
                         duration: Constants.Animations.circular,
+                        backward: true,
                         body: transition => {
-                            this.animations.reload(value.id, AnimationType.MouseOver)
-
-                            if (transition == 1)
-                                return
-
-                            updateStyles(value.transition < 1 - transition
-                                         ? value.transition
-                                         : 1 - transition)
+                            translate(transition,
+                                AnimationType.MouseOver,
+                                value.transition < transition)
                         }
                     })
             else
@@ -255,14 +259,9 @@ class CircularRenderer extends Renderer<CircularData> {
                     {
                         duration: Constants.Animations.circular,
                         body: transition => {
-                            this.animations.reload(value.id, AnimationType.MouseLeave)
-
-                            if (transition == 0)
-                                return
-
-                            updateStyles(value.transition > transition
-                                         ? value.transition
-                                         : transition)
+                            translate(transition,
+                                AnimationType.MouseLeave,
+                                value.transition > transition)
                         }
                     })
         }
