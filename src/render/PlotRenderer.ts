@@ -169,11 +169,10 @@ class PlotRenderer extends Renderer<PlotData> {
                             this.animations.add(value.id,
                                 AnimationType.Init,
                                 {
-                                    duration: index * pointDuration,
+                                    timer: new Date(Date.now()).addMilliseconds(pointDuration * (index - 1)),
+                                    duration: pointDuration,
                                     continuous: true,
                                     body: transition => {
-                                        transition = (transition * index * pointDuration - index * pointDuration) / pointDuration
-
                                         if (index == 0 || transition < 0)
                                             return
 
@@ -190,7 +189,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                         }
 
                                         ctx.moveTo(prevValue.x, prevValue.y)
-                                        ctx.lineTo(prevValue.x + (x - prevValue.x) * transition,
+                                        ctx.lineTo(prevValue.x + (this.#x.step + (x - prevValue.x)) * transition,
                                             prevValue.y + (y - prevValue.y) * transition)
                                     }
                                 })
