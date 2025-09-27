@@ -46,6 +46,12 @@ class Button {
 
         ctx.beginPath()
 
+        const translate = (transition: number, event: AnimationType) => {
+            this.animations.reload('animation-button', event)
+
+            ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(transition * 40))
+        }
+
         if (this.#isOnButton(moveEvent)) {
             this.#canvas.style.cursor = Styles.Cursor.Pointer
 
@@ -62,20 +68,17 @@ class Button {
                         return clickEvent == undefined
                     },
                     body: transition => {
-                        this.animations.reload('animation-button-leave', AnimationType.MouseLeave)
-
-                        ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(transition * 40))
+                        translate(transition, AnimationType.MouseLeave)
                     }
                 })
         } else {
-            this.animations.add('animation-button-leave',
+            this.animations.add('animation-button',
                 AnimationType.MouseLeave,
                 {
                     duration: 300,
+                    backward: true,
                     body: transition => {
-                        this.animations.reload('animation-button', AnimationType.MouseOver)
-
-                        ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round((1 - transition) * 40))
+                        translate(transition, AnimationType.MouseOver)
                     }
                 })
         }
@@ -92,6 +95,10 @@ class Button {
         this.#isInit = true
 
         return clickEvent
+    }
+
+    resize() {
+        this.#initAnimations()
     }
 
     #initAnimations() {

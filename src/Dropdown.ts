@@ -61,6 +61,12 @@ class Dropdown {
         ctx.beginPath()
 
         if (!this.#isOnlyMenu) {
+            const translate = (transition: number, event: AnimationType) => {
+                this.animations.reload('animation-dropdown', event)
+
+                ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(40 * transition))
+            }
+
             if (this.#isOnButton(moveEvent, x, y, width, height)) {
                 this.#canvas.style.cursor = Styles.Cursor.Pointer
 
@@ -75,9 +81,7 @@ class Dropdown {
                         {
                             duration: 300,
                             body: transition => {
-                                this.animations.reload('animation-dropdown', AnimationType.MouseLeave)
-
-                                ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(40 * transition))
+                                translate(transition, AnimationType.MouseLeave)
                             }
                         })
                 else
@@ -90,10 +94,9 @@ class Dropdown {
                         AnimationType.MouseLeave,
                         {
                             duration: 300,
+                            backward: true,
                             body: transition => {
-                                this.animations.reload('animation-dropdown', AnimationType.MouseOver)
-
-                                ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round((1 - transition) * 40))
+                                translate(transition, AnimationType.MouseOver)
                             }
                         })
                 else
@@ -171,6 +174,19 @@ class Dropdown {
 
                 const animationKey = 'animation-dropdown' + item.text
 
+                const translate = (transition: number, event: AnimationType, isReturn?: boolean) => {
+                    this.animations.reload(animationKey, event)
+
+                    if (isReturn && transition == 1)
+                        return
+
+                    let opacity = Math.round(itemOpacityDec * transition).toString(16)
+                    if (opacity.length == 1)
+                        opacity = '0' + opacity
+
+                    ctx.fillStyle = itemBackground + opacity
+                }
+
                 if (this.#isOnButton(moveEvent, x, y, maxWidth, 20)) {
                     this.animations.add(animationKey,
                         AnimationType.MouseOver,
@@ -180,13 +196,7 @@ class Dropdown {
                                 return clickEvent == undefined
                             },
                             body: transition => {
-                                this.animations.reload(animationKey, AnimationType.MouseLeave)
-
-                                let opacity = Math.round(itemOpacityDec * transition).toString(16)
-                                if (opacity.length == 1)
-                                    opacity = '0' + opacity
-
-                                ctx.fillStyle = itemBackground + opacity
+                                translate(transition, AnimationType.MouseLeave)
                             }
                         })
 
@@ -204,17 +214,9 @@ class Dropdown {
                         {
                             timer: Constants.Dates.minDate,
                             duration: 300,
+                            backward: true,
                             body: transition => {
-                                this.animations.reload(animationKey, AnimationType.MouseOver)
-
-                                if (transition == 1)
-                                    return
-
-                                let opacity = Math.round(itemOpacityDec * (1 - transition)).toString(16)
-                                if (opacity.length == 1)
-                                    opacity = '0' + opacity
-
-                                ctx.fillStyle = itemBackground + opacity
+                                translate(transition, AnimationType.MouseOver, true)
                             }
                         })
                 }

@@ -2,6 +2,7 @@ class TreeRenderer extends Renderer<TreeData> {
     constructor(node: HTMLElement, settings: ChartSettings) {
         super(node, settings)
 
+        this.data.values = this.data.values.map(v => new Sector(v))
         this.data.values.sort((a, b) => b.value > a.value ? 1 : -1)
 
         const baseColor = settings.baseColor ?? Helper.randomColor()
@@ -218,6 +219,25 @@ class TreeRenderer extends Renderer<TreeData> {
                             }
                         })
                 } else {
+                    const translate = (transition: number, event: AnimationType) => {
+                        const center = {
+                            x: cell.x + cell.w / 2,
+                            y: cell.y + cell.h / 2
+                        }
+
+                        const margin = 12,
+                            minSize = cell.w > cell.h
+                                      ? 1 - margin / cell.w
+                                      : 1 - margin / cell.h,
+                            rest = 1 - minSize
+
+                        ctx.translate(center.x - center.x * (minSize + transition * rest),
+                            center.y - center.y * (minSize + transition * rest))
+                        ctx.scale(minSize + transition * rest, minSize + transition * rest)
+
+                        this.animations.reload(cell.id, event)
+                    }
+
                     if (this.#isInCell(cell)
                         && !tooltipCell) {
                         tooltipCell = cell
@@ -227,25 +247,9 @@ class TreeRenderer extends Renderer<TreeData> {
                             AnimationType.MouseOver,
                             {
                                 duration: Constants.Animations.tree,
+                                backward: true,
                                 body: transition => {
-                                    transition = 1 - transition
-
-                                    const center = {
-                                        x: cell.x + cell.w / 2,
-                                        y: cell.y + cell.h / 2
-                                    }
-
-                                    const margin = 12,
-                                        minSize = cell.w > cell.h
-                                                  ? 1 - margin / cell.w
-                                                  : 1 - margin / cell.h,
-                                        rest = 1 - minSize
-
-                                    ctx.translate(center.x - center.x * (minSize + transition * rest),
-                                        center.y - center.y * (minSize + transition * rest))
-                                    ctx.scale(minSize + transition * rest, minSize + transition * rest)
-
-                                    this.animations.reload(cell.id, AnimationType.MouseLeave)
+                                    translate(transition, AnimationType.MouseLeave)
                                 }
                             })
                     } else {
@@ -255,22 +259,7 @@ class TreeRenderer extends Renderer<TreeData> {
                                 timer: Constants.Dates.minDate,
                                 duration: Constants.Animations.tree,
                                 body: transition => {
-                                    const center = {
-                                        x: cell.x + cell.w / 2,
-                                        y: cell.y + cell.h / 2
-                                    }
-
-                                    const margin = 12,
-                                        minSize = cell.w > cell.h
-                                                  ? 1 - margin / cell.w
-                                                  : 1 - margin / cell.h,
-                                        rest = 1 - minSize
-
-                                    ctx.translate(center.x - center.x * (minSize + transition * rest),
-                                        center.y - center.y * (minSize + transition * rest))
-                                    ctx.scale((minSize + transition * rest), (minSize + transition * rest))
-
-                                    this.animations.reload(cell.id, AnimationType.MouseOver)
+                                    translate(transition, AnimationType.MouseOver)
                                 }
                             })
                     }

@@ -100,39 +100,37 @@ class Legend extends Renderable {
                 })
         }
 
-        if (this.onMouseMoveEvent) {
-            if (isHover(this.onMouseMoveEvent))
-                this.canvas.style.cursor = Styles.Cursor.Pointer
+        const translate = (transition: number, event: AnimationType) => {
+            this.animations.reload(value.id, event)
 
-            this.animations.add(value.id,
-                AnimationType.MouseLeave,
-                {
-                    duration: 100,
-                    before: () => {
-                        return !isHover(this.onMouseMoveEvent) && !this.isInit
-                    },
-                    body: transition => {
-                        ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
+            ctx.beginPath()
 
-                        ctx.fillStyle = Helper.adjustColor(Theme.background, Math.round(-50 * (1 - transition)))
-                        ctx.fill()
-                    }
-                })
+            ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
 
+            ctx.fillStyle = Helper.adjustColor(Theme.background, Math.round(-50 * transition))
+            ctx.fill()
+        }
+
+        if (isHover(this.onMouseMoveEvent)) {
             this.animations.add(value.id,
                 AnimationType.MouseOver,
                 {
                     duration: 100,
-                    before: () => {
-                        return isHover(this.onMouseMoveEvent)
-                    },
                     body: transition => {
-                        ctx.beginPath()
+                        translate(transition, AnimationType.MouseLeave)
+                    }
+                })
 
-                        ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
-
-                        ctx.fillStyle = Helper.adjustColor(Theme.background, Math.round(-50 * transition))
-                        ctx.fill()
+            this.canvas.style.cursor = Styles.Cursor.Pointer
+        } else {
+            this.animations.add(value.id,
+                AnimationType.MouseLeave,
+                {
+                    timer: Constants.Dates.minDate,
+                    duration: 100,
+                    backward: true,
+                    body: transition => {
+                        translate(transition, AnimationType.MouseOver)
                     }
                 })
         }
@@ -175,6 +173,7 @@ class Legend extends Renderable {
 
     resize() {
         this.calculateSizes()
+        this.#button.resize()
         this.initAnimations()
     }
 

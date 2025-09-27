@@ -38,6 +38,7 @@ class Renderer<T extends Data> extends Renderable {
     resize() {
         this.#calculateSizes()
         this.tooltip.refresh()
+        this.dropdown.resize()
     }
 
     prepareSettings() {
