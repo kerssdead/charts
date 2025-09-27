@@ -64,7 +64,10 @@ class Renderable {
             this.canvas.oncontextmenu = event => {
                 event.preventDefault()
                 this.contextMenu = undefined
-                this.onContextMenuEvent = event
+                if (this.onContextMenuEvent)
+                    this.onContextMenuEvent = undefined
+                else
+                    this.onContextMenuEvent = event
             }
         }
     }
