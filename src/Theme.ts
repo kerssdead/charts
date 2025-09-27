@@ -16,17 +16,22 @@ class Theme {
 
     static dropdownBorder: string
 
+    static function: Function
+
     static initialize(callback: Function, isDark?: Function) {
+        if (!Theme.function && isDark)
+            Theme.function = isDark
+
         if (window.matchMedia
             && window.matchMedia('(prefers-color-scheme: dark)').matches
-            && (!isDark || isDark()))
+            && (!Theme.function || Theme.function()))
             Theme.setTheme(1)
         else
             Theme.setTheme(0)
 
         window.matchMedia('(prefers-color-scheme: dark)')
               .addEventListener(Events.Change, event => {
-                  Theme.setTheme(event.matches && (!isDark || isDark()) ? 1 : 0)
+                  Theme.setTheme(event.matches && (!Theme.function || Theme.function()) ? 1 : 0)
                   callback()
               })
     }

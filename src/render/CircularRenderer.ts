@@ -22,6 +22,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
     #angles: CircularAngle[]
 
+    #other: Sector[]
+
     #innerTitleStyle: Function
 
     readonly #startAngle: number
@@ -30,6 +32,28 @@ class CircularRenderer extends Renderer<CircularData> {
         super(node, settings)
 
         this.data.values = this.data.values.map(v => new Sector(v))
+
+        if (this.settings.enableOther) {
+            if (!this.settings.contextMenu)
+                this.settings.contextMenu = [] as DropdownItem[]
+            else
+                this.settings.contextMenu.push({
+                    isDivider: true
+                } as DropdownItem)
+
+            this.settings.contextMenu.push({
+                    text: TextResources.Show,
+                    condition: data => data?._other,
+                    action: () => {
+                        new Modal(Decomposition.toChart<Sector>(this.settings, this.#other),
+                            {
+                                width: window.innerWidth * .8,
+                                height: window.innerHeight * .8
+                            } as DOMRect)
+                            .open()
+                    }
+                })
+        }
 
         this.dropdown = new Dropdown(this.canvas,
             {
@@ -526,7 +550,9 @@ class CircularRenderer extends Renderer<CircularData> {
         this.data.values = this.data.values.filter(v => v.value >= 0)
 
         if (this.settings.enableOther && this.data.values.length > 20) {
-            const sum = this.data.values.splice(20).reduce((acc, v) => acc + v.current, 0)
+            this.#other = this.data.values.splice(20)
+
+            const sum = this.#other.reduce((acc, v) => acc + v.current, 0)
 
             this.data.values = this.data.values.slice(0, 20)
 
@@ -535,8 +561,11 @@ class CircularRenderer extends Renderer<CircularData> {
                 current: sum,
                 label: TextResources.other,
                 id: Helper.guid(),
-                color: '#a3a3a3',
-                innerRadius: this.data.innerRadius
+                color: this.#other[this.#other.length - 1].color,
+                innerRadius: this.data.innerRadius,
+                data: {
+                    _other: true
+                }
             }))
         }
     }

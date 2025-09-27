@@ -20,4 +20,6 @@ class TextResources {
     static MillionShort = 'M'
 
     static BillionShort = 'B'
+
+    static Show = 'Show...'
 }

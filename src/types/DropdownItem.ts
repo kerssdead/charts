@@ -1,6 +1,8 @@
 class DropdownItem {
     isDivider?: boolean | undefined
 
+    condition?: (arg?: any) => boolean
+
     id?: string | undefined
 
     text: string

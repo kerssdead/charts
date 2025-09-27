@@ -177,6 +177,12 @@
 
                     <input type="range" id="inner-radius" oninput="refresh()"/>
                 </label>
+
+                <label>
+                    <input type="checkbox" id="other" onchange="refresh()"/>
+
+                    Other
+                </label>
             </div>
 
 
@@ -498,7 +504,8 @@
             legendEnabled = document.getElementById('legend').checked,
             xAxisTitleEnabled = document.getElementById('x-axis-label').checked,
             yAxisTitleEnabled = document.getElementById('y-axis-label').checked,
-            contextMenuEnabled = document.getElementById('context-menu').checked
+            contextMenuEnabled = document.getElementById('context-menu').checked,
+            otherEnabled = document.getElementById('other').checked
 
 
         const title = titleEnabled ? 'Title' : null,
@@ -545,6 +552,7 @@
             title: title,
             enableTooltip: tooltipEnabled,
             enableLegend: legendEnabled,
+            enableOther: otherEnabled,
             data: {
                 values: values,
                 xTitle: xAxisTitle,

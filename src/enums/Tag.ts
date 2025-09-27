@@ -7,5 +7,7 @@ enum Tag {
 
     Dialog = 'dialog',
 
-    Table = 'table'
+    Table = 'table',
+
+    Script = 'script'
 }

@@ -9,9 +9,9 @@ class ChartSettings {
 
     height: number
 
-    maxWidth: number
+    maxWidth: number | undefined
 
-    maxHeight: number
+    maxHeight: number | undefined
 
     baseColor: string
 
@@ -27,5 +27,5 @@ class ChartSettings {
 
     contextMenu?: DropdownItem[]
 
-    isDarkThemeFunction: Function
+    isDarkThemeFunction: Function | undefined
 }

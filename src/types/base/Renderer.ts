@@ -70,16 +70,18 @@ class Renderer<T extends Data> extends Renderable {
                 let clone: DropdownItem[] = []
 
                 for (const item of this.settings.contextMenu)
-                    clone.push({
-                        id: item.id,
-                        text: item.text,
-                        action: () => {
-                            item.action(data)
+                    if (!item.condition || item.condition(data))
+                        clone.push({
+                            id: item.id,
+                            text: item.text,
+                            isDivider: item.isDivider,
+                            action: () => {
+                                item.action(data)
 
-                            this.onContextMenuEvent = undefined
-                            this.contextMenu = undefined
-                        }
-                    })
+                                this.onContextMenuEvent = undefined
+                                this.contextMenu = undefined
+                            }
+                        })
 
                 this.contextMenu = new Dropdown(this.canvas, {
                     x: this.onContextMenuEvent.x - this.canvasPosition.x,
@@ -109,10 +111,10 @@ class Renderer<T extends Data> extends Renderable {
     #calculateSizes() {
         let domRect = this.node.getBoundingClientRect()
 
-        this.settings.width = this.settings.maxWidth < domRect.width
+        this.settings.width = this.settings.maxWidth && this.settings.maxWidth < domRect.width
                               ? this.settings.maxWidth
                               : domRect.width
-        this.settings.height = this.settings.maxHeight < domRect.height
+        this.settings.height = this.settings.maxHeight && this.settings.maxHeight < domRect.height
                                ? this.settings.maxHeight
                                : domRect.height
 

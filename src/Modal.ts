@@ -3,10 +3,15 @@ class Modal {
 
     #content: HTMLDivElement | undefined
 
-    constructor(content?: HTMLElement) {
+    constructor(content?: HTMLElement, size?: DOMRect) {
         this.modal = document.createElement(Tag.Dialog)
 
         this.modal.classList.add('o-modal')
+
+        if (size) {
+            this.modal.style.width = `${size.width}px`
+            this.modal.style.height = `${size.height}px`
+        }
 
         this.modal.oncancel = () => this.close()
 
