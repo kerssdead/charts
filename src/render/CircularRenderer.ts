@@ -50,6 +50,9 @@ class CircularRenderer extends Renderer<CircularData> {
                         }
                     },
                     {
+                        isDivider: true
+                    } as DropdownItem,
+                    {
                         text: TextResources.decomposeToTable,
                         action: () => {
                             new Modal(Decomposition.toTable(CircularData.getRows(this.data))).open()

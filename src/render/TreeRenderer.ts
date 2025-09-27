@@ -27,6 +27,9 @@ class TreeRenderer extends Renderer<TreeData> {
                         }
                     },
                     {
+                        isDivider: true
+                    } as DropdownItem,
+                    {
                         text: TextResources.decomposeToTable,
                         action: () => {
                             new Modal(Decomposition.toTable(TreeData.getRows(this.data))).open()

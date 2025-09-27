@@ -1,11 +1,11 @@
 class TextResources {
-    static exportPNG = 'Export PNG'
+    static exportPNG = 'Save as image...'
 
-    static decomposeToTable = 'Decompose to Table'
+    static decomposeToTable = 'Show as table...'
 
     static reset = 'Reset'
 
-    static exportCSV = 'Export CSV'
+    static exportCSV = 'Save as table...'
 
     static menu = 'Menu'
 

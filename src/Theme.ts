@@ -1,5 +1,7 @@
 ///<reference path="static/ThemeOptions.ts"/>
 class Theme {
+    static currentTheme = 0
+
     static text = ThemeOptions.colors[0]
 
     static background = ThemeOptions.backgrounds[0]
@@ -24,6 +26,8 @@ class Theme {
     }
 
     static setTheme(index: number) {
+        Theme.currentTheme = index
+
         Theme.text = ThemeOptions.colors[index]
         Theme.background = ThemeOptions.backgrounds[index]
         Theme.line = ThemeOptions.lines[index]

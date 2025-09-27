@@ -1,6 +1,6 @@
 {
   "name": "charts",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Javascript Canvas Charts",
   "jsdelivr": "./ch.in.js",
   "repository": "https://github.com/kerssdead/charts",

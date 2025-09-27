@@ -1,4 +1,6 @@
 class DropdownItem {
+    isDivider?: boolean | undefined
+
     id?: string | undefined
 
     text: string

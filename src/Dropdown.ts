@@ -111,7 +111,11 @@ class Dropdown {
         if (this.isActive) {
             y += height
 
-            let maxWidth = Math.max(...this.#options.items.map(value => Helper.stringWidth(value.text))) + 8
+            const items = this.#options.items.filter(value => value.text),
+                dividers = this.#options.items.filter(value => !value.text)
+
+            let maxWidth = Math.max(...items.map(value => Helper.stringWidth(value.text)))
+                + 24
 
             if (maxWidth < 50)
                 maxWidth = 50
@@ -119,22 +123,56 @@ class Dropdown {
             if (x + maxWidth > this.#canvas.width - 4)
                 x -= x + maxWidth - this.#canvas.width + 4
 
+            const dropdownOpacity = 'bb',
+                itemOpacityDec = 127,
+                itemBackground = Helper.adjustColor(Theme.background, Theme.currentTheme == 0 ? -50 : 50),
+                borderColor = Theme.currentTheme == 0 ? '#353535' : '#7e7e7e'
+
             ctx.beginPath()
-            ctx.roundRect(x, y, maxWidth, this.#options.items.length * 20 + 8, 4)
-            ctx.fillStyle = Theme.background
-            ctx.strokeStyle = '#353535'
+
+            const rect = {
+                x: x,
+                y: y,
+                width: maxWidth,
+                height: items.length * 26
+                    + dividers.length * 4
+                    + (items.length == 1 ? 6 : 0)
+                    + (items.length == 2 && dividers.length == 1 ? 6 : 0)
+            }
+
+            ctx.roundRect(rect.x, rect.y, rect.width, rect.height, 6)
+            ctx.fillStyle = Theme.background + dropdownOpacity
+            ctx.strokeStyle = borderColor + dropdownOpacity
             ctx.fill()
             ctx.stroke()
 
             ctx.beginPath()
 
-            y += 4
+            y += 6
 
             for (const item of this.#options.items) {
                 ctx.beginPath()
 
+                if (item.isDivider == true) {
+                    y += 2
+
+                    ctx.moveTo(x + 6, y)
+                    ctx.lineTo(x + maxWidth - 6, y)
+
+                    ctx.lineWidth = .5
+                    ctx.stroke()
+
+                    y += 4
+
+                    continue
+                }
+
+                ctx.fillStyle = 'transparent'
+
+                const animationKey = 'animation-dropdown' + item.text
+
                 if (this.#isOnButton(moveEvent, x, y, maxWidth, 20)) {
-                    this.animations.add('animation-dropdown' + item.text,
+                    this.animations.add(animationKey,
                         AnimationType.MouseOver,
                         {
                             duration: 300,
@@ -142,9 +180,13 @@ class Dropdown {
                                 return clickEvent == undefined
                             },
                             body: transition => {
-                                this.animations.reload('animation-dropdown' + item.text, AnimationType.MouseLeave)
+                                this.animations.reload(animationKey, AnimationType.MouseLeave)
 
-                                ctx.fillStyle = Helper.adjustColor(Theme.background, 60 - Math.round(transition * 100))
+                                let opacity = Math.round(itemOpacityDec * transition).toString(16)
+                                if (opacity.length == 1)
+                                    opacity = '0' + opacity
+
+                                ctx.fillStyle = itemBackground + opacity
                             }
                         })
 
@@ -157,27 +199,35 @@ class Dropdown {
                         this.isActive = false
                     }
                 } else {
-                    this.animations.add('animation-dropdown' + item.text,
+                    this.animations.add(animationKey,
                         AnimationType.MouseLeave,
                         {
+                            timer: Constants.Dates.minDate,
                             duration: 300,
                             body: transition => {
-                                this.animations.reload('animation-dropdown', AnimationType.MouseOver)
+                                this.animations.reload(animationKey, AnimationType.MouseOver)
 
-                                ctx.fillStyle = Helper.adjustColor(Theme.background, 60 - Math.round((1 - transition) * 100))
+                                if (transition == 1)
+                                    return
+
+                                let opacity = Math.round(itemOpacityDec * (1 - transition)).toString(16)
+                                if (opacity.length == 1)
+                                    opacity = '0' + opacity
+
+                                ctx.fillStyle = itemBackground + opacity
                             }
                         })
                 }
 
-                ctx.rect(x, y, maxWidth, 20)
+                ctx.roundRect(x + 6, y, maxWidth - 12, 20, 6)
                 ctx.fill()
 
                 ctx.fillStyle = Theme.text
-                ctx.textAlign = 'center'
+                ctx.textAlign = 'left'
                 ctx.textBaseline = 'hanging'
-                ctx.fillText(item.text, x + maxWidth / 2, y + 4)
+                ctx.fillText(item.text, x + 12, y + 4)
 
-                y += 20
+                y += 22
             }
         }
 

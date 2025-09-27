@@ -71,6 +71,9 @@ class PlotRenderer extends Renderer<PlotData> {
                         }
                     },
                     {
+                        isDivider: true
+                    } as DropdownItem,
+                    {
                         text: TextResources.decomposeToTable,
                         action: () => {
                             new Modal(Decomposition.toTable(PlotData.getRows(this.data))).open()
