@@ -1,0 +1,3 @@
+enum Attribute {
+    Name = 'name'
+}

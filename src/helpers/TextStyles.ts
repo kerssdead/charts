@@ -20,5 +20,17 @@ namespace Helpers {
             context.textBaseline = 'middle'
             context.font = '16px sans-serif'
         }
+
+        static tooltip(context: CanvasRenderingContext2D) {
+            context.font = '14px sans-serif'
+            context.textAlign = 'start'
+            context.textBaseline = 'alphabetic'
+        }
+
+        static circularLabel(context: CanvasRenderingContext2D, isRight: boolean) {
+            context.textAlign = isRight ? 'start' : 'end'
+            context.textBaseline = 'alphabetic'
+            context.font = '14px sans-serif'
+        }
     }
 }

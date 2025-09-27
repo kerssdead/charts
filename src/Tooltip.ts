@@ -17,8 +17,6 @@ class Tooltip {
 
     #timer: Date | undefined
 
-    #animationDuration: number = 120
-
     #lines: TooltipValue[]
 
     constructor(canvas: HTMLCanvasElement, settings: ChartSettings) {
@@ -114,10 +112,8 @@ class Tooltip {
                 ctx.fill()
             }
 
+            Helpers.TextStyles.tooltip(ctx)
             ctx.fillStyle = '#ffffff' + opacity
-            ctx.font = '14px sans-serif'
-            ctx.textAlign = 'start'
-            ctx.textBaseline = 'alphabetic'
             ctx.fillText(line.text ?? '', x + offset + 12, y + 22)
 
             y += 16
@@ -143,7 +139,7 @@ class Tooltip {
 
             let content = <HTMLElement>this.#template.cloneNode(true)
 
-            tooltip = <HTMLTooltipElement>document.createElement(Tag.Div)
+            tooltip = document.createElement(Tag.Div) as HTMLTooltipElement
 
             tooltip.innerHTML = content.innerHTML
 
@@ -152,7 +148,7 @@ class Tooltip {
             tooltip.style.pointerEvents = Styles.PointerEvents.None
             tooltip.style.visibility = Styles.Visibility.Visible
 
-            tooltip.setAttribute('name', this.#template.id)
+            tooltip.setAttribute(Attribute.Name, this.#template.id)
 
             const matches = [...tooltip.innerHTML.matchAll(regex)]
 
@@ -224,8 +220,8 @@ class Tooltip {
             return 0
 
         let opacityValue = this.#toHide
-                           ? 1 - (new Date().getTime() - this.#timer.getTime()) / this.#animationDuration
-                           : (new Date().getTime() - this.#timer.getTime()) / this.#animationDuration
+                           ? 1 - (new Date().getTime() - this.#timer.getTime()) / Constants.Animations.tooltip
+                           : (new Date().getTime() - this.#timer.getTime()) / Constants.Animations.tooltip
         if (opacityValue > 1)
             opacityValue = 1
         if (opacityValue < 0)
