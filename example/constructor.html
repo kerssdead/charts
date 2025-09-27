@@ -378,7 +378,8 @@
                         values: points,
                         width: seriesWidth,
                         label: `Series ${i}`,
-                        data: getData()
+                        data: getData(),
+                        lineType: rng.nextInt() % 3
                     })
                 }
 

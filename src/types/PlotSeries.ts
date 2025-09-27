@@ -6,6 +6,8 @@ class PlotSeries extends Value {
 
     width: number
 
+    lineType: LineType = LineType.Solid
+
     constructor(obj: object) {
         super()
 

@@ -134,6 +134,22 @@ class PlotRenderer extends Renderer<PlotData> {
             ctx.fillStyle = series.color
             ctx.lineWidth = series.width
 
+            switch (series.lineType) {
+                case LineType.Dash:
+                    ctx.setLineDash([series.width * 3, series.width * 2])
+
+                    break
+
+                case LineType.Dotted:
+                    ctx.setLineDash([series.width, series.width])
+
+                    break
+
+                case LineType.Solid:
+                default:
+                    break
+            }
+
             for (const value of series.values) {
                 let index = series.values.indexOf(value),
                     xIndex = this.#allValuesX.indexOf(this.data.xType == PlotAxisType.Date ? value.x.toString() : value.x),
