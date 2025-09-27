@@ -503,20 +503,6 @@ class PlotRenderer extends Renderer<PlotData> {
             }
         }
 
-        ctx.beginPath()
-
-        ctx.strokeStyle = Theme.line
-        ctx.lineWidth = 1
-
-        ctx.moveTo(this.#paddings.left, this.canvas.height - this.#paddings.bottom)
-
-        if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0)
-            ctx.lineTo(this.#paddings.left, this.#paddings.top)
-        else
-            ctx.lineTo(this.canvas.width - this.#paddings.right, this.canvas.height - this.#paddings.bottom)
-
-        ctx.stroke()
-
         this.tooltip.render(tooltipLines.length > 1 && !this.dropdown.isActive,
             this.onMouseMoveEvent,
             tooltipLines)
@@ -724,6 +710,24 @@ class PlotRenderer extends Renderer<PlotData> {
                 yCounter++
             }
         }
+
+        ctx.beginPath()
+
+        ctx.strokeStyle = Theme.line
+        ctx.lineWidth = 1
+
+        const offset = .5,
+            isBar = this.data.values.filter(v => v.type == PlotType.Bar).length > 0
+
+        ctx.moveTo(this.#paddings.left - offset,
+            this.canvas.height - this.#paddings.bottom + (isBar ? -offset : offset))
+
+        if (isBar)
+            ctx.lineTo(this.#paddings.left - offset, this.#paddings.top)
+        else
+            ctx.lineTo(this.canvas.width - this.#paddings.right, this.canvas.height - this.#paddings.bottom + offset)
+
+        ctx.stroke()
 
         this.#base = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
     }
