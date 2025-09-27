@@ -6,4 +6,6 @@ class HoverItem {
     index: number
 
     data: any
+
+    series?: PlotSeries | undefined
 }

@@ -202,7 +202,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                     x: x,
                                     y: y,
                                     index: index,
-                                    data: value.data
+                                    data: value.data,
+                                    series: series
                                 }
 
                                 tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
@@ -434,7 +435,7 @@ class PlotRenderer extends Renderer<PlotData> {
                 case PlotType.Line:
                     ctx.stroke()
 
-                    if (this.#hoverX) {
+                    if (this.#hoverX && this.#hoverX.series == series) {
                         const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
                         if (Math.abs(mouse.x - this.#hoverX.x) < 25
