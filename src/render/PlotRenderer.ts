@@ -133,6 +133,7 @@ class PlotRenderer extends Renderer<PlotData> {
             ctx.strokeStyle = series.color
             ctx.fillStyle = series.color
             ctx.lineWidth = series.width
+            ctx.lineCap = 'round'
 
             switch (series.lineType) {
                 case LineType.Dash:
