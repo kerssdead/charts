@@ -317,8 +317,7 @@
     function getValues(type, count, valuesType, pointsCount, plotType) {
         let values = []
 
-        const seriesWidth = +document.getElementById('series-width').value,
-            innerRadius = +document.getElementById('inner-radius').value
+        const seriesWidth = +document.getElementById('series-width').value
 
         function getData() {
             return {
@@ -409,7 +408,6 @@
                     values.push({
                         value: value,
                         label: `Sector ${i}`,
-                        innerRadius: innerRadius,
                         data: getData()
                     })
                 }
@@ -516,6 +514,7 @@
             gaugeMax = +document.getElementById('gauge-max').value,
             padding = +document.getElementById('tree-padding').value,
             customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
+            innerRadius = +document.getElementById('inner-radius').value,
             contextMenu = !contextMenuEnabled
                 ? null
                 : [
@@ -552,7 +551,8 @@
                 yTitle: yAxisTitle,
                 min: gaugeMin,
                 max: gaugeMax,
-                padding: padding
+                padding: padding,
+                innerRadius: innerRadius
             },
             type: type,
             baseColor: baseColor,
