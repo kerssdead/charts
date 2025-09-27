@@ -212,6 +212,21 @@ class CircularRenderer extends Renderer<CircularData> {
                    && !this.animations.contains(value.id, AnimationType.Init)
                    && !this.#pinned.includes(value.id)
                    && !isSingle) {
+            const updateStyles = (direction: number, transition: number) => {
+                const translate = {
+                    x: this.#animationOffset * Math.cos(direction) * transition,
+                    y: this.#animationOffset * Math.sin(direction) * transition
+                }
+
+                ctx.translate(translate.x, translate.y)
+
+                value.translate = translate
+                value.transition = transition
+
+                ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
+                ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
+            }
+
             if (!this.#isInsideSector(this.onMouseMoveEvent, value))
                 this.animations.add(value.id,
                     AnimationType.MouseLeave,
@@ -221,8 +236,6 @@ class CircularRenderer extends Renderer<CircularData> {
                         body: transition => {
                             this.animations.reload(value.id, AnimationType.MouseOver)
 
-                            let direction = this.#accumulator + angle / 2
-
                             transition = 1 - transition
 
                             if (transition == 0)
@@ -231,18 +244,7 @@ class CircularRenderer extends Renderer<CircularData> {
                             if (value.transition < transition)
                                 transition = value.transition
 
-                            const translate = {
-                                x: this.#animationOffset * Math.cos(direction) * transition,
-                                y: this.#animationOffset * Math.sin(direction) * transition
-                            }
-
-                            ctx.translate(translate.x, translate.y)
-
-                            value.translate = translate
-                            value.transition = transition
-
-                            ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
-                            ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
+                            updateStyles(this.#accumulator + angle / 2, transition)
                         }
                     })
             else
@@ -253,28 +255,18 @@ class CircularRenderer extends Renderer<CircularData> {
                         body: transition => {
                             this.animations.reload(value.id, AnimationType.MouseLeave)
 
+                            if (transition == 0)
+                                return
+
                             const actualPiece = value.current / this.#sum,
                                 actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
 
                             this.canvas.style.cursor = Styles.Cursor.Pointer
 
-                            let direction = this.#accumulator + actualAngle / 2
-
                             if (value.transition > transition)
                                 transition = value.transition
 
-                            const translate = {
-                                x: this.#animationOffset * Math.cos(direction) * transition,
-                                y: this.#animationOffset * Math.sin(direction) * transition
-                            }
-
-                            ctx.translate(translate.x, translate.y)
-
-                            value.translate = translate
-                            value.transition = transition
-
-                            ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
-                            ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
+                            updateStyles(this.#accumulator + actualAngle / 2, transition)
                         }
                     })
         }
