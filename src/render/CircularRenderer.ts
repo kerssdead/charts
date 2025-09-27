@@ -87,7 +87,10 @@ class CircularRenderer extends Renderer<CircularData> {
 
         super.renderDropdown()
 
-        this.renderContextMenu(this.data.values.find(v => v.id == this.#currentHover)?.data ?? {})
+        if (this.#currentHover || this.contextMenu)
+            this.renderContextMenu(this.data.values.find(v => v.id == this.#currentHover)?.data ?? {})
+        else
+            this.onContextMenuEvent = undefined
     }
 
     #draw() {
