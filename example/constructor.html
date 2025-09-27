@@ -201,6 +201,14 @@
                     <input type="range" id="tree-padding" oninput="refresh()"/>
                 </label>
             </div>
+
+            <div>
+                <label>
+                    Seed
+
+                    <input type="number" id="seed" onchange="saveState(); location.reload()"/>
+                </label>
+            </div>
         </div>
     </div>
 </body>
@@ -220,7 +228,9 @@
 </template>
 
 <script>
-    function RNG(seed) {
+    function RNG() {
+        const seed = +document.getElementById('seed').value
+
         // LCG using GCC's constants
         this.m = 0x80000000; // 2**31;
         this.a = 1103515245;
@@ -298,10 +308,11 @@
                     element.value = value
             }
         }
+
+        rng = new RNG()
     }
 
-    const SEED = 1234567890,
-        rng = new RNG(SEED)
+    let rng
 
     function getValues(type, count, valuesType, pointsCount, plotType) {
         let values = []
