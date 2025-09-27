@@ -499,7 +499,8 @@
             darkThemeEnabled = document.getElementById('dark-theme').checked,
             legendEnabled = document.getElementById('legend').checked,
             xAxisTitleEnabled = document.getElementById('x-axis-label').checked,
-            yAxisTitleEnabled = document.getElementById('y-axis-label').checked
+            yAxisTitleEnabled = document.getElementById('y-axis-label').checked,
+            contextMenuEnabled = document.getElementById('context-menu').checked
 
 
         const title = titleEnabled ? 'Title' : null,
@@ -514,7 +515,23 @@
             gaugeMin = +document.getElementById('gauge-min').value,
             gaugeMax = +document.getElementById('gauge-max').value,
             padding = +document.getElementById('tree-padding').value,
-            customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null
+            customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
+            contextMenu = !contextMenuEnabled
+                ? null
+                : [
+                    {
+                        text: 'Button 1',
+                        action: data => {
+                            console.log('Button 1 action', data)
+                        }
+                    },
+                    {
+                        text: 'Button 2',
+                        action: () => {
+                            console.log('Another action')
+                        }
+                    }
+                ]
 
         let values = getValues(type, valuesCount, valuesType, pointsCount, plotType)
 
@@ -540,6 +557,7 @@
             type: type,
             baseColor: baseColor,
             templateId: customTooltip,
+            contextMenu: contextMenu,
             isDarkThemeFunction: () => darkThemeEnabled
         })
 
