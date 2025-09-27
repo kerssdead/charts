@@ -8,4 +8,6 @@ class AnimationItem {
     duration: number
 
     continuous?: boolean = false
+
+    backward?: boolean = false
 }

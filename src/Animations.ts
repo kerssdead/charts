@@ -42,7 +42,7 @@ class Animations {
             item.timer = stamp
 
         if (before)
-            item.body(transition)
+            item.body(item.backward ? 1 - transition : transition)
 
         if (transition == 1 && (!before || item.continuous))
             this.#queue.delete(key)
