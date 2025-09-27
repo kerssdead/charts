@@ -91,7 +91,7 @@ class Tooltip {
             y = this.#canvasPosition.height - 10 - this.#lines.length * 18
 
         ctx.beginPath()
-        ctx.roundRect(x, y, textWidth + 16, 16 + 16 * this.#lines.length, 20)
+        ctx.roundRect(x, y, textWidth + 22, 16 + 16 * this.#lines.length, 20)
         let opacity = Math.round(this.#getOpacityValue() * 255).toString(16),
             baseOpacity = Math.round(this.#getOpacityValue() * 77).toString(16)
         if (opacity.length == 1)
@@ -115,7 +115,7 @@ class Tooltip {
             }
 
             ctx.fillStyle = '#ffffff' + opacity
-            ctx.font = '14px serif'
+            ctx.font = '14px sans-serif'
             ctx.textAlign = 'start'
             ctx.textBaseline = 'alphabetic'
             ctx.fillText(line.text ?? '', x + offset + 12, y + 22)

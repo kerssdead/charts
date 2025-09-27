@@ -316,7 +316,7 @@ class CircularRenderer extends Renderer<CircularData> {
                     ctx.fillStyle = Theme.text + opacity
                     ctx.textAlign = dir == 1 ? 'start' : 'end'
                     ctx.textBaseline = 'alphabetic'
-                    ctx.font = '14px serif'
+                    ctx.font = '14px sans-serif'
                     ctx.fillText(value.label, endPoint.x + 8 * dir, endPoint.y + 4)
                 }
             }
