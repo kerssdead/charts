@@ -151,7 +151,8 @@ class CircularRenderer extends Renderer<CircularData> {
             this.#drawInnerTitle()
         }
 
-        requestAnimationFrame(this.render.bind(this))
+        if (!this.isDestroy)
+            requestAnimationFrame(this.render.bind(this))
     }
 
     #drawSector(value: Sector) {

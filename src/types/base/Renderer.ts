@@ -4,6 +4,8 @@ class Renderer<T extends Data> extends Renderable {
 
     data: T
 
+    protected isDestroy: boolean = false
+
     constructor(node: HTMLElement, settings: ChartSettings) {
         super(node, settings)
 
@@ -21,6 +23,12 @@ class Renderer<T extends Data> extends Renderable {
             Helpers.TextStyles.title(ctx)
             ctx.fillText(this.settings.title, this.canvas.width / 2, Constants.Values.titleOffset)
         }
+    }
+
+    destroy() {
+        this.isDestroy = true
+
+        this.canvas.remove()
     }
 
     renderDropdown() {

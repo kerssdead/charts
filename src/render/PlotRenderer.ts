@@ -511,7 +511,8 @@ class PlotRenderer extends Renderer<PlotData> {
             this.onMouseMoveEvent,
             tooltipLines)
 
-        requestAnimationFrame(this.render.bind(this))
+        if (!this.isDestroy)
+            requestAnimationFrame(this.render.bind(this))
 
         this.isInit = true
 

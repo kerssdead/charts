@@ -1,3 +1,3 @@
 interface HTMLChartElement extends HTMLElement {
-    chart: Chart
+    chart: Chart | undefined
 }

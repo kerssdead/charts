@@ -37,7 +37,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
                 new TooltipValue(`${ value?.label }: ${ Helpers.Formatter.number(value?.current) }`)
             ])
 
-        requestAnimationFrame(this.render.bind(this))
+        if (!this.isDestroy)
+            requestAnimationFrame(this.render.bind(this))
 
         this.isInit = true
 

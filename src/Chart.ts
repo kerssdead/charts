@@ -47,6 +47,13 @@ class Chart {
         this.#refresh()
     }
 
+    destroy() {
+        this.#renderer.destroy()
+        this.#legend?.destroy()
+
+        delete this.node.chart
+    }
+
     #prepareSettings() {
         switch (this.settings.type) {
             case ChartType.Plot:

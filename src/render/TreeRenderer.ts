@@ -327,7 +327,8 @@ class TreeRenderer extends Renderer<TreeData> {
             ],
             this.data.values.find(v => v.id == tooltipCell?.id))
 
-        requestAnimationFrame(this.render.bind(this))
+        if (!this.isDestroy)
+            requestAnimationFrame(this.render.bind(this))
 
         this.isInit = true
 

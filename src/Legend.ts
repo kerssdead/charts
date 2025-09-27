@@ -3,6 +3,8 @@ class Legend extends Renderable {
 
     #offset: Point
 
+    isDestroy: boolean = false
+
     constructor(node: HTMLElement, settings: ChartSettings) {
         super(node, settings)
 
@@ -45,7 +47,8 @@ class Legend extends Renderable {
 
         ctx.translate(-this.#offset.x, -this.#offset.y)
 
-        requestAnimationFrame(this.render.bind(this))
+        if (!this.isDestroy)
+            requestAnimationFrame(this.render.bind(this))
 
         this.onClickEvent = this.#button.render(this.onMouseMoveEvent, this.onClickEvent)
 
@@ -158,6 +161,12 @@ class Legend extends Renderable {
             x: x,
             y: y
         }
+    }
+
+    destroy() {
+        this.isDestroy = true
+
+        this.canvas.remove()
     }
 
     refresh() {
