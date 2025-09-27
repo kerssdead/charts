@@ -109,24 +109,24 @@ class Dropdown {
         }
 
         if (this.isActive) {
+            const padding = 6,
+                borderRadius = 6
+
             y += height
 
             const items = this.#options.items.filter(value => value.text),
                 dividers = this.#options.items.filter(value => !value.text)
 
             let maxWidth = Math.max(...items.map(value => Helper.stringWidth(value.text)))
-                + 24
-
-            if (maxWidth < 50)
-                maxWidth = 50
+                + padding * 4
 
             if (x + maxWidth > this.#canvas.width - 4)
                 x -= x + maxWidth - this.#canvas.width + 4
 
             const dropdownOpacity = 'bb',
                 itemOpacityDec = 127,
-                itemBackground = Helper.adjustColor(Theme.background, Theme.currentTheme == 0 ? -50 : 50),
-                borderColor = Theme.currentTheme == 0 ? '#353535' : '#7e7e7e'
+                itemBackground = Theme.dropdownItemHoverColor,
+                borderColor = Theme.dropdownBorder
 
             ctx.beginPath()
 
@@ -136,11 +136,11 @@ class Dropdown {
                 width: maxWidth,
                 height: items.length * 26
                     + dividers.length * 4
-                    + (items.length == 1 ? 6 : 0)
-                    + (items.length == 2 && dividers.length == 1 ? 6 : 0)
+                    + (items.length == 1 ? padding : 0)
+                    + (items.length == 2 && dividers.length == 1 ? padding : 0)
             }
 
-            ctx.roundRect(rect.x, rect.y, rect.width, rect.height, 6)
+            ctx.roundRect(rect.x, rect.y, rect.width, rect.height, borderRadius)
             ctx.fillStyle = Theme.background + dropdownOpacity
             ctx.strokeStyle = borderColor + dropdownOpacity
             ctx.fill()
@@ -156,8 +156,8 @@ class Dropdown {
                 if (item.isDivider == true) {
                     y += 2
 
-                    ctx.moveTo(x + 6, y)
-                    ctx.lineTo(x + maxWidth - 6, y)
+                    ctx.moveTo(x + padding, y)
+                    ctx.lineTo(x + maxWidth - padding, y)
 
                     ctx.lineWidth = .5
                     ctx.stroke()
@@ -219,13 +219,13 @@ class Dropdown {
                         })
                 }
 
-                ctx.roundRect(x + 6, y, maxWidth - 12, 20, 6)
+                ctx.roundRect(x + padding, y, maxWidth - padding * 2, 20, borderRadius)
                 ctx.fill()
 
                 ctx.fillStyle = Theme.text
                 ctx.textAlign = 'left'
                 ctx.textBaseline = 'hanging'
-                ctx.fillText(item.text, x + 12, y + 4)
+                ctx.fillText(item.text, x + padding * 2, y + 5)
 
                 y += 22
             }

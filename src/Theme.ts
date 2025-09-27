@@ -2,15 +2,19 @@
 class Theme {
     static currentTheme = 0
 
-    static text = ThemeOptions.colors[0]
+    static text: string
 
-    static background = ThemeOptions.backgrounds[0]
+    static background: string
 
-    static line = ThemeOptions.lines[0]
+    static line: string
 
-    static lineAxis = ThemeOptions.lineAxises[0]
+    static lineAxis: string
 
-    static lineActive = ThemeOptions.lineActives[0]
+    static lineActive: string
+
+    static dropdownItemHoverColor: string
+
+    static dropdownBorder: string
 
     static initialize(callback: Function, isDark?: Function) {
         if (window.matchMedia
@@ -31,7 +35,9 @@ class Theme {
         Theme.text = ThemeOptions.colors[index]
         Theme.background = ThemeOptions.backgrounds[index]
         Theme.line = ThemeOptions.lines[index]
-        Theme.lineAxis = ThemeOptions.lineAxises[index]
+        Theme.lineAxis = ThemeOptions.lineAxes[index]
         Theme.lineActive = ThemeOptions.lineActives[index]
+        Theme.dropdownItemHoverColor = Helper.adjustColor(Theme.background, index == 0 ? -50 : 50)
+        Theme.dropdownBorder = ThemeOptions.dropdownBorders[index]
     }
 }
