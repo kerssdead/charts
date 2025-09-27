@@ -447,8 +447,12 @@ class PlotRenderer extends Renderer<PlotData> {
                             ctx.stroke()
                         }
 
+                        let radius = Math.round(series.width * 1.1)
+                        if (radius < 5)
+                            radius = 5
+
                         ctx.beginPath()
-                        ctx.arc(this.#hoverX.x, this.#hoverX.y, 5, 0, 2 * Math.PI)
+                        ctx.arc(this.#hoverX.x, this.#hoverX.y, radius, 0, 2 * Math.PI)
                         ctx.fill()
                     }
 
