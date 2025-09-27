@@ -333,7 +333,10 @@ class TreeRenderer extends Renderer<TreeData> {
 
         super.renderDropdown()
 
-        this.renderContextMenu(contextMenuData)
+        if (tooltipCell || this.contextMenu)
+            this.renderContextMenu(contextMenuData)
+        else
+            this.onContextMenuEvent = undefined
     }
 
     #isInCell(cell: TreeCell) {
