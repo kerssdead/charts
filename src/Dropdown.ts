@@ -145,6 +145,8 @@ class Dropdown {
 
             ctx.roundRect(rect.x, rect.y, rect.width, rect.height, borderRadius)
             ctx.fillStyle = Theme.background + dropdownOpacity
+            ctx.setLineDash([])
+            ctx.lineWidth = 1
             ctx.strokeStyle = borderColor + dropdownOpacity
             ctx.fill()
             ctx.stroke()
