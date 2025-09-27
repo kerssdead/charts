@@ -1,37 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>
-    Gauge Example
-  </title>
+    <meta charset="UTF-8">
+    <title>
+        Gauge Example
+    </title>
 
-  <link rel="stylesheet" href="./css/styles.css">
-  <link rel="stylesheet" href="/dist/main.css">
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
 
-  <script src="/dist/ocharts.js"></script>
+    <script src="../dist/ocharts.js"></script>
 </head>
 
 <body>
-<div id="pie-example"></div>
+    <div></div>
 </body>
 
 <script>
-  let chart = OCharts.chart(document.getElementById('pie-example'), {
-    enableTooltip: true,
-    title: 'Gauge Chart',
-    data: {
-      values: [
-        {
-          value: Math.random() * 100,
-          label: 'Value'
+    const chart = OCharts.chart(document.querySelector('div'), {
+        title: 'Gauge Chart',
+        enableTooltip: true,
+        type: 2,
+        data: {
+            max: 200,
+            values: [
+                {
+                    value: Math.random() * 100,
+                    label: 'Value'
+                }
+            ]
         }
-      ],
-      max: 200
-    },
-    type: 2
-  })
+    })
 
-  chart.render()
+    chart.render()
 </script>
 </html>

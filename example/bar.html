@@ -6,23 +6,22 @@
         Bar Plot Example
     </title>
 
-    <link rel="stylesheet" href="./css/styles.css">
-    <link rel="stylesheet" href="/dist/main.css">
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
 
-    <script src="/dist/ocharts.js"></script>
+    <script src="../dist/ocharts.js"></script>
 </head>
 
 <body>
-<div id="line-example" style="text-align: center"></div>
+    <div></div>
 </body>
 
 <script>
-    const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
-
-    let values = [],
+    const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom'],
+        valuesCount = 40,
+        indexMin = 0,
+        values = [],
         values1 = []
-    const valuesCount = 40,
-        indexMin = 0
 
     for (let i = indexMin; i < valuesCount; i++)
         values.push({
@@ -37,12 +36,13 @@
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
-    values.sort((a, b) => a.x - b.x)
-
-    let chart = OCharts.chart(document.getElementById('line-example'), {
+    const chart = OCharts.chart(document.querySelector('div'), {
         title: 'Bar Plot',
         enableTooltip: true,
+        type: 0,
         data: {
+            xTitle: 'X-Axis',
+            yTitle: 'Y-Axis',
             values: [
                 {
                     values: values,
@@ -56,11 +56,8 @@
                     label: 'Bar 2',
                     color: '#ff5a00'
                 }
-            ],
-            xTitle: 'X-Axis',
-            yTitle: 'Y-Axis'
-        },
-        type: 0
+            ]
+        }
     })
 
     chart.render()

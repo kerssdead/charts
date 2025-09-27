@@ -6,19 +6,19 @@
         Tree Map Example
     </title>
 
-    <link rel="stylesheet" href="./css/styles.css">
-    <link rel="stylesheet" href="/dist/main.css">
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
 
-    <script src="/dist/ocharts.js"></script>
+    <script src="../dist/ocharts.js"></script>
 </head>
 
 <body>
-<div id="pie-example" style="text-align: center"></div>
+    <div></div>
 </body>
 
 <template id="pie-chart-tooltip">
     <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid black; border-radius: 4px; background-color: #ffffff">
-        <img src="https://placecats.com/${ Id }/${ Id }" alt="cat"/>
+        <img alt="cat" src="https://placecats.com/${ Id }/${ Id }"/>
 
         <span>
             ${ Id }, ${ Name }
@@ -31,12 +31,9 @@
 </template>
 
 <script>
-    document.getElementById('pie-example').innerHTML = ''
-
-    const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom']
-
-    let values = []
-    const valuesCount = Math.floor(Math.random() * 25) + 2
+    const labelsPool = ['test 1', 'test 2', 'test 3', 'another one', 'label', 'some label', 'chart label', 'custom'],
+        valuesCount = Math.floor(Math.random() * 25) + 2,
+        values = []
 
     for (let i = 0; i < valuesCount; i++)
         values.push({
@@ -49,16 +46,15 @@
             }
         })
 
-    let chart = OCharts.chart(document.getElementById('pie-example'), {
+    const chart = OCharts.chart(document.querySelector('div'), {
         title: 'Tree Map',
         enableTooltip: true,
+        type: 3,
+        templateId: 'pie-chart-tooltip',
         data: {
             values: values,
-            padding: 20,
-            color: 'red'
-        },
-        type: 3,
-        templateId: 'pie-chart-tooltip'
+            padding: 20
+        }
     })
 
     chart.render()

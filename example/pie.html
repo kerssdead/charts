@@ -6,21 +6,20 @@
         Pie Example
     </title>
 
-    <link rel="stylesheet" href="./css/styles.css">
-    <link rel="stylesheet" href="/dist/main.css">
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
 
-    <script src="/dist/ocharts.js"></script>
+    <script src="../dist/ocharts.js"></script>
 </head>
 
 <body>
-    <div id="pie-example" style="text-align: center"></div>
+    <div></div>
 </body>
 
 <script>
-    const labelsPool = ['test 1', 'test 2', 'some label', 'another one', 'label', 'test 3', 'chart label', 'custom']
-
-    let values = []
-    const valuesCount = Math.floor(Math.random() * 25) + 2
+    const labelsPool = ['test 1', 'test 2', 'some label', 'another one', 'label', 'test 3', 'chart label', 'custom'],
+        valuesCount = Math.floor(Math.random() * 25) + 2,
+        values = []
 
     for (let i = 0; i < valuesCount; i++)
         values.push({
@@ -28,17 +27,17 @@
             label: labelsPool[Math.floor(Math.random() * labelsPool.length)]
         })
 
-    let chart = OCharts.chart(document.getElementById('pie-example'), {
+    const chart = OCharts.chart(document.querySelector('div'), {
+        title: 'Pie Chart',
         enableLegend: true,
         enableTooltip: true,
         baseColor: '#024fa1',
-        title: 'Pie Chart',
+        type: 1,
+        legendPlace: 1,
         data: {
             type: 0,
             values: values
-        },
-        type: 1,
-        legendPlace: 1
+        }
     })
 
     chart.render()
