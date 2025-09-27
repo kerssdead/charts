@@ -6,40 +6,7 @@ class Legend extends Renderable {
     constructor(node: HTMLElement, settings: ChartSettings) {
         super(node, settings)
 
-        switch (settings.legendPlace) {
-            case LegendPlace.Bottom:
-            default:
-                this.canvas.width = settings.width ?? settings.maxWidth
-                this.canvas.height = Legend.getLegendHeight(settings.data.values, this.canvas.width)
-
-                node.style.flexDirection = Styles.FlexDirection.Column
-
-                break
-
-            case LegendPlace.Top:
-                this.canvas.width = settings.width ?? settings.maxWidth
-                this.canvas.height = Legend.getLegendHeight(settings.data.values, this.canvas.width)
-
-                node.style.flexDirection = Styles.FlexDirection.ColumnReverse
-
-                break
-
-            case LegendPlace.Left:
-                this.canvas.width = 500
-                this.canvas.height = settings.height ?? settings.maxHeight
-
-                node.style.flexDirection = Styles.FlexDirection.Row
-
-                break
-
-            case LegendPlace.Right:
-                this.canvas.width = 500
-                this.canvas.height = settings.height ?? settings.maxHeight
-
-                node.style.flexDirection = Styles.FlexDirection.RowReverse
-
-                break
-        }
+        this.calculateSizes()
 
         this.#button = new Button(this.canvas,
             {
@@ -198,7 +165,45 @@ class Legend extends Renderable {
     }
 
     resize() {
+        this.calculateSizes()
         this.initAnimations()
+    }
+
+    calculateSizes() {
+        switch (this.settings.legendPlace) {
+            case LegendPlace.Bottom:
+            default:
+                this.canvas.width = this.settings.width ?? this.settings.maxWidth
+                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width)
+
+                this.node.style.flexDirection = Styles.FlexDirection.Column
+
+                break
+
+            case LegendPlace.Top:
+                this.canvas.width = this.settings.width ?? this.settings.maxWidth
+                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width)
+
+                this.node.style.flexDirection = Styles.FlexDirection.ColumnReverse
+
+                break
+
+            case LegendPlace.Left:
+                this.canvas.width = 500
+                this.canvas.height = this.settings.height ?? this.settings.maxHeight
+
+                this.node.style.flexDirection = Styles.FlexDirection.Row
+
+                break
+
+            case LegendPlace.Right:
+                this.canvas.width = 500
+                this.canvas.height = this.settings.height ?? this.settings.maxHeight
+
+                this.node.style.flexDirection = Styles.FlexDirection.RowReverse
+
+                break
+        }
     }
 
     static getOffsetToCenter(values: Value[], width: number): number {
