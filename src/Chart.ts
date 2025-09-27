@@ -41,7 +41,12 @@ class Chart {
         this.#renderer.render()
         this.#legend?.render()
 
-        this.#observer = new ResizeObserver(() => this.#resize())
+        this.#observer = new ResizeObserver(() => {
+            if (this.#renderer.canvas)
+                this.#resize()
+            else
+                this.destroy()
+        })
         this.#observer.observe(this.node)
 
         this.#refresh()
@@ -50,6 +55,8 @@ class Chart {
     destroy() {
         this.#renderer.destroy()
         this.#legend?.destroy()
+
+        this.#observer.disconnect()
 
         delete this.node.chart
     }
