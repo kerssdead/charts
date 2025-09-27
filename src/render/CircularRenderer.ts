@@ -212,11 +212,12 @@ class CircularRenderer extends Renderer<CircularData> {
                    && !this.animations.contains(value.id, AnimationType.Init)
                    && !this.#pinned.includes(value.id)
                    && !isSingle) {
-            const updateStyles = (direction: number, transition: number) => {
-                const translate = {
-                    x: this.#animationOffset * Math.cos(direction) * transition,
-                    y: this.#animationOffset * Math.sin(direction) * transition
-                }
+            const updateStyles = (transition: number) => {
+                const direction = this.#accumulator + angle / 2,
+                    translate = {
+                        x: this.#animationOffset * Math.cos(direction) * transition,
+                        y: this.#animationOffset * Math.sin(direction) * transition
+                    }
 
                 ctx.translate(translate.x, translate.y)
 
@@ -236,15 +237,12 @@ class CircularRenderer extends Renderer<CircularData> {
                         body: transition => {
                             this.animations.reload(value.id, AnimationType.MouseOver)
 
-                            transition = 1 - transition
-
-                            if (transition == 0)
+                            if (transition == 1)
                                 return
 
-                            if (value.transition < transition)
-                                transition = value.transition
-
-                            updateStyles(this.#accumulator + angle / 2, transition)
+                            updateStyles(value.transition < 1 - transition
+                                         ? value.transition
+                                         : 1 - transition)
                         }
                     })
             else
@@ -258,15 +256,11 @@ class CircularRenderer extends Renderer<CircularData> {
                             if (transition == 0)
                                 return
 
-                            const actualPiece = value.current / this.#sum,
-                                actualAngle = (isNaN(actualPiece) ? 1 : actualPiece) * 2 * Math.PI
-
                             this.canvas.style.cursor = Styles.Cursor.Pointer
 
-                            if (value.transition > transition)
-                                transition = value.transition
-
-                            updateStyles(this.#accumulator + actualAngle / 2, transition)
+                            updateStyles(value.transition > transition
+                                         ? value.transition
+                                         : transition)
                         }
                     })
         }
