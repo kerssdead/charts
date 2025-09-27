@@ -21,6 +21,8 @@ class Theme {
             && window.matchMedia('(prefers-color-scheme: dark)').matches
             && (!isDark || isDark()))
             Theme.setTheme(1)
+        else
+            Theme.setTheme(0)
 
         window.matchMedia('(prefers-color-scheme: dark)')
               .addEventListener(Events.Change, event => {
