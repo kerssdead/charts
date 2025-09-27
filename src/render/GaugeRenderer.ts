@@ -84,8 +84,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
         while (localAngle >= 0) {
             let currentAngle = localAngle - Math.PI / 10 > 0
-                ? Math.PI / 10
-                : localAngle
+                               ? Math.PI / 10
+                               : localAngle
 
             const getPoint = (offset: number) => {
                 return {
@@ -135,7 +135,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
                 innerRadius = this.#radius - 20
 
             return v.x * v.x + v.y * v.y <= outerRadius * outerRadius
-                && v.x * v.x + v.y * v.y >= innerRadius * innerRadius
+                   && v.x * v.x + v.y * v.y >= innerRadius * innerRadius
         }
 
         const point = this.getMousePosition(event),
@@ -149,8 +149,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
     #calculateSizes() {
         const longSide = this.canvas.width < this.canvas.height
-            ? this.canvas.height - 250
-            : this.canvas.width
+                         ? this.canvas.height - 250
+                         : this.canvas.width
 
         this.#radius = longSide / 3
 

@@ -87,7 +87,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         super.renderDropdown()
 
-        this.renderContextMenu(this.data.values.find(v => v.id == this.#currentHover)?.data ?? { })
+        this.renderContextMenu(this.data.values.find(v => v.id == this.#currentHover)?.data ?? {})
     }
 
     #draw() {
@@ -206,9 +206,9 @@ class CircularRenderer extends Renderer<CircularData> {
                     }
                 })
         } else if (this.onMouseMoveEvent
-            && !this.animations.contains(value.id, AnimationType.Init)
-            && !this.#pinned.includes(value.id)
-            && !isSingle) {
+                   && !this.animations.contains(value.id, AnimationType.Init)
+                   && !this.#pinned.includes(value.id)
+                   && !isSingle) {
             if (!this.#isInsideSector(this.onMouseMoveEvent, value))
                 this.animations.add(value.id,
                     AnimationType.MouseLeave,
@@ -345,8 +345,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
             while (localAngle > 0) {
                 let currentAngle = localAngle - Math.PI / 6 > 0
-                    ? Math.PI / 6
-                    : localAngle
+                                   ? Math.PI / 6
+                                   : localAngle
 
                 point2 = this.#getPoint(this.#radius, localAccumulator + currentAngle)
 
@@ -376,8 +376,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
                 while (localAngle < angle) {
                     let currentAngle = localAngle + Math.PI / 6 < angle
-                        ? Math.PI / 6
-                        : angle - localAngle
+                                       ? Math.PI / 6
+                                       : angle - localAngle
 
                     point2 = this.#getPoint(innerRadius, localAccumulator - currentAngle)
 
@@ -429,8 +429,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
         const isWithinRadius = (v: Point) => {
             return v.x * v.x + v.y * v.y <= this.#radius * this.#radius
-                && (!this.#isDonut || v.x * v.x + v.y * v.y
-                    >= this.#radius * (value.innerRadius / 100) * this.#radius * (value.innerRadius / 100))
+                   && (!this.#isDonut || v.x * v.x + v.y * v.y
+                       >= this.#radius * (value.innerRadius / 100) * this.#radius * (value.innerRadius / 100))
         }
 
         const point = this.getMousePosition(event),
@@ -472,12 +472,12 @@ class CircularRenderer extends Renderer<CircularData> {
 
     #calculateSizes() {
         const titleOffset = this.settings.title
-            ? Constants.Values.titleOffset
-            : 0
+                            ? Constants.Values.titleOffset
+                            : 0
 
         const shortSide = this.canvas.width > this.canvas.height - titleOffset * 2
-            ? this.canvas.height - titleOffset * 2
-            : this.canvas.width
+                          ? this.canvas.height - titleOffset * 2
+                          : this.canvas.width
 
         this.#center = {
             x: this.canvas.width / 2,
@@ -489,12 +489,12 @@ class CircularRenderer extends Renderer<CircularData> {
         if (this.data.innerTitle != undefined) {
             this.#innerTitleStyle = Helpers.TextStyles.large
             this.#canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 16)
-                < (this.data.innerRadius / 100) * this.#radius * 2
+                                        < (this.data.innerRadius / 100) * this.#radius * 2
 
             if (!this.#canRenderInnerTitle) {
                 this.#innerTitleStyle = Helpers.TextStyles.regular
                 this.#canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 14)
-                    < (this.data.innerRadius / 100) * this.#radius * 2
+                                            < (this.data.innerRadius / 100) * this.#radius * 2
             }
 
             if (!this.#canRenderInnerTitle)

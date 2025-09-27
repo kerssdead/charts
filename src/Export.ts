@@ -84,8 +84,8 @@ class Export {
 
             for (let j = 0; j < cols.length; j++) {
                 let data = cols[j].innerHTML
-                    .replace(/(\r\n|\n|\r)/gm, '')
-                    .replace(/(\s\s)/gm, ' ')
+                                  .replace(/(\r\n|\n|\r)/gm, '')
+                                  .replace(/(\s\s)/gm, ' ')
 
                 data = data.replace(/"/g, '""')
                 row.push('"' + data + '"')
@@ -103,8 +103,8 @@ class Export {
     static saveAs(name: string, dataURL: string, href?: string | undefined, isText?: boolean) {
         if (window.showSaveFilePicker != undefined) {
             const accept = isText
-                ? { 'text/csv': '.csv' } as FilePickerAcceptType
-                : { 'image/*': '.png' } as FilePickerAcceptType
+                           ? { 'text/csv': '.csv' } as FilePickerAcceptType
+                           : { 'image/*': '.png' } as FilePickerAcceptType
 
             const options = {
                 suggestedName: name,

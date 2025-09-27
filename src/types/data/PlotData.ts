@@ -24,8 +24,8 @@ class PlotData implements Data {
                 headers.push({
                     value: value.x.toString(),
                     display: data.xType == PlotAxisType.Date
-                        ? Helpers.Formatter.date(new Date(value.x))
-                        : value.x.toString()
+                             ? Helpers.Formatter.date(new Date(value.x))
+                             : value.x.toString()
                 })
             }
 

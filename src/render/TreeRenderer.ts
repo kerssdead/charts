@@ -237,8 +237,8 @@ class TreeRenderer extends Renderer<TreeData> {
 
                                     const margin = 12,
                                         minSize = cell.w > cell.h
-                                        ? 1 - margin / cell.w
-                                        : 1 - margin / cell.h,
+                                                  ? 1 - margin / cell.w
+                                                  : 1 - margin / cell.h,
                                         rest = 1 - minSize
 
                                     ctx.translate(center.x - center.x * (minSize + transition * rest),
@@ -262,8 +262,8 @@ class TreeRenderer extends Renderer<TreeData> {
 
                                     const margin = 12,
                                         minSize = cell.w > cell.h
-                                            ? 1 - margin / cell.w
-                                            : 1 - margin / cell.h,
+                                                  ? 1 - margin / cell.w
+                                                  : 1 - margin / cell.h,
                                         rest = 1 - minSize
 
                                     ctx.translate(center.x - center.x * (minSize + transition * rest),
@@ -288,8 +288,8 @@ class TreeRenderer extends Renderer<TreeData> {
                     ctx.beginPath()
                     Helpers.TextStyles.large(ctx)
                     ctx.fillStyle = !Helper.isColorVisible(cell.color, '#ffffff')
-                        ? '#000000'
-                        : '#ffffff'
+                                    ? '#000000'
+                                    : '#ffffff'
                     ctx.fillText(cell.label,
                         x + 2 + cell.w / 2,
                         y + 2 + cell.h / 2)
@@ -343,7 +343,7 @@ class TreeRenderer extends Renderer<TreeData> {
         const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
         return cell.x <= mouse.x && mouse.x <= cell.x + cell.w
-            && cell.y <= mouse.y && mouse.y <= cell.y + cell.h
+               && cell.y <= mouse.y && mouse.y <= cell.y + cell.h
     }
 
     #drawEmpty() {

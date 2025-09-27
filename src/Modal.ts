@@ -24,7 +24,7 @@ class Modal {
         this.modal.showModal()
     }
 
-    close()  {
+    close() {
         if (this.modal == undefined)
             Helpers.Errors.throw(ErrorType.ElementNotExist)
 

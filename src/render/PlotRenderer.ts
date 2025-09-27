@@ -98,7 +98,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
         let tooltipLines = [
             new TooltipValue(this.#labelsX.get(Math.round(this.#tooltipX))
-                ?? this.#labelsY.get(Math.round(this.#tooltipY)))
+                             ?? this.#labelsY.get(Math.round(this.#tooltipY)))
         ]
 
         const ctx = Helpers.Canvas.getContext(this.canvas)
@@ -142,13 +142,13 @@ class PlotRenderer extends Renderer<PlotData> {
                 const getTooltipValue = () => {
                     return {
                         x: value.x
-                            ? this.data.xType == PlotAxisType.Date
-                                ? this.#allValuesX[xIndex]
-                                : Helpers.Formatter.number(this.#allValuesX[xIndex])
-                            : '0',
+                           ? this.data.xType == PlotAxisType.Date
+                             ? this.#allValuesX[xIndex]
+                             : Helpers.Formatter.number(this.#allValuesX[xIndex])
+                           : '0',
                         y: value.y
-                            ? Helpers.Formatter.number(this.#allValuesY[yIndex])
-                            : '0'
+                           ? Helpers.Formatter.number(this.#allValuesY[yIndex])
+                           : '0'
                     }
                 }
 
@@ -186,7 +186,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                         let prevValue = {
                                             x: this.#paddings.left + xIndex * this.#x.step - this.#x.step / 2,
                                             y: this.#paddings.top + this.#plot.height - <number>next.y / this.#y.unit * this.#y.step
-                                                - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
+                                               - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
                                         }
 
                                         ctx.moveTo(prevValue.x, prevValue.y)
@@ -367,8 +367,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                             stackingAccumulator[xIndex] = 0
 
                                         let offset = stackingAccumulator[xIndex] != undefined
-                                            ? stackingAccumulator[xIndex]
-                                            : 0
+                                                     ? stackingAccumulator[xIndex]
+                                                     : 0
 
                                         yValue = this.canvas.height - this.#paddings.bottom + offset
                                         yHeight = (y - this.canvas.height + this.#paddings.bottom) * transition
@@ -388,8 +388,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                 })
                         } else {
                             let offset = stackingAccumulator[xIndex] != undefined
-                                ? stackingAccumulator[xIndex]
-                                : 0
+                                         ? stackingAccumulator[xIndex]
+                                         : 0
 
                             yValue = this.canvas.height - this.#paddings.bottom + offset
                             yHeight = y - this.canvas.height + this.#paddings.bottom
@@ -468,8 +468,8 @@ class PlotRenderer extends Renderer<PlotData> {
                 case PlotType.StackingColumn:
                     if (this.#hoverX) {
                         let offset = stackingAccumulator[this.#hoverX.index] != undefined
-                            ? stackingAccumulator[this.#hoverX.index]
-                            : 0
+                                     ? stackingAccumulator[this.#hoverX.index]
+                                     : 0
 
                         if (this.canvas.height - this.#paddings.bottom + offset > this.#paddings.top) {
                             ctx.lineWidth = 1
@@ -555,8 +555,8 @@ class PlotRenderer extends Renderer<PlotData> {
         const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
         return x - this.#x.step / 2 <= mouse.x && mouse.x < x + this.#x.step / 2
-            && this.#paddings.top <= mouse.y && mouse.y <= this.canvas.height - this.#paddings.bottom
-            && this.#paddings.left < mouse.x
+               && this.#paddings.top <= mouse.y && mouse.y <= this.canvas.height - this.#paddings.bottom
+               && this.#paddings.left < mouse.x
     }
 
     #isInArea(x: number, y: number, w: number, h: number): boolean {
@@ -566,7 +566,7 @@ class PlotRenderer extends Renderer<PlotData> {
         const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
         return mouse.x >= x && mouse.x <= x + w
-            && mouse.y >= y && mouse.y <= y + h
+               && mouse.y >= y && mouse.y <= y + h
     }
 
     #renderBase() {
@@ -620,10 +620,10 @@ class PlotRenderer extends Renderer<PlotData> {
             if (!this.#labelsX.has(labelXAsKey))
                 this.#labelsX.set(labelXAsKey,
                     this.data.xType == PlotAxisType.Date
-                        ? Helpers.Formatter.date(new Date(this.#allValuesX[i - 1]))
-                        : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                            ? this.#allValuesX[i - 1]
-                            : Helpers.Formatter.number(this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)))
+                    ? Helpers.Formatter.date(new Date(this.#allValuesX[i - 1]))
+                    : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
+                      ? this.#allValuesX[i - 1]
+                      : Helpers.Formatter.number(this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)))
 
             const label = {
                 x: labelX,
@@ -686,8 +686,8 @@ class PlotRenderer extends Renderer<PlotData> {
                     x: this.#paddings.left,
                     y: labelY,
                     label: this.#yAxisStep >= 1
-                        ? Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count) / this.#yAxisStep) * this.#yAxisStep
-                        : Math.round(this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count / this.#yAxisStep) * this.#yAxisStep
+                           ? Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count) / this.#yAxisStep) * this.#yAxisStep
+                           : Math.round(this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count / this.#yAxisStep) * this.#yAxisStep
                 }
 
                 let postfix = ''
@@ -826,8 +826,8 @@ class PlotRenderer extends Renderer<PlotData> {
 
         if (this.#yAxisStep != 1) {
             max = yValues.length > 10
-                ? (this.#y.max / 10 + this.#yAxisStep - (this.#y.max / 10) % this.#yAxisStep) * 10
-                : Math.ceil(this.#y.max / this.#yAxisStep) * this.#yAxisStep
+                  ? (this.#y.max / 10 + this.#yAxisStep - (this.#y.max / 10) % this.#yAxisStep) * 10
+                  : Math.ceil(this.#y.max / this.#yAxisStep) * this.#yAxisStep
 
             this.#y.max = max > this.data.yMax ? this.data.yMax : max
             this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / this.#allValuesY.length
@@ -835,7 +835,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
         this.#plot = {
             width: this.canvas.width - this.#paddings.left - this.#paddings.right,
-            height: this.canvas.height - this.#paddings.top - this.#paddings.bottom,
+            height: this.canvas.height - this.#paddings.top - this.#paddings.bottom
         } as DOMRect
 
         this.#x.minStep = this.#plot.width * 0.002

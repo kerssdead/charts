@@ -30,15 +30,15 @@ class Dropdown {
 
         this.#position = <DOMRect>{
             x: this.#options.x + width > this.#canvas.width
-                ? this.#canvas.width - width
-                : this.#options.x < 0
-                    ? this.#canvas.width + this.#options.x - width
-                    : this.#options.x,
+               ? this.#canvas.width - width
+               : this.#options.x < 0
+                 ? this.#canvas.width + this.#options.x - width
+                 : this.#options.x,
             y: this.#options.y + height > this.#canvas.height
-                ? this.#canvas.height - height
-                : this.#options.y < 0
-                    ? this.#canvas.height + this.#options.y - height
-                    : this.#options.y,
+               ? this.#canvas.height - height
+               : this.#options.y < 0
+                 ? this.#canvas.height + this.#options.y - height
+                 : this.#options.y,
             width: width,
             height: height
         }
@@ -118,7 +118,7 @@ class Dropdown {
                 dividers = this.#options.items.filter(value => !value.text)
 
             let maxWidth = Math.max(...items.map(value => Helper.stringWidth(value.text)))
-                + padding * 4
+                           + padding * 4
 
             if (x + maxWidth > this.#canvas.width - 4)
                 x -= x + maxWidth - this.#canvas.width + 4
@@ -135,9 +135,9 @@ class Dropdown {
                 y: y,
                 width: maxWidth,
                 height: items.length * 26
-                    + dividers.length * 4
-                    + (items.length == 1 ? padding : 0)
-                    + (items.length == 2 && dividers.length == 1 ? padding : 0)
+                        + dividers.length * 4
+                        + (items.length == 1 ? padding : 0)
+                        + (items.length == 2 && dividers.length == 1 ? padding : 0)
             }
 
             ctx.roundRect(rect.x, rect.y, rect.width, rect.height, borderRadius)
@@ -261,7 +261,7 @@ class Dropdown {
             trueY = event.clientY - this.#canvasPosition.y + scrollY
 
         return trueX >= x && trueX <= x + w
-            && trueY >= y && trueY <= y + h
+               && trueY >= y && trueY <= y + h
     }
 
     refresh() {

@@ -40,12 +40,12 @@ class Renderer<T extends Data> extends Renderable {
 
         if (+this.settings.width == 0)
             this.settings.width = dimension.width > this.settings.maxWidth && +this.settings.maxWidth != 0
-                ? this.settings.maxWidth
-                : dimension.width
+                                  ? this.settings.maxWidth
+                                  : dimension.width
         if (+this.settings.height == 0)
             this.settings.height = dimension.height > this.settings.maxHeight && +this.settings.maxHeight != 0
-                ? this.settings.maxHeight
-                : dimension.height
+                                   ? this.settings.maxHeight
+                                   : dimension.height
 
         const baseColor = this.settings.baseColor ?? Helper.randomColor()
         let adjustStep = Math.round(100 / this.settings.data.values.length),

@@ -24,15 +24,15 @@ class Button {
 
         this.#position = <DOMRect>{
             x: this.#options.x + width > this.#canvas.width
-                ? this.#canvas.width - width
-                : this.#options.x < 0
-                    ? this.#canvas.width + this.#options.x - width
-                    : this.#options.x,
+               ? this.#canvas.width - width
+               : this.#options.x < 0
+                 ? this.#canvas.width + this.#options.x - width
+                 : this.#options.x,
             y: this.#options.y + height > this.#canvas.height
-                ? this.#canvas.height - height
-                : this.#options.y < 0
-                    ? this.#canvas.height + this.#options.y - height
-                    : this.#options.y,
+               ? this.#canvas.height - height
+               : this.#options.y < 0
+                 ? this.#canvas.height + this.#options.y - height
+                 : this.#options.y,
             width: width,
             height: height
         }
@@ -109,6 +109,6 @@ class Button {
             trueY = event.clientY - this.#canvasPosition.y + scrollY
 
         return trueX >= this.#position.x && trueX <= this.#position.x + this.#position.width
-            && trueY >= this.#position.y && trueY <= this.#position.y + this.#position.height
+               && trueY >= this.#position.y && trueY <= this.#position.y + this.#position.height
     }
 }

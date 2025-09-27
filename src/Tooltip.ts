@@ -224,8 +224,8 @@ class Tooltip {
             return 0
 
         let opacityValue = this.#toHide
-            ? 1 - (new Date().getTime() - this.#timer.getTime()) / this.#animationDuration
-            : (new Date().getTime() - this.#timer.getTime()) / this.#animationDuration
+                           ? 1 - (new Date().getTime() - this.#timer.getTime()) / this.#animationDuration
+                           : (new Date().getTime() - this.#timer.getTime()) / this.#animationDuration
         if (opacityValue > 1)
             opacityValue = 1
         if (opacityValue < 0)

@@ -23,10 +23,10 @@ class Theme {
             Theme.setTheme(1)
 
         window.matchMedia('(prefers-color-scheme: dark)')
-            .addEventListener(Events.Change, event => {
-                Theme.setTheme(event.matches && (!isDark || isDark()) ? 1 : 0)
-                callback()
-            })
+              .addEventListener(Events.Change, event => {
+                  Theme.setTheme(event.matches && (!isDark || isDark()) ? 1 : 0)
+                  callback()
+              })
     }
 
     static setTheme(index: number) {
