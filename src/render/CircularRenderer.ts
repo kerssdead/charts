@@ -91,6 +91,9 @@ class CircularRenderer extends Renderer<CircularData> {
             this.renderContextMenu(this.data.values.find(v => v.id == this.#currentHover)?.data ?? {})
         else
             this.onContextMenuEvent = undefined
+
+        if (this.#currentHover)
+            this.canvas.style.cursor = Styles.Cursor.Pointer
     }
 
     #draw() {
@@ -256,8 +259,6 @@ class CircularRenderer extends Renderer<CircularData> {
 
                             if (transition == 0)
                                 return
-
-                            this.canvas.style.cursor = Styles.Cursor.Pointer
 
                             updateStyles(value.transition > transition
                                          ? value.transition
