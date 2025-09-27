@@ -228,7 +228,8 @@ class CircularRenderer extends Renderer<CircularData> {
                 ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
             }
 
-            if (!this.#isInsideSector(this.onMouseMoveEvent, value))
+            if (!this.#isInsideSector(this.onMouseMoveEvent, value)
+                || !this.animations.contains(value.id, AnimationType.MouseLeave))
                 this.animations.add(value.id,
                     AnimationType.MouseLeave,
                     {
