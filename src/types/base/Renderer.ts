@@ -108,6 +108,8 @@ class Renderer<T extends Data> extends Renderable {
                     data: data
                 })
 
+                this.contextMenu.resize()
+
                 this.onClickEvent = undefined
             }
 
