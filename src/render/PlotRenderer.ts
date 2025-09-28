@@ -416,6 +416,8 @@ class PlotRenderer extends Renderer<PlotData> {
                 }
             }
 
+            ctx.setLineDash([])
+
             switch (series.type) {
                 case PlotType.Line:
                     ctx.stroke()
