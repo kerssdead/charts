@@ -120,12 +120,11 @@ class Renderer<T extends Data> extends Renderable {
     #calculateSizes() {
         let domRect = this.node.getBoundingClientRect()
 
-        this.settings.width = this.settings.maxWidth && this.settings.maxWidth < domRect.width
-                              ? this.settings.maxWidth
-                              : domRect.width
-        this.settings.height = this.settings.maxHeight && this.settings.maxHeight < domRect.height
-                               ? this.settings.maxHeight
-                               : domRect.height
+        this.settings.maxWidth ??= this.settings.width ?? domRect.width
+        this.settings.maxHeight ??= this.settings.height ?? domRect.height
+
+        this.settings.width = this.settings.maxWidth
+        this.settings.height = this.settings.maxHeight
 
         this.canvas.width = this.settings.width
         this.canvas.height = this.settings.height
