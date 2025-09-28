@@ -79,6 +79,9 @@ class Tooltip {
 
         const textWidth = Math.max(...this.#lines.map(line => Helper.stringWidth(line.text ?? '') + (line.color ? 8 : 0)))
 
+        const padding = 6,
+            borderRadius = 6
+
         let x = event.clientX - this.#canvasPosition.x + 10,
             y = event.clientY - this.#canvasPosition.y + scrollY + 10
 
@@ -89,15 +92,17 @@ class Tooltip {
             y = this.#canvasPosition.height - 10 - this.#lines.length * 18
 
         ctx.beginPath()
-        ctx.roundRect(x, y, textWidth + 22, 16 + 16 * this.#lines.length, 20)
+        ctx.roundRect(x, y, textWidth + 22, 16 + 16 * this.#lines.length, borderRadius)
         let opacity = Math.round(this.#getOpacityValue() * 255).toString(16),
-            baseOpacity = Math.round(this.#getOpacityValue() * 77).toString(16)
+            baseOpacity = Math.round(this.#getOpacityValue() * 127).toString(16)
         if (opacity.length == 1)
             opacity = '0' + opacity
         if (baseOpacity.length == 1)
             baseOpacity = '0' + baseOpacity
 
-        ctx.fillStyle = '#000000' + baseOpacity
+        ctx.strokeStyle = Theme.dropdownBorder + baseOpacity
+        ctx.fillStyle = Theme.background + baseOpacity
+        ctx.stroke()
         ctx.fill()
 
         for (let line of this.#lines) {
@@ -114,7 +119,7 @@ class Tooltip {
 
             Helpers.TextStyles.tooltip(ctx)
             ctx.fillStyle = '#ffffff' + opacity
-            ctx.fillText(line.text ?? '', x + offset + 12, y + 22)
+            ctx.fillText(line.text ?? '', x + offset + padding * 2, y + 22)
 
             y += 16
         }
