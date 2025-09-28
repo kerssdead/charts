@@ -751,7 +751,8 @@ class PlotRenderer extends Renderer<PlotData> {
 
         ctx.stroke()
 
-        this.#base = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
+        if (this.canvas.width > 0 && this.canvas.height > 0)
+            this.#base = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
     }
 
     #calculateSizes() {
