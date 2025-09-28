@@ -590,8 +590,10 @@ class PlotRenderer extends Renderer<PlotData> {
         let xCounter = !isContainsBar ? 1 : 0,
             xStep = this.#allValuesX.length / xCount
 
+        const xIndexes = []
+
         for (let i = xCounter; i < this.#allValuesX.length + 1; i++) {
-            const labelX = this.#paddings.left + xCounter * xStep * this.#x.step,
+            const labelX = this.#paddings.left + i * this.#x.step,
                 labelXAsKey = Math.round(this.#paddings.left + i * this.#x.step)
 
             if (!this.#labelsX.has(labelXAsKey))
@@ -609,11 +611,12 @@ class PlotRenderer extends Renderer<PlotData> {
             }
 
             let isRender = i >= xCounter * xStep
+                && i % Math.round(xStep) == 0
 
             if (isRender) {
                 const textWidth = Helper.stringWidth(label.label),
                     imageDataX = label.x,
-                    imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth / 2, label.y + 4, textWidth > 0 ? textWidth : 1, 24).data.buffer)
+                    imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth, label.y + 4, textWidth > 0 ? textWidth * 2 : 1, 24).data.buffer)
 
                 for (let i = 0; i < imageData.length; i++)
                     if (Helpers.Canvas.isPixelBusy(imageData[i])) {
@@ -639,6 +642,8 @@ class PlotRenderer extends Renderer<PlotData> {
                 }
 
                 xCounter++
+
+                xIndexes.push(i)
             }
         }
 
