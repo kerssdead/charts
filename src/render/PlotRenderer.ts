@@ -190,7 +190,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                     duration: pointDuration,
                                     continuous: true,
                                     body: transition => {
-                                        if (index == 0 || transition < 0)
+                                        if (index == 0)
                                             return
 
                                         x = this.#paddings.left + xIndex * this.#x.step - this.#x.step / 2
@@ -205,9 +205,13 @@ class PlotRenderer extends Renderer<PlotData> {
                                                - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
                                         }
 
-                                        ctx.moveTo(prevValue.x, prevValue.y)
-                                        ctx.lineTo(prevValue.x + (this.#x.step + (x - prevValue.x)) * transition,
-                                            prevValue.y + (y - prevValue.y) * transition)
+                                        const endPointX =prevValue.x + (this.#x.step + (x - prevValue.x)) * transition,
+                                            endPointY = prevValue.y + (y - prevValue.y) * transition
+
+                                        if (prevValue.x != endPointX && prevValue.y != endPointY) {
+                                            ctx.moveTo(prevValue.x, prevValue.y)
+                                            ctx.lineTo(endPointX, endPointY)
+                                        }
                                     }
                                 })
                         } else {
