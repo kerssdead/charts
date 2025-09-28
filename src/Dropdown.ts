@@ -215,6 +215,8 @@ class Dropdown {
             }
         }
 
+        ctx.lineWidth = 1
+
         if (!this.#isOnlyMenu && clickEvent != undefined && this.isActive) {
             this.isActive = false
             clickEvent = undefined
