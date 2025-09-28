@@ -131,16 +131,16 @@ class Renderer<T extends Data> extends Renderable {
         this.settings.width = this.settings.minWidth && domRect.width < this.settings.minWidth
                               ? this.settings.minWidth
                               : domRect.width
-        this.settings.height = (this.settings.minHeight && domRect.height < this.settings.minHeight
+        this.settings.height = this.settings.minHeight && domRect.height < this.settings.minHeight
                                ? this.settings.minHeight
-                               : domRect.height)
-            - this.settings.legendHeight
+                               : domRect.height
 
         this.canvas.width = this.settings.width
         this.canvas.height = this.settings.height
 
         if (this.settings.enableLegend) {
-            if (this.settings.legendPlace == LegendPlace.Top
+            if (this.settings.legendPlace == undefined
+                || this.settings.legendPlace == LegendPlace.Top
                 || this.settings.legendPlace == LegendPlace.Bottom)
                 this.canvas.height -= Legend.getLegendHeight(this.settings.data.values, this.canvas.width)
 

@@ -17,8 +17,6 @@ class ChartSettings {
 
     minHeight: number | undefined
 
-    legendHeight: number | 0
-
     baseColor: string
 
     title: string

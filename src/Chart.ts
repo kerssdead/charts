@@ -25,16 +25,8 @@ class Chart {
 
         this.#prepareSettings()
 
-        if (settings.enableLegend) {
+        if (settings.enableLegend)
             this.#legend = new Legend(context, settings)
-
-            if (settings.legendPlace == undefined
-                || settings.legendPlace == LegendPlace.Bottom
-                || settings.legendPlace == LegendPlace.Top)
-                settings.legendHeight = this.#legend.canvas.height
-        }
-
-        settings.legendHeight ??= 0
 
         document.addEventListener(Events.VisibilityChanged, () => this.#renderer.resetMouse())
         window.addEventListener(Events.Blur, () => this.#renderer.resetMouse())
