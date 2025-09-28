@@ -10,16 +10,17 @@ class Legend extends Renderable {
 
         this.calculateSizes()
 
-        this.#button = new Button(this.canvas,
-            {
-                x: -10,
-                y: 10,
-                text: TextResources.reset,
-                action: () => {
-                    for (let value of settings.data.values)
-                        value.reset()
-                }
-            })
+        if (!this.settings.disableInteractions)
+            this.#button = new Button(this.canvas,
+                {
+                    x: -10,
+                    y: 10,
+                    text: TextResources.reset,
+                    action: () => {
+                        for (let value of settings.data.values)
+                            value.reset()
+                    }
+                })
 
         this.#offset = {
             x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
@@ -50,7 +51,7 @@ class Legend extends Renderable {
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
 
-        this.onClickEvent = this.#button.render(this.onMouseMoveEvent, this.onClickEvent)
+        this.onClickEvent = this.#button?.render(this.onMouseMoveEvent, this.onClickEvent)
 
         this.isInit = true
     }
@@ -173,7 +174,7 @@ class Legend extends Renderable {
 
     resize() {
         this.calculateSizes()
-        this.#button.resize()
+        this.#button?.resize()
         this.initAnimations()
     }
 

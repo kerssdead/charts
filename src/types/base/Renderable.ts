@@ -58,7 +58,7 @@ class Renderable {
         this.canvasPosition.x += scrollX
         this.canvasPosition.y += scrollY
 
-        if (!this.isInit) {
+        if (!this.isInit && !this.settings.disableInteractions) {
             this.canvas.onmousemove = event => this.onMouseMoveEvent = event
             this.canvas.onclick = event => this.onClickEvent = event
             this.canvas.oncontextmenu = event => {

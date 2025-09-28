@@ -59,7 +59,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         this.#pinned = []
 
-        this.canvas.dispatchEvent(new MouseEvent(Events.MouseMove))
+        this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
     }
 
     render() {
@@ -108,7 +108,7 @@ class CircularRenderer extends Renderer<CircularData> {
                 this.#drawSector(value)
 
             const value = this.data.values.find(v => v.id == this.#currentHover)
-            this.tooltip.render(!!value && !this.dropdown.isActive,
+            this.tooltip.render(!!value && !this.dropdown?.isActive,
                 this.onMouseMoveEvent,
                 [
                     new TooltipValue(`${ value?.label }: ${ Helpers.Formatter.number(value?.current) }`)
@@ -486,7 +486,7 @@ class CircularRenderer extends Renderer<CircularData> {
     refresh() {
         super.refresh()
 
-        this.dropdown.refresh()
+        this.dropdown?.refresh()
     }
 
     resize() {
@@ -494,7 +494,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         this.initAnimations()
         this.#calculateSizes()
-        this.dropdown.resize()
+        this.dropdown?.resize()
     }
 
     prepareSettings() {

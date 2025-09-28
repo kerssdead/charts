@@ -65,6 +65,9 @@ class Chart {
     }
 
     #prepareSettings() {
+        if (this.settings.disableInteractions)
+            this.settings.enableTooltip = false
+
         switch (this.settings.type) {
             case ChartType.Plot:
                 this.#renderer = new PlotRenderer(this.node, this.settings)
@@ -84,8 +87,12 @@ class Chart {
         }
 
         this.#renderer.prepareSettings()
-        this.#renderer.initDropdown()
-        this.#renderer.initAnimations()
+
+        if (!this.settings.disableInteractions) {
+            this.#renderer.initDropdown()
+            this.#renderer.initAnimations()
+        }
+
         this.#renderer.resize()
     }
 

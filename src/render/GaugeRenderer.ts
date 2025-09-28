@@ -13,7 +13,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
         this.#draw()
 
         const value = this.data.values[0]
-        this.tooltip.render(this.#isInsideSector(this.onMouseMoveEvent, value) && !this.dropdown.isActive,
+        this.tooltip.render(this.#isInsideSector(this.onMouseMoveEvent, value) && !this.dropdown?.isActive,
             this.onMouseMoveEvent,
             [
                 new TooltipValue(`${ value?.label }: ${ Helpers.Formatter.number(value?.current) }`)

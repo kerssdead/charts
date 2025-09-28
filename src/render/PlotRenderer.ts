@@ -493,7 +493,7 @@ class PlotRenderer extends Renderer<PlotData> {
             }
         }
 
-        this.tooltip.render(tooltipLines.length > 1 && !this.dropdown.isActive,
+        this.tooltip.render(tooltipLines.length > 1 && !this.dropdown?.isActive,
             this.onMouseMoveEvent,
             tooltipLines)
 

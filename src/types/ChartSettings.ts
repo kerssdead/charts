@@ -7,6 +7,8 @@ class ChartSettings {
 
     disableInitAnimation: boolean
 
+    disableInteractions: boolean
+
     width: number
 
     height: number
