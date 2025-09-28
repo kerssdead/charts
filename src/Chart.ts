@@ -19,6 +19,7 @@ class Chart {
         this.node.style.flexDirection = Styles.FlexDirection.Column
         this.node.style.alignItems = Styles.AlignItems.Center
         this.node.style.justifyContent = Styles.JustifyContent.Center
+        this.node.style.height = '100%'
 
         this.settings = settings
 
