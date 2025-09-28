@@ -72,6 +72,7 @@ class Renderer<T extends Data> extends Renderable {
         for (let item of this.settings.data.values) {
             item.id = Helper.guid()
             item.color ??= Helper.adjustColor(baseColor, adjustAmount += adjustStep)
+            item.label ??= TextResources.NoLabel
         }
 
         for (let item of this.settings.contextMenu ?? [])

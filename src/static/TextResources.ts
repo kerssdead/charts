@@ -22,4 +22,6 @@ class TextResources {
     static BillionShort = 'B'
 
     static Show = 'Show...'
+
+    static NoLabel = 'No Label'
 }
