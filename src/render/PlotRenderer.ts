@@ -630,6 +630,8 @@ class PlotRenderer extends Renderer<PlotData> {
             }
 
             if (isRender) {
+                ctx.fillStyle = Theme.text + 'b7'
+
                 ctx.fillText(label.label,
                     label.x - (!isContainsBar ? this.#x.step / 2 : 0),
                     label.y + axisLabelOffset)
