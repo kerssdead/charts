@@ -101,6 +101,7 @@ class Tooltip {
             baseOpacity = '0' + baseOpacity
 
         ctx.strokeStyle = Theme.dropdownBorder + baseOpacity
+        ctx.lineWidth = 1
         ctx.fillStyle = Theme.background + baseOpacity
         ctx.stroke()
         ctx.fill()
