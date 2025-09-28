@@ -308,7 +308,8 @@ class TreeRenderer extends Renderer<TreeData> {
 
         const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
-        return cell.x <= mouse.x && mouse.x <= cell.x + cell.w
+        return !(this.dropdown?.isActive ?? false)
+               && cell.x <= mouse.x && mouse.x <= cell.x + cell.w
                && cell.y <= mouse.y && mouse.y <= cell.y + cell.h
     }
 

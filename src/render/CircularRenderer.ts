@@ -403,7 +403,9 @@ class CircularRenderer extends Renderer<CircularData> {
             let index = this.#angles.findIndex(o => o.id == value.id),
                 sumBefore = this.#angles[index].sum
 
-            return sumBefore <= a && sumBefore + this.#angles[index].value - a >= 0
+            return !(this.dropdown?.isActive ?? false)
+                   && sumBefore <= a
+                   && sumBefore + this.#angles[index].value - a >= 0
         }
 
         const isWithinRadius = (v: Point) => {

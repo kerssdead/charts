@@ -533,7 +533,8 @@ class PlotRenderer extends Renderer<PlotData> {
 
         const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
-        return x - this.#x.step / 2 <= mouse.x && mouse.x < x + this.#x.step / 2
+        return !(this.dropdown?.isActive ?? false)
+               && x - this.#x.step / 2 <= mouse.x && mouse.x < x + this.#x.step / 2
                && this.#paddings.top <= mouse.y && mouse.y <= this.canvas.height - this.#paddings.bottom
                && this.#paddings.left < mouse.x
     }
@@ -544,7 +545,8 @@ class PlotRenderer extends Renderer<PlotData> {
 
         const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
-        return mouse.x >= x && mouse.x <= x + w
+        return !(this.dropdown?.isActive ?? false)
+               && mouse.x >= x && mouse.x <= x + w
                && mouse.y >= y && mouse.y <= y + h
     }
 

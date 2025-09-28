@@ -127,7 +127,9 @@ class GaugeRenderer extends Renderer<GaugeData> {
                 y: point.y - this.#center.y
             }
 
-        return isAngle(point) && isWithinRadius(inner)
+        return !(this.dropdown?.isActive ?? false)
+               && isAngle(point)
+               && isWithinRadius(inner)
     }
 
     #calculateSizes() {
