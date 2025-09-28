@@ -92,7 +92,7 @@ class Tooltip {
             y = this.#canvasPosition.height - 10 - this.#lines.length * 18
 
         ctx.beginPath()
-        ctx.roundRect(x, y, textWidth + 22, 16 + 16 * this.#lines.length, borderRadius)
+        ctx.roundRect(x, y, textWidth + 24, 16 + 16 * this.#lines.length, borderRadius)
         let opacity = Math.round(this.#getOpacityValue() * 255).toString(16),
             baseOpacity = Math.round(this.#getOpacityValue() * 127).toString(16)
         if (opacity.length == 1)
@@ -118,8 +118,8 @@ class Tooltip {
             }
 
             Helpers.TextStyles.tooltip(ctx)
-            ctx.fillStyle = '#ffffff' + opacity
-            ctx.fillText(line.text ?? '', x + offset + padding * 2, y + 22)
+            ctx.fillStyle = Theme.text + opacity
+            ctx.fillText(line.text ?? '', x + offset + padding * 2, y + 21)
 
             y += 16
         }
