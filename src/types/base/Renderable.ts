@@ -28,6 +28,8 @@ class Renderable {
 
         this.canvas = document.createElement(Tag.Canvas)
 
+        this.canvas.style.imageRendering = Styles.ImageRendering.Pixelated
+
         this.node.append(this.canvas)
 
         this.tooltip = new Tooltip(this.canvas, settings)
