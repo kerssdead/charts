@@ -109,8 +109,8 @@ class Decomposition {
         if (cloneSettings.title)
             cloneSettings.title = cloneSettings.title + ' (Other)'
         cloneSettings.data.values = values
-        cloneSettings.maxWidth = undefined
-        cloneSettings.maxHeight = undefined
+        cloneSettings.minWidth = undefined
+        cloneSettings.minHeight = undefined
 
         script.innerHTML = `
             new OCharts.chart(document.getElementById('${ id }'), ${ JSON.stringify(cloneSettings) })

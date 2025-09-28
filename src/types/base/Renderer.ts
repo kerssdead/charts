@@ -10,8 +10,6 @@ class Renderer<T extends Data> extends Renderable {
         super(node, settings)
 
         this.data = <T>settings.data
-
-        this.#calculateSizes()
     }
 
     render() {
@@ -42,19 +40,25 @@ class Renderer<T extends Data> extends Renderable {
     }
 
     prepareSettings() {
-        const dimension = this.node.parentElement!.getBoundingClientRect()
+        const domRect = this.node.parentElement!.getBoundingClientRect()
 
-        this.settings.maxWidth = this.settings.width ?? dimension.width
-        this.settings.maxHeight = this.settings.height ?? dimension.height
+        this.settings.minWidth = isNaN(+this.settings.width)
+                                 ? 0
+                                 : +this.settings.width
+        this.settings.minHeight = isNaN(+this.settings.height)
+                                  ? 0
+                                  : +this.settings.height
 
-        if (+this.settings.width == 0)
-            this.settings.width = dimension.width > this.settings.maxWidth && +this.settings.maxWidth != 0
-                                  ? this.settings.maxWidth
-                                  : dimension.width
-        if (+this.settings.height == 0)
-            this.settings.height = dimension.height > this.settings.maxHeight && +this.settings.maxHeight != 0
-                                   ? this.settings.maxHeight
-                                   : dimension.height
+        this.settings.width = this.settings.minWidth != 0 && domRect.width < this.settings.minWidth
+                              ? this.settings.minWidth
+                              : domRect.width
+
+        this.settings.height = this.settings.minHeight != 0 && domRect.height < this.settings.minHeight
+                               ? this.settings.minHeight
+                               : domRect.height
+
+        this.canvas.width = this.settings.width
+        this.canvas.height = this.settings.height
 
         const baseColor = this.settings.baseColor ?? Helper.randomColor()
         let adjustStep = Math.round(100 / this.settings.data.values.length),
@@ -72,6 +76,8 @@ class Renderer<T extends Data> extends Renderable {
             if (item.id != undefined)
                 item.action = data => this.node.dispatchEvent(new CustomEvent(item.id ?? '', { detail: data }))
     }
+
+    initDropdown() {}
 
     renderContextMenu(data: any) {
         if (this.onContextMenuEvent != undefined && this.settings.contextMenu?.length != 0) {
@@ -120,11 +126,13 @@ class Renderer<T extends Data> extends Renderable {
     #calculateSizes() {
         let domRect = this.node.getBoundingClientRect()
 
-        this.settings.maxWidth ??= this.settings.width ?? domRect.width
-        this.settings.maxHeight ??= this.settings.height ?? domRect.height
-
-        this.settings.width = this.settings.maxWidth
-        this.settings.height = this.settings.maxHeight
+        this.settings.width = this.settings.minWidth && domRect.width < this.settings.minWidth
+                              ? this.settings.minWidth
+                              : domRect.width
+        this.settings.height = (this.settings.minHeight && domRect.height < this.settings.minHeight
+                               ? this.settings.minHeight
+                               : domRect.height)
+            - this.settings.legendHeight
 
         this.canvas.width = this.settings.width
         this.canvas.height = this.settings.height

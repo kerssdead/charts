@@ -52,45 +52,10 @@ class PlotRenderer extends Renderer<PlotData> {
         if (settings.title)
             this.#paddings.top += Constants.Values.titleOffset
 
-        this.dropdown = new Dropdown(this.canvas,
-            {
-                x: -10,
-                y: 10,
-                text: TextResources.menu,
-                items: [
-                    {
-                        text: TextResources.exportPNG,
-                        action: () => {
-                            Export.asPng(this.canvas, this.settings.title)
-                        }
-                    },
-                    {
-                        text: TextResources.exportCSV,
-                        action: () => {
-                            Export.asCsv(Decomposition.toTable(PlotData.getRows(this.data)), this.settings.title)
-                        }
-                    },
-                    {
-                        isDivider: true
-                    } as DropdownItem,
-                    {
-                        text: TextResources.decomposeToTable,
-                        action: () => {
-                            new Modal(Decomposition.toTable(PlotData.getRows(this.data))).open()
-                        }
-                    }
-                ]
-            })
-
-
-        this.#calculateSizes()
-
         this.tooltip = new Tooltip(this.canvas, this.settings)
 
         this.#labelsX = new Map()
         this.#labelsY = new Map()
-
-        this.initAnimations()
     }
 
     render() {
@@ -891,5 +856,39 @@ class PlotRenderer extends Renderer<PlotData> {
                 }
             }
         }
+    }
+
+    initDropdown() {
+        super.initDropdown()
+
+        this.dropdown = new Dropdown(this.canvas,
+            {
+                x: -10,
+                y: 10,
+                text: TextResources.menu,
+                items: [
+                    {
+                        text: TextResources.exportPNG,
+                        action: () => {
+                            Export.asPng(this.canvas, this.settings.title)
+                        }
+                    },
+                    {
+                        text: TextResources.exportCSV,
+                        action: () => {
+                            Export.asCsv(Decomposition.toTable(PlotData.getRows(this.data)), this.settings.title)
+                        }
+                    },
+                    {
+                        isDivider: true
+                    } as DropdownItem,
+                    {
+                        text: TextResources.decomposeToTable,
+                        action: () => {
+                            new Modal(Decomposition.toTable(PlotData.getRows(this.data))).open()
+                        }
+                    }
+                ]
+            })
     }
 }

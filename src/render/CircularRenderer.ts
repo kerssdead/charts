@@ -55,43 +55,9 @@ class CircularRenderer extends Renderer<CircularData> {
                 })
         }
 
-        this.dropdown = new Dropdown(this.canvas,
-            {
-                x: -10,
-                y: 10,
-                text: TextResources.menu,
-                items: [
-                    {
-                        text: TextResources.exportPNG,
-                        action: () => {
-                            Export.asPng(this.canvas, this.settings.title)
-                        }
-                    },
-                    {
-                        text: TextResources.exportCSV,
-                        action: () => {
-                            Export.asCsv(Decomposition.toTable(CircularData.getRows(this.data)), this.settings.title)
-                        }
-                    },
-                    {
-                        isDivider: true
-                    } as DropdownItem,
-                    {
-                        text: TextResources.decomposeToTable,
-                        action: () => {
-                            new Modal(Decomposition.toTable(CircularData.getRows(this.data))).open()
-                        }
-                    }
-                ]
-            })
-
-        this.#calculateSizes()
-
         this.#startAngle = Math.random() % (Math.PI * 2)
 
         this.#pinned = []
-
-        this.initAnimations()
 
         this.canvas.dispatchEvent(new MouseEvent(Events.MouseMove))
     }
@@ -567,5 +533,39 @@ class CircularRenderer extends Renderer<CircularData> {
                 }
             }))
         }
+    }
+
+    initDropdown() {
+        super.initDropdown()
+
+        this.dropdown = new Dropdown(this.canvas,
+            {
+                x: -10,
+                y: 10,
+                text: TextResources.menu,
+                items: [
+                    {
+                        text: TextResources.exportPNG,
+                        action: () => {
+                            Export.asPng(this.canvas, this.settings.title)
+                        }
+                    },
+                    {
+                        text: TextResources.exportCSV,
+                        action: () => {
+                            Export.asCsv(Decomposition.toTable(CircularData.getRows(this.data)), this.settings.title)
+                        }
+                    },
+                    {
+                        isDivider: true
+                    } as DropdownItem,
+                    {
+                        text: TextResources.decomposeToTable,
+                        action: () => {
+                            new Modal(Decomposition.toTable(CircularData.getRows(this.data))).open()
+                        }
+                    }
+                ]
+            })
     }
 }

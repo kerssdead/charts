@@ -28,7 +28,7 @@ class Dropdown {
         const width = this.#isOnlyMenu ? 0 : Helper.stringWidth(this.#options.text ?? '') + 20,
             height = this.#isOnlyMenu ? 0 : 24
 
-        this.#position = <DOMRect>{
+        this.#position = {
             x: this.#options.x + width > this.#canvas.width
                ? this.#canvas.width - width
                : this.#options.x < 0
@@ -41,7 +41,7 @@ class Dropdown {
                  : this.#options.y,
             width: width,
             height: height
-        }
+        } as DOMRect
     }
 
     render(moveEvent: MouseEvent, clickEvent: MouseEvent | undefined) {

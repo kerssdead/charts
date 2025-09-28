@@ -9,9 +9,11 @@ class ChartSettings {
 
     height: number
 
-    maxWidth: number | undefined
+    minWidth: number | undefined
 
-    maxHeight: number | undefined
+    minHeight: number | undefined
+
+    legendHeight: number | 0
 
     baseColor: string
 

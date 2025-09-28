@@ -31,8 +31,10 @@ class Chart {
             if (settings.legendPlace == undefined
                 || settings.legendPlace == LegendPlace.Bottom
                 || settings.legendPlace == LegendPlace.Top)
-                settings.maxHeight = (settings.maxHeight ?? settings.height) - this.#legend.canvas.height
+                settings.legendHeight = this.#legend.canvas.height
         }
+
+        settings.legendHeight ??= 0
 
         document.addEventListener(Events.VisibilityChanged, () => this.#renderer.resetMouse())
         window.addEventListener(Events.Blur, () => this.#renderer.resetMouse())
@@ -82,6 +84,9 @@ class Chart {
         }
 
         this.#renderer.prepareSettings()
+        this.#renderer.initDropdown()
+        this.#renderer.initAnimations()
+        this.#renderer.resize()
     }
 
     #refresh() {

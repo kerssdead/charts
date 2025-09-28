@@ -14,33 +14,6 @@ class TreeRenderer extends Renderer<TreeData> {
 
         for (let item of this.data.values)
             item.color = Helper.adjustColor(baseColor, adjustAmount += adjustStep)
-
-        this.dropdown = new Dropdown(this.canvas,
-            {
-                x: -10,
-                y: 10,
-                text: TextResources.menu,
-                items: [
-                    {
-                        text: TextResources.exportCSV,
-                        action: () => {
-                            Export.asCsv(Decomposition.toTable(TreeData.getRows(this.data)), this.settings.title)
-                        }
-                    },
-                    {
-                        isDivider: true
-                    } as DropdownItem,
-                    {
-                        text: TextResources.decomposeToTable,
-                        action: () => {
-                            new Modal(Decomposition.toTable(TreeData.getRows(this.data))).open()
-                        }
-                    }
-                ]
-            })
-
-
-        this.initAnimations()
     }
 
     render() {
@@ -370,5 +343,34 @@ class TreeRenderer extends Renderer<TreeData> {
             item.disabled = !item.value
             item.value ??= 0
         }
+    }
+
+    initDropdown() {
+        super.initDropdown()
+
+        this.dropdown = new Dropdown(this.canvas,
+            {
+                x: -10,
+                y: 10,
+                text: TextResources.menu,
+                items: [
+                    {
+                        text: TextResources.exportCSV,
+                        action: () => {
+                            Export.asCsv(Decomposition.toTable(TreeData.getRows(this.data)), this.settings.title)
+                        }
+                    },
+                    {
+                        isDivider: true
+                    } as DropdownItem,
+                    {
+                        text: TextResources.decomposeToTable,
+                        action: () => {
+                            new Modal(Decomposition.toTable(TreeData.getRows(this.data))).open()
+                        }
+                    }
+                ]
+            })
+
     }
 }

@@ -5,24 +5,6 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
     constructor(node: HTMLElement, settings: ChartSettings) {
         super(node, settings)
-
-        this.#calculateSizes()
-        this.initAnimations()
-
-        this.dropdown = new Dropdown(this.canvas,
-            {
-                x: -10,
-                y: 10,
-                text: TextResources.menu,
-                items: [
-                    {
-                        text: TextResources.exportPNG,
-                        action: () => {
-                            Export.asPng(this.canvas, this.settings.title)
-                        }
-                    }
-                ]
-            })
     }
 
     render() {
@@ -182,5 +164,24 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
         if (this.data.values.length > 0 && this.data.values[0].value > this.data.max)
             this.data.values[0].value = this.data.max
+    }
+
+    initDropdown() {
+        super.initDropdown()
+
+        this.dropdown = new Dropdown(this.canvas,
+            {
+                x: -10,
+                y: 10,
+                text: TextResources.menu,
+                items: [
+                    {
+                        text: TextResources.exportPNG,
+                        action: () => {
+                            Export.asPng(this.canvas, this.settings.title)
+                        }
+                    }
+                ]
+            })
     }
 }
