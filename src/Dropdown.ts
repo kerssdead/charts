@@ -22,26 +22,6 @@ class Dropdown {
         this.#isOnlyMenu = this.#options.text == undefined
 
         this.animations = new Animations()
-
-        this.#initAnimations()
-
-        const width = this.#isOnlyMenu ? 0 : Helper.stringWidth(this.#options.text ?? '') + 20,
-            height = this.#isOnlyMenu ? 0 : 24
-
-        this.#position = {
-            x: this.#options.x + width > this.#canvas.width
-               ? this.#canvas.width - width
-               : this.#options.x < 0
-                 ? this.#canvas.width + this.#options.x - width
-                 : this.#options.x,
-            y: this.#options.y + height > this.#canvas.height
-               ? this.#canvas.height - height
-               : this.#options.y < 0
-                 ? this.#canvas.height + this.#options.y - height
-                 : this.#options.y,
-            width: width,
-            height: height
-        } as DOMRect
     }
 
     render(moveEvent: MouseEvent, clickEvent: MouseEvent | undefined) {
@@ -274,5 +254,26 @@ class Dropdown {
 
     resize() {
         this.#initAnimations()
+        this.#calculatePosition()
+    }
+
+    #calculatePosition() {
+        const width = this.#isOnlyMenu ? 0 : Helper.stringWidth(this.#options.text ?? '') + 20,
+            height = this.#isOnlyMenu ? 0 : 24
+
+        this.#position = {
+            x: this.#options.x + width > this.#canvas.width
+               ? this.#canvas.width - width
+               : this.#options.x < 0
+                 ? this.#canvas.width + this.#options.x - width
+                 : this.#options.x,
+            y: this.#options.y + height > this.#canvas.height
+               ? this.#canvas.height - height
+               : this.#options.y < 0
+                 ? this.#canvas.height + this.#options.y - height
+                 : this.#options.y,
+            width: width,
+            height: height
+        } as DOMRect
     }
 }

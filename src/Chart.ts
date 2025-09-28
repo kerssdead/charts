@@ -28,6 +28,8 @@ class Chart {
         if (settings.enableLegend)
             this.#legend = new Legend(context, settings)
 
+        this.#renderer.dropdown?.refresh()
+
         document.addEventListener(Events.VisibilityChanged, () => this.#renderer.resetMouse())
         window.addEventListener(Events.Blur, () => this.#renderer.resetMouse())
     }
