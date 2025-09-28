@@ -10,6 +10,8 @@ class Renderer<T extends Data> extends Renderable {
         super(node, settings)
 
         this.data = <T>settings.data
+
+        this.isInit = settings.disableInitAnimation
     }
 
     render() {

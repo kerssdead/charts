@@ -43,7 +43,7 @@ class Renderable {
 
     refresh() {
         this.tooltip.refresh()
-        this.isInit = false
+        this.isInit = this.settings.disableInitAnimation
     }
 
     resetMouse() {

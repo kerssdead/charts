@@ -5,6 +5,8 @@ class ChartSettings {
 
     enableOther: boolean
 
+    disableInitAnimation: boolean
+
     width: number
 
     height: number
