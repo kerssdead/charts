@@ -47,8 +47,8 @@ class TreeRenderer extends Renderer<TreeData> {
         for (let i = 0; i < this.data.values.length; i++) {
             const item = this.data.values[i]
 
-            const remainWidth = maxWidth - minX + this.data.padding,
-                remainHeight = maxHeight - minY + this.data.padding + titleOffset
+            const remainWidth = maxWidth - minX - this.data.padding,
+                remainHeight = maxHeight - minY + titleOffset - this.data.padding
 
             let cells: TreeCell[] = [
                 <TreeCell>{
