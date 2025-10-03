@@ -5,6 +5,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
     constructor(node: HTMLElement, settings: ChartSettings) {
         super(node, settings)
+
+        settings.enableLegend = false
     }
 
     render() {
