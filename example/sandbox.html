@@ -345,6 +345,15 @@
                         let x = 0,
                             y = 0
 
+                        if (plotType === 1) {
+                            points.push({
+                                x: j,
+                                y: sameValue
+                            })
+
+                            continue
+                        }
+
                         switch (valuesType) {
                             case 0:
                                 x = j
