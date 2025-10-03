@@ -285,6 +285,8 @@ class PlotRenderer extends Renderer<PlotData> {
                     case PlotType.Bar:
                         y = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
 
+                        const seriesHeight= series.width ?? barHeight
+
                         if (!this.isInit || this.animations.contains(value.id + barsIndex, AnimationType.Init)) {
                             this.animations.add(value.id + barsIndex,
                                 AnimationType.Init,
@@ -298,16 +300,16 @@ class PlotRenderer extends Renderer<PlotData> {
                                                         .indexOf(series)
 
                                         ctx.fillRect(x,
-                                            y - this.#y.step / 4 + barsIndex * barHeight,
+                                            y - this.#y.step / 4 + barsIndex * seriesHeight,
                                             <number>value.x / this.#x.unit * this.#x.step * transition,
-                                            barHeight)
+                                            seriesHeight)
                                     }
                                 })
                         } else {
                             if (this.#isInArea(x,
-                                y - this.#y.step / 4 + barsIndex * barHeight,
+                                y - this.#y.step / 4 + barsIndex * seriesHeight,
                                 <number>value.x / this.#x.unit * this.#x.step,
-                                barHeight)) {
+                                seriesHeight)) {
                                 this.#hoverX = {
                                     x: x,
                                     y: y,
@@ -324,9 +326,9 @@ class PlotRenderer extends Renderer<PlotData> {
                             }
 
                             ctx.fillRect(x,
-                                y - this.#y.step / 4 + barsIndex * barHeight,
+                                y - this.#y.step / 4 + barsIndex * seriesHeight,
                                 <number>value.x / this.#x.unit * this.#x.step,
-                                barHeight)
+                                seriesHeight)
                         }
 
                         break
