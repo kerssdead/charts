@@ -170,7 +170,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                                - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
                                         }
 
-                                        const endPointX =prevValue.x + (this.#x.step + (x - prevValue.x)) * transition,
+                                        const endPointX = prevValue.x + (this.#x.step + (x - prevValue.x)) * transition,
                                             endPointY = prevValue.y + (y - prevValue.y) * transition
 
                                         if (prevValue.x != endPointX && prevValue.y != endPointY) {
@@ -192,7 +192,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                 }
 
                                 tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
-                                this.#tooltipX = x + this.#x.step / 2
+                                this.#tooltipX = x - this.#x.step / 2
                             }
                         }
 
@@ -285,7 +285,7 @@ class PlotRenderer extends Renderer<PlotData> {
                     case PlotType.Bar:
                         y = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
 
-                        const seriesHeight= series.width ?? barHeight
+                        const seriesHeight = series.width ?? barHeight
 
                         if (this.state == RenderState.Init || this.animations.contains(value.id + barsIndex, AnimationType.Init)) {
                             this.animations.add(value.id + barsIndex,
@@ -563,8 +563,7 @@ class PlotRenderer extends Renderer<PlotData> {
         const axisLabelOffset = 12,
             axisLineColor = Theme.lineAxis
 
-        const isContainsColumn = this.data.values.filter(s => s.type == PlotType.Column).length > 0,
-            isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0
+        const isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0
 
         if (this.data.xTitle || this.data.yTitle) {
             ctx.textAlign = 'center'
@@ -591,68 +590,56 @@ class PlotRenderer extends Renderer<PlotData> {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
 
-        const xCount = this.#x.count > 20 ? 20 : this.#x.count
+        const step = this.#x.step,
+            xYPos = this.canvas.height - this.#paddings.bottom
 
-        let xCounter = !isContainsBar ? 1 : 0,
-            xStep = this.#allValuesX.length / xCount
+        let xCounter = 0,
+            acc = this.#paddings.left + step / 2
 
-        const xIndexes = []
+        for (let i = 0; i < this.#allValuesX.length + 1; i++)
+            this.#labelsX.trySet(
+                Math.round(this.#paddings.left + i * this.#x.step),
+                this.data.xType == PlotAxisType.Date
+                ? Helpers.Formatter.date(new Date(this.#allValuesX[i - 1]))
+                : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
+                  ? this.#allValuesX[i - 1]
+                  : Helpers.Formatter.number(
+                        this.#x.min + i * (this.#x.max - this.#x.min) / (this.#x.count - 1)
+                    )
+            )
 
-        for (let i = xCounter; i < this.#allValuesX.length + 1; i++) {
-            const labelX = this.#paddings.left + i * this.#x.step,
-                labelXAsKey = Math.round(this.#paddings.left + i * this.#x.step)
+        const maxLabelWidth = Math.max(
+            ...[...this.#labelsX.values()].map(label => Math.ceil(Helper.stringWidth(label)))
+        ) + 10
+        const maxCount = Math.floor(
+            (this.canvas.width - this.#paddings.left - this.#paddings.right) / maxLabelWidth
+        )
+        const renderStep = Math.ceil(1 / (maxCount / this.#allValuesX.length))
 
-            if (!this.#labelsX.has(labelXAsKey))
-                this.#labelsX.set(labelXAsKey,
-                    this.data.xType == PlotAxisType.Date
-                    ? Helpers.Formatter.date(new Date(this.#allValuesX[i - 1]))
-                    : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                      ? this.#allValuesX[i - 1]
-                      : Helpers.Formatter.number(this.#x.min + (i + (isContainsColumn ? -1 : 0)) * (this.#x.max - this.#x.min) / (this.#x.count - 1)))
-
-            const label = {
-                x: labelX,
-                y: this.canvas.height - this.#paddings.bottom,
-                label: this.#labelsX.get(labelXAsKey) ?? ''
-            }
-
-            let isRender = i >= xCounter * xStep
-                && i % Math.round(xStep) == 0
-
-            if (isRender) {
-                const textWidth = Helper.stringWidth(label.label),
-                    imageDataX = label.x,
-                    imageData = new Uint32Array(ctx.getImageData(imageDataX - textWidth, label.y + 4, textWidth > 0 ? textWidth * 2 : 1, 24).data.buffer)
-
-                for (let i = 0; i < imageData.length; i++)
-                    if (Helpers.Canvas.isPixelBusy(imageData[i])) {
-                        isRender = false
-                        break
-                    }
-            }
-
-            if (isRender) {
+        while (acc < this.canvas.width - this.#paddings.right) {
+            if (xCounter % renderStep == 0) {
                 ctx.fillStyle = Theme.text + 'b7'
 
-                ctx.fillText(label.label,
-                    label.x - (!isContainsBar ? this.#x.step / 2 : 0),
-                    label.y + axisLabelOffset)
+                ctx.fillText(
+                    this.#labelsX.get(Math.round(acc - this.#x.step / 2)) ?? '',
+                    acc,
+                    xYPos + axisLabelOffset / 2
+                )
 
                 if (isContainsBar) {
                     ctx.beginPath()
 
-                    ctx.moveTo(label.x, label.y)
-                    ctx.lineTo(label.x, this.#paddings.top)
+                    ctx.moveTo(acc, xYPos)
+                    ctx.lineTo(acc, this.#paddings.top)
 
                     ctx.lineWidth = 1
                     ctx.strokeStyle = axisLineColor
                     ctx.stroke()
                 }
-
-                xCounter++
-
-                xIndexes.push(i)
             }
+
+            acc += step
+            xCounter++
         }
 
         ctx.textAlign = 'right'
