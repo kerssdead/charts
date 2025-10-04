@@ -85,11 +85,11 @@ class Tooltip {
         let x = event.clientX - this.#canvasPosition.x + 10,
             y = event.clientY - this.#canvasPosition.y + scrollY + 10
 
-        if (x + textWidth + 16 > this.#canvasPosition.width)
-            x = this.#canvasPosition.width - (textWidth + 16)
+        if (x + textWidth + 25 > this.#canvasPosition.width)
+            x = this.#canvasPosition.width - (textWidth + 25)
 
-        if (y + 10 + this.#lines.length * 18 > this.#canvasPosition.height)
-            y = this.#canvasPosition.height - 10 - this.#lines.length * 18
+        if (y + 4 + this.#lines.length * 18 > this.#canvasPosition.height)
+            y = this.#canvasPosition.height - 4 - this.#lines.length * 18
 
         ctx.beginPath()
         ctx.roundRect(x, y, textWidth + 24, 16 + 16 * this.#lines.length, borderRadius)
