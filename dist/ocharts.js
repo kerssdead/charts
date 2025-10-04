@@ -2126,7 +2126,7 @@ class PlotRenderer extends Renderer {
                                     series: series
                                 }, "f");
                                 tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
-                                __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x + __classPrivateFieldGet(this, _PlotRenderer_x, "f").step, "f");
+                                __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x, "f");
                                 ctx.fillStyle += '88';
                             }
                             else {
@@ -2215,7 +2215,7 @@ class PlotRenderer extends Renderer {
                                         series: series
                                     }, "f");
                                     tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
-                                    __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x + __classPrivateFieldGet(this, _PlotRenderer_x, "f").step, "f");
+                                    __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x, "f");
                                     ctx.fillStyle += '88';
                                 }
                                 else {
@@ -2268,8 +2268,8 @@ class PlotRenderer extends Renderer {
                         if (this.canvas.height - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom + offset > __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").top) {
                             ctx.lineWidth = 1;
                             ctx.strokeStyle = axisLineHoverColor;
-                            ctx.moveTo(__classPrivateFieldGet(this, _PlotRenderer_tooltipX, "f") - __classPrivateFieldGet(this, _PlotRenderer_x, "f").step / 2, __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").top);
-                            ctx.lineTo(__classPrivateFieldGet(this, _PlotRenderer_tooltipX, "f") - __classPrivateFieldGet(this, _PlotRenderer_x, "f").step / 2, this.canvas.height - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom + offset);
+                            ctx.moveTo(__classPrivateFieldGet(this, _PlotRenderer_tooltipX, "f") + __classPrivateFieldGet(this, _PlotRenderer_x, "f").step / 2, __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").top);
+                            ctx.lineTo(__classPrivateFieldGet(this, _PlotRenderer_tooltipX, "f") + __classPrivateFieldGet(this, _PlotRenderer_x, "f").step / 2, this.canvas.height - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom + offset);
                             ctx.stroke();
                         }
                     }

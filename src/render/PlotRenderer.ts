@@ -271,7 +271,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                 }
 
                                 tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
-                                this.#tooltipX = x + this.#x.step
+                                this.#tooltipX = x
 
                                 ctx.fillStyle += '88'
                             } else {
@@ -404,7 +404,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                     }
 
                                     tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
-                                    this.#tooltipX = x + this.#x.step
+                                    this.#tooltipX = x
 
                                     ctx.fillStyle += '88'
                                 } else {
@@ -477,9 +477,9 @@ class PlotRenderer extends Renderer<PlotData> {
                         if (this.canvas.height - this.#paddings.bottom + offset > this.#paddings.top) {
                             ctx.lineWidth = 1
                             ctx.strokeStyle = axisLineHoverColor
-                            ctx.moveTo(this.#tooltipX - this.#x.step / 2,
+                            ctx.moveTo(this.#tooltipX + this.#x.step / 2,
                                 this.#paddings.top)
-                            ctx.lineTo(this.#tooltipX - this.#x.step / 2,
+                            ctx.lineTo(this.#tooltipX + this.#x.step / 2,
                                 this.canvas.height - this.#paddings.bottom + offset)
                             ctx.stroke()
                         }
