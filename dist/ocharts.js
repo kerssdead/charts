@@ -1523,7 +1523,7 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
         const value = this.data.values.find(v => v.id == __classPrivateFieldGet(this, _CircularRenderer_currentHover, "f"));
         this.tooltip.render(!!value && !this.dropdown?.isActive, this.onMouseMoveEvent, [
             new TooltipValue(`${value?.label}: ${Formatter.number(value?.current)}`)
-        ]);
+        ], value);
         __classPrivateFieldGet(this, _CircularRenderer_instances, "m", _CircularRenderer_drawInnerTitle).call(this);
     }
     if (!this.isDestroy)
@@ -1819,7 +1819,7 @@ class GaugeRenderer extends Renderer {
         const value = this.data.values[0];
         this.tooltip.render(__classPrivateFieldGet(this, _GaugeRenderer_instances, "m", _GaugeRenderer_isInsideSector).call(this, this.onMouseMoveEvent, value) && !this.dropdown?.isActive, this.onMouseMoveEvent, [
             new TooltipValue(`${value?.label}: ${Formatter.number(value?.current)}`)
-        ]);
+        ], value);
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this));
         this.state = RenderState.Idle;
@@ -2122,7 +2122,8 @@ class PlotRenderer extends Renderer {
                                     x: x,
                                     y: y,
                                     index: index,
-                                    data: value.data
+                                    data: value.data,
+                                    series: series
                                 }, "f");
                                 tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
                                 __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x + __classPrivateFieldGet(this, _PlotRenderer_x, "f").step, "f");
@@ -2155,7 +2156,8 @@ class PlotRenderer extends Renderer {
                                     x: x,
                                     y: y,
                                     index: index,
-                                    data: value.data
+                                    data: value.data,
+                                    series: series
                                 }, "f");
                                 ctx.fillStyle += '88';
                                 tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().x}`, series.color));
@@ -2209,7 +2211,8 @@ class PlotRenderer extends Renderer {
                                         x: x,
                                         y: y,
                                         index: xIndex,
-                                        data: value.data
+                                        data: value.data,
+                                        series: series
                                     }, "f");
                                     tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
                                     __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x + __classPrivateFieldGet(this, _PlotRenderer_x, "f").step, "f");
@@ -2285,7 +2288,9 @@ class PlotRenderer extends Renderer {
             }
         }
         __classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_renderBase).call(this);
-        this.tooltip.render(tooltipLines.length > 1 && !this.dropdown?.isActive, this.onMouseMoveEvent, tooltipLines);
+        this.tooltip.render(tooltipLines.length > 1 && !this.dropdown?.isActive, this.onMouseMoveEvent, tooltipLines, __classPrivateFieldGet(this, _PlotRenderer_hoverX, "f")
+            ? __classPrivateFieldGet(this, _PlotRenderer_hoverX, "f").series.values[__classPrivateFieldGet(this, _PlotRenderer_hoverX, "f").index]
+            : undefined);
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this));
         this.state = RenderState.Idle;

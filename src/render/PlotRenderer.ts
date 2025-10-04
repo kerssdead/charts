@@ -266,7 +266,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                     x: x,
                                     y: y,
                                     index: index,
-                                    data: value.data
+                                    data: value.data,
+                                    series: series
                                 }
 
                                 tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
@@ -317,7 +318,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                     x: x,
                                     y: y,
                                     index: index,
-                                    data: value.data
+                                    data: value.data,
+                                    series: series
                                 }
 
                                 ctx.fillStyle += '88'
@@ -397,7 +399,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                         x: x,
                                         y: y,
                                         index: xIndex,
-                                        data: value.data
+                                        data: value.data,
+                                        series: series
                                     }
 
                                     tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
@@ -507,7 +510,10 @@ class PlotRenderer extends Renderer<PlotData> {
 
         this.tooltip.render(tooltipLines.length > 1 && !this.dropdown?.isActive,
             this.onMouseMoveEvent,
-            tooltipLines)
+            tooltipLines,
+            this.#hoverX
+            ? this.#hoverX.series!.values[this.#hoverX.index]
+            : undefined)
 
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))

@@ -19,7 +19,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
             this.onMouseMoveEvent,
             [
                 new TooltipValue(`${ value?.label }: ${ Formatter.number(value?.current) }`)
-            ])
+            ],
+            value)
 
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))

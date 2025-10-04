@@ -117,7 +117,8 @@ class CircularRenderer extends Renderer<CircularData> {
                 this.onMouseMoveEvent,
                 [
                     new TooltipValue(`${ value?.label }: ${ Formatter.number(value?.current) }`)
-                ])
+                ],
+                value)
 
             this.#drawInnerTitle()
         }
