@@ -94,7 +94,7 @@ class Tooltip {
         ctx.beginPath()
         ctx.roundRect(x, y, textWidth + 24, 16 + 16 * this.#lines.length, borderRadius)
         let opacity = Math.round(this.#getOpacityValue() * 255).toString(16),
-            baseOpacity = Math.round(this.#getOpacityValue() * 127).toString(16)
+            baseOpacity = Math.round(this.#getOpacityValue() * 207).toString(16)
         if (opacity.length == 1)
             opacity = '0' + opacity
         if (baseOpacity.length == 1)
