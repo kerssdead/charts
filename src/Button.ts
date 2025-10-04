@@ -42,7 +42,7 @@ class Button {
         if (!this.#isInit)
             this.#initAnimations()
 
-        const ctx = Helpers.Canvas.getContext(this.#canvas)
+        const ctx = Canvas.getContext(this.#canvas)
 
         ctx.beginPath()
 
@@ -87,7 +87,7 @@ class Button {
         ctx.roundRect(this.#position.x, this.#position.y, this.#position.width, this.#position.height, 4)
         ctx.fill()
 
-        Helpers.TextStyles.regular(ctx)
+        TextStyles.regular(ctx)
         ctx.fillText(this.#options.text,
             this.#position.x + this.#position.width / 2,
             this.#position.y + this.#position.height / 2)

@@ -18,7 +18,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
         this.tooltip.render(this.#isInsideSector(this.onMouseMoveEvent, value) && !this.dropdown?.isActive,
             this.onMouseMoveEvent,
             [
-                new TooltipValue(`${ value?.label }: ${ Helpers.Formatter.number(value?.current) }`)
+                new TooltipValue(`${ value?.label }: ${ Formatter.number(value?.current) }`)
             ])
 
         if (!this.isDestroy)
@@ -30,7 +30,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
     }
 
     #draw() {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         const value = this.data.values[0] ?? { id: Helper.guid() }
 
@@ -90,7 +90,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
             ctx.strokeStyle = Theme.text + opacity
             ctx.stroke()
 
-            Helpers.TextStyles.regular(ctx)
+            TextStyles.regular(ctx)
             ctx.fillStyle = Theme.text + opacity
             ctx.fillText((this.data.max - localAngle / Math.PI * this.data.max).toString(), point3.x, point3.y)
 

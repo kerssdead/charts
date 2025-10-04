@@ -66,9 +66,9 @@ class PlotRenderer extends Renderer<PlotData> {
                              ?? this.#labelsY.get(Math.round(this.#tooltipY)))
         ]
 
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
-        Helpers.TextStyles.regular(ctx)
+        TextStyles.regular(ctx)
         ctx.lineJoin = 'round'
 
         const axisLineHoverColor = Theme.lineActive
@@ -126,10 +126,10 @@ class PlotRenderer extends Renderer<PlotData> {
                         x: value.x
                            ? this.data.xType == PlotAxisType.Date
                              ? this.#allValuesX[xIndex]
-                             : Helpers.Formatter.number(this.#allValuesX[xIndex])
+                             : Formatter.number(this.#allValuesX[xIndex])
                            : '0',
                         y: value.y
-                           ? Helpers.Formatter.number(this.#allValuesY[yIndex])
+                           ? Formatter.number(this.#allValuesY[yIndex])
                            : '0'
                     }
                 }
@@ -451,7 +451,7 @@ class PlotRenderer extends Renderer<PlotData> {
                 case PlotType.AttentionLine:
                     ctx.stroke()
 
-                    Helpers.TextStyles.regular(ctx)
+                    TextStyles.regular(ctx)
                     ctx.fillText(series.label,
                         this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
                         this.canvas.height - this.#paddings.bottom - <number>series.values[0].y / this.#y.unit * this.#y.step + 16)
@@ -553,7 +553,7 @@ class PlotRenderer extends Renderer<PlotData> {
     }
 
     #renderBase() {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         if (this.#base) {
             ctx.putImageData(this.#base, 0, 0)
@@ -600,10 +600,10 @@ class PlotRenderer extends Renderer<PlotData> {
             this.#labelsX.trySet(
                 Math.round(this.#paddings.left + i * this.#x.step),
                 this.data.xType == PlotAxisType.Date
-                ? Helpers.Formatter.date(new Date(this.#allValuesX[i - 1]))
+                ? Formatter.date(new Date(this.#allValuesX[i - 1]))
                 : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                   ? this.#allValuesX[i - 1]
-                  : Helpers.Formatter.number(
+                  : Formatter.number(
                         this.#x.min + i * (this.#x.max - this.#x.min) / (this.#x.count - 1)
                     )
             )
@@ -656,7 +656,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
             if (!this.#labelsY.get(labelYAsKey))
                 this.#labelsY.set(labelYAsKey,
-                    Helpers.Formatter.number(this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count))
+                    Formatter.number(this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count))
 
             if (i >= yCounter * yStep) {
                 const label = {
@@ -683,7 +683,7 @@ class PlotRenderer extends Renderer<PlotData> {
                     }
                 }
 
-                ctx.fillText(Helpers.Formatter.number(label.label) + postfix,
+                ctx.fillText(Formatter.number(label.label) + postfix,
                     label.x - axisLabelOffset,
                     label.y + (isContainsBar ? this.#y.step / 2 : 0))
 
@@ -793,7 +793,7 @@ class PlotRenderer extends Renderer<PlotData> {
             this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
         }
 
-        const yMaxWidth = Helper.stringWidth(Helpers.Formatter.number(this.#y.max))
+        const yMaxWidth = Helper.stringWidth(Formatter.number(this.#y.max))
         if (yMaxWidth > this.#paddings.left - 40) {
             this.#paddings.left += yMaxWidth - this.#paddings.left + 40
             this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length

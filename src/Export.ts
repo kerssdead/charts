@@ -1,7 +1,7 @@
 class Export {
     static asPng(canvas: HTMLCanvasElement, title: string) {
         requestAnimationFrame(() => {
-            const ctx = Helpers.Canvas.getContext(canvas)
+            const ctx = Canvas.getContext(canvas)
 
             let width = Helper.stringWidth(TextResources.exportPNG) + 16,
                 height = 64
@@ -20,7 +20,7 @@ class Export {
 
             for (let i = 0; i < canvas.width; i++) {
                 for (let j = 0; j < canvas.height; j++) {
-                    if (Helpers.Canvas.isPixelBusy(imageData[i + j * canvas.width])) {
+                    if (Canvas.isPixelBusy(imageData[i + j * canvas.width])) {
                         isBusy = true
                         break
                     }
@@ -36,7 +36,7 @@ class Export {
 
             for (let i = canvas.width; i >= 0; i--) {
                 for (let j = 0; j < canvas.height; j++) {
-                    if (Helpers.Canvas.isPixelBusy(imageData[i + j * canvas.width])) {
+                    if (Canvas.isPixelBusy(imageData[i + j * canvas.width])) {
                         isBusy = true
                         break
                     }
@@ -62,7 +62,7 @@ class Export {
             destinationCanvas.width = canvas.width - leftEmpty - rightEmpty
             destinationCanvas.height = canvas.height
 
-            const destCtx = Helpers.Canvas.getContext(destinationCanvas)
+            const destCtx = Canvas.getContext(destinationCanvas)
 
             destCtx.fillStyle = Theme.background
             destCtx.fillRect(0, 0, canvas.width, canvas.height)

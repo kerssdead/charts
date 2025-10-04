@@ -31,7 +31,7 @@ class Dropdown {
         if (this.#isOnlyMenu)
             this.isActive = true
 
-        const ctx = Helpers.Canvas.getContext(this.#canvas)
+        const ctx = Canvas.getContext(this.#canvas)
 
         let x = this.#position.x,
             y = this.#position.y,
@@ -87,7 +87,7 @@ class Dropdown {
             ctx.roundRect(x, y, width, height, 4)
             ctx.fill()
 
-            Helpers.TextStyles.regular(ctx)
+            TextStyles.regular(ctx)
             ctx.fillText(this.#options.text ?? '', x + width / 2, y + height / 2)
         }
 

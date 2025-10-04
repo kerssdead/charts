@@ -41,7 +41,7 @@ class TreeRenderer extends Renderer<TreeData> {
         let tooltipCell: TreeCell | undefined = undefined
         let contextMenuData = undefined
 
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         let isVertical = true
         for (let i = 0; i < this.data.values.length; i++) {
@@ -249,7 +249,7 @@ class TreeRenderer extends Renderer<TreeData> {
                     && cell.h - gap > 16
                     && !this.animations.contains(cell.id, AnimationType.Init)) {
                     ctx.beginPath()
-                    Helpers.TextStyles.large(ctx)
+                    TextStyles.large(ctx)
                     ctx.fillStyle = !Helper.isColorVisible(cell.color, '#ffffff')
                                     ? '#000000'
                                     : '#ffffff'
@@ -286,7 +286,7 @@ class TreeRenderer extends Renderer<TreeData> {
         this.tooltip.render(!!tooltipCell && !this.dropdown?.isActive,
             this.onMouseMoveEvent,
             [
-                new TooltipValue(`${ tooltipCell?.label }: ${ Helpers.Formatter.number(tooltipCell?.value) }`)
+                new TooltipValue(`${ tooltipCell?.label }: ${ Formatter.number(tooltipCell?.value) }`)
             ],
             this.data.values.find(v => v.id == tooltipCell?.id))
 
@@ -315,9 +315,9 @@ class TreeRenderer extends Renderer<TreeData> {
     }
 
     #drawEmpty() {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
-        Helpers.TextStyles.regular(ctx)
+        TextStyles.regular(ctx)
         ctx.fillText(TextResources.incorrectValues,
             this.canvas.width / 2,
             this.canvas.height / 2)

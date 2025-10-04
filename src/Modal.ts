@@ -24,14 +24,14 @@ class Modal {
 
     open() {
         if (this.modal == undefined)
-            Helpers.Errors.throw(ErrorType.ElementNotExist)
+            Errors.throw(ErrorType.ElementNotExist)
 
         this.modal.showModal()
     }
 
     close() {
         if (this.modal == undefined)
-            Helpers.Errors.throw(ErrorType.ElementNotExist)
+            Errors.throw(ErrorType.ElementNotExist)
 
         this.modal.close()
 
@@ -42,7 +42,7 @@ class Modal {
 
     #setHeader() {
         if (this.modal == undefined)
-            Helpers.Errors.throw(ErrorType.ElementNotExist)
+            Errors.throw(ErrorType.ElementNotExist)
 
         let closeButton = document.createElement('button')
 

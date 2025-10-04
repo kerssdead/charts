@@ -17,10 +17,10 @@ class Renderer<T extends Data> extends Renderable {
     render() {
         super.render()
 
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         if (this.settings.title) {
-            Helpers.TextStyles.title(ctx)
+            TextStyles.title(ctx)
             ctx.fillText(this.settings.title, this.canvas.width / 2, Constants.Values.titleOffset)
         }
     }

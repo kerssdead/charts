@@ -1,12 +1,10 @@
-namespace Helpers {
-    export class Canvas {
-        static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
-            return canvas.getContext('2d', { willReadFrequently: true })
-                   ?? Helpers.Errors.throw(ErrorType.NullContext)
-        }
+abstract class Canvas {
+    static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
+        return canvas.getContext('2d', { willReadFrequently: true })
+               ?? Errors.throw(ErrorType.NullContext)
+    }
 
-        static isPixelBusy(pixel: number) {
-            return pixel & 0xff000000
-        }
+    static isPixelBusy(pixel: number) {
+        return pixel & 0xff000000
     }
 }

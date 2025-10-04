@@ -38,7 +38,7 @@ class Renderable {
     }
 
     render() {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     }

@@ -31,13 +31,13 @@ class Legend extends Renderable {
     render() {
         super.render()
 
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         let nextPoint = { x: 20, y: 20 }
 
         this.canvas.style.cursor = Styles.Cursor.Default
 
-        Helpers.TextStyles.regular(ctx)
+        TextStyles.regular(ctx)
         ctx.textAlign = 'start'
         ctx.textBaseline = 'alphabetic'
 
@@ -57,7 +57,7 @@ class Legend extends Renderable {
     }
 
     #draw(value: Value, x: number, y: number): Point {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         const textWidth = Helper.stringWidth(value.label),
             circleRadius = 10

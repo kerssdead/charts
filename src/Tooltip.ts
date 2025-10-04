@@ -75,7 +75,7 @@ class Tooltip {
     }
 
     #renderRegular(event: MouseEvent) {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         const textWidth = Math.max(...this.#lines.map(line => Helper.stringWidth(line.text ?? '') + (line.color ? 8 : 0)))
 
@@ -118,7 +118,7 @@ class Tooltip {
                 ctx.fill()
             }
 
-            Helpers.TextStyles.tooltip(ctx)
+            TextStyles.tooltip(ctx)
             ctx.fillStyle = Theme.text + opacity
             ctx.fillText(line.text ?? '', x + offset + padding * 2, y + 21)
 

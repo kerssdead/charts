@@ -35,7 +35,7 @@ class Decomposition {
             for (const [vKey, vValue] of value) {
                 columns += `
                     <td>
-                        ${ vValue == undefined ? '' : Helpers.Formatter.number(vValue) }
+                        ${ vValue == undefined ? '' : Formatter.number(vValue) }
                     </td>
                 `
 
@@ -63,7 +63,7 @@ class Decomposition {
         for (const [, value] of totals)
             totalColumns += `
                 <td>
-                    ${ value == undefined ? '' : Helpers.Formatter.number(value) }
+                    ${ value == undefined ? '' : Formatter.number(value) }
                 </td>
             `
 

@@ -111,7 +111,7 @@ class CircularRenderer extends Renderer<CircularData> {
             this.tooltip.render(!!value && !this.dropdown?.isActive,
                 this.onMouseMoveEvent,
                 [
-                    new TooltipValue(`${ value?.label }: ${ Helpers.Formatter.number(value?.current) }`)
+                    new TooltipValue(`${ value?.label }: ${ Formatter.number(value?.current) }`)
                 ])
 
             this.#drawInnerTitle()
@@ -122,7 +122,7 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     #drawSector(value: Sector) {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         ctx.fillStyle = value.color
         ctx.strokeStyle = value.color
@@ -285,7 +285,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
                 if (!isBusy)
                     for (let i = 0; i < imageData.length; i++)
-                        if (Helpers.Canvas.isPixelBusy(imageData[i])) {
+                        if (Canvas.isPixelBusy(imageData[i])) {
                             isBusy = true
                             break
                         }
@@ -305,7 +305,7 @@ class CircularRenderer extends Renderer<CircularData> {
                     ctx.stroke()
 
                     ctx.fillStyle = Theme.text + opacity
-                    Helpers.TextStyles.circularLabel(ctx, dir == 1)
+                    TextStyles.circularLabel(ctx, dir == 1)
                     ctx.fillText(value.label, endPoint.x + 8 * dir, endPoint.y + 4)
                 }
             }
@@ -428,7 +428,7 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     #drawEmpty() {
-        const ctx = Helpers.Canvas.getContext(this.canvas)
+        const ctx = Canvas.getContext(this.canvas)
 
         ctx.beginPath()
 
@@ -436,7 +436,7 @@ class CircularRenderer extends Renderer<CircularData> {
         ctx.strokeStyle = Theme.text
         ctx.stroke()
 
-        Helpers.TextStyles.regular(ctx)
+        TextStyles.regular(ctx)
         ctx.fillText(TextResources.allDataIsHidden, this.#center.x, this.#center.y)
 
         requestAnimationFrame(this.render.bind(this))
@@ -444,7 +444,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
     #drawInnerTitle() {
         if (this.#canRenderInnerTitle) {
-            const ctx = Helpers.Canvas.getContext(this.canvas)
+            const ctx = Canvas.getContext(this.canvas)
 
             this.#innerTitleStyle(ctx)
             ctx.fillText(this.data.innerTitle, this.#center.x, this.#center.y)
@@ -468,12 +468,12 @@ class CircularRenderer extends Renderer<CircularData> {
         this.#radius = shortSide / 3
 
         if (this.data.innerTitle != undefined && this.data.innerTitle != '') {
-            this.#innerTitleStyle = Helpers.TextStyles.large
+            this.#innerTitleStyle = TextStyles.large
             this.#canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 16)
                                         < (this.data.innerRadius / 100) * this.#radius * 2
 
             if (!this.#canRenderInnerTitle) {
-                this.#innerTitleStyle = Helpers.TextStyles.regular
+                this.#innerTitleStyle = TextStyles.regular
                 this.#canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 14)
                                             < (this.data.innerRadius / 100) * this.#radius * 2
             }
