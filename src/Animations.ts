@@ -15,7 +15,7 @@ class Animations {
         this.#process(key)
     }
 
-    contains(id: string, type: number): boolean {
+    contains(id: string, type: AnimationType): boolean {
         return this.#queue.has(this.#getKey(id, type))
     }
 

@@ -985,20 +985,23 @@ _Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_instance
         return px >= rectX && px <= rectX + rectW
             && py >= rectY && py <= rectY + rectH;
     };
-    if (this.onClickEvent) {
-        this.animations.add(value.id, AnimationType.Click, {
-            duration: Constants.Animations.legend,
-            continuous: true,
-            before: () => {
-                return isHover(this.onClickEvent) && value.checkCondition();
-            },
-            body: transition => {
-                value.toggle(transition);
-                if (transition == 1)
-                    this.onClickEvent = new PointerEvent(Events.Click);
-            }
-        });
-    }
+    this.animations.add(value.id, AnimationType.Click, {
+        duration: Constants.Animations.legend,
+        continuous: true,
+        before: () => {
+            return this.onClickEvent != undefined
+                && (isHover(this.onClickEvent)
+                    || (value instanceof Sector
+                        && value.current !== 0
+                        && value.value !== value.current))
+                && value.checkCondition();
+        },
+        body: transition => {
+            value.toggle(transition);
+            if (transition == 1)
+                this.onClickEvent = new PointerEvent(Events.Click);
+        }
+    });
     const translate = (transition, event) => {
         this.animations.reload(value.id, event);
         ctx.beginPath();
