@@ -80,9 +80,16 @@ class Renderer<T extends Data> extends Renderable {
                 item.action = data => this.node.dispatchEvent(new CustomEvent(item.id ?? '', { detail: data }))
     }
 
-    initDropdown() {}
+    initDropdown() {
+    }
 
     renderContextMenu(data: any) {
+        if (this.dropdown?.isActive) {
+            this.onContextMenuEvent = undefined
+
+            return false
+        }
+
         if (this.onContextMenuEvent != undefined && this.settings.contextMenu?.length != 0) {
             if (this.contextMenu == undefined && this.settings.contextMenu != undefined) {
                 let clone: DropdownItem[] = []

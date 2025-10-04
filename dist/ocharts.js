@@ -132,8 +132,13 @@ class Renderer extends Renderable {
             if (item.id != undefined)
                 item.action = data => this.node.dispatchEvent(new CustomEvent(item.id ?? '', { detail: data }));
     }
-    initDropdown() { }
+    initDropdown() {
+    }
     renderContextMenu(data) {
+        if (this.dropdown?.isActive) {
+            this.onContextMenuEvent = undefined;
+            return false;
+        }
         if (this.onContextMenuEvent != undefined && this.settings.contextMenu?.length != 0) {
             if (this.contextMenu == undefined && this.settings.contextMenu != undefined) {
                 let clone = [];
