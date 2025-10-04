@@ -23,33 +23,30 @@ class Modal {
     }
 
     open() {
-        if (this.modal == undefined)
-            Errors.throw(ErrorType.ElementNotExist)
+        Errors.throwIsUndefined(this.modal, ErrorType.ElementNotExist)
 
-        this.modal.showModal()
+        this.modal!.showModal()
     }
 
     close() {
-        if (this.modal == undefined)
-            Errors.throw(ErrorType.ElementNotExist)
+        Errors.throwIsUndefined(this.modal, ErrorType.ElementNotExist)
 
-        this.modal.close()
+        this.modal!.close()
 
-        this.modal.remove()
+        this.modal!.remove()
 
         this.modal = undefined
     }
 
     #setHeader() {
-        if (this.modal == undefined)
-            Errors.throw(ErrorType.ElementNotExist)
+        Errors.throwIsUndefined(this.modal, ErrorType.ElementNotExist)
 
         let closeButton = document.createElement('button')
 
         closeButton.classList.add('o-modal-close')
         closeButton.innerHTML = 'x'
 
-        this.modal.appendChild(closeButton)
+        this.modal!.appendChild(closeButton)
 
         closeButton.onclick = () => this.close()
     }
