@@ -1545,7 +1545,7 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
             body: () => {
                 if (!__classPrivateFieldGet(this, _CircularRenderer_pinned, "f").includes(value.id))
                     return;
-                let direction = __classPrivateFieldGet(this, _CircularRenderer_accumulator, "f") + angle / 2;
+                const piece = value.current / __classPrivateFieldGet(this, _CircularRenderer_sum, "f"), angle = (isNaN(piece) ? 1 : piece) * 2 * Math.PI, direction = __classPrivateFieldGet(this, _CircularRenderer_accumulator, "f") + angle / 2;
                 const transition = {
                     x: __classPrivateFieldGet(this, _CircularRenderer_animationOffset, "f") * Math.cos(direction),
                     y: __classPrivateFieldGet(this, _CircularRenderer_animationOffset, "f") * Math.sin(direction)
@@ -1587,7 +1587,7 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
                 return;
             if (swap)
                 transition = value.transition;
-            const direction = __classPrivateFieldGet(this, _CircularRenderer_accumulator, "f") + angle / 2, translate = {
+            const piece = value.current / __classPrivateFieldGet(this, _CircularRenderer_sum, "f"), angle = (isNaN(piece) ? 1 : piece) * 2 * Math.PI, direction = __classPrivateFieldGet(this, _CircularRenderer_accumulator, "f") + angle / 2, translate = {
                 x: __classPrivateFieldGet(this, _CircularRenderer_animationOffset, "f") * Math.cos(direction) * transition,
                 y: __classPrivateFieldGet(this, _CircularRenderer_animationOffset, "f") * Math.sin(direction) * transition
             };

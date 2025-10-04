@@ -157,7 +157,9 @@ class CircularRenderer extends Renderer<CircularData> {
                         if (!this.#pinned.includes(value.id))
                             return
 
-                        let direction = this.#accumulator + angle / 2
+                        const piece = value.current / this.#sum,
+                            angle = (isNaN(piece) ? 1 : piece) * 2 * Math.PI,
+                            direction = this.#accumulator + angle / 2
 
                         const transition = {
                             x: this.#animationOffset * Math.cos(direction),
@@ -215,7 +217,9 @@ class CircularRenderer extends Renderer<CircularData> {
                 if (swap)
                     transition = value.transition
 
-                const direction = this.#accumulator + angle / 2,
+                const piece = value.current / this.#sum,
+                    angle = (isNaN(piece) ? 1 : piece) * 2 * Math.PI,
+                    direction = this.#accumulator + angle / 2,
                     translate = {
                         x: this.#animationOffset * Math.cos(direction) * transition,
                         y: this.#animationOffset * Math.sin(direction) * transition
