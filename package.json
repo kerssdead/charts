@@ -14,7 +14,7 @@
     "charts"
   ],
   "scripts": {
-    "build": "webpack --config webpack.config.development.js",
+    "build": "webpack --config webpack.config.development.js && webpack --config webpack.config.production.js",
     "watch": "webpack --watch --config webpack.config.development.js"
   },
   "devDependencies": {
