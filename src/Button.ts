@@ -72,6 +72,7 @@ class Button {
             this.animations.add('animation-button',
                 AnimationType.MouseLeave,
                 {
+                    timer: Constants.Dates.minDate,
                     duration: 300,
                     backward: true,
                     body: transition => {

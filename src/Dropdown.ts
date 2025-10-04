@@ -73,6 +73,7 @@ class Dropdown {
                     this.animations.add('animation-dropdown',
                         AnimationType.MouseLeave,
                         {
+                            timer: Constants.Dates.minDate,
                             duration: 300,
                             backward: true,
                             body: transition => {
@@ -174,9 +175,6 @@ class Dropdown {
                         AnimationType.MouseOver,
                         {
                             duration: 300,
-                            before: () => {
-                                return clickEvent == undefined
-                            },
                             body: transition => {
                                 translate(transition, AnimationType.MouseLeave)
                             }

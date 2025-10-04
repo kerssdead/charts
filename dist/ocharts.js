@@ -317,6 +317,7 @@ class Button {
         }
         else {
             this.animations.add('animation-button', AnimationType.MouseLeave, {
+                timer: Constants.Dates.minDate,
                 duration: 300,
                 backward: true,
                 body: transition => {
@@ -566,6 +567,7 @@ class Dropdown {
                 __classPrivateFieldGet(this, _Dropdown_canvas, "f").style.cursor = Styles.Cursor.Default;
                 if (!this.isActive)
                     this.animations.add('animation-dropdown', AnimationType.MouseLeave, {
+                        timer: Constants.Dates.minDate,
                         duration: 300,
                         backward: true,
                         body: transition => {
@@ -634,9 +636,6 @@ class Dropdown {
                 if (__classPrivateFieldGet(this, _Dropdown_instances, "m", _Dropdown_isOnButton).call(this, moveEvent, x, y, maxWidth, 20)) {
                     this.animations.add(animationKey, AnimationType.MouseOver, {
                         duration: 300,
-                        before: () => {
-                            return clickEvent == undefined;
-                        },
                         body: transition => {
                             translate(transition, AnimationType.MouseLeave);
                         }
