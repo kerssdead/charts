@@ -3,10 +3,10 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
     #center: Point
 
-    constructor(node: HTMLElement, settings: ChartSettings) {
-        super(node, settings)
+    constructor(chart: Chart) {
+        super(chart)
 
-        settings.enableLegend = false
+        this.settings.enableLegend = false
     }
 
     render() {
@@ -24,7 +24,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
 
-        this.isInit = true
+        this.state = RenderState.Idle
 
         super.renderDropdown()
     }
@@ -34,7 +34,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
         const value = this.data.values[0] ?? { id: Helper.guid() }
 
-        if (!this.isInit || this.animations.contains(value.id, AnimationType.Init))
+        if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init))
             this.animations.add(value.id,
                 AnimationType.Init,
                 {

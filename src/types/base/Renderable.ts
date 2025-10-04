@@ -9,7 +9,7 @@ class Renderable {
 
     tooltip: Tooltip
 
-    protected isInit = false
+    protected state: RenderState = RenderState.Init
 
     protected canvasPosition: DOMRect
 
@@ -21,9 +21,9 @@ class Renderable {
 
     protected contextMenu: Dropdown | undefined
 
-    constructor(node: HTMLElement, settings: ChartSettings) {
-        this.node = node
-        this.settings = settings
+    constructor(chart: Chart) {
+        this.node = chart.node
+        this.settings = chart.settings
         this.animations = new Animations()
 
         this.canvas = document.createElement(Tag.Canvas)
@@ -32,7 +32,7 @@ class Renderable {
 
         this.node.append(this.canvas)
 
-        this.tooltip = new Tooltip(this.canvas, settings)
+        this.tooltip = new Tooltip(this.canvas, this.settings)
 
         this.initAnimations()
     }
@@ -45,7 +45,7 @@ class Renderable {
 
     refresh() {
         this.tooltip.refresh()
-        this.isInit = this.settings.disableInitAnimation
+        this.state = this.settings.disableInitAnimation ? RenderState.Idle : RenderState.Init
     }
 
     resetMouse() {
@@ -60,7 +60,7 @@ class Renderable {
         this.canvasPosition.x += scrollX
         this.canvasPosition.y += scrollY
 
-        if (!this.isInit && !this.settings.disableInteractions) {
+        if (this.state == RenderState.Init && !this.settings.disableInteractions) {
             this.canvas.onmousemove = event => this.onMouseMoveEvent = event
             this.canvas.onclick = event => this.onClickEvent = event
             this.canvas.oncontextmenu = event => {

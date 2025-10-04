@@ -25,8 +25,8 @@ class PlotRenderer extends Renderer<PlotData> {
 
     #hoverX: HoverItem | undefined
 
-    constructor(node: HTMLElement, settings: ChartSettings) {
-        super(node, settings)
+    constructor(chart: Chart) {
+        super(chart)
 
         this.data.values = this.data.values.map(v => new PlotSeries(v))
 
@@ -49,7 +49,7 @@ class PlotRenderer extends Renderer<PlotData> {
             left: 80
         }
 
-        if (settings.title)
+        if (this.settings.title)
             this.#paddings.top += Constants.Values.titleOffset
 
         this.tooltip = new Tooltip(this.canvas, this.settings)
@@ -147,7 +147,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
                         const pointDuration = 1500 / series.values.length * 1.2
 
-                        if (!this.isInit || this.animations.contains(value.id, AnimationType.Init)) {
+                        if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init)) {
                             this.animations.add(value.id,
                                 AnimationType.Init,
                                 {
@@ -203,7 +203,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
                         ctx.moveTo(this.#paddings.left, yValue)
 
-                        if (!this.isInit || this.animations.contains(value.id, AnimationType.Init))
+                        if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init))
                             this.animations.add(value.id,
                                 AnimationType.Init,
                                 {
@@ -228,7 +228,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
 
-                        if (!this.isInit || this.animations.contains(value.id + columnsIndex, AnimationType.Init)) {
+                        if (this.state == RenderState.Init || this.animations.contains(value.id + columnsIndex, AnimationType.Init)) {
                             this.animations.add(value.id + columnsIndex,
                                 AnimationType.Init,
                                 {
@@ -287,7 +287,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
                         const seriesHeight= series.width ?? barHeight
 
-                        if (!this.isInit || this.animations.contains(value.id + barsIndex, AnimationType.Init)) {
+                        if (this.state != RenderState.Init || this.animations.contains(value.id + barsIndex, AnimationType.Init)) {
                             this.animations.add(value.id + barsIndex,
                                 AnimationType.Init,
                                 {
@@ -338,7 +338,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5)
 
-                        if (!this.isInit || this.animations.contains(value.id + index, AnimationType.Init)) {
+                        if (this.state == RenderState.Init || this.animations.contains(value.id + index, AnimationType.Init)) {
                             this.animations.add(value.id + index,
                                 AnimationType.Init,
                                 {
@@ -504,7 +504,7 @@ class PlotRenderer extends Renderer<PlotData> {
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
 
-        this.isInit = true
+        this.state = RenderState.Idle
 
         super.renderDropdown()
 

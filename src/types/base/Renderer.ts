@@ -6,12 +6,12 @@ class Renderer<T extends Data> extends Renderable {
 
     protected isDestroy: boolean = false
 
-    constructor(node: HTMLElement, settings: ChartSettings) {
-        super(node, settings)
+    constructor(chart: Chart) {
+        super(chart)
 
-        this.data = <T>settings.data
+        this.data = <T>this.settings.data
 
-        this.isInit = settings.disableInitAnimation
+        this.state = this.settings.disableInitAnimation ? RenderState.Idle : RenderState.Init
     }
 
     render() {

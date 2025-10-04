@@ -1,11 +1,11 @@
 class TreeRenderer extends Renderer<TreeData> {
-    constructor(node: HTMLElement, settings: ChartSettings) {
-        super(node, settings)
+    constructor(chart: Chart) {
+        super(chart)
 
         this.data.values = this.data.values.map(v => new Sector(v))
         this.data.values.sort((a, b) => b.value > a.value ? 1 : -1)
 
-        const baseColor = settings.baseColor ?? Helper.randomColor()
+        const baseColor = this.settings.baseColor ?? Helper.randomColor()
         let adjustStep = Math.round(100 / this.data.values.length),
             adjustAmount = -50
 
@@ -144,7 +144,8 @@ class TreeRenderer extends Renderer<TreeData> {
 
                 ctx.fillStyle = cell.color
 
-                const cellInit = this.isInit && !this.animations.contains(cell.id, AnimationType.Init)
+                const cellInit = this.state != RenderState.Init
+                    && !this.animations.contains(cell.id, AnimationType.Init)
 
                 const cellIndex = i + cells.indexOf(cell) + (isLast && isSingle ? 1 : 0),
                     duration = 260
@@ -292,7 +293,7 @@ class TreeRenderer extends Renderer<TreeData> {
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
 
-        this.isInit = true
+        this.state = RenderState.Idle
 
         super.renderDropdown()
 

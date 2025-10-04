@@ -5,8 +5,8 @@ class Legend extends Renderable {
 
     isDestroy: boolean = false
 
-    constructor(node: HTMLElement, settings: ChartSettings) {
-        super(node, settings)
+    constructor(chart: Chart) {
+        super(chart)
 
         this.calculateSizes()
 
@@ -17,7 +17,7 @@ class Legend extends Renderable {
                     y: 10,
                     text: TextResources.reset,
                     action: () => {
-                        for (let value of settings.data.values)
+                        for (let value of this.settings.data.values)
                             value.reset()
                     }
                 })
@@ -53,7 +53,7 @@ class Legend extends Renderable {
 
         this.onClickEvent = this.#button?.render(this.onMouseMoveEvent, this.onClickEvent)
 
-        this.isInit = true
+        this.state = RenderState.Idle
     }
 
     #draw(value: Value, x: number, y: number): Point {
@@ -169,7 +169,7 @@ class Legend extends Renderable {
     }
 
     refresh() {
-        this.isInit = false
+        this.state = RenderState.Init
     }
 
     resize() {

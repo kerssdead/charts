@@ -1,7 +1,7 @@
 function OCharts() {
 }
 
-OCharts.chart = function(context: HTMLChartElement, settings: ChartSettings) {
+OCharts.chart = function(context: HTMLElement, settings: ChartSettings) {
     return new Chart(context, settings)
 }
 

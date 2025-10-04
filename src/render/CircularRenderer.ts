@@ -28,8 +28,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
     readonly #startAngle: number
 
-    constructor(node: HTMLElement, settings: ChartSettings) {
-        super(node, settings)
+    constructor(chart: Chart) {
+        super(chart)
 
         this.data.values = this.data.values.map(v => new Sector(v))
 
@@ -73,7 +73,7 @@ class CircularRenderer extends Renderer<CircularData> {
         else
             this.#draw()
 
-        this.isInit = true
+        this.state = RenderState.Idle
 
         super.renderDropdown()
 
@@ -87,7 +87,7 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     #draw() {
-        if (this.onMouseMoveEvent || !this.isInit) {
+        if (this.onMouseMoveEvent || this.state == RenderState.Init) {
             this.#sum = this.data.values.reduce((acc, v) => acc + v.current, 0)
 
             let anglesSum = this.#startAngle
@@ -174,7 +174,7 @@ class CircularRenderer extends Renderer<CircularData> {
         if (this.onMouseMoveEvent && this.#isInsideSector(this.onMouseMoveEvent, value))
             this.#currentHover = value.id
 
-        if (!this.isInit || this.animations.contains(value.id, AnimationType.Init)) {
+        if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init)) {
             this.animations.add(value.id,
                 AnimationType.Init,
                 {

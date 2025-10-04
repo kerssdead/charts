@@ -89,3 +89,9 @@ enum Tag {
 
     Script = 'script'
 }
+
+enum RenderState {
+    Idle,
+
+    Init
+}

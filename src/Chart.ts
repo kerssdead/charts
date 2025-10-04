@@ -1,5 +1,5 @@
 class Chart {
-    node: HTMLChartElement
+    node: HTMLElement
 
     settings: ChartSettings
 
@@ -9,26 +9,17 @@ class Chart {
 
     #observer: ResizeObserver
 
-    constructor(context: HTMLChartElement, settings: ChartSettings) {
+    constructor(context: HTMLElement, settings: ChartSettings) {
         this.#initialize(settings)
 
-        context.chart = this
-
         this.node = context
-        this.node.style.display = Styles.Display.Flex
-        this.node.style.flexDirection = Styles.FlexDirection.Column
-        this.node.style.alignItems = Styles.AlignItems.Center
-        this.node.style.justifyContent = Styles.JustifyContent.Center
-        this.node.style.height = '100%'
-
         this.settings = settings
 
+        this.#applyStyles()
         this.#prepareSettings()
 
         if (settings.enableLegend)
-            this.#legend = new Legend(context, settings)
-
-        this.#renderer.dropdown?.refresh()
+            this.#legend = new Legend(this)
 
         document.addEventListener(Events.VisibilityChanged, () => this.#renderer.resetMouse())
         window.addEventListener(Events.Blur, () => this.#renderer.resetMouse())
@@ -54,29 +45,26 @@ class Chart {
         this.#legend?.destroy()
 
         this.#observer.disconnect()
-
-        delete this.node.chart
     }
 
     #prepareSettings() {
-        if (this.settings.disableInteractions)
-            this.settings.enableTooltip = false
+        this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
 
         switch (this.settings.type) {
             case ChartType.Plot:
-                this.#renderer = new PlotRenderer(this.node, this.settings)
+                this.#renderer = new PlotRenderer(this)
                 break
 
             case ChartType.Circular:
-                this.#renderer = new CircularRenderer(this.node, this.settings)
+                this.#renderer = new CircularRenderer(this)
                 break
 
             case ChartType.Gauge:
-                this.#renderer = new GaugeRenderer(this.node, this.settings)
+                this.#renderer = new GaugeRenderer(this)
                 break
 
             case ChartType.TreeMap:
-                this.#renderer = new TreeRenderer(this.node, this.settings)
+                this.#renderer = new TreeRenderer(this)
                 break
         }
 
@@ -101,8 +89,18 @@ class Chart {
     }
 
     #initialize(settings: ChartSettings) {
-        Theme.initialize(() => this.#resize(),
-            settings.isDarkThemeFunction)
+        Theme.initialize(
+            () => this.#resize(),
+            settings.isDarkThemeFunction
+        )
         Animations.initializeTransitions()
+    }
+
+    #applyStyles() {
+        this.node.style.display = Styles.Display.Flex
+        this.node.style.flexDirection = Styles.FlexDirection.Column
+        this.node.style.alignItems = Styles.AlignItems.Center
+        this.node.style.justifyContent = Styles.JustifyContent.Center
+        this.node.style.height = '100%'
     }
 }
