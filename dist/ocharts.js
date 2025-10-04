@@ -1372,7 +1372,7 @@ class TextStyles {
         context.font = '14px sans-serif';
     }
 }
-var _CircularRenderer_instances, _CircularRenderer_canRenderInnerTitle, _CircularRenderer_isDonut, _CircularRenderer_radius, _CircularRenderer_sum, _CircularRenderer_accumulator, _CircularRenderer_animationOffset, _CircularRenderer_currentHover, _CircularRenderer_pinned, _CircularRenderer_center, _CircularRenderer_startPoint, _CircularRenderer_angles, _CircularRenderer_other, _CircularRenderer_innerTitleStyle, _CircularRenderer_startAngle, _CircularRenderer_draw, _CircularRenderer_drawSector, _CircularRenderer_getPoint, _CircularRenderer_isInsideSector, _CircularRenderer_drawEmpty, _CircularRenderer_drawInnerTitle, _CircularRenderer_calculateSizes;
+var _CircularRenderer_instances, _CircularRenderer_canRenderInnerTitle, _CircularRenderer_isDonut, _CircularRenderer_radius, _CircularRenderer_sum, _CircularRenderer_accumulator, _CircularRenderer_animationOffset, _CircularRenderer_hoverCount, _CircularRenderer_currentHover, _CircularRenderer_pinned, _CircularRenderer_center, _CircularRenderer_startPoint, _CircularRenderer_angles, _CircularRenderer_other, _CircularRenderer_innerTitleStyle, _CircularRenderer_startAngle, _CircularRenderer_draw, _CircularRenderer_drawSector, _CircularRenderer_getPoint, _CircularRenderer_isInsideSector, _CircularRenderer_drawEmpty, _CircularRenderer_drawInnerTitle, _CircularRenderer_calculateSizes;
 class CircularRenderer extends Renderer {
     constructor(chart) {
         super(chart);
@@ -1383,6 +1383,7 @@ class CircularRenderer extends Renderer {
         _CircularRenderer_sum.set(this, void 0);
         _CircularRenderer_accumulator.set(this, void 0);
         _CircularRenderer_animationOffset.set(this, void 0);
+        _CircularRenderer_hoverCount.set(this, void 0);
         _CircularRenderer_currentHover.set(this, void 0);
         _CircularRenderer_pinned.set(this, void 0);
         _CircularRenderer_center.set(this, void 0);
@@ -1418,11 +1419,13 @@ class CircularRenderer extends Renderer {
     render() {
         super.render();
         __classPrivateFieldSet(this, _CircularRenderer_accumulator, __classPrivateFieldGet(this, _CircularRenderer_startAngle, "f"), "f");
-        __classPrivateFieldSet(this, _CircularRenderer_currentHover, undefined, "f");
+        __classPrivateFieldSet(this, _CircularRenderer_hoverCount, 0, "f");
         if (this.data.values.filter(v => !v.disabled).length == 0)
             __classPrivateFieldGet(this, _CircularRenderer_instances, "m", _CircularRenderer_drawEmpty).call(this);
         else
             __classPrivateFieldGet(this, _CircularRenderer_instances, "m", _CircularRenderer_draw).call(this);
+        if (__classPrivateFieldGet(this, _CircularRenderer_hoverCount, "f") == 0)
+            __classPrivateFieldSet(this, _CircularRenderer_currentHover, undefined, "f");
         this.state = RenderState.Idle;
         super.renderDropdown();
         if (__classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") || this.contextMenu)
@@ -1503,7 +1506,7 @@ class CircularRenderer extends Renderer {
         });
     }
 }
-_CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut = new WeakMap(), _CircularRenderer_radius = new WeakMap(), _CircularRenderer_sum = new WeakMap(), _CircularRenderer_accumulator = new WeakMap(), _CircularRenderer_animationOffset = new WeakMap(), _CircularRenderer_currentHover = new WeakMap(), _CircularRenderer_pinned = new WeakMap(), _CircularRenderer_center = new WeakMap(), _CircularRenderer_startPoint = new WeakMap(), _CircularRenderer_angles = new WeakMap(), _CircularRenderer_other = new WeakMap(), _CircularRenderer_innerTitleStyle = new WeakMap(), _CircularRenderer_startAngle = new WeakMap(), _CircularRenderer_instances = new WeakSet(), _CircularRenderer_draw = function _CircularRenderer_draw() {
+_CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut = new WeakMap(), _CircularRenderer_radius = new WeakMap(), _CircularRenderer_sum = new WeakMap(), _CircularRenderer_accumulator = new WeakMap(), _CircularRenderer_animationOffset = new WeakMap(), _CircularRenderer_hoverCount = new WeakMap(), _CircularRenderer_currentHover = new WeakMap(), _CircularRenderer_pinned = new WeakMap(), _CircularRenderer_center = new WeakMap(), _CircularRenderer_startPoint = new WeakMap(), _CircularRenderer_angles = new WeakMap(), _CircularRenderer_other = new WeakMap(), _CircularRenderer_innerTitleStyle = new WeakMap(), _CircularRenderer_startAngle = new WeakMap(), _CircularRenderer_instances = new WeakSet(), _CircularRenderer_draw = function _CircularRenderer_draw() {
     if (this.onMouseMoveEvent || this.state == RenderState.Init) {
         __classPrivateFieldSet(this, _CircularRenderer_sum, this.data.values.reduce((acc, v) => acc + v.current, 0), "f");
         let anglesSum = __classPrivateFieldGet(this, _CircularRenderer_startAngle, "f");
@@ -1528,6 +1531,7 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
     if (!this.isDestroy)
         requestAnimationFrame(this.render.bind(this));
 }, _CircularRenderer_drawSector = function _CircularRenderer_drawSector(value) {
+    var _a;
     const ctx = Canvas.getContext(this.canvas);
     ctx.fillStyle = value.color;
     ctx.strokeStyle = value.color;
@@ -1563,8 +1567,10 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
             }
         });
     }
-    if (this.onMouseMoveEvent && __classPrivateFieldGet(this, _CircularRenderer_instances, "m", _CircularRenderer_isInsideSector).call(this, this.onMouseMoveEvent, value))
+    if (this.onMouseMoveEvent && __classPrivateFieldGet(this, _CircularRenderer_instances, "m", _CircularRenderer_isInsideSector).call(this, this.onMouseMoveEvent, value)) {
         __classPrivateFieldSet(this, _CircularRenderer_currentHover, value.id, "f");
+        __classPrivateFieldSet(this, _CircularRenderer_hoverCount, (_a = __classPrivateFieldGet(this, _CircularRenderer_hoverCount, "f"), _a++, _a), "f");
+    }
     if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init)) {
         this.animations.add(value.id, AnimationType.Init, {
             duration: Constants.Animations.circular + (this.data.values.indexOf(value) + 1) / this.data.values.length * Constants.Animations.circular,
@@ -1602,8 +1608,6 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
             ctx.translate(translate.x, translate.y);
             value.translate = translate;
             value.transition = transition;
-            ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * transition));
-            ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition));
         };
         if (!__classPrivateFieldGet(this, _CircularRenderer_instances, "m", _CircularRenderer_isInsideSector).call(this, this.onMouseMoveEvent, value)
             || !this.animations.contains(value.id, AnimationType.MouseLeave))
@@ -1694,6 +1698,36 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
                 localAngle += Math.PI / 6;
             }
             point2 = __classPrivateFieldGet(this, _CircularRenderer_instances, "m", _CircularRenderer_getPoint).call(this, __classPrivateFieldGet(this, _CircularRenderer_radius, "f"), angle);
+        }
+        if (!this.animations.contains(value.id, AnimationType.Init)) {
+            const changeColor = (transition, event) => {
+                this.animations.reload(value.id, event);
+                if (transition == 0)
+                    return;
+                let opacity = Math.round(255 - 95 * transition).toString(16);
+                if (opacity.length < 2)
+                    opacity = 0 + opacity;
+                ctx.fillStyle = value.color + opacity;
+                ctx.strokeStyle = value.color + opacity;
+            };
+            if (__classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") && __classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") != value.id) {
+                this.animations.add(value.id, AnimationType.AnotherItemOver, {
+                    duration: Constants.Animations.circular,
+                    body: transition => {
+                        changeColor(transition, AnimationType.AnotherItemLeave);
+                    }
+                });
+            }
+            else if (__classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") == undefined) {
+                this.animations.add(value.id, AnimationType.AnotherItemLeave, {
+                    timer: Constants.Dates.minDate,
+                    duration: Constants.Animations.circular,
+                    backward: true,
+                    body: transition => {
+                        changeColor(transition, AnimationType.AnotherItemOver);
+                    }
+                });
+            }
         }
         ctx.fill();
         ctx.stroke();
@@ -2801,6 +2835,8 @@ var AnimationType;
     AnimationType[AnimationType["MouseLeave"] = 1] = "MouseLeave";
     AnimationType[AnimationType["Init"] = 2] = "Init";
     AnimationType[AnimationType["Click"] = 3] = "Click";
+    AnimationType[AnimationType["AnotherItemOver"] = 4] = "AnotherItemOver";
+    AnimationType[AnimationType["AnotherItemLeave"] = 5] = "AnotherItemLeave";
 })(AnimationType || (AnimationType = {}));
 var Attribute;
 (function (Attribute) {

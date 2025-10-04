@@ -5,7 +5,11 @@ enum AnimationType {
 
     Init,
 
-    Click
+    Click,
+
+    AnotherItemOver,
+
+    AnotherItemLeave
 }
 
 enum Attribute {

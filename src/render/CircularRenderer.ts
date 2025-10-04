@@ -12,6 +12,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
     #animationOffset: number
 
+    #hoverCount: number
+
     #currentHover: string | undefined
 
     #pinned: string[]
@@ -66,12 +68,15 @@ class CircularRenderer extends Renderer<CircularData> {
         super.render()
 
         this.#accumulator = this.#startAngle
-        this.#currentHover = undefined
+        this.#hoverCount = 0
 
         if (this.data.values.filter(v => !v.disabled).length == 0)
             this.#drawEmpty()
         else
             this.#draw()
+
+        if (this.#hoverCount == 0)
+            this.#currentHover = undefined
 
         this.state = RenderState.Idle
 
@@ -173,8 +178,10 @@ class CircularRenderer extends Renderer<CircularData> {
                 })
         }
 
-        if (this.onMouseMoveEvent && this.#isInsideSector(this.onMouseMoveEvent, value))
+        if (this.onMouseMoveEvent && this.#isInsideSector(this.onMouseMoveEvent, value)) {
             this.#currentHover = value.id
+            this.#hoverCount++
+        }
 
         if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init)) {
             this.animations.add(value.id,
@@ -229,9 +236,6 @@ class CircularRenderer extends Renderer<CircularData> {
 
                 value.translate = translate
                 value.transition = transition
-
-                ctx.fillStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
-                ctx.strokeStyle = Helper.adjustColor(value.color, Math.round(33 * transition))
             }
 
             if (!this.#isInsideSector(this.onMouseMoveEvent, value)
@@ -376,6 +380,48 @@ class CircularRenderer extends Renderer<CircularData> {
                 }
 
                 point2 = this.#getPoint(this.#radius, angle)
+            }
+
+            if (!this.animations.contains(value.id, AnimationType.Init)) {
+                const changeColor = (transition: number, event: AnimationType) => {
+                    this.animations.reload(value.id, event)
+
+                    if (transition == 0)
+                        return
+
+                    let opacity = Math.round(255 - 95 * transition).toString(16)
+                    if (opacity.length < 2)
+                        opacity = 0 + opacity
+
+                    ctx.fillStyle = value.color + opacity
+                    ctx.strokeStyle = value.color + opacity
+                }
+
+                if (this.#currentHover && this.#currentHover != value.id) {
+                    this.animations.add(
+                        value.id,
+                        AnimationType.AnotherItemOver,
+                        {
+                            duration: Constants.Animations.circular,
+                            body: transition => {
+                                changeColor(transition, AnimationType.AnotherItemLeave)
+                            }
+                        }
+                    )
+                } else if (this.#currentHover == undefined) {
+                    this.animations.add(
+                        value.id,
+                        AnimationType.AnotherItemLeave,
+                        {
+                            timer: Constants.Dates.minDate,
+                            duration: Constants.Animations.circular,
+                            backward: true,
+                            body: transition => {
+                                changeColor(transition, AnimationType.AnotherItemOver)
+                            }
+                        }
+                    )
+                }
             }
 
             ctx.fill()
