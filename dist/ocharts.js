@@ -1122,6 +1122,7 @@ ThemeOptions.lines = ['#000000', '#eeeeee'];
 ThemeOptions.lineAxes = ['#dedede', '#212121'];
 ThemeOptions.lineActives = ['#898989', '#898989'];
 ThemeOptions.dropdownBorders = ['#bcbcbc', '#7e7e7e'];
+ThemeOptions.canvasBackgrounds = ['#ffffff', '#222222'];
 class Theme {
     static initialize(callback, isDark) {
         if (!Theme.function && isDark)
@@ -1147,6 +1148,7 @@ class Theme {
         Theme.lineActive = ThemeOptions.lineActives[index];
         Theme.dropdownItemHoverColor = Helper.adjustColor(Theme.background, index == 0 ? -50 : 50);
         Theme.dropdownBorder = ThemeOptions.dropdownBorders[index];
+        Theme.canvasBackground = ThemeOptions.canvasBackgrounds[index];
     }
 }
 Theme.currentTheme = 0;
@@ -1935,7 +1937,7 @@ _GaugeRenderer_radius = new WeakMap(), _GaugeRenderer_center = new WeakMap(), _G
         y: this.canvas.height - __classPrivateFieldGet(this, _GaugeRenderer_radius, "f") / 5
     }, "f");
 };
-var _PlotRenderer_instances, _PlotRenderer_x, _PlotRenderer_y, _PlotRenderer_paddings, _PlotRenderer_tooltipX, _PlotRenderer_tooltipY, _PlotRenderer_labelsX, _PlotRenderer_labelsY, _PlotRenderer_allValuesX, _PlotRenderer_allValuesY, _PlotRenderer_base, _PlotRenderer_yAxisStep, _PlotRenderer_plot, _PlotRenderer_hoverX, _PlotRenderer_isOnX, _PlotRenderer_isInArea, _PlotRenderer_renderBase, _PlotRenderer_calculateSizes;
+var _PlotRenderer_instances, _PlotRenderer_x, _PlotRenderer_y, _PlotRenderer_paddings, _PlotRenderer_tooltipX, _PlotRenderer_tooltipY, _PlotRenderer_labelsX, _PlotRenderer_labelsY, _PlotRenderer_allValuesX, _PlotRenderer_allValuesY, _PlotRenderer_base, _PlotRenderer_backLines, _PlotRenderer_yAxisStep, _PlotRenderer_plot, _PlotRenderer_hoverX, _PlotRenderer_isOnX, _PlotRenderer_isInArea, _PlotRenderer_renderBase, _PlotRenderer_renderBackLines, _PlotRenderer_calculateSizes;
 class PlotRenderer extends Renderer {
     constructor(chart) {
         super(chart);
@@ -1950,6 +1952,7 @@ class PlotRenderer extends Renderer {
         _PlotRenderer_allValuesX.set(this, void 0);
         _PlotRenderer_allValuesY.set(this, void 0);
         _PlotRenderer_base.set(this, void 0);
+        _PlotRenderer_backLines.set(this, void 0);
         _PlotRenderer_yAxisStep.set(this, void 0);
         _PlotRenderer_plot.set(this, void 0);
         _PlotRenderer_hoverX.set(this, void 0);
@@ -1986,7 +1989,8 @@ class PlotRenderer extends Renderer {
         TextStyles.regular(ctx);
         ctx.lineJoin = 'round';
         const axisLineHoverColor = Theme.lineActive;
-        __classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_renderBase).call(this);
+        __classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_renderBackLines).call(this);
+        __classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_renderBase).call(this, true);
         let x = 0, y = 0, yValue = 0, yHeight = 0, columnWidth = 0;
         let columnsIndex = 0, columnsCount = this.data.values.filter(s => s.type == PlotType.Column).length;
         let barsIndex = 0, barsCount = this.data.values.filter(s => s.type == PlotType.Bar).length, barHeight = __classPrivateFieldGet(this, _PlotRenderer_y, "f").step / (2 * barsCount);
@@ -2280,6 +2284,7 @@ class PlotRenderer extends Renderer {
                     break;
             }
         }
+        __classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_renderBase).call(this);
         this.tooltip.render(tooltipLines.length > 1 && !this.dropdown?.isActive, this.onMouseMoveEvent, tooltipLines);
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this));
@@ -2348,7 +2353,7 @@ class PlotRenderer extends Renderer {
         });
     }
 }
-_PlotRenderer_x = new WeakMap(), _PlotRenderer_y = new WeakMap(), _PlotRenderer_paddings = new WeakMap(), _PlotRenderer_tooltipX = new WeakMap(), _PlotRenderer_tooltipY = new WeakMap(), _PlotRenderer_labelsX = new WeakMap(), _PlotRenderer_labelsY = new WeakMap(), _PlotRenderer_allValuesX = new WeakMap(), _PlotRenderer_allValuesY = new WeakMap(), _PlotRenderer_base = new WeakMap(), _PlotRenderer_yAxisStep = new WeakMap(), _PlotRenderer_plot = new WeakMap(), _PlotRenderer_hoverX = new WeakMap(), _PlotRenderer_instances = new WeakSet(), _PlotRenderer_isOnX = function _PlotRenderer_isOnX(x) {
+_PlotRenderer_x = new WeakMap(), _PlotRenderer_y = new WeakMap(), _PlotRenderer_paddings = new WeakMap(), _PlotRenderer_tooltipX = new WeakMap(), _PlotRenderer_tooltipY = new WeakMap(), _PlotRenderer_labelsX = new WeakMap(), _PlotRenderer_labelsY = new WeakMap(), _PlotRenderer_allValuesX = new WeakMap(), _PlotRenderer_allValuesY = new WeakMap(), _PlotRenderer_base = new WeakMap(), _PlotRenderer_backLines = new WeakMap(), _PlotRenderer_yAxisStep = new WeakMap(), _PlotRenderer_plot = new WeakMap(), _PlotRenderer_hoverX = new WeakMap(), _PlotRenderer_instances = new WeakSet(), _PlotRenderer_isOnX = function _PlotRenderer_isOnX(x) {
     if (!this.onMouseMoveEvent)
         return false;
     const mouse = this.getMousePosition(this.onMouseMoveEvent);
@@ -2363,17 +2368,29 @@ _PlotRenderer_x = new WeakMap(), _PlotRenderer_y = new WeakMap(), _PlotRenderer_
     return !(this.dropdown?.isActive ?? false)
         && mouse.x >= x && mouse.x <= x + w
         && mouse.y >= y && mouse.y <= y + h;
-}, _PlotRenderer_renderBase = function _PlotRenderer_renderBase() {
+}, _PlotRenderer_renderBase = function _PlotRenderer_renderBase(skip = false) {
+    if (__classPrivateFieldGet(this, _PlotRenderer_base, "f") && skip)
+        return;
     const ctx = Canvas.getContext(this.canvas);
+    if (skip)
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     if (__classPrivateFieldGet(this, _PlotRenderer_base, "f")) {
-        ctx.putImageData(__classPrivateFieldGet(this, _PlotRenderer_base, "f"), 0, 0);
+        ctx.drawImage(__classPrivateFieldGet(this, _PlotRenderer_base, "f"), 0, 0);
         return;
     }
-    const axisLabelOffset = 12, axisLineColor = Theme.lineAxis;
+    if (!skip)
+        return;
+    const axisLabelOffset = 12;
+    ctx.fillStyle = Theme.canvasBackground;
+    ctx.fillRect(0, 0, __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").left, this.canvas.height);
+    ctx.fillRect(0, 0, this.canvas.width, __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").top);
+    ctx.fillRect(this.canvas.width - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").right, 0, this.canvas.width, this.canvas.height);
+    ctx.fillRect(0, this.canvas.height - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom, this.canvas.width, this.canvas.height);
     const isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0;
     if (this.data.xTitle || this.data.yTitle) {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
+        ctx.fillStyle = Theme.text;
         if (this.data.xTitle)
             ctx.fillText(this.data.xTitle, __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").left + (this.canvas.width - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").left - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").right) / 2, this.canvas.height - 4);
         if (this.data.yTitle) {
@@ -2400,14 +2417,6 @@ _PlotRenderer_x = new WeakMap(), _PlotRenderer_y = new WeakMap(), _PlotRenderer_
         if (xCounter % renderStep == 0) {
             ctx.fillStyle = Theme.text + 'b7';
             ctx.fillText(__classPrivateFieldGet(this, _PlotRenderer_labelsX, "f").get(Math.round(acc - __classPrivateFieldGet(this, _PlotRenderer_x, "f").step / 2)) ?? '', acc, xYPos + axisLabelOffset / 2);
-            if (isContainsBar) {
-                ctx.beginPath();
-                ctx.moveTo(acc, xYPos);
-                ctx.lineTo(acc, __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").top);
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = axisLineColor;
-                ctx.stroke();
-            }
         }
         acc += step;
         xCounter++;
@@ -2441,14 +2450,6 @@ _PlotRenderer_x = new WeakMap(), _PlotRenderer_y = new WeakMap(), _PlotRenderer_
                 }
             }
             ctx.fillText(Formatter.number(label.label) + postfix, label.x - axisLabelOffset, label.y + (isContainsBar ? __classPrivateFieldGet(this, _PlotRenderer_y, "f").step / 2 : 0));
-            if (this.data.values.filter(s => s.type.isAnyEquals(PlotType.Column, PlotType.StackingColumn, PlotType.Line)).length > 0) {
-                ctx.beginPath();
-                ctx.moveTo(label.x, label.y);
-                ctx.lineTo(this.canvas.width - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").right, label.y);
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = axisLineColor;
-                ctx.stroke();
-            }
             yCounter++;
         }
     }
@@ -2463,7 +2464,66 @@ _PlotRenderer_x = new WeakMap(), _PlotRenderer_y = new WeakMap(), _PlotRenderer_
         ctx.lineTo(this.canvas.width - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").right, this.canvas.height - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom + offset);
     ctx.stroke();
     if (this.canvas.width > 0 && this.canvas.height > 0)
-        __classPrivateFieldSet(this, _PlotRenderer_base, ctx.getImageData(0, 0, this.canvas.width, this.canvas.height), "f");
+        createImageBitmap(ctx.getImageData(0, 0, this.canvas.width, this.canvas.height))
+            .then(res => __classPrivateFieldSet(this, _PlotRenderer_base, res, "f"));
+}, _PlotRenderer_renderBackLines = function _PlotRenderer_renderBackLines() {
+    const ctx = Canvas.getContext(this.canvas);
+    if (__classPrivateFieldGet(this, _PlotRenderer_backLines, "f")) {
+        ctx.putImageData(__classPrivateFieldGet(this, _PlotRenderer_backLines, "f"), 0, 0);
+        return;
+    }
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    const axisLineColor = Theme.lineAxis;
+    const isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0;
+    if (isContainsBar) {
+        const step = __classPrivateFieldGet(this, _PlotRenderer_x, "f").step, xYPos = this.canvas.height - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom;
+        let xCounter = 0, acc = __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").left + step / 2;
+        for (let i = 0; i < __classPrivateFieldGet(this, _PlotRenderer_allValuesX, "f").length + 1; i++)
+            __classPrivateFieldGet(this, _PlotRenderer_labelsX, "f").trySet(Math.round(__classPrivateFieldGet(this, _PlotRenderer_paddings, "f").left + i * __classPrivateFieldGet(this, _PlotRenderer_x, "f").step), this.data.xType == PlotAxisType.Date
+                ? Formatter.date(new Date(__classPrivateFieldGet(this, _PlotRenderer_allValuesX, "f")[i - 1]))
+                : isNaN(+__classPrivateFieldGet(this, _PlotRenderer_x, "f").min) || !isFinite(+__classPrivateFieldGet(this, _PlotRenderer_x, "f").min)
+                    ? __classPrivateFieldGet(this, _PlotRenderer_allValuesX, "f")[i - 1]
+                    : Formatter.number(__classPrivateFieldGet(this, _PlotRenderer_x, "f").min + i * (__classPrivateFieldGet(this, _PlotRenderer_x, "f").max - __classPrivateFieldGet(this, _PlotRenderer_x, "f").min) / (__classPrivateFieldGet(this, _PlotRenderer_x, "f").count - 1)));
+        const maxLabelWidth = Math.max(...[...__classPrivateFieldGet(this, _PlotRenderer_labelsX, "f").values()].map(label => Math.ceil(Helper.stringWidth(label)))) + 10;
+        const maxCount = Math.floor((this.canvas.width - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").left - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").right) / maxLabelWidth);
+        const renderStep = Math.ceil(1 / (maxCount / __classPrivateFieldGet(this, _PlotRenderer_allValuesX, "f").length));
+        while (acc < this.canvas.width - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").right) {
+            if (xCounter % renderStep == 0) {
+                ctx.beginPath();
+                ctx.moveTo(acc, xYPos);
+                ctx.lineTo(acc, __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").top);
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = axisLineColor;
+                ctx.stroke();
+            }
+            acc += step;
+            xCounter++;
+        }
+    }
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    const yCount = __classPrivateFieldGet(this, _PlotRenderer_y, "f").count > 10 ? 10 : __classPrivateFieldGet(this, _PlotRenderer_y, "f").count;
+    let yCounter = isContainsBar ? 1 : 0, yStep = __classPrivateFieldGet(this, _PlotRenderer_allValuesY, "f").length / yCount;
+    for (let i = isContainsBar ? 1 : 0; i < __classPrivateFieldGet(this, _PlotRenderer_allValuesY, "f").length + 1; i++) {
+        const labelY = this.canvas.height - yCounter * yStep * __classPrivateFieldGet(this, _PlotRenderer_y, "f").step - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom;
+        if (i >= yCounter * yStep) {
+            const label = {
+                x: __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").left,
+                y: labelY
+            };
+            if (this.data.values.filter(s => s.type.isAnyEquals(PlotType.Column, PlotType.StackingColumn, PlotType.Line)).length > 0) {
+                ctx.beginPath();
+                ctx.moveTo(label.x, label.y);
+                ctx.lineTo(this.canvas.width - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").right, label.y);
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = axisLineColor;
+                ctx.stroke();
+            }
+            yCounter++;
+        }
+    }
+    if (this.canvas.width > 0 && this.canvas.height > 0)
+        __classPrivateFieldSet(this, _PlotRenderer_backLines, ctx.getImageData(0, 0, this.canvas.width, this.canvas.height), "f");
 }, _PlotRenderer_calculateSizes = function _PlotRenderer_calculateSizes() {
     let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)), yValues = this.data.values.flatMap(s => s.values.map(p => p.y));
     const isDate = this.data.xType == PlotAxisType.Date;

@@ -10,4 +10,6 @@ class ThemeOptions {
     static readonly lineActives = ['#898989', '#898989']
 
     static readonly dropdownBorders = ['#bcbcbc', '#7e7e7e']
+
+    static readonly canvasBackgrounds = ['#ffffff', '#222222']
 }

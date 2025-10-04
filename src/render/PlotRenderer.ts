@@ -17,7 +17,9 @@ class PlotRenderer extends Renderer<PlotData> {
 
     #allValuesY: any[]
 
-    #base: ImageData | undefined
+    #base: ImageBitmap | undefined
+
+    #backLines: ImageData | undefined
 
     #yAxisStep: number
 
@@ -73,7 +75,8 @@ class PlotRenderer extends Renderer<PlotData> {
 
         const axisLineHoverColor = Theme.lineActive
 
-        this.#renderBase()
+        this.#renderBackLines()
+        this.#renderBase(true)
 
         let x = 0,
             y = 0,
@@ -500,6 +503,8 @@ class PlotRenderer extends Renderer<PlotData> {
             }
         }
 
+        this.#renderBase()
+
         this.tooltip.render(tooltipLines.length > 1 && !this.dropdown?.isActive,
             this.onMouseMoveEvent,
             tooltipLines)
@@ -555,22 +560,38 @@ class PlotRenderer extends Renderer<PlotData> {
                && mouse.y >= y && mouse.y <= y + h
     }
 
-    #renderBase() {
+    #renderBase(skip: boolean = false) {
+        if (this.#base && skip)
+            return
+
         const ctx = Canvas.getContext(this.canvas)
 
+        if (skip)
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
         if (this.#base) {
-            ctx.putImageData(this.#base, 0, 0)
+            ctx.drawImage(this.#base, 0, 0)
             return
         }
 
-        const axisLabelOffset = 12,
-            axisLineColor = Theme.lineAxis
+        if (!skip)
+            return
+
+        const axisLabelOffset = 12
+
+        ctx.fillStyle = Theme.canvasBackground
+
+        ctx.fillRect(0, 0, this.#paddings.left, this.canvas.height)
+        ctx.fillRect(0, 0, this.canvas.width, this.#paddings.top)
+        ctx.fillRect(this.canvas.width - this.#paddings.right, 0, this.canvas.width, this.canvas.height)
+        ctx.fillRect(0, this.canvas.height - this.#paddings.bottom, this.canvas.width, this.canvas.height)
 
         const isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0
 
         if (this.data.xTitle || this.data.yTitle) {
             ctx.textAlign = 'center'
             ctx.textBaseline = 'bottom'
+            ctx.fillStyle = Theme.text
 
             if (this.data.xTitle)
                 ctx.fillText(this.data.xTitle,
@@ -628,17 +649,6 @@ class PlotRenderer extends Renderer<PlotData> {
                     acc,
                     xYPos + axisLabelOffset / 2
                 )
-
-                if (isContainsBar) {
-                    ctx.beginPath()
-
-                    ctx.moveTo(acc, xYPos)
-                    ctx.lineTo(acc, this.#paddings.top)
-
-                    ctx.lineWidth = 1
-                    ctx.strokeStyle = axisLineColor
-                    ctx.stroke()
-                }
             }
 
             acc += step
@@ -690,17 +700,6 @@ class PlotRenderer extends Renderer<PlotData> {
                     label.x - axisLabelOffset,
                     label.y + (isContainsBar ? this.#y.step / 2 : 0))
 
-                if (this.data.values.filter(s => s.type.isAnyEquals(PlotType.Column, PlotType.StackingColumn, PlotType.Line)).length > 0) {
-                    ctx.beginPath()
-
-                    ctx.moveTo(label.x, label.y)
-                    ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
-
-                    ctx.lineWidth = 1
-                    ctx.strokeStyle = axisLineColor
-                    ctx.stroke()
-                }
-
                 yCounter++
             }
         }
@@ -724,7 +723,102 @@ class PlotRenderer extends Renderer<PlotData> {
         ctx.stroke()
 
         if (this.canvas.width > 0 && this.canvas.height > 0)
-            this.#base = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
+            createImageBitmap(ctx.getImageData(0, 0, this.canvas.width, this.canvas.height))
+                .then(res => this.#base = res)
+    }
+
+    #renderBackLines() {
+        const ctx = Canvas.getContext(this.canvas)
+
+        if (this.#backLines) {
+            ctx.putImageData(this.#backLines, 0, 0)
+            return
+        }
+
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+        const axisLineColor = Theme.lineAxis
+
+        const isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0
+
+        if (isContainsBar) {
+            const step = this.#x.step,
+                xYPos = this.canvas.height - this.#paddings.bottom
+
+            let xCounter = 0,
+                acc = this.#paddings.left + step / 2
+
+            for (let i = 0; i < this.#allValuesX.length + 1; i++)
+                this.#labelsX.trySet(
+                    Math.round(this.#paddings.left + i * this.#x.step),
+                    this.data.xType == PlotAxisType.Date
+                    ? Formatter.date(new Date(this.#allValuesX[i - 1]))
+                    : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
+                      ? this.#allValuesX[i - 1]
+                      : Formatter.number(
+                            this.#x.min + i * (this.#x.max - this.#x.min) / (this.#x.count - 1)
+                        )
+                )
+
+            const maxLabelWidth = Math.max(
+                ...[...this.#labelsX.values()].map(label => Math.ceil(Helper.stringWidth(label)))
+            ) + 10
+            const maxCount = Math.floor(
+                (this.canvas.width - this.#paddings.left - this.#paddings.right) / maxLabelWidth
+            )
+            const renderStep = Math.ceil(1 / (maxCount / this.#allValuesX.length))
+
+            while (acc < this.canvas.width - this.#paddings.right) {
+                if (xCounter % renderStep == 0) {
+                    ctx.beginPath()
+
+                    ctx.moveTo(acc, xYPos)
+                    ctx.lineTo(acc, this.#paddings.top)
+
+                    ctx.lineWidth = 1
+                    ctx.strokeStyle = axisLineColor
+                    ctx.stroke()
+                }
+
+                acc += step
+                xCounter++
+            }
+        }
+
+        ctx.textAlign = 'right'
+        ctx.textBaseline = 'middle'
+
+        const yCount = this.#y.count > 10 ? 10 : this.#y.count
+
+        let yCounter = isContainsBar ? 1 : 0,
+            yStep = this.#allValuesY.length / yCount
+
+        for (let i = isContainsBar ? 1 : 0; i < this.#allValuesY.length + 1; i++) {
+            const labelY = this.canvas.height - yCounter * yStep * this.#y.step - this.#paddings.bottom
+
+            if (i >= yCounter * yStep) {
+                const label = {
+                    x: this.#paddings.left,
+                    y: labelY
+                }
+
+                if (this.data.values.filter(s => s.type.isAnyEquals(PlotType.Column, PlotType.StackingColumn, PlotType.Line)).length > 0) {
+                    ctx.beginPath()
+
+                    ctx.moveTo(label.x, label.y)
+                    ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
+
+                    ctx.lineWidth = 1
+                    ctx.strokeStyle = axisLineColor
+                    ctx.stroke()
+                }
+
+                yCounter++
+            }
+        }
+
+        if (this.canvas.width > 0 && this.canvas.height > 0)
+            this.#backLines = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
     }
 
     #calculateSizes() {
