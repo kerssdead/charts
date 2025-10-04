@@ -543,7 +543,7 @@
 
         let values = getValues(type, valuesCount, valuesType, pointsCount, plotType)
 
-        const exist = document.getElementById('chart').chart
+        const exist = document.getElementById('chart').childElementCount !== 0
 
         if (exist) {
             delete exist.chart
