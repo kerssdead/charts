@@ -1,0 +1,53 @@
+const path = require('path')
+const TerserPlugin = require('terser-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+
+module.exports = {
+    entry: [
+        './src/OCharts.ts',
+        './src/styles/index.css'
+    ],
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'ocharts.min.js',
+        cssFilename: 'ocharts.min.css'
+    },
+    mode: 'production',
+    devtool: 'source-map',
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/,
+            },
+            {
+                test: /\.(sa|sc|c)ss$/i,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    "css-loader"
+                ],
+            }
+        ],
+    },
+    resolve: {
+        extensions: ['.tsx', '.ts', '.js'],
+    },
+    optimization: {
+        minimize: true,
+        minimizer: [
+            new TerserPlugin({
+                // https://terser.org/docs/options/
+                terserOptions: {
+                    ecma: 2015,
+                    compress: {
+                        passes: 2
+                    }
+                },
+            })
+        ]
+    },
+    plugins: [
+        new MiniCssExtractPlugin()
+    ]
+}

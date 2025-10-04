@@ -9,7 +9,7 @@ module.exports = {
     ],
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'ocharts.min.js',
+        filename: 'ocharts.js',
         cssFilename: 'ocharts.min.css',
         clean: true
     },
@@ -35,7 +35,7 @@ module.exports = {
         extensions: ['.tsx', '.ts', '.js'],
     },
     optimization: {
-        minimize: true,
+        minimize: false,
         minimizer: [
             new TerserPlugin({
                 // https://terser.org/docs/options/
