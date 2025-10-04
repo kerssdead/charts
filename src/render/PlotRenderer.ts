@@ -287,7 +287,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
                         const seriesHeight= series.width ?? barHeight
 
-                        if (this.state != RenderState.Init || this.animations.contains(value.id + barsIndex, AnimationType.Init)) {
+                        if (this.state == RenderState.Init || this.animations.contains(value.id + barsIndex, AnimationType.Init)) {
                             this.animations.add(value.id + barsIndex,
                                 AnimationType.Init,
                                 {
