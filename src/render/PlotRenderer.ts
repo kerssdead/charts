@@ -444,6 +444,9 @@ class PlotRenderer extends Renderer<PlotData> {
                         ctx.beginPath()
                         ctx.arc(this.#hoverX.x, this.#hoverX.y, radius, 0, 2 * Math.PI)
                         ctx.fill()
+                        ctx.lineWidth = Math.ceil(radius / 2)
+                        ctx.strokeStyle = Helper.adjustColor(series.color, 50)
+                        ctx.stroke()
                     }
 
                     break
