@@ -64,9 +64,6 @@ class Button {
                 AnimationType.MouseOver,
                 {
                     duration: 300,
-                    before: () => {
-                        return clickEvent == undefined
-                    },
                     body: transition => {
                         translate(transition, AnimationType.MouseLeave)
                     }

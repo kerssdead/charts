@@ -310,9 +310,6 @@ class Button {
             }
             this.animations.add('animation-button', AnimationType.MouseOver, {
                 duration: 300,
-                before: () => {
-                    return clickEvent == undefined;
-                },
                 body: transition => {
                     translate(transition, AnimationType.MouseLeave);
                 }
