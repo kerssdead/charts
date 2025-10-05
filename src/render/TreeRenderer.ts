@@ -2,6 +2,8 @@ class TreeRenderer extends Renderer<TreeData> {
     constructor(chart: Chart) {
         super(chart)
 
+        this.settings.enableLegend = false
+
         this.data.values = this.data.values.map(v => new Sector(v))
         this.data.values.sort((a, b) => b.value > a.value ? 1 : -1)
 

@@ -2694,6 +2694,7 @@ class TreeRenderer extends Renderer {
     constructor(chart) {
         super(chart);
         _TreeRenderer_instances.add(this);
+        this.settings.enableLegend = false;
         this.data.values = this.data.values.map(v => new Sector(v));
         this.data.values.sort((a, b) => b.value > a.value ? 1 : -1);
         const baseColor = this.settings.baseColor ?? Helper.randomColor();
