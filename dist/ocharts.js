@@ -1561,6 +1561,9 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
                     y: __classPrivateFieldGet(this, _CircularRenderer_animationOffset, "f") * Math.sin(direction)
                 };
                 ctx.translate(transition.x, transition.y);
+                ctx.lineWidth = 8;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
                 ctx.fillStyle = value.color;
             }
         });
@@ -1595,6 +1598,9 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
         && !isSingle) {
         const translate = (transition, event, swap) => {
             this.animations.reload(value.id, event);
+            ctx.lineWidth = 1;
+            ctx.lineJoin = 'miter';
+            ctx.lineCap = 'butt';
             if (transition == 0)
                 return;
             if (swap)
@@ -1604,6 +1610,9 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
                 y: __classPrivateFieldGet(this, _CircularRenderer_animationOffset, "f") * Math.sin(direction) * transition
             };
             ctx.translate(translate.x, translate.y);
+            ctx.lineWidth = transition * 8;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
             value.translate = translate;
             value.transition = transition;
         };
@@ -1654,6 +1663,9 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
                 if (opacity.length < 2)
                     opacity = 0 + opacity;
                 ctx.strokeStyle = Theme.text + opacity;
+                ctx.lineCap = 'butt';
+                ctx.lineJoin = 'miter';
+                ctx.lineWidth = 1;
                 ctx.stroke();
                 ctx.fillStyle = Theme.text + opacity;
                 TextStyles.circularLabel(ctx, dir == 1);
@@ -1727,6 +1739,7 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
                 });
             }
         }
+        ctx.closePath();
         ctx.fill();
         ctx.stroke();
         __classPrivateFieldSet(this, _CircularRenderer_accumulator, __classPrivateFieldGet(this, _CircularRenderer_accumulator, "f") + angle, "f");

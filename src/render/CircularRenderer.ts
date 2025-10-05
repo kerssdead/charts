@@ -173,6 +173,10 @@ class CircularRenderer extends Renderer<CircularData> {
 
                         ctx.translate(transition.x, transition.y)
 
+                        ctx.lineWidth = 8
+                        ctx.lineJoin = 'round'
+                        ctx.lineCap = 'round'
+
                         ctx.fillStyle = value.color
                     }
                 })
@@ -218,6 +222,10 @@ class CircularRenderer extends Renderer<CircularData> {
             const translate = (transition: number, event: AnimationType, swap: boolean) => {
                 this.animations.reload(value.id, event)
 
+                ctx.lineWidth = 1
+                ctx.lineJoin = 'miter'
+                ctx.lineCap = 'butt'
+
                 if (transition == 0)
                     return
 
@@ -233,6 +241,10 @@ class CircularRenderer extends Renderer<CircularData> {
                     }
 
                 ctx.translate(translate.x, translate.y)
+
+                ctx.lineWidth = transition * 8
+                ctx.lineJoin = 'round'
+                ctx.lineCap = 'round'
 
                 value.translate = translate
                 value.transition = transition
@@ -310,6 +322,9 @@ class CircularRenderer extends Renderer<CircularData> {
                         opacity = 0 + opacity
 
                     ctx.strokeStyle = Theme.text + opacity
+                    ctx.lineCap = 'butt'
+                    ctx.lineJoin = 'miter'
+                    ctx.lineWidth = 1
                     ctx.stroke()
 
                     ctx.fillStyle = Theme.text + opacity
@@ -423,6 +438,8 @@ class CircularRenderer extends Renderer<CircularData> {
                     )
                 }
             }
+
+            ctx.closePath()
 
             ctx.fill()
             ctx.stroke()
