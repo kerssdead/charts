@@ -290,20 +290,22 @@
     }
 
     function restoreState() {
-        const object = JSON.parse(getCookie('state'))
+        const cookieStr = getCookie('state'),
+            object = cookieStr && cookieStr.length !== 0 ? JSON.parse(cookieStr) : null
 
-        if (object === null)
-            return
+        if (object !== null) {
+            for (const [key, value] of Object.entries(object)) {
+                const element = document.getElementById(key)
 
-        for (const [key, value] of Object.entries(object)) {
-            const element = document.getElementById(key)
-
-            if (element) {
-                if (element.type === 'checkbox')
-                    element.checked = value
-                else
-                    element.value = value
+                if (element) {
+                    if (element.type === 'checkbox')
+                        element.checked = value
+                    else
+                        element.value = value
+                }
             }
+        } else {
+            document.getElementById('seed').value = 123
         }
 
         rng = new RNG()
@@ -370,7 +372,8 @@
 
                         points.push({
                             x: x,
-                            y: y
+                            y: y,
+                            data: getData()
                         })
                     }
 
