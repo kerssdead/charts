@@ -47,6 +47,10 @@ class Chart {
         this.#observer.disconnect()
     }
 
+    highlight(value?: Value) {
+        this.#renderer.highlight(value)
+    }
+
     #prepareSettings() {
         this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
 

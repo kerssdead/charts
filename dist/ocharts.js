@@ -81,6 +81,7 @@ class Renderer extends Renderable {
         _Renderer_instances.add(this);
         this.isDestroy = false;
         this.data = this.settings.data;
+        this.highlightItems = [];
         this.state = this.settings.disableInitAnimation ? RenderState.Idle : RenderState.Init;
     }
     render() {
@@ -172,6 +173,12 @@ class Renderer extends Renderable {
             }
         }
         return false;
+    }
+    highlight(value) {
+        if (value)
+            this.highlightItems = [value.id];
+        else
+            this.highlightItems = [];
     }
     getMousePosition(event) {
         return {
@@ -381,6 +388,9 @@ class Chart {
         __classPrivateFieldGet(this, _Chart_renderer, "f").destroy();
         __classPrivateFieldGet(this, _Chart_legend, "f")?.destroy();
         __classPrivateFieldGet(this, _Chart_observer, "f").disconnect();
+    }
+    highlight(value) {
+        __classPrivateFieldGet(this, _Chart_renderer, "f").highlight(value);
     }
 }
 _Chart_renderer = new WeakMap(), _Chart_legend = new WeakMap(), _Chart_observer = new WeakMap(), _Chart_instances = new WeakSet(), _Chart_prepareSettings = function _Chart_prepareSettings() {
@@ -870,14 +880,17 @@ class Helper {
         return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+/.test(str);
     }
 }
-var _Legend_instances, _Legend_button, _Legend_offset, _Legend_draw;
+var _Legend_instances, _Legend_button, _Legend_offset, _Legend_chart, _Legend_hoverCount, _Legend_draw;
 class Legend extends Renderable {
     constructor(chart) {
         super(chart);
         _Legend_instances.add(this);
         _Legend_button.set(this, void 0);
         _Legend_offset.set(this, void 0);
+        _Legend_chart.set(this, void 0);
+        _Legend_hoverCount.set(this, void 0);
         this.isDestroy = false;
+        __classPrivateFieldSet(this, _Legend_chart, chart, "f");
         this.calculateSizes();
         if (!this.settings.disableInteractions)
             __classPrivateFieldSet(this, _Legend_button, new Button(this.canvas, {
@@ -903,6 +916,7 @@ class Legend extends Renderable {
         ctx.textAlign = 'start';
         ctx.textBaseline = 'alphabetic';
         ctx.translate(__classPrivateFieldGet(this, _Legend_offset, "f").x, __classPrivateFieldGet(this, _Legend_offset, "f").y);
+        __classPrivateFieldSet(this, _Legend_hoverCount, 0, "f");
         for (const value of this.settings.data.values.filter(v => !v.hideInLegend))
             nextPoint = __classPrivateFieldGet(this, _Legend_instances, "m", _Legend_draw).call(this, value, nextPoint.x, nextPoint.y);
         ctx.translate(-__classPrivateFieldGet(this, _Legend_offset, "f").x, -__classPrivateFieldGet(this, _Legend_offset, "f").y);
@@ -971,7 +985,8 @@ class Legend extends Renderable {
         return count * 40;
     }
 }
-_Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_instances = new WeakSet(), _Legend_draw = function _Legend_draw(value, x, y) {
+_Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_chart = new WeakMap(), _Legend_hoverCount = new WeakMap(), _Legend_instances = new WeakSet(), _Legend_draw = function _Legend_draw(value, x, y) {
+    var _a;
     const ctx = Canvas.getContext(this.canvas);
     const textWidth = Helper.stringWidth(value.label), circleRadius = 10;
     if (x + 50 + textWidth >= this.canvas.width - 100 - __classPrivateFieldGet(this, _Legend_offset, "f").x) {
@@ -1017,6 +1032,10 @@ _Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_instance
                 translate(transition, AnimationType.MouseLeave);
             }
         });
+        if (!value.disabled) {
+            __classPrivateFieldSet(this, _Legend_hoverCount, (_a = __classPrivateFieldGet(this, _Legend_hoverCount, "f"), _a++, _a), "f");
+            __classPrivateFieldGet(this, _Legend_chart, "f").highlight(value);
+        }
         this.canvas.style.cursor = Styles.Cursor.Pointer;
     }
     else {
@@ -1028,6 +1047,8 @@ _Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_instance
                 translate(transition, AnimationType.MouseOver);
             }
         });
+        if (__classPrivateFieldGet(this, _Legend_hoverCount, "f") == 0)
+            __classPrivateFieldGet(this, _Legend_chart, "f").highlight();
     }
     ctx.beginPath();
     ctx.arc(x, y, circleRadius, 0, 2 * Math.PI);
@@ -1720,7 +1741,9 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
                 ctx.fillStyle = value.color + opacity;
                 ctx.strokeStyle = value.color + opacity;
             };
-            if (__classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") && __classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") != value.id) {
+            const anyHighlight = this.highlightItems.length != 0;
+            if ((__classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") && __classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") != value.id)
+                || (anyHighlight && !this.highlightItems.includes(value.id))) {
                 this.animations.add(value.id, AnimationType.AnotherItemOver, {
                     duration: Constants.Animations.circular,
                     body: transition => {
@@ -1728,7 +1751,7 @@ _CircularRenderer_canRenderInnerTitle = new WeakMap(), _CircularRenderer_isDonut
                     }
                 });
             }
-            else if (__classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") == undefined) {
+            else if (__classPrivateFieldGet(this, _CircularRenderer_currentHover, "f") == undefined || !anyHighlight) {
                 this.animations.add(value.id, AnimationType.AnotherItemLeave, {
                     timer: Constants.Dates.minDate,
                     duration: Constants.Animations.circular,
@@ -2016,6 +2039,37 @@ class PlotRenderer extends Renderer {
             ctx.fillStyle = series.color;
             ctx.lineWidth = series.width;
             ctx.lineCap = 'round';
+            const anyHighlight = this.highlightItems.length != 0;
+            if (!this.animations.contains(series.id, AnimationType.Init)) {
+                const changeColor = (transition, event) => {
+                    this.animations.reload(series.id, event);
+                    if (transition == 0)
+                        return;
+                    let opacity = Math.round(255 - 95 * transition).toString(16);
+                    if (opacity.length < 2)
+                        opacity = 0 + opacity;
+                    ctx.fillStyle = series.color + opacity;
+                    ctx.strokeStyle = series.color + opacity;
+                };
+                if (anyHighlight && !this.highlightItems.includes(series.id)) {
+                    this.animations.add(series.id, AnimationType.AnotherItemOver, {
+                        duration: Constants.Animations.circular,
+                        body: transition => {
+                            changeColor(transition, AnimationType.AnotherItemLeave);
+                        }
+                    });
+                }
+                else if (!anyHighlight) {
+                    this.animations.add(series.id, AnimationType.AnotherItemLeave, {
+                        timer: Constants.Dates.minDate,
+                        duration: Constants.Animations.circular,
+                        backward: true,
+                        body: transition => {
+                            changeColor(transition, AnimationType.AnotherItemOver);
+                        }
+                    });
+                }
+            }
             switch (series.lineType) {
                 case LineType.Dash:
                     ctx.setLineDash([series.width * 3, series.width * 2]);
@@ -2128,22 +2182,24 @@ class PlotRenderer extends Renderer {
                             });
                         }
                         else {
-                            if (__classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_isInArea).call(this, x + columnsIndex * columnWidth + (__classPrivateFieldGet(this, _PlotRenderer_x, "f").step - columnsCount * columnWidth) / 2, this.canvas.height - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom - y, columnWidth, y)
-                                && (this.contextMenu?.isActive == undefined
-                                    || this.contextMenu?.isActive == false)) {
-                                __classPrivateFieldSet(this, _PlotRenderer_hoverX, {
-                                    x: x,
-                                    y: y,
-                                    index: index,
-                                    data: value.data,
-                                    series: series
-                                }, "f");
-                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
-                                __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x, "f");
-                                ctx.fillStyle += '88';
-                            }
-                            else {
-                                ctx.fillStyle = series.color;
+                            if (!anyHighlight) {
+                                if (__classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_isInArea).call(this, x + columnsIndex * columnWidth + (__classPrivateFieldGet(this, _PlotRenderer_x, "f").step - columnsCount * columnWidth) / 2, this.canvas.height - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom - y, columnWidth, y)
+                                    && (this.contextMenu?.isActive == undefined
+                                        || this.contextMenu?.isActive == false)) {
+                                    __classPrivateFieldSet(this, _PlotRenderer_hoverX, {
+                                        x: x,
+                                        y: y,
+                                        index: index,
+                                        data: value.data,
+                                        series: series
+                                    }, "f");
+                                    tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
+                                    __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x, "f");
+                                    ctx.fillStyle += '88';
+                                }
+                                else {
+                                    ctx.fillStyle = series.color;
+                                }
                             }
                             ctx.fillRect(x + columnsIndex * columnWidth + (__classPrivateFieldGet(this, _PlotRenderer_x, "f").step - columnsCount * columnWidth) / 2, this.canvas.height - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").bottom - y, columnWidth, y);
                         }
@@ -2164,20 +2220,22 @@ class PlotRenderer extends Renderer {
                             });
                         }
                         else {
-                            if (__classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_isInArea).call(this, x, y - __classPrivateFieldGet(this, _PlotRenderer_y, "f").step / 4 + barsIndex * seriesHeight, value.x / __classPrivateFieldGet(this, _PlotRenderer_x, "f").unit * __classPrivateFieldGet(this, _PlotRenderer_x, "f").step, seriesHeight)) {
-                                __classPrivateFieldSet(this, _PlotRenderer_hoverX, {
-                                    x: x,
-                                    y: y,
-                                    index: index,
-                                    data: value.data,
-                                    series: series
-                                }, "f");
-                                ctx.fillStyle += '88';
-                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().x}`, series.color));
-                                __classPrivateFieldSet(this, _PlotRenderer_tooltipY, y - __classPrivateFieldGet(this, _PlotRenderer_y, "f").step / 2, "f");
-                            }
-                            else {
-                                ctx.fillStyle = series.color;
+                            if (!anyHighlight) {
+                                if (__classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_isInArea).call(this, x, y - __classPrivateFieldGet(this, _PlotRenderer_y, "f").step / 4 + barsIndex * seriesHeight, value.x / __classPrivateFieldGet(this, _PlotRenderer_x, "f").unit * __classPrivateFieldGet(this, _PlotRenderer_x, "f").step, seriesHeight)) {
+                                    __classPrivateFieldSet(this, _PlotRenderer_hoverX, {
+                                        x: x,
+                                        y: y,
+                                        index: index,
+                                        data: value.data,
+                                        series: series
+                                    }, "f");
+                                    ctx.fillStyle += '88';
+                                    tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().x}`, series.color));
+                                    __classPrivateFieldSet(this, _PlotRenderer_tooltipY, y - __classPrivateFieldGet(this, _PlotRenderer_y, "f").step / 2, "f");
+                                }
+                                else {
+                                    ctx.fillStyle = series.color;
+                                }
                             }
                             ctx.fillRect(x, y - __classPrivateFieldGet(this, _PlotRenderer_y, "f").step / 4 + barsIndex * seriesHeight, value.x / __classPrivateFieldGet(this, _PlotRenderer_x, "f").unit * __classPrivateFieldGet(this, _PlotRenderer_x, "f").step, seriesHeight);
                         }
@@ -2219,20 +2277,22 @@ class PlotRenderer extends Renderer {
                             if (yValue > __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").top) {
                                 if (yValue + yHeight < __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").top)
                                     yHeight -= yValue + yHeight - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").top;
-                                if (__classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_isInArea).call(this, x + (__classPrivateFieldGet(this, _PlotRenderer_x, "f").step - columnWidth) / 2, yValue + yHeight, columnWidth, Math.abs(yHeight))) {
-                                    __classPrivateFieldSet(this, _PlotRenderer_hoverX, {
-                                        x: x,
-                                        y: y,
-                                        index: xIndex,
-                                        data: value.data,
-                                        series: series
-                                    }, "f");
-                                    tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
-                                    __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x, "f");
-                                    ctx.fillStyle += '88';
-                                }
-                                else {
-                                    ctx.fillStyle = series.color;
+                                if (!anyHighlight) {
+                                    if (__classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_isInArea).call(this, x + (__classPrivateFieldGet(this, _PlotRenderer_x, "f").step - columnWidth) / 2, yValue + yHeight, columnWidth, Math.abs(yHeight))) {
+                                        __classPrivateFieldSet(this, _PlotRenderer_hoverX, {
+                                            x: x,
+                                            y: y,
+                                            index: xIndex,
+                                            data: value.data,
+                                            series: series
+                                        }, "f");
+                                        tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
+                                        __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x, "f");
+                                        ctx.fillStyle += '88';
+                                    }
+                                    else {
+                                        ctx.fillStyle = series.color;
+                                    }
                                 }
                                 ctx.fillRect(x + (__classPrivateFieldGet(this, _PlotRenderer_x, "f").step - columnWidth) / 2, yValue, columnWidth, yHeight);
                             }

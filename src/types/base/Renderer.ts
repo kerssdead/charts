@@ -6,10 +6,14 @@ class Renderer<T extends Data> extends Renderable {
 
     protected isDestroy: boolean = false
 
+    protected highlightItems: string[]
+
     constructor(chart: Chart) {
         super(chart)
 
         this.data = <T>this.settings.data
+
+        this.highlightItems = []
 
         this.state = this.settings.disableInitAnimation ? RenderState.Idle : RenderState.Init
     }
@@ -133,6 +137,13 @@ class Renderer<T extends Data> extends Renderable {
         }
 
         return false
+    }
+
+    highlight(value?: Value) {
+        if (value)
+            this.highlightItems = [value.id]
+        else
+            this.highlightItems = []
     }
 
     #calculateSizes() {

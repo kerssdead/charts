@@ -103,6 +103,50 @@ class PlotRenderer extends Renderer<PlotData> {
             ctx.lineWidth = series.width
             ctx.lineCap = 'round'
 
+            const anyHighlight = this.highlightItems.length != 0
+
+            if (!this.animations.contains(series.id, AnimationType.Init)) {
+                const changeColor = (transition: number, event: AnimationType) => {
+                    this.animations.reload(series.id, event)
+
+                    if (transition == 0)
+                        return
+
+                    let opacity = Math.round(255 - 95 * transition).toString(16)
+                    if (opacity.length < 2)
+                        opacity = 0 + opacity
+
+                    ctx.fillStyle = series.color + opacity
+                    ctx.strokeStyle = series.color + opacity
+                }
+
+                if (anyHighlight && !this.highlightItems.includes(series.id)) {
+                    this.animations.add(
+                        series.id,
+                        AnimationType.AnotherItemOver,
+                        {
+                            duration: Constants.Animations.circular,
+                            body: transition => {
+                                changeColor(transition, AnimationType.AnotherItemLeave)
+                            }
+                        }
+                    )
+                } else if (!anyHighlight) {
+                    this.animations.add(
+                        series.id,
+                        AnimationType.AnotherItemLeave,
+                        {
+                            timer: Constants.Dates.minDate,
+                            duration: Constants.Animations.circular,
+                            backward: true,
+                            body: transition => {
+                                changeColor(transition, AnimationType.AnotherItemOver)
+                            }
+                        }
+                    )
+                }
+            }
+
             switch (series.lineType) {
                 case LineType.Dash:
                     ctx.setLineDash([series.width * 3, series.width * 2])
@@ -256,26 +300,28 @@ class PlotRenderer extends Renderer<PlotData> {
                                     }
                                 })
                         } else {
-                            if (this.#isInArea(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                    this.canvas.height - this.#paddings.bottom - y,
-                                    columnWidth,
-                                    y)
-                                && (this.contextMenu?.isActive == undefined
-                                    || this.contextMenu?.isActive == false)) {
-                                this.#hoverX = {
-                                    x: x,
-                                    y: y,
-                                    index: index,
-                                    data: value.data,
-                                    series: series
+                            if (!anyHighlight) {
+                                if (this.#isInArea(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
+                                        this.canvas.height - this.#paddings.bottom - y,
+                                        columnWidth,
+                                        y)
+                                    && (this.contextMenu?.isActive == undefined
+                                        || this.contextMenu?.isActive == false)) {
+                                    this.#hoverX = {
+                                        x: x,
+                                        y: y,
+                                        index: index,
+                                        data: value.data,
+                                        series: series
+                                    }
+
+                                    tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
+                                    this.#tooltipX = x
+
+                                    ctx.fillStyle += '88'
+                                } else {
+                                    ctx.fillStyle = series.color
                                 }
-
-                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
-                                this.#tooltipX = x
-
-                                ctx.fillStyle += '88'
-                            } else {
-                                ctx.fillStyle = series.color
                             }
 
                             ctx.fillRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
@@ -310,24 +356,26 @@ class PlotRenderer extends Renderer<PlotData> {
                                     }
                                 })
                         } else {
-                            if (this.#isInArea(x,
-                                y - this.#y.step / 4 + barsIndex * seriesHeight,
-                                <number>value.x / this.#x.unit * this.#x.step,
-                                seriesHeight)) {
-                                this.#hoverX = {
-                                    x: x,
-                                    y: y,
-                                    index: index,
-                                    data: value.data,
-                                    series: series
+                            if (!anyHighlight) {
+                                if (this.#isInArea(x,
+                                    y - this.#y.step / 4 + barsIndex * seriesHeight,
+                                    <number>value.x / this.#x.unit * this.#x.step,
+                                    seriesHeight)) {
+                                    this.#hoverX = {
+                                        x: x,
+                                        y: y,
+                                        index: index,
+                                        data: value.data,
+                                        series: series
+                                    }
+
+                                    ctx.fillStyle += '88'
+
+                                    tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().x }`, series.color))
+                                    this.#tooltipY = y - this.#y.step / 2
+                                } else {
+                                    ctx.fillStyle = series.color
                                 }
-
-                                ctx.fillStyle += '88'
-
-                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().x }`, series.color))
-                                this.#tooltipY = y - this.#y.step / 2
-                            } else {
-                                ctx.fillStyle = series.color
                             }
 
                             ctx.fillRect(x,
@@ -391,24 +439,26 @@ class PlotRenderer extends Renderer<PlotData> {
                                 if (yValue + yHeight < this.#paddings.top)
                                     yHeight -= yValue + yHeight - this.#paddings.top
 
-                                if (this.#isInArea(x + (this.#x.step - columnWidth) / 2,
-                                    yValue + yHeight,
-                                    columnWidth,
-                                    Math.abs(yHeight))) {
-                                    this.#hoverX = {
-                                        x: x,
-                                        y: y,
-                                        index: xIndex,
-                                        data: value.data,
-                                        series: series
+                                if (!anyHighlight) {
+                                    if (this.#isInArea(x + (this.#x.step - columnWidth) / 2,
+                                        yValue + yHeight,
+                                        columnWidth,
+                                        Math.abs(yHeight))) {
+                                        this.#hoverX = {
+                                            x: x,
+                                            y: y,
+                                            index: xIndex,
+                                            data: value.data,
+                                            series: series
+                                        }
+
+                                        tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
+                                        this.#tooltipX = x
+
+                                        ctx.fillStyle += '88'
+                                    } else {
+                                        ctx.fillStyle = series.color
                                     }
-
-                                    tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
-                                    this.#tooltipX = x
-
-                                    ctx.fillStyle += '88'
-                                } else {
-                                    ctx.fillStyle = series.color
                                 }
 
                                 ctx.fillRect(x + (this.#x.step - columnWidth) / 2,

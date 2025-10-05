@@ -413,7 +413,10 @@ class CircularRenderer extends Renderer<CircularData> {
                     ctx.strokeStyle = value.color + opacity
                 }
 
-                if (this.#currentHover && this.#currentHover != value.id) {
+                const anyHighlight = this.highlightItems.length != 0
+
+                if ((this.#currentHover && this.#currentHover != value.id)
+                    || (anyHighlight && !this.highlightItems.includes(value.id))) {
                     this.animations.add(
                         value.id,
                         AnimationType.AnotherItemOver,
@@ -424,7 +427,7 @@ class CircularRenderer extends Renderer<CircularData> {
                             }
                         }
                     )
-                } else if (this.#currentHover == undefined) {
+                } else if (this.#currentHover == undefined || !anyHighlight) {
                     this.animations.add(
                         value.id,
                         AnimationType.AnotherItemLeave,

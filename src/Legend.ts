@@ -3,10 +3,16 @@ class Legend extends Renderable {
 
     #offset: Point
 
+    #chart: Chart
+
+    #hoverCount: number
+
     isDestroy: boolean = false
 
     constructor(chart: Chart) {
         super(chart)
+
+        this.#chart = chart
 
         this.calculateSizes()
 
@@ -42,6 +48,8 @@ class Legend extends Renderable {
         ctx.textBaseline = 'alphabetic'
 
         ctx.translate(this.#offset.x, this.#offset.y)
+
+        this.#hoverCount = 0
 
         for (const value of this.settings.data.values.filter(v => !v.hideInLegend))
             nextPoint = this.#draw(value, nextPoint.x, nextPoint.y)
@@ -125,6 +133,12 @@ class Legend extends Renderable {
                     }
                 })
 
+            if (!value.disabled) {
+                this.#hoverCount++
+
+                this.#chart.highlight(value)
+            }
+
             this.canvas.style.cursor = Styles.Cursor.Pointer
         } else {
             this.animations.add(value.id,
@@ -137,6 +151,9 @@ class Legend extends Renderable {
                         translate(transition, AnimationType.MouseOver)
                     }
                 })
+
+            if (this.#hoverCount == 0)
+                this.#chart.highlight()
         }
 
         ctx.beginPath()
