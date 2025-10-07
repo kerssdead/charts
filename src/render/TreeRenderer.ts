@@ -5,17 +5,6 @@ class TreeRenderer extends Renderer<TreeData> {
         this.settings.enableLegend = false
 
         this.data.values = this.data.values.map(v => new Sector(v))
-        this.data.values.sort((a, b) => b.value > a.value ? 1 : -1)
-
-        const baseColor = this.settings.baseColor ?? Helper.randomColor()
-        let adjustStep = Math.round(100 / this.data.values.length),
-            adjustAmount = -50
-
-        if (adjustStep <= 1)
-            adjustStep = 1
-
-        for (let item of this.data.values)
-            item.color = Helper.adjustColor(baseColor, adjustAmount += adjustStep)
     }
 
     render() {
@@ -26,9 +15,9 @@ class TreeRenderer extends Renderer<TreeData> {
             return
         }
 
-        let titleOffset = this.settings.title ? Constants.Values.titleOffset : 0
+        const titleOffset = this.settings.title ? Constants.Values.titleOffset : 0
 
-        let maxWidth = this.canvas.width - this.data.padding * 2,
+        const maxWidth = this.canvas.width - this.data.padding * 2,
             maxHeight = this.canvas.height - this.data.padding * 2 - titleOffset
 
         let sum = this.data.values.reduce((acc, cur) => acc + cur.value, 0),
@@ -53,33 +42,29 @@ class TreeRenderer extends Renderer<TreeData> {
                 remainHeight = maxHeight - (y - this.data.padding - titleOffset)
 
             let cells: TreeCell[] = [
-                <TreeCell>{
+                {
                     color: item.color,
                     label: item.label,
                     s: item.value / sum * totalSquare,
                     value: item.value,
                     id: item.id,
                     x: x,
-                    y: y,
-                    w: 0,
-                    h: 0
-                }
+                    y: y
+                } as TreeCell
             ]
 
             if (i + 1 <= this.data.values.length - 1) {
                 const next = this.data.values[i + 1]
 
-                cells.push(<TreeCell>{
+                cells.push({
                     color: next.color,
                     label: next.label,
                     s: next.value / sum * totalSquare,
                     value: next.value,
                     id: next.id,
                     x: x,
-                    y: y,
-                    w: 0,
-                    h: 0
-                })
+                    y: y
+                } as TreeCell)
 
                 i++
             }
@@ -375,6 +360,5 @@ class TreeRenderer extends Renderer<TreeData> {
                     }
                 ]
             })
-
     }
 }
