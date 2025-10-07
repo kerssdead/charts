@@ -2269,6 +2269,8 @@ class PlotRenderer extends Renderer {
                             });
                         }
                         else {
+                            if (columnsIndex == 0)
+                                stackingAccumulator[xIndex] = 0;
                             let offset = stackingAccumulator[xIndex] != undefined
                                 ? stackingAccumulator[xIndex]
                                 : 0;
