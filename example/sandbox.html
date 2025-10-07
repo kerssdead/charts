@@ -16,6 +16,10 @@
             <div id="chart"></div>
         </div>
 
+        <button onclick="saveCookiesToClipboard()">
+            Save to clipboard
+        </button>
+
         <div class="settings">
             <div>
                 <label>
@@ -309,6 +313,10 @@
         }
 
         rng = new RNG()
+    }
+
+    function saveCookiesToClipboard() {
+        navigator.clipboard.writeText(getCookie('state'))
     }
 
     let rng
