@@ -230,16 +230,20 @@ class PlotRenderer extends Renderer<PlotData> {
                             ctx.lineTo(x, y)
 
                             if (this.#isOnX(x)) {
-                                this.#hoverX = {
-                                    x: x,
-                                    y: y,
-                                    index: index,
-                                    data: value.data,
-                                    series: series
-                                }
+                                const mouse = this.getMousePosition(this.onMouseMoveEvent)
 
-                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
-                                this.#tooltipX = x - this.#x.step / 2
+                                if (Math.abs(mouse.y - y) < 5) {
+                                    this.#hoverX = {
+                                        x: x,
+                                        y: y,
+                                        index: index,
+                                        data: value.data,
+                                        series: series
+                                    }
+
+                                    tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
+                                    this.#tooltipX = x - this.#x.step / 2
+                                }
                             }
                         }
 
@@ -484,17 +488,12 @@ class PlotRenderer extends Renderer<PlotData> {
                     ctx.stroke()
 
                     if (this.#hoverX && this.#hoverX.series == series) {
-                        const mouse = this.getMousePosition(this.onMouseMoveEvent)
-
-                        if (Math.abs(mouse.x - this.#hoverX.x) < 25
-                            && Math.abs(mouse.y - this.#hoverX.y) < 25) {
-                            ctx.beginPath()
-                            ctx.lineWidth = 1
-                            ctx.strokeStyle = axisLineHoverColor
-                            ctx.moveTo(this.#paddings.left, this.#hoverX.y)
-                            ctx.lineTo(this.canvas.width - this.#paddings.right, this.#hoverX.y)
-                            ctx.stroke()
-                        }
+                        ctx.beginPath()
+                        ctx.lineWidth = 1
+                        ctx.strokeStyle = axisLineHoverColor
+                        ctx.moveTo(this.#paddings.left, this.#hoverX.y)
+                        ctx.lineTo(this.canvas.width - this.#paddings.right, this.#hoverX.y)
+                        ctx.stroke()
 
                         let radius = Math.round(series.width * 1.1)
                         if (radius < 5)
