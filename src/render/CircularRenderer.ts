@@ -536,7 +536,16 @@ class CircularRenderer extends Renderer<CircularData> {
             y: titleOffset + this.canvas.height / 2
         }
 
-        this.#radius = shortSide / 3
+        let longestLabel = 0
+
+        for (const value of this.data.values) {
+            const width = Helper.stringWidth(value.label)
+
+            if (width > longestLabel)
+                longestLabel = width
+        }
+
+        this.#radius = shortSide / 2 - (longestLabel + 50)
 
         if (this.data.innerTitle != undefined && this.data.innerTitle != '') {
             this.#innerTitleStyle = TextStyles.large
