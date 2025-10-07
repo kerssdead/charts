@@ -2451,6 +2451,8 @@ _PlotRenderer_x = new WeakMap(), _PlotRenderer_y = new WeakMap(), _PlotRenderer_
 }, _PlotRenderer_renderBase = function _PlotRenderer_renderBase(skip = false) {
     if (__classPrivateFieldGet(this, _PlotRenderer_base, "f") && skip)
         return;
+    if (this.data.simple)
+        return;
     const ctx = Canvas.getContext(this.canvas);
     if (skip)
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -2547,6 +2549,8 @@ _PlotRenderer_x = new WeakMap(), _PlotRenderer_y = new WeakMap(), _PlotRenderer_
         createImageBitmap(ctx.getImageData(0, 0, this.canvas.width, this.canvas.height))
             .then(res => __classPrivateFieldSet(this, _PlotRenderer_base, res, "f"));
 }, _PlotRenderer_renderBackLines = function _PlotRenderer_renderBackLines() {
+    if (this.data.simple)
+        return;
     const ctx = Canvas.getContext(this.canvas);
     if (__classPrivateFieldGet(this, _PlotRenderer_backLines, "f")) {
         ctx.putImageData(__classPrivateFieldGet(this, _PlotRenderer_backLines, "f"), 0, 0);

@@ -623,6 +623,9 @@ class PlotRenderer extends Renderer<PlotData> {
         if (this.#base && skip)
             return
 
+        if (this.data.simple)
+            return
+
         const ctx = Canvas.getContext(this.canvas)
 
         if (skip)
@@ -787,6 +790,9 @@ class PlotRenderer extends Renderer<PlotData> {
     }
 
     #renderBackLines() {
+        if (this.data.simple)
+            return
+
         const ctx = Canvas.getContext(this.canvas)
 
         if (this.#backLines) {

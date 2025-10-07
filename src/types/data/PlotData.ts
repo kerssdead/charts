@@ -1,15 +1,17 @@
 class PlotData implements Data {
-    values: PlotSeries[]
+    shortLabels: boolean
+
+    simple: boolean
+
+    yMax: number
 
     xTitle: string
 
     yTitle: string
 
-    yMax: number
-
     xType: PlotAxisType
 
-    shortLabels: boolean
+    values: PlotSeries[]
 
     static getRows(data: PlotData): TableData {
         let headers: TableHeaderValue[] = []
