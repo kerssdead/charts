@@ -1,0 +1,13 @@
+:root {
+    color-scheme: light dark;
+}
+
+html, body {
+    margin: 0;
+    height: 100vh;
+    background-color: light-dark('#ffffff', '#000000');
+}
+
+div:has(> canvas) {
+    height: 100%;
+}
