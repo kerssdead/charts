@@ -14,8 +14,8 @@
     "charts"
   ],
   "scripts": {
-    "build": "webpack --config webpack.config.development.js && webpack --config webpack.config.production.js",
-    "watch": "webpack --watch --config webpack.config.development.js"
+    "build": "webpack",
+    "watch": "webpack --watch"
   },
   "devDependencies": {
     "@types/wicg-file-system-access": "^2023.10.6",
