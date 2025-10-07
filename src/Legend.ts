@@ -163,6 +163,9 @@ class Legend extends Renderable {
         ctx.fill()
 
         ctx.fillStyle = Theme.text
+        if (value.disabled)
+            ctx.fillStyle += '7f'
+
         ctx.fillText(value.label, x + circleRadius * 1.5 + 1, y + 6)
 
         x += 20
@@ -170,7 +173,7 @@ class Legend extends Renderable {
         if (value.disabled) {
             ctx.moveTo(x - 10, y + 2)
             ctx.lineTo(x + textWidth - 10, y + 2)
-            ctx.strokeStyle = Theme.text
+            ctx.strokeStyle = Theme.text + '7f'
             ctx.stroke()
         }
 

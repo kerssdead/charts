@@ -1063,12 +1063,14 @@ _Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_chart = 
     ctx.fillStyle = value.disabled ? Helper.grayScale(value.color) : value.color;
     ctx.fill();
     ctx.fillStyle = Theme.text;
+    if (value.disabled)
+        ctx.fillStyle += '7f';
     ctx.fillText(value.label, x + circleRadius * 1.5 + 1, y + 6);
     x += 20;
     if (value.disabled) {
         ctx.moveTo(x - 10, y + 2);
         ctx.lineTo(x + textWidth - 10, y + 2);
-        ctx.strokeStyle = Theme.text;
+        ctx.strokeStyle = Theme.text + '7f';
         ctx.stroke();
     }
     x += textWidth + 22;
