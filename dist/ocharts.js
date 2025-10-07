@@ -66,10 +66,7 @@ class Renderable {
                 else
                     this.onContextMenuEvent = event;
             };
-            this.canvas.onmouseleave = () => {
-                this.onMouseMoveEvent = new MouseEvent(Events.MouseMove);
-                this.onClickEvent = undefined;
-            };
+            this.canvas.onmouseleave = () => this.onMouseMoveEvent = new MouseEvent(Events.MouseMove);
         }
     }
 }
