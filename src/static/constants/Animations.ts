@@ -7,5 +7,7 @@ namespace Constants {
         static tree = 250
 
         static tooltip = 120
+
+        static button = 200
     }
 }

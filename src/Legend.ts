@@ -39,7 +39,7 @@ class Legend extends Renderable {
 
         const ctx = Canvas.getContext(this.canvas)
 
-        let nextPoint = { x: 20, y: 20 }
+        let nextPoint = { x: 20, y: 21 }
 
         this.canvas.style.cursor = Styles.Cursor.Default
 
@@ -68,17 +68,17 @@ class Legend extends Renderable {
         const ctx = Canvas.getContext(this.canvas)
 
         const textWidth = Helper.stringWidth(value.label),
-            circleRadius = 10
+            circleRadius = 6
 
-        if (x + 50 + textWidth >= this.canvas.width - 100 - this.#offset.x) {
+        if (x + 48 + textWidth >= this.canvas.width - 40 - this.#offset.x) {
             x = 20
-            y += 38
+            y += 26
         }
 
         let rectX = x - circleRadius - circleRadius,
             rectY = y - circleRadius / 2 - circleRadius,
-            rectW = circleRadius + circleRadius + 32 + textWidth,
-            rectH = circleRadius + circleRadius + circleRadius
+            rectW = circleRadius + circleRadius + textWidth + 18,
+            rectH = 20
 
         const isHover = (event: MouseEvent | undefined) => {
             if (!event)
@@ -89,6 +89,17 @@ class Legend extends Renderable {
 
             return px >= rectX && px <= rectX + rectW
                    && py >= rectY && py <= rectY + rectH
+        }
+
+        const translate = (transition: number, event: AnimationType) => {
+            this.animations.reload(value.id, event)
+
+            ctx.beginPath()
+
+            ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
+
+            ctx.fillStyle = Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * transition))
+            ctx.fill()
         }
 
         this.animations.add(value.id,
@@ -112,22 +123,11 @@ class Legend extends Renderable {
                 }
             })
 
-        const translate = (transition: number, event: AnimationType) => {
-            this.animations.reload(value.id, event)
-
-            ctx.beginPath()
-
-            ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
-
-            ctx.fillStyle = Helper.adjustColor(Theme.background, Math.round(-50 * transition))
-            ctx.fill()
-        }
-
         if (isHover(this.onMouseMoveEvent)) {
             this.animations.add(value.id,
                 AnimationType.MouseOver,
                 {
-                    duration: 100,
+                    duration: Constants.Animations.button,
                     body: transition => {
                         translate(transition, AnimationType.MouseLeave)
                     }
@@ -145,7 +145,7 @@ class Legend extends Renderable {
                 AnimationType.MouseLeave,
                 {
                     timer: Constants.Dates.minDate,
-                    duration: 100,
+                    duration: Constants.Animations.button,
                     backward: true,
                     body: transition => {
                         translate(transition, AnimationType.MouseOver)
@@ -158,23 +158,23 @@ class Legend extends Renderable {
 
         ctx.beginPath()
 
-        ctx.arc(x, y, circleRadius, 0, 2 * Math.PI)
+        ctx.arc(x - 1, y + 1, 3, 0, 2 * Math.PI)
         ctx.fillStyle = value.disabled ? Helper.grayScale(value.color) : value.color
         ctx.fill()
 
         ctx.fillStyle = Theme.text
-        ctx.fillText(value.label, x + 20, y + 4)
+        ctx.fillText(value.label, x + circleRadius * 1.5 + 1, y + 6)
 
         x += 20
 
         if (value.disabled) {
-            ctx.moveTo(x - 5, y)
-            ctx.lineTo(x + textWidth, y)
+            ctx.moveTo(x - 10, y + 2)
+            ctx.lineTo(x + textWidth - 10, y + 2)
             ctx.strokeStyle = Theme.text
             ctx.stroke()
         }
 
-        x += textWidth + 45
+        x += textWidth + 22
 
         return {
             x: x,
@@ -258,14 +258,14 @@ class Legend extends Renderable {
         for (const value of values.filter(v => !v.hideInLegend)) {
             const labelWidth = Helper.stringWidth(value.label)
 
-            if (acc + labelWidth + 57 >= width - 100 - offset) {
+            if (acc + labelWidth + 48 >= width - 32 - offset) {
                 acc = 20
                 count++
             }
 
-            acc += labelWidth + 57
+            acc += labelWidth + 48
         }
 
-        return count * 40
+        return 24 + count * 20 + (count - 1) * 6
     }
 }

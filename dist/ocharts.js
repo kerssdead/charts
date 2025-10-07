@@ -910,7 +910,7 @@ class Legend extends Renderable {
     render() {
         super.render();
         const ctx = Canvas.getContext(this.canvas);
-        let nextPoint = { x: 20, y: 20 };
+        let nextPoint = { x: 20, y: 21 };
         this.canvas.style.cursor = Styles.Cursor.Default;
         TextStyles.regular(ctx);
         ctx.textAlign = 'start';
@@ -976,30 +976,37 @@ class Legend extends Renderable {
         let count = 1, acc = 20, offset = Legend.getOffsetToCenter(values, width);
         for (const value of values.filter(v => !v.hideInLegend)) {
             const labelWidth = Helper.stringWidth(value.label);
-            if (acc + labelWidth + 57 >= width - 100 - offset) {
+            if (acc + labelWidth + 48 >= width - 32 - offset) {
                 acc = 20;
                 count++;
             }
-            acc += labelWidth + 57;
+            acc += labelWidth + 48;
         }
-        return count * 40;
+        return 24 + count * 20 + (count - 1) * 6;
     }
 }
 _Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_chart = new WeakMap(), _Legend_hoverCount = new WeakMap(), _Legend_instances = new WeakSet(), _Legend_draw = function _Legend_draw(value, x, y) {
     var _a;
     const ctx = Canvas.getContext(this.canvas);
-    const textWidth = Helper.stringWidth(value.label), circleRadius = 10;
-    if (x + 50 + textWidth >= this.canvas.width - 100 - __classPrivateFieldGet(this, _Legend_offset, "f").x) {
+    const textWidth = Helper.stringWidth(value.label), circleRadius = 6;
+    if (x + 48 + textWidth >= this.canvas.width - 40 - __classPrivateFieldGet(this, _Legend_offset, "f").x) {
         x = 20;
-        y += 38;
+        y += 26;
     }
-    let rectX = x - circleRadius - circleRadius, rectY = y - circleRadius / 2 - circleRadius, rectW = circleRadius + circleRadius + 32 + textWidth, rectH = circleRadius + circleRadius + circleRadius;
+    let rectX = x - circleRadius - circleRadius, rectY = y - circleRadius / 2 - circleRadius, rectW = circleRadius + circleRadius + textWidth + 18, rectH = 20;
     const isHover = (event) => {
         if (!event)
             return false;
         const px = event.clientX - this.canvasPosition.x + scrollX - __classPrivateFieldGet(this, _Legend_offset, "f").x, py = event.clientY - this.canvasPosition.y + scrollY - __classPrivateFieldGet(this, _Legend_offset, "f").y;
         return px >= rectX && px <= rectX + rectW
             && py >= rectY && py <= rectY + rectH;
+    };
+    const translate = (transition, event) => {
+        this.animations.reload(value.id, event);
+        ctx.beginPath();
+        ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius);
+        ctx.fillStyle = Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * transition));
+        ctx.fill();
     };
     this.animations.add(value.id, AnimationType.Click, {
         duration: Constants.Animations.legend,
@@ -1018,16 +1025,9 @@ _Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_chart = 
                 this.onClickEvent = new PointerEvent(Events.Click);
         }
     });
-    const translate = (transition, event) => {
-        this.animations.reload(value.id, event);
-        ctx.beginPath();
-        ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius);
-        ctx.fillStyle = Helper.adjustColor(Theme.background, Math.round(-50 * transition));
-        ctx.fill();
-    };
     if (isHover(this.onMouseMoveEvent)) {
         this.animations.add(value.id, AnimationType.MouseOver, {
-            duration: 100,
+            duration: Constants.Animations.button,
             body: transition => {
                 translate(transition, AnimationType.MouseLeave);
             }
@@ -1041,7 +1041,7 @@ _Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_chart = 
     else {
         this.animations.add(value.id, AnimationType.MouseLeave, {
             timer: Constants.Dates.minDate,
-            duration: 100,
+            duration: Constants.Animations.button,
             backward: true,
             body: transition => {
                 translate(transition, AnimationType.MouseOver);
@@ -1051,19 +1051,19 @@ _Legend_button = new WeakMap(), _Legend_offset = new WeakMap(), _Legend_chart = 
             __classPrivateFieldGet(this, _Legend_chart, "f").highlight();
     }
     ctx.beginPath();
-    ctx.arc(x, y, circleRadius, 0, 2 * Math.PI);
+    ctx.arc(x - 1, y + 1, 3, 0, 2 * Math.PI);
     ctx.fillStyle = value.disabled ? Helper.grayScale(value.color) : value.color;
     ctx.fill();
     ctx.fillStyle = Theme.text;
-    ctx.fillText(value.label, x + 20, y + 4);
+    ctx.fillText(value.label, x + circleRadius * 1.5 + 1, y + 6);
     x += 20;
     if (value.disabled) {
-        ctx.moveTo(x - 5, y);
-        ctx.lineTo(x + textWidth, y);
+        ctx.moveTo(x - 10, y + 2);
+        ctx.lineTo(x + textWidth - 10, y + 2);
         ctx.strokeStyle = Theme.text;
         ctx.stroke();
     }
-    x += textWidth + 45;
+    x += textWidth + 22;
     return {
         x: x,
         y: y
@@ -3066,6 +3066,7 @@ var Constants;
     Animations.legend = 500;
     Animations.tree = 250;
     Animations.tooltip = 120;
+    Animations.button = 200;
     Constants.Animations = Animations;
 })(Constants || (Constants = {}));
 var Constants;
