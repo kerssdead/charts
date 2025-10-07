@@ -51,6 +51,12 @@ class Chart {
         this.#renderer.highlight(value)
     }
 
+    reset() {
+        Theme.reset()
+
+        this.#initialize(this.settings)
+    }
+
     #prepareSettings() {
         this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
 

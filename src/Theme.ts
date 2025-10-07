@@ -18,7 +18,7 @@ class Theme {
 
     static canvasBackground: string
 
-    static function: Function
+    static function: Function | undefined
 
     static initialize(callback: Function, isDark?: Function) {
         if (!Theme.function && isDark)
@@ -49,5 +49,9 @@ class Theme {
         Theme.dropdownItemHoverColor = Helper.adjustColor(Theme.background, index == 0 ? -50 : 50)
         Theme.dropdownBorder = ThemeOptions.dropdownBorders[index]
         Theme.canvasBackground = ThemeOptions.canvasBackgrounds[index]
+    }
+
+    static reset() {
+        this.function = undefined
     }
 }

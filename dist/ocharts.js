@@ -392,6 +392,10 @@ class Chart {
     highlight(value) {
         __classPrivateFieldGet(this, _Chart_renderer, "f").highlight(value);
     }
+    reset() {
+        Theme.reset();
+        __classPrivateFieldGet(this, _Chart_instances, "m", _Chart_initialize).call(this, this.settings);
+    }
 }
 _Chart_renderer = new WeakMap(), _Chart_legend = new WeakMap(), _Chart_observer = new WeakMap(), _Chart_instances = new WeakSet(), _Chart_prepareSettings = function _Chart_prepareSettings() {
     this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip;
@@ -1170,6 +1174,9 @@ class Theme {
         Theme.dropdownItemHoverColor = Helper.adjustColor(Theme.background, index == 0 ? -50 : 50);
         Theme.dropdownBorder = ThemeOptions.dropdownBorders[index];
         Theme.canvasBackground = ThemeOptions.canvasBackgrounds[index];
+    }
+    static reset() {
+        this.function = undefined;
     }
 }
 Theme.currentTheme = 0;
