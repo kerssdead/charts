@@ -2143,15 +2143,18 @@ class PlotRenderer extends Renderer {
                         else {
                             ctx.lineTo(x, y);
                             if (__classPrivateFieldGet(this, _PlotRenderer_instances, "m", _PlotRenderer_isOnX).call(this, x)) {
-                                __classPrivateFieldSet(this, _PlotRenderer_hoverX, {
-                                    x: x,
-                                    y: y,
-                                    index: index,
-                                    data: value.data,
-                                    series: series
-                                }, "f");
-                                tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
-                                __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x - __classPrivateFieldGet(this, _PlotRenderer_x, "f").step / 2, "f");
+                                const mouse = this.getMousePosition(this.onMouseMoveEvent);
+                                if (Math.abs(mouse.y - y) < 5) {
+                                    __classPrivateFieldSet(this, _PlotRenderer_hoverX, {
+                                        x: x,
+                                        y: y,
+                                        index: index,
+                                        data: value.data,
+                                        series: series
+                                    }, "f");
+                                    tooltipLines.push(new TooltipValue(`${series.label}: ${getTooltipValue().y}`, series.color));
+                                    __classPrivateFieldSet(this, _PlotRenderer_tooltipX, x - __classPrivateFieldGet(this, _PlotRenderer_x, "f").step / 2, "f");
+                                }
                             }
                         }
                         break;
@@ -2318,16 +2321,12 @@ class PlotRenderer extends Renderer {
                 case PlotType.Line:
                     ctx.stroke();
                     if (__classPrivateFieldGet(this, _PlotRenderer_hoverX, "f") && __classPrivateFieldGet(this, _PlotRenderer_hoverX, "f").series == series) {
-                        const mouse = this.getMousePosition(this.onMouseMoveEvent);
-                        if (Math.abs(mouse.x - __classPrivateFieldGet(this, _PlotRenderer_hoverX, "f").x) < 25
-                            && Math.abs(mouse.y - __classPrivateFieldGet(this, _PlotRenderer_hoverX, "f").y) < 25) {
-                            ctx.beginPath();
-                            ctx.lineWidth = 1;
-                            ctx.strokeStyle = axisLineHoverColor;
-                            ctx.moveTo(__classPrivateFieldGet(this, _PlotRenderer_paddings, "f").left, __classPrivateFieldGet(this, _PlotRenderer_hoverX, "f").y);
-                            ctx.lineTo(this.canvas.width - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").right, __classPrivateFieldGet(this, _PlotRenderer_hoverX, "f").y);
-                            ctx.stroke();
-                        }
+                        ctx.beginPath();
+                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = axisLineHoverColor;
+                        ctx.moveTo(__classPrivateFieldGet(this, _PlotRenderer_paddings, "f").left, __classPrivateFieldGet(this, _PlotRenderer_hoverX, "f").y);
+                        ctx.lineTo(this.canvas.width - __classPrivateFieldGet(this, _PlotRenderer_paddings, "f").right, __classPrivateFieldGet(this, _PlotRenderer_hoverX, "f").y);
+                        ctx.stroke();
                         let radius = Math.round(series.width * 1.1);
                         if (radius < 5)
                             radius = 5;
