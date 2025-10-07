@@ -16,9 +16,15 @@
             <div id="chart"></div>
         </div>
 
-        <button onclick="saveCookiesToClipboard()">
-            Save to clipboard
-        </button>
+        <div>
+            <button onclick="saveCookiesToClipboard()">
+                Save to clipboard
+            </button>
+
+            <button onclick="loadCookiesByWindow()">
+                Load
+            </button>
+        </div>
 
         <div class="settings">
             <div>
@@ -317,6 +323,15 @@
 
     function saveCookiesToClipboard() {
         navigator.clipboard.writeText(getCookie('state'))
+    }
+
+    function loadCookiesByWindow() {
+        navigator.clipboard.readText().then(text => {
+            const input = prompt('Cookies', text)
+
+            if (input)
+                setCookie('state', input)
+        })
     }
 
     let rng
