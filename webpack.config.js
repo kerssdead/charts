@@ -4,6 +4,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
     entry: [
+        './src/Prototypes.ts',
         './src/OCharts.ts',
         './src/styles/index.css'
     ],
