@@ -17,13 +17,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Run unit-tests
+    - name: Setup NodeJS
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: Test
+    - name: Install
       run: |
         npm install
         npm update
-        jest
+
+    - name: Test
+      run: |
+        npm run test
