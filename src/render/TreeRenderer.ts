@@ -17,7 +17,7 @@ import { Formatter } from '../helpers/Formatter'
 import { AnimationType, RenderState } from '../static/Enums'
 import * as Constants from '../static/constants/Index'
 
-class TreeRenderer extends Renderer<TreeData> {
+export class TreeRenderer extends Renderer<TreeData> {
     constructor(chart: Chart) {
         super(chart)
 
