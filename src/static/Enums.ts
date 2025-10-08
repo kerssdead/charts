@@ -1,4 +1,4 @@
-enum AnimationType {
+export enum AnimationType {
     MouseOver,
 
     MouseLeave,
@@ -12,11 +12,11 @@ enum AnimationType {
     AnotherItemLeave
 }
 
-enum Attribute {
+export enum Attribute {
     Name = 'name'
 }
 
-enum ChartType {
+export enum ChartType {
     Plot,
 
     Circular,
@@ -26,13 +26,13 @@ enum ChartType {
     TreeMap
 }
 
-enum ErrorType {
+export enum ErrorType {
     NullContext = 'Can\'t find context',
 
     ElementNotExist = 'Element does not exist'
 }
 
-enum Events {
+export enum Events {
     VisibilityChanged = 'visibilitychange',
 
     Blur = 'blur',
@@ -46,7 +46,7 @@ enum Events {
     ContextMenu = 'contextmenu'
 }
 
-enum LegendPlace {
+export enum LegendPlace {
     Bottom,
 
     Left,
@@ -56,7 +56,7 @@ enum LegendPlace {
     Right
 }
 
-enum LineType {
+export enum LineType {
     Solid,
 
     Dash,
@@ -64,11 +64,11 @@ enum LineType {
     Dotted
 }
 
-enum PlotAxisType {
+export enum PlotAxisType {
     Date = 1
 }
 
-enum PlotType {
+export enum PlotType {
     Line,
 
     AttentionLine,
@@ -80,7 +80,7 @@ enum PlotType {
     StackingColumn
 }
 
-enum Tag {
+export enum Tag {
     Canvas = 'canvas',
 
     A = 'a',
@@ -94,7 +94,7 @@ enum Tag {
     Script = 'script'
 }
 
-enum RenderState {
+export enum RenderState {
     Idle,
 
     Init

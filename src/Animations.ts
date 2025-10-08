@@ -1,4 +1,7 @@
-class Animations {
+import { AnimationItem } from './types/AnimationItem'
+import { AnimationType } from './static/Enums'
+
+export class Animations {
     #queue: Map<string, AnimationItem>
 
     static transitionCurve: Map<number, number> = new Map()

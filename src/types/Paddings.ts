@@ -1,4 +1,4 @@
-class Paddings {
+export class Paddings {
     top: number
 
     right: number

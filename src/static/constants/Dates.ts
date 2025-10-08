@@ -1,5 +1,3 @@
-namespace Constants {
-    export class Dates {
-        static minDate = new Date(2000, 1, 1)
-    }
+export class Dates {
+    static minDate = new Date(2000, 1, 1)
 }

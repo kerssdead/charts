@@ -1,4 +1,4 @@
-class Value {
+export class Value {
     id: string
 
     color: string

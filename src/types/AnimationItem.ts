@@ -1,4 +1,4 @@
-class AnimationItem {
+export class AnimationItem {
     timer?: Date | undefined
 
     before?: () => boolean

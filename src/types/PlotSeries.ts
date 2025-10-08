@@ -1,5 +1,8 @@
-///<reference path="base/Value.ts"/>
-class PlotSeries extends Value {
+import { Value } from './base/Value'
+import { PlotPoint } from './PlotPoint'
+import { LineType, PlotType } from '../static/Enums'
+
+export class PlotSeries extends Value {
     values: PlotPoint[]
 
     type: PlotType

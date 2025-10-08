@@ -1,4 +1,4 @@
-class ThemeOptions {
+export class ThemeOptions {
     static readonly colors = ['#000000', '#ffffff']
 
     static readonly backgrounds = ['#f7f7f7', '#222222']

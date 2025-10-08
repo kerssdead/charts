@@ -1,4 +1,8 @@
-class ChartSettings {
+import { Data } from './interfaces/Data'
+import { DropdownItem } from './DropdownItem'
+import { ChartType, LegendPlace } from '../static/Enums'
+
+export class ChartSettings {
     enableLegend: boolean
 
     enableTooltip: boolean

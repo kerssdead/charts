@@ -1,4 +1,4 @@
-class TreeCell {
+export class TreeCell {
     s: number
 
     value: number

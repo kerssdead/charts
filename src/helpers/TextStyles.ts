@@ -1,4 +1,6 @@
-abstract class TextStyles {
+import { Theme } from '../Theme'
+
+export abstract class TextStyles {
     static title(context: CanvasRenderingContext2D) {
         context.fillStyle = Theme.text
         context.textAlign = 'center'

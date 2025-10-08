@@ -1,4 +1,4 @@
-class TextResources {
+export class TextResources {
     static exportPNG = 'Save as image...'
 
     static decomposeToTable = 'Show as table...'

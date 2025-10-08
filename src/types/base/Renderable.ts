@@ -1,4 +1,13 @@
-class Renderable {
+import { ChartSettings } from '../ChartSettings'
+import { Animations } from '../../Animations'
+import { Tooltip } from '../../Tooltip'
+import { Dropdown } from '../../Dropdown'
+import { Chart } from '../../Chart'
+import { Canvas } from '../../helpers/Canvas'
+import { Events, RenderState, Tag } from '../../static/Enums'
+import { Styles } from '../../static/constants/Styles'
+
+export class Renderable {
     node: HTMLElement
 
     canvas: HTMLCanvasElement

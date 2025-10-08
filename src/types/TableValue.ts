@@ -1,4 +1,4 @@
-class TableValue {
+export class TableValue {
     name: string
 
     values: Map<string, any>

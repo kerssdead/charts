@@ -1,4 +1,6 @@
-abstract class Errors {
+import { ErrorType } from '../static/Enums'
+
+export abstract class Errors {
     static throw(error: ErrorType): never {
         throw new Error(error)
     }

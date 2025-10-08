@@ -1,4 +1,4 @@
-abstract class Formatter {
+export abstract class Formatter {
     static number = (value: number | undefined) =>
         value?.toLocaleString(undefined, {
             minimumFractionDigits: 2,

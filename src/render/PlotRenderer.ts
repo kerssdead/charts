@@ -1,4 +1,27 @@
-class PlotRenderer extends Renderer<PlotData> {
+import { PlotData } from '../types/data/PlotData'
+import { Renderer } from '../types/base/Renderer'
+import { Helper } from '../Helper'
+import { DropdownItem } from '../types/DropdownItem'
+import { PlotAxis } from '../types/PlotAxis'
+import { Paddings } from '../types/Paddings'
+import { Dropdown } from '../Dropdown'
+import { HoverItem } from '../types/HoverItem'
+import { PlotSeries } from '../types/PlotSeries'
+import { Tooltip } from '../Tooltip'
+import { Theme } from '../Theme'
+import { Chart } from '../Chart'
+import { TextStyles } from '../helpers/TextStyles'
+import { TooltipValue } from '../types/TooltipValue'
+import { Export } from '../Export'
+import { Decomposition } from '../Decomposition'
+import { Modal } from '../Modal'
+import { TextResources } from '../static/TextResources'
+import { Formatter } from '../helpers/Formatter'
+import { Canvas } from '../helpers/Canvas'
+import { AnimationType, LineType, PlotAxisType, PlotType, RenderState } from '../static/Enums'
+import * as Constants from '../static/constants/Index'
+
+export class PlotRenderer extends Renderer<PlotData> {
     #x: PlotAxis
 
     #y: PlotAxis

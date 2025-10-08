@@ -1,4 +1,9 @@
-class CircularData implements Data {
+import { TableValue } from '../TableValue'
+import { Sector } from '../Sector'
+import { TableData } from '../TableData'
+import { Data } from '../interfaces/Data'
+
+export class CircularData implements Data {
     values: Sector[]
 
     innerRadius: number

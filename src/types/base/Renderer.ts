@@ -1,5 +1,19 @@
-///<reference path="Renderable.ts"/>
-class Renderer<T extends Data> extends Renderable {
+import { Data } from '../interfaces/Data'
+import { Renderable } from './Renderable'
+import { Helper } from '../../Helper'
+import { Value } from './Value'
+import { Legend } from '../../Legend'
+import { Dropdown } from '../../Dropdown'
+import { DropdownItem } from '../DropdownItem'
+import { Point } from '../Point'
+import { TextResources } from '../../static/TextResources'
+import { Chart } from '../../Chart'
+import { Canvas } from '../../helpers/Canvas'
+import { TextStyles } from '../../helpers/TextStyles'
+import { LegendPlace, RenderState } from '../../static/Enums'
+import * as Constants from '../../static/constants/Index'
+
+export class Renderer<T extends Data> extends Renderable {
     dropdown: Dropdown
 
     data: T

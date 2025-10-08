@@ -1,4 +1,4 @@
-class TooltipValue {
+export class TooltipValue {
     text: string | undefined
 
     color: string | undefined

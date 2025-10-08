@@ -1,4 +1,7 @@
-class Modal {
+import { Errors } from './helpers/Errors'
+import { ErrorType, Tag } from './static/Enums'
+
+export class Modal {
     modal: HTMLDialogElement | undefined
 
     #content: HTMLDivElement | undefined

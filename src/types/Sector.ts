@@ -1,4 +1,7 @@
-class Sector extends Value {
+import { Value } from './base/Value'
+import { Point } from './Point'
+
+export class Sector extends Value {
     value: number
 
     current: number

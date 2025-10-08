@@ -1,4 +1,12 @@
-class PlotData implements Data {
+import { TableValue } from '../TableValue'
+import { PlotSeries } from '../PlotSeries'
+import { TableHeaderValue } from '../TableHeaderValue'
+import { TableData } from '../TableData'
+import { Data } from '../interfaces/Data'
+import { Formatter } from '../../helpers/Formatter'
+import { PlotAxisType } from '../../static/Enums'
+
+export class PlotData implements Data {
     shortLabels: boolean
 
     simple: boolean

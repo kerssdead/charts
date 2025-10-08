@@ -1,4 +1,4 @@
-namespace Styles {
+export namespace Styles {
     export class Cursor {
         static Default = 'default'
 

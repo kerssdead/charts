@@ -1,4 +1,4 @@
-class PlotAxis {
+export class PlotAxis {
     min: number
 
     max: number

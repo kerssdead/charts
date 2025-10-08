@@ -1,4 +1,18 @@
-class Chart {
+import { ChartSettings } from './types/ChartSettings'
+import { Renderer } from './types/base/Renderer'
+import { Data } from './types/interfaces/Data'
+import { Legend } from './Legend'
+import { Value } from './types/base/Value'
+import { PlotRenderer } from './render/PlotRenderer'
+import { CircularRenderer } from './render/CircularRenderer'
+import { GaugeRenderer } from './render/GaugeRenderer'
+import TreeRenderer from './render/TreeRenderer'
+import { Animations } from './Animations'
+import { Theme } from './Theme'
+import { Styles } from './static/constants/Styles'
+import { ChartType, Events } from './static/Enums'
+
+export class Chart {
     node: HTMLElement
 
     settings: ChartSettings

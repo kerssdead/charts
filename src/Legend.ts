@@ -1,4 +1,19 @@
-class Legend extends Renderable {
+import { Value } from './types/base/Value'
+import { Renderable } from './types/base/Renderable'
+import { Helper } from './Helper'
+import { Sector } from './types/Sector'
+import { Point } from './types/Point'
+import { Theme } from './Theme'
+import { Chart } from './Chart'
+import { TextStyles } from './helpers/TextStyles'
+import { Canvas } from './helpers/Canvas'
+import { Button } from './Button'
+import { TextResources } from './static/TextResources'
+import * as Constants from './static/constants/Index'
+import { Styles } from './static/constants/Styles'
+import { AnimationType, Events, LegendPlace, RenderState } from './static/Enums'
+
+export class Legend extends Renderable {
     #button: Button
 
     #offset: Point

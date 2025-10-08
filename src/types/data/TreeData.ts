@@ -1,4 +1,9 @@
-class TreeData implements Data {
+import { Value } from '../base/Value'
+import { TableValue } from '../TableValue'
+import { TableData } from '../TableData'
+import { Data } from '../interfaces/Data'
+
+export class TreeData implements Data {
     values: Value[]
 
     padding: number

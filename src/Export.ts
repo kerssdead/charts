@@ -1,4 +1,10 @@
-class Export {
+import { Theme } from './Theme'
+import { Helper } from './Helper'
+import { Canvas } from './helpers/Canvas'
+import { TextResources } from './static/TextResources'
+import { Tag } from './static/Enums'
+
+export class Export {
     static asPng(canvas: HTMLCanvasElement, title: string) {
         requestAnimationFrame(() => {
             const ctx = Canvas.getContext(canvas)

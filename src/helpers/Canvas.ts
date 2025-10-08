@@ -1,4 +1,7 @@
-abstract class Canvas {
+import { Errors } from './Errors'
+import { ErrorType } from '../static/Enums'
+
+export abstract class Canvas {
     static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
         return canvas.getContext('2d', { willReadFrequently: true })
                ?? Errors.throw(ErrorType.NullContext)

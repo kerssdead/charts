@@ -1,4 +1,4 @@
-class CircularAngle {
+export class CircularAngle {
     id: string
 
     value: number
