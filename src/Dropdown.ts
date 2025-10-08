@@ -9,7 +9,9 @@ import * as Constants from './static/constants/Index'
 import { Styles } from './static/constants/Styles'
 
 export class Dropdown {
-    #canvas: HTMLCanvasElement
+    isActive: boolean = false
+
+    #isInit: boolean
 
     #options: DropdownOptions
 
@@ -17,13 +19,11 @@ export class Dropdown {
 
     animations: Animations
 
-    isActive: boolean = false
-
-    #isInit: boolean
-
     #position: DOMRect
 
-    #isOnlyMenu: boolean
+    readonly #isOnlyMenu: boolean
+
+    readonly #canvas: HTMLCanvasElement
 
     constructor(canvas: HTMLCanvasElement, options: DropdownOptions) {
         this.#canvas = canvas
