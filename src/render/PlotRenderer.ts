@@ -301,6 +301,8 @@ export class PlotRenderer extends Renderer<PlotData> {
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
 
+                        ctx.beginPath()
+
                         if (this.state == RenderState.Init || this.animations.contains(value.id + columnsIndex, AnimationType.Init)) {
                             this.animations.add(value.id + columnsIndex,
                                 AnimationType.Init,
@@ -319,10 +321,12 @@ export class PlotRenderer extends Renderer<PlotData> {
                                         columnsIndex = this.data.values.filter(s => s.type == PlotType.Column)
                                                            .indexOf(series)
 
-                                        ctx.fillRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
+                                        ctx.roundRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
                                             this.canvas.height - this.#paddings.bottom - y,
                                             columnWidth,
-                                            y)
+                                            y,
+                                            [6, 6, 0, 0])
+                                        ctx.fill()
                                     }
                                 })
                         } else {
@@ -350,10 +354,12 @@ export class PlotRenderer extends Renderer<PlotData> {
                                 }
                             }
 
-                            ctx.fillRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
+                            ctx.roundRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
                                 this.canvas.height - this.#paddings.bottom - y,
                                 columnWidth,
-                                y)
+                                y,
+                                [6, 6, 0, 0])
+                            ctx.fill()
                         }
 
                         break
