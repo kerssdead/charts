@@ -37,6 +37,11 @@ export class Chart {
 
         document.addEventListener(Events.VisibilityChanged, () => this.#renderer.resetMouse())
         window.addEventListener(Events.Blur, () => this.#renderer.resetMouse())
+
+        window.addEventListener(Events.Click, event => {
+            if (event.target != this.#renderer.canvas)
+                this.#renderer.closeDropdowns()
+        })
     }
 
     render() {

@@ -155,6 +155,11 @@ export class Renderer<T extends Data> extends Renderable {
             this.highlightItems = []
     }
 
+    closeDropdowns() {
+        this.dropdown?.close()
+        this.onContextMenuEvent = undefined
+    }
+
     protected renderTitle() {
         const ctx = Canvas.getContext(this.canvas)
 

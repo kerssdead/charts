@@ -267,6 +267,10 @@ export class Dropdown {
         this.#calculatePosition()
     }
 
+    close() {
+        this.isActive = false
+    }
+
     #calculatePosition() {
         const width = this.#isOnlyMenu ? 0 : Helper.stringWidth(this.#options.text ?? '') + 20,
             height = this.#isOnlyMenu ? 0 : 24
