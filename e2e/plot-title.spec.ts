@@ -7,7 +7,7 @@ import { expect, test } from '@playwright/test'
 import { Screenshot } from './utils/Screenshot'
 import { BrowserResult } from './utils/BrowserResult'
 
-test('Tree Map should not has legend', async ({ page, browserName }) => {
+test('Plot title should be rendered', async ({ page, browserName }) => {
     await page.goto('/charts/')
 
     const title = page.locator('#title'),

@@ -123,6 +123,12 @@
                 </label>
 
                 <label>
+                    <input type="checkbox" id="init-animation" onchange="refresh()"/>
+
+                    Disable init animation
+                </label>
+
+                <label>
                     Base Color
 
                     <input type="color" id="base-color" onchange="refresh()" value="#32a852"/>
@@ -541,7 +547,8 @@
             yAxisTitleEnabled = document.getElementById('y-axis-label').checked,
             contextMenuEnabled = document.getElementById('context-menu').checked,
             otherEnabled = document.getElementById('other').checked,
-            simpleEnabled = document.getElementById('simple').checked
+            simpleEnabled = document.getElementById('simple').checked,
+            disableInitAnimation = document.getElementById('init-animation').checked
 
 
         const title = titleEnabled ? 'Title' : null,
@@ -589,6 +596,7 @@
             enableTooltip: tooltipEnabled,
             enableLegend: legendEnabled,
             enableOther: otherEnabled,
+            disableInitAnimation: disableInitAnimation,
             data: {
                 values: values,
                 xTitle: xAxisTitle,
