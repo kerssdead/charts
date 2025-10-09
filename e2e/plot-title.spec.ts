@@ -4,8 +4,8 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { Screenshot } from './Screenshot'
-import { BrowserResult } from './BrowserResult'
+import { Screenshot } from './utils/Screenshot'
+import { BrowserResult } from './utils/BrowserResult'
 
 test('Tree Map should not has legend', async ({ page, browserName }) => {
     await page.goto('/charts/')
