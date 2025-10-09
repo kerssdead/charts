@@ -559,6 +559,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                                      : 0
 
                         if (this.canvas.height - this.#paddings.bottom + offset > this.#paddings.top) {
+                            ctx.beginPath()
                             ctx.lineWidth = 1
                             ctx.strokeStyle = axisLineHoverColor
                             ctx.moveTo(this.#tooltipX + this.#x.step / 2,
