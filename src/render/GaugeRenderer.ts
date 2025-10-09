@@ -109,7 +109,7 @@ export class GaugeRenderer extends Renderer<GaugeData> {
 
             TextStyles.regular(ctx)
             ctx.fillStyle = Theme.text + opacity
-            ctx.fillText((this.data.max - localAngle / Math.PI * this.data.max).toString(), point3.x, point3.y)
+            ctx.fillText(Formatter.number(this.data.max - localAngle / Math.PI * this.data.max), point3.x, point3.y)
 
             localAccumulator += currentAngle
 
