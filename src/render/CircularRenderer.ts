@@ -234,7 +234,7 @@ export class CircularRenderer extends Renderer<CircularData> {
                             opacity = 0 + opacity
 
                         ctx.fillStyle = value.color + opacity
-                        ctx.strokeStyle = value.color + opacity
+                        ctx.strokeStyle = Helper.applyAlpha(value.color, 255 * transition)
                     }
                 })
         } else if (this.onMouseMoveEvent
@@ -431,7 +431,7 @@ export class CircularRenderer extends Renderer<CircularData> {
                         opacity = 0 + opacity
 
                     ctx.fillStyle = value.color + opacity
-                    ctx.strokeStyle = value.color + opacity
+                    ctx.strokeStyle = Helper.applyAlpha(value.color, 255 - 95 * transition)
                 }
 
                 const anyHighlight = this.highlightItems.length != 0

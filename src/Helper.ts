@@ -1,4 +1,5 @@
 import { Color } from './types/Color'
+import { Theme } from './Theme'
 
 export class Helper {
     static adjustColor(color: string, amount: number) {
@@ -61,5 +62,47 @@ export class Helper {
 
     static isISOString(str: string) {
         return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+/.test(str)
+    }
+
+    static applyAlpha(color: string, opacity: number) {
+        function hexToRgb(hex: string) {
+            let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+            return result
+                   ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                }
+                   : {
+                    r: 0,
+                    g: 0,
+                    b: 0
+                }
+        }
+
+        function componentToHex(c: number) {
+            let hex = c.toString(16)
+            return hex.length == 1 ? '0' + hex : hex
+        }
+
+        function rgbToHex(r: number, g: number, b: number) {
+            return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
+        }
+
+        const rgb = hexToRgb(color),
+            backgroundColor = hexToRgb(Theme.canvasBackground)
+
+        function applyAlpha(bg: any, color: any, opacity: number) {
+            opacity /= 255
+
+            const alpha = 1 - opacity
+            return rgbToHex(
+                Math.round((opacity * (color.r / 255) + (alpha * (bg.r / 255))) * 255),
+                Math.round((opacity * (color.g / 255) + (alpha * (bg.g / 255))) * 255),
+                Math.round((opacity * (color.b / 255) + (alpha * (bg.b / 255))) * 255)
+            )
+        }
+
+        return applyAlpha(backgroundColor, rgb, opacity)
     }
 }
