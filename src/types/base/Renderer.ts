@@ -35,12 +35,7 @@ export class Renderer<T extends Data> extends Renderable {
     render() {
         super.render()
 
-        const ctx = Canvas.getContext(this.canvas)
-
-        if (this.settings.title) {
-            TextStyles.title(ctx)
-            ctx.fillText(this.settings.title, this.canvas.width / 2, Constants.Values.titleOffset)
-        }
+        this.renderTitle()
     }
 
     destroy() {
@@ -158,6 +153,15 @@ export class Renderer<T extends Data> extends Renderable {
             this.highlightItems = [value.id]
         else
             this.highlightItems = []
+    }
+
+    protected renderTitle() {
+        const ctx = Canvas.getContext(this.canvas)
+
+        if (this.settings.title) {
+            TextStyles.title(ctx)
+            ctx.fillText(this.settings.title, this.canvas.width / 2, Constants.Values.titleOffset)
+        }
     }
 
     #calculateSizes() {

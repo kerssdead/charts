@@ -583,6 +583,8 @@ export class PlotRenderer extends Renderer<PlotData> {
 
         this.#renderBase()
 
+        this.renderTitle()
+
         this.tooltip.render(tooltipLines.length > 1 && !this.dropdown?.isActive,
             this.onMouseMoveEvent,
             tooltipLines,
