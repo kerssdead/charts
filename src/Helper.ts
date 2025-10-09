@@ -72,12 +72,12 @@ export class Helper {
                     r: parseInt(result[1], 16),
                     g: parseInt(result[2], 16),
                     b: parseInt(result[3], 16)
-                }
+                } as Color
                    : {
                     r: 0,
                     g: 0,
                     b: 0
-                }
+                } as Color
         }
 
         function componentToHex(c: number) {
@@ -90,19 +90,16 @@ export class Helper {
         }
 
         const rgb = hexToRgb(color),
-            backgroundColor = hexToRgb(Theme.canvasBackground)
+            bg = hexToRgb(Theme.canvasBackground)
 
-        function applyAlpha(bg: any, color: any, opacity: number) {
-            opacity /= 255
+        opacity /= 255
 
-            const alpha = 1 - opacity
-            return rgbToHex(
-                Math.round((opacity * (color.r / 255) + (alpha * (bg.r / 255))) * 255),
-                Math.round((opacity * (color.g / 255) + (alpha * (bg.g / 255))) * 255),
-                Math.round((opacity * (color.b / 255) + (alpha * (bg.b / 255))) * 255)
-            )
-        }
+        const alpha = 1 - opacity
 
-        return applyAlpha(backgroundColor, rgb, opacity)
+        return rgbToHex(
+            Math.round((opacity * (rgb.r / 255) + (alpha * (bg.r / 255))) * 255),
+            Math.round((opacity * (rgb.g / 255) + (alpha * (bg.g / 255))) * 255),
+            Math.round((opacity * (rgb.b / 255) + (alpha * (bg.b / 255))) * 255)
+        )
     }
 }

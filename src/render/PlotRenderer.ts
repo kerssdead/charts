@@ -111,8 +111,7 @@ export class PlotRenderer extends Renderer<PlotData> {
             columnsCount = this.data.values.filter(s => s.type == PlotType.Column).length
 
         let barsIndex = 0,
-            barsCount = this.data.values.filter(s => s.type == PlotType.Bar).length,
-            barHeight = this.#y.step / (2 * barsCount)
+            barsCount = this.data.values.filter(s => s.type == PlotType.Bar).length
 
         let stackingAccumulator = []
         for (let i = 0; i < this.#allValuesY.length; i++)
