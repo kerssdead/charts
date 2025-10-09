@@ -54,7 +54,7 @@ export class Dropdown {
             const translate = (transition: number, event: AnimationType) => {
                 this.animations.reload('animation-dropdown', event)
 
-                ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(40 * transition))
+                ctx.fillStyle = Helper.adjustColor(Theme.canvasBackground, -Math.round(25 * transition))
             }
 
             if (this.#isOnButton(moveEvent, x, y, width, height)) {
@@ -75,7 +75,7 @@ export class Dropdown {
                             }
                         })
                 else
-                    ctx.fillStyle = Helper.adjustColor(Theme.background, -40)
+                    ctx.fillStyle = Helper.adjustColor(Theme.canvasBackground, -25)
             } else {
                 this.#canvas.style.cursor = Styles.Cursor.Default
 
@@ -91,10 +91,9 @@ export class Dropdown {
                             }
                         })
                 else
-                    ctx.fillStyle = Helper.adjustColor(Theme.background, -40)
+                    ctx.fillStyle = Helper.adjustColor(Theme.canvasBackground, -25)
             }
 
-            ctx.strokeStyle = Theme.background
             ctx.roundRect(x, y, width, height, 4)
             ctx.fill()
 

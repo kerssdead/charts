@@ -59,7 +59,7 @@ export class Button {
         const translate = (transition: number, event: AnimationType) => {
             this.animations.reload('animation-button', event)
 
-            ctx.fillStyle = Helper.adjustColor(Theme.background, -Math.round(transition * 40))
+            ctx.fillStyle = Helper.adjustColor(Theme.canvasBackground, -Math.round(transition * 25))
         }
 
         if (this.#isOnButton(moveEvent)) {
@@ -91,7 +91,6 @@ export class Button {
                 })
         }
 
-        ctx.strokeStyle = Theme.background
         ctx.roundRect(this.#position.x, this.#position.y, this.#position.width, this.#position.height, 4)
         ctx.fill()
 
