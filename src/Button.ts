@@ -29,8 +29,8 @@ export class Button {
 
         this.#initAnimations()
 
-        const width = Helper.stringWidth(this.#options.text) + 20,
-            height = 24
+        const width = Helper.stringWidth(this.#options.text) + 12,
+            height = 20
 
         this.#position = <DOMRect>{
             x: this.#options.x + width > this.#canvas.width

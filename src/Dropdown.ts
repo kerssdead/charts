@@ -272,8 +272,8 @@ export class Dropdown {
     }
 
     #calculatePosition() {
-        const width = this.#isOnlyMenu ? 0 : Helper.stringWidth(this.#options.text ?? '') + 20,
-            height = this.#isOnlyMenu ? 0 : 24
+        const width = this.#isOnlyMenu ? 0 : Helper.stringWidth(this.#options.text ?? '') + 12,
+            height = this.#isOnlyMenu ? 0 : 20
 
         this.#position = {
             x: this.#options.x + width > this.#canvas.width

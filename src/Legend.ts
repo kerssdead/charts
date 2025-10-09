@@ -35,7 +35,7 @@ export class Legend extends Renderable {
             this.#button = new Button(this.canvas,
                 {
                     x: -10,
-                    y: 10,
+                    y: 12,
                     text: TextResources.reset,
                     action: () => {
                         for (let value of this.settings.data.values)
