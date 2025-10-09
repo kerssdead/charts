@@ -6,9 +6,10 @@
 import { expect, test } from '@playwright/test'
 import { Screenshot } from './utils/Screenshot'
 import { BrowserResult } from './utils/BrowserResult'
+import { Utils } from './utils/Utils'
 
 test('Bars on plot should has same heights', async ({ page, browserName }) => {
-    await page.goto('/charts/')
+    await Utils.goto(page)
 
     const valuesCount = page.locator('#values-count'),
         pointsCount = page.locator('#points-count'),

@@ -6,9 +6,10 @@
 import { expect, test } from '@playwright/test'
 import { Screenshot } from './utils/Screenshot'
 import { BrowserResult } from './utils/BrowserResult'
+import { Utils } from './utils/Utils'
 
 test('Plot title should be rendered', async ({ page, browserName }) => {
-    await page.goto('/charts/')
+    await Utils.goto(page)
 
     const title = page.locator('#title'),
         legend = page.locator('#legend'),
