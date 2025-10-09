@@ -877,6 +877,7 @@ export class PlotRenderer extends Renderer<PlotData> {
 
                     ctx.lineWidth = 1
                     ctx.strokeStyle = axisLineColor
+                    ctx.setLineDash([6, 6])
                     ctx.stroke()
                 }
 
@@ -910,6 +911,7 @@ export class PlotRenderer extends Renderer<PlotData> {
 
                     ctx.lineWidth = 1
                     ctx.strokeStyle = axisLineColor
+                    ctx.setLineDash([6, 6])
                     ctx.stroke()
                 }
 
