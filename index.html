@@ -355,10 +355,10 @@
 
         const seriesWidth = +document.getElementById('series-width').value
 
-        function getData() {
+        function getData(index) {
             return {
                 Id: 50,
-                Name: 'First Second',
+                Name: 'First Second ' + index,
                 Value: 16
             }
         }
@@ -409,7 +409,7 @@
                         points.push({
                             x: x,
                             y: y,
-                            data: getData()
+                            data: getData(j + i)
                         })
                     }
 
@@ -418,7 +418,7 @@
                         values: points,
                         width: seriesWidth,
                         label: `Series ${i}`,
-                        data: getData(),
+                        data: getData(i),
                         lineType: rng.nextInt() % 3
                     })
                 }
@@ -455,7 +455,7 @@
                     values.push({
                         value: value,
                         label: `Sector ${i}`,
-                        data: getData()
+                        data: getData(i)
                     })
                 }
 
@@ -489,7 +489,7 @@
                 values.push({
                     value: value,
                     label: `Label`,
-                    data: getData()
+                    data: getData(0)
                 })
 
                 break
@@ -524,7 +524,7 @@
                     values.push({
                         value: value,
                         label: `Cell ${i}`,
-                        data: getData()
+                        data: getData(i)
                     })
                 }
 
