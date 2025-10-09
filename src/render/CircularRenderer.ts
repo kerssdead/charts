@@ -78,7 +78,7 @@ export class CircularRenderer extends Renderer<CircularData> {
                 })
         }
 
-        this.#startAngle = Math.random() % (Math.PI * 2)
+        this.#startAngle = Math.PI / 4
 
         this.#pinned = []
 
