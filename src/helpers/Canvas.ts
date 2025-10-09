@@ -1,5 +1,6 @@
 import { Errors } from './Errors'
 import { ErrorType } from '../static/Enums'
+import { Theme } from '../Theme'
 
 export abstract class Canvas {
     static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
@@ -8,6 +9,6 @@ export abstract class Canvas {
     }
 
     static isPixelBusy(pixel: number) {
-        return pixel & 0xff000000
+        return pixel - Theme.canvasBackgroundInt != 0
     }
 }

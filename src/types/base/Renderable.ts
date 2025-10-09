@@ -6,6 +6,7 @@ import { Chart } from '../../Chart'
 import { Canvas } from '../../helpers/Canvas'
 import { Events, RenderState, Tag } from '../../static/Enums'
 import { Styles } from '../../static/constants/Styles'
+import { Theme } from '../../Theme'
 
 export class Renderable {
     node: HTMLElement
@@ -49,7 +50,8 @@ export class Renderable {
     render() {
         const ctx = Canvas.getContext(this.canvas)
 
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        ctx.fillStyle = Theme.canvasBackground
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
     }
 
     refresh() {

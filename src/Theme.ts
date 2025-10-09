@@ -21,6 +21,8 @@ export class Theme {
 
     static canvasBackground: string
 
+    static canvasBackgroundInt: number
+
     static function: Function | undefined
 
     static initialize(callback: Function, isDark?: Function) {
@@ -52,6 +54,7 @@ export class Theme {
         Theme.dropdownItemHoverColor = Helper.adjustColor(Theme.background, index == 0 ? -50 : 50)
         Theme.dropdownBorder = ThemeOptions.dropdownBorders[index]
         Theme.canvasBackground = ThemeOptions.canvasBackgrounds[index]
+        Theme.canvasBackgroundInt = Number(`0xff${ Theme.canvasBackground.slice(1) }`)
     }
 
     static reset() {

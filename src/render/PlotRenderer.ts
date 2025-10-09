@@ -826,7 +826,8 @@ export class PlotRenderer extends Renderer<PlotData> {
             return
         }
 
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        ctx.fillStyle = Theme.canvasBackground
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
         const axisLineColor = Theme.lineAxis
 
