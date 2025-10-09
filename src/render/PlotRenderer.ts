@@ -107,17 +107,19 @@ export class PlotRenderer extends Renderer<PlotData> {
             yHeight = 0,
             columnWidth = 0
 
+        const seriesToRender = this.data.values.filter(s => !s.disabled)
+
         let columnsIndex = 0,
-            columnsCount = this.data.values.filter(s => s.type == PlotType.Column).length
+            columnsCount = seriesToRender.filter(s => s.type == PlotType.Column).length
 
         let barsIndex = 0,
-            barsCount = this.data.values.filter(s => s.type == PlotType.Bar).length
+            barsCount = seriesToRender.filter(s => s.type == PlotType.Bar).length
 
         let stackingAccumulator = []
         for (let i = 0; i < this.#allValuesY.length; i++)
             stackingAccumulator.push(0)
 
-        for (const series of this.data.values.filter(s => !s.disabled)) {
+        for (const series of seriesToRender) {
             ctx.beginPath()
 
             ctx.strokeStyle = series.color
