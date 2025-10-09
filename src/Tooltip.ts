@@ -213,6 +213,9 @@ export class Tooltip {
             opacity = '.67'
         }
 
+        if (x == 0 && y == 0)
+            opacity = '0'
+
         tooltip.style.left = x + offset + 'px'
         tooltip.style.top = y + offset + 'px'
         tooltip.style.opacity = opacity
