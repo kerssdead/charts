@@ -26,7 +26,7 @@ export class Screenshot {
 
         const screenshot = await page.screenshot({
             fullPage: true,
-            type: 'png',
+            type: 'jpeg',
             clip: {
                 x: elementPosition!.x,
                 y: elementPosition!.y,
