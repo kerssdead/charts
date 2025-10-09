@@ -1,4 +1,5 @@
 import { DropdownItem } from './DropdownItem'
+import { Icon } from '../static/Enums'
 
 export class DropdownOptions {
     items: DropdownItem[]
@@ -8,6 +9,8 @@ export class DropdownOptions {
     y: number
 
     text?: string | undefined
+
+    icon?: Icon | undefined
 
     data?: any
 }

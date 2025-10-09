@@ -99,3 +99,7 @@ export enum RenderState {
 
     Init
 }
+
+export enum Icon {
+    ThreeLines = '☰'
+}

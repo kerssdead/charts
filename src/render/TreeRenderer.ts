@@ -14,7 +14,7 @@ import { TextResources } from '../static/TextResources'
 import { Canvas } from '../helpers/Canvas'
 import { TreeCell } from '../types/TreeCell'
 import { Formatter } from '../helpers/Formatter'
-import { AnimationType, RenderState } from '../static/Enums'
+import { AnimationType, Icon, RenderState } from '../static/Enums'
 import * as Constants from '../static/constants/Index'
 
 export class TreeRenderer extends Renderer<TreeData> {
@@ -360,7 +360,7 @@ export class TreeRenderer extends Renderer<TreeData> {
             {
                 x: -10,
                 y: 10,
-                text: TextResources.menu,
+                icon: Icon.ThreeLines,
                 items: [
                     {
                         text: TextResources.exportCSV,

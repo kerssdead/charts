@@ -18,7 +18,7 @@ import { Modal } from '../Modal'
 import { TextResources } from '../static/TextResources'
 import { Formatter } from '../helpers/Formatter'
 import { Canvas } from '../helpers/Canvas'
-import { AnimationType, LineType, PlotAxisType, PlotType, RenderState } from '../static/Enums'
+import { AnimationType, Icon, LineType, PlotAxisType, PlotType, RenderState } from '../static/Enums'
 import * as Constants from '../static/constants/Index'
 
 export class PlotRenderer extends Renderer<PlotData> {
@@ -1053,7 +1053,7 @@ export class PlotRenderer extends Renderer<PlotData> {
             {
                 x: -10,
                 y: 10,
-                text: TextResources.menu,
+                icon: Icon.ThreeLines,
                 items: [
                     {
                         text: TextResources.exportPNG,

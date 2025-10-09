@@ -12,7 +12,7 @@ import { Export } from '../Export'
 import { Formatter } from '../helpers/Formatter'
 import { Canvas } from '../helpers/Canvas'
 import { TextResources } from '../static/TextResources'
-import { AnimationType, RenderState } from '../static/Enums'
+import { AnimationType, Icon, RenderState } from '../static/Enums'
 
 export class GaugeRenderer extends Renderer<GaugeData> {
     #radius: number
@@ -194,7 +194,7 @@ export class GaugeRenderer extends Renderer<GaugeData> {
             {
                 x: -10,
                 y: 10,
-                text: TextResources.menu,
+                icon: Icon.ThreeLines,
                 items: [
                     {
                         text: TextResources.exportPNG,

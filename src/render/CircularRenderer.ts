@@ -16,7 +16,7 @@ import { TextResources } from '../static/TextResources'
 import { Modal } from '../Modal'
 import { Canvas } from '../helpers/Canvas'
 import { Formatter } from '../helpers/Formatter'
-import { AnimationType, Events, RenderState } from '../static/Enums'
+import { AnimationType, Events, Icon, RenderState } from '../static/Enums'
 import * as Constants from '../static/constants/Index'
 import { Styles } from '../static/constants/Styles'
 
@@ -645,7 +645,7 @@ export class CircularRenderer extends Renderer<CircularData> {
             {
                 x: -10,
                 y: 10,
-                text: TextResources.menu,
+                icon: Icon.ThreeLines,
                 items: [
                     {
                         text: TextResources.exportPNG,

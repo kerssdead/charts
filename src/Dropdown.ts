@@ -29,6 +29,9 @@ export class Dropdown {
         this.#canvas = canvas
         this.#options = options
 
+        if (this.#options.icon)
+            this.#options.text = this.#options.icon
+
         this.#isOnlyMenu = this.#options.text == undefined
 
         this.animations = new Animations()
@@ -98,7 +101,15 @@ export class Dropdown {
             ctx.fill()
 
             TextStyles.regular(ctx)
-            ctx.fillText(this.#options.text ?? '', x + width / 2, y + height / 2)
+
+            if (this.#options.icon)
+                ctx.font = '20px sans-serif'
+
+            ctx.fillText(
+                this.#options.text ?? '',
+                x + width / 2,
+                y + height / 2 - (this.#options.icon ? 1 : 0)
+            )
         }
 
         if (this.isActive) {
@@ -213,6 +224,7 @@ export class Dropdown {
                 ctx.roundRect(x + padding, y, maxWidth - padding * 2, 20, borderRadius)
                 ctx.fill()
 
+                TextStyles.regular(ctx)
                 ctx.fillStyle = Theme.text
                 ctx.textAlign = 'left'
                 ctx.textBaseline = 'hanging'
