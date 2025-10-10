@@ -1,21 +1,18 @@
 import { Theme } from './Theme'
 import { Helper } from './Helper'
 import { Canvas } from './helpers/Canvas'
-import { TextResources } from './static/TextResources'
-import { Tag } from './static/Enums'
+import { Icon, Tag } from './static/Enums'
 
 export class Export {
     static asPng(canvas: HTMLCanvasElement, title: string) {
         requestAnimationFrame(() => {
             const ctx = Canvas.getContext(canvas)
 
-            let width = Helper.stringWidth(TextResources.exportPNG) + 16,
+            let width = Helper.stringWidth(Icon.ThreeLines) + 20,
                 height = 64
 
-            if (width < 50)
-                width = 50
-
-            ctx.clearRect(canvas.width - width, 0, width, height)
+            ctx.fillStyle = Theme.canvasBackground
+            ctx.fillRect(canvas.width - width, 0, width, height)
 
             let leftEmpty = 0,
                 rightEmpty = 0
