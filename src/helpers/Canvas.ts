@@ -9,6 +9,6 @@ export abstract class Canvas {
     }
 
     static isPixelBusy(pixel: number) {
-        return pixel - Theme.canvasBackgroundInt != 0
+        return pixel != undefined && pixel - Theme.canvasBackgroundInt != 0
     }
 }
