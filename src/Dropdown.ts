@@ -111,8 +111,6 @@ export class Dropdown {
                                  : -1
                                : 0
 
-            console.log(iconOffset)
-
             ctx.fillText(
                 this.#options.text ?? '',
                 x + width / 2,
