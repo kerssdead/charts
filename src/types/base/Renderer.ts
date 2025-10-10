@@ -86,6 +86,9 @@ export class Renderer<T extends Data> extends Renderable {
             item.id = Helper.guid()
             item.color ??= Helper.adjustColor(baseColor, adjustAmount += adjustStep)
             item.label ??= TextResources.NoLabel
+
+            if (item.label.length > 30)
+                item.label = item.label.slice(0, 27) + '...'
         }
 
         for (let item of this.settings.contextMenu ?? [])
