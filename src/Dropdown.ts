@@ -105,10 +105,18 @@ export class Dropdown {
             if (this.#options.icon)
                 ctx.font = '20px sans-serif'
 
+            const iconOffset = this.#options.icon
+                               ? navigator.platform != 'Win32'
+                                 ? 1
+                                 : -1
+                               : 0
+
+            console.log(iconOffset)
+
             ctx.fillText(
                 this.#options.text ?? '',
                 x + width / 2,
-                y + height / 2 - (this.#options.icon ? 1 : 0)
+                y + height / 2 - iconOffset
             )
         }
 
