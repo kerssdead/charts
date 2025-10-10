@@ -136,7 +136,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                     if (transition == 0)
                         return
 
-                    let opacity = Math.round(255 - 95 * transition).toString(16)
+                    let opacity = Math.round(255 - 127 * transition).toString(16)
                     if (opacity.length < 2)
                         opacity = 0 + opacity
 

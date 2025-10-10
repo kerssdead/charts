@@ -426,12 +426,12 @@ export class CircularRenderer extends Renderer<CircularData> {
                     if (transition == 0)
                         return
 
-                    let opacity = Math.round(255 - 95 * transition).toString(16)
+                    let opacity = Math.round(255 - 127 * transition).toString(16)
                     if (opacity.length < 2)
                         opacity = 0 + opacity
 
                     ctx.fillStyle = value.color + opacity
-                    ctx.strokeStyle = Helper.applyAlpha(value.color, 255 - 95 * transition)
+                    ctx.strokeStyle = Helper.applyAlpha(value.color, 255 - 127 * transition)
                 }
 
                 const anyHighlight = this.highlightItems.length != 0
