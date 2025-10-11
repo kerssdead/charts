@@ -776,6 +776,9 @@ export class PlotRenderer extends Renderer<PlotData> {
                            : Math.round(this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count / this.#yAxisStep) * this.#yAxisStep
                 }
 
+                if (label.label == -0)
+                    label.label = 0
+
                 let postfix = ''
 
                 if (this.data.shortLabels) {

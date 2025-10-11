@@ -30,7 +30,7 @@
             <label class="flex-shrink-0">
                 Seed
 
-                <input type="number" id="seed" onchange="saveState(); location.reload()"/>
+                <input type="number" id="seed" oninput="initRNG(); refresh()"/>
             </label>
         </div>
 
@@ -288,6 +288,8 @@
 </template>
 
 <script>
+    let rng
+
     function RNG() {
         const seed = +document.getElementById('seed').value
 
@@ -303,6 +305,10 @@
     }
     RNG.prototype.nextFloat = function() {
         return this.nextInt() / (this.m - 1)
+    }
+
+    function initRNG() {
+        rng = new RNG()
     }
 
     function setCookie(name,value,days) {
@@ -363,7 +369,7 @@
             document.getElementById('seed').value = 123
         }
 
-        rng = new RNG()
+        initRNG()
     }
 
     function saveCookiesToClipboard() {
@@ -381,8 +387,6 @@
             }
         })
     }
-
-    let rng
 
     function getValues(type, count, valuesType, pointsCount, plotType) {
         let values = [],
