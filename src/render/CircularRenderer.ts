@@ -195,7 +195,8 @@ export class CircularRenderer extends Renderer<CircularData> {
 
                         ctx.translate(transition.x, transition.y)
 
-                        ctx.lineWidth = 8
+                        if (angle > Math.PI / 6)
+                            ctx.lineWidth = 8
                         ctx.lineJoin = 'round'
                         ctx.lineCap = 'round'
 
@@ -264,7 +265,8 @@ export class CircularRenderer extends Renderer<CircularData> {
 
                 ctx.translate(translate.x, translate.y)
 
-                ctx.lineWidth = transition * 8
+                if (angle > Math.PI / 6)
+                    ctx.lineWidth = transition * 8
                 ctx.lineJoin = 'round'
                 ctx.lineCap = 'round'
 
