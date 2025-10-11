@@ -133,6 +133,18 @@
 
                     <input type="color" id="base-color" onchange="refresh()" value="#32a852"/>
                 </label>
+
+                <label>
+                    Custom Label
+
+                    <input type="text" id="custom-label" onchange="refresh()" value=""/>
+                </label>
+
+                <label>
+                    <input type="checkbox" id="indexed-custom-label" onchange="refresh()"/>
+
+                    Indexed custom label
+                </label>
             </div>
 
             <div>
@@ -370,7 +382,10 @@
         let values = [],
             sameValue = 0
 
-        const seriesWidth = +document.getElementById('series-width').value
+        const seriesWidth = +document.getElementById('series-width').value,
+            customLabel = document.getElementById('custom-label').value,
+            indexedCustomLabel = document.getElementById('indexed-custom-label').checked,
+            isCustomLabel = customLabel.trim().length !== 0
 
         function getData(index) {
             return {
@@ -457,7 +472,11 @@
                         type: plotType,
                         values: points,
                         width: seriesWidth,
-                        label: `Series ${i}`,
+                        label: isCustomLabel
+                            ? indexedCustomLabel
+                                ? customLabel + ` ${i}`
+                                : customLabel
+                            : `Series ${i}`,
                         data: getData(i),
                         lineType: rng.nextInt() % 3
                     })
@@ -494,7 +513,11 @@
 
                     values.push({
                         value: value,
-                        label: `Sector ${i}`,
+                        label: isCustomLabel
+                            ? indexedCustomLabel
+                                ? customLabel + ` ${i}`
+                                : customLabel
+                            : `Sector ${i}`,
                         data: getData(i)
                     })
                 }
@@ -528,7 +551,9 @@
 
                 values.push({
                     value: value,
-                    label: `Label`,
+                    label: isCustomLabel
+                        ? customLabel
+                        : `Label`,
                     data: getData(0)
                 })
 
@@ -563,7 +588,11 @@
 
                     values.push({
                         value: value,
-                        label: `Cell ${i}`,
+                        label: isCustomLabel
+                            ? indexedCustomLabel
+                                ? customLabel + ` ${i}`
+                                : customLabel
+                            : `Cell ${i}`,
                         data: getData(i)
                     })
                 }

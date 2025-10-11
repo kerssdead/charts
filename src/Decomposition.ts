@@ -14,7 +14,8 @@ export class Decomposition {
 
         let totals = new Map<string, number>()
         let rows = '',
-            headers = ''
+            headers = '',
+            index = 0
 
         let valuesMap = new Map<string, Map<string, any>>()
 
@@ -27,7 +28,13 @@ export class Decomposition {
             for (const [key, value] of tableValue.values)
                 allColumns.set(key, value)
 
-            valuesMap.set(tableValue.name, allColumns)
+            let indexSpaces = ''
+            for (let i = 0; i < index; i++)
+                indexSpaces += ' '
+
+            valuesMap.set(tableValue.name + indexSpaces, allColumns)
+
+            index++
         }
 
         for (const tableHeader of values.headers)
@@ -58,7 +65,7 @@ export class Decomposition {
             rows += `
                 <tr>
                     <td class="o-table-label">
-                        ${ key }
+                        ${ key.trim() }
                     </td>
                     
                     ${ columns } 
