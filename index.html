@@ -16,14 +16,22 @@
             <div id="chart"></div>
         </div>
 
-        <div>
-            <button onclick="saveCookiesToClipboard()">
-                Save to clipboard
-            </button>
+        <div class="d-flex">
+            <div class="flex-grow-1">
+                <button onclick="saveCookiesToClipboard()">
+                    Save to clipboard
+                </button>
 
-            <button onclick="loadCookiesByWindow()">
-                Load
-            </button>
+                <button onclick="loadCookiesByWindow()">
+                    Load
+                </button>
+            </div>
+
+            <label class="flex-shrink-0">
+                Seed
+
+                <input type="number" id="seed" onchange="saveState(); location.reload()"/>
+            </label>
         </div>
 
         <div class="settings">
@@ -217,6 +225,12 @@
                         </option>
                     </select>
                 </label>
+
+                <label>
+                    <input type="checkbox" id="negative-values-in-plot" onchange="refresh()"/>
+
+                    Enable negative values in plot
+                </label>
             </div>
 
             <div>
@@ -253,14 +267,6 @@
                     Padding
 
                     <input type="range" id="tree-padding" oninput="refresh()"/>
-                </label>
-            </div>
-
-            <div>
-                <label>
-                    Seed
-
-                    <input type="number" id="seed" onchange="saveState(); location.reload()"/>
                 </label>
             </div>
         </div>
@@ -385,7 +391,8 @@
         const seriesWidth = +document.getElementById('series-width').value,
             customLabel = document.getElementById('custom-label').value,
             indexedCustomLabel = document.getElementById('indexed-custom-label').checked,
-            isCustomLabel = customLabel.trim().length !== 0
+            isCustomLabel = customLabel.trim().length !== 0,
+            enableNegativeValuesInPlot = document.getElementById('negative-values-in-plot').checked
 
         function getData(index) {
             return {
@@ -442,6 +449,7 @@
                             case 0:
                                 x = xValue
                                 y = rng.nextFloat() * 1000
+                                    - (enableNegativeValuesInPlot ? 500 : 0)
 
                                 break
 
