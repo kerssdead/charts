@@ -13,17 +13,15 @@ export class TextResources {
 
     static other = 'Other'
 
-    static incorrectValues = 'Incorrect values'
+    static thousandShort = 'K'
 
-    static ThousandShort = 'K'
+    static millionShort = 'M'
 
-    static MillionShort = 'M'
+    static billionShort = 'B'
 
-    static BillionShort = 'B'
+    static show = 'Show...'
 
-    static Show = 'Show...'
-
-    static NoLabel = 'No Label'
+    static noLabel = 'No Label'
 
     static treeMapIsEmpty = 'Tree Map is empty'
 }

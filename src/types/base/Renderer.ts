@@ -85,7 +85,7 @@ export class Renderer<T extends Data> extends Renderable {
         for (let item of this.settings.data.values) {
             item.id = Helper.guid()
             item.color ??= Helper.adjustColor(baseColor, adjustAmount += adjustStep)
-            item.label ??= TextResources.NoLabel
+            item.label ??= TextResources.noLabel
 
             if (item.label.length > 30)
                 item.label = item.label.slice(0, 27) + '...'

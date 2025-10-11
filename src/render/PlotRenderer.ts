@@ -785,9 +785,9 @@ export class PlotRenderer extends Renderer<PlotData> {
                         label.label /= Math.pow(1000, countOfTens)
 
                         postfix = [
-                            TextResources.ThousandShort,
-                            TextResources.MillionShort,
-                            TextResources.BillionShort
+                            TextResources.thousandShort,
+                            TextResources.millionShort,
+                            TextResources.billionShort
                         ][countOfTens - 1]
                     }
                 }

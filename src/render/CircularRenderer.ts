@@ -65,7 +65,7 @@ export class CircularRenderer extends Renderer<CircularData> {
                 } as DropdownItem)
 
             this.settings.contextMenu.push({
-                    text: TextResources.Show,
+                    text: TextResources.show,
                     condition: data => data?._other,
                     action: () => {
                         new Modal(Decomposition.toChart<Sector>(this.settings, this.#other),
