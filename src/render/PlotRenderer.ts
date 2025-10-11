@@ -720,7 +720,7 @@ export class PlotRenderer extends Renderer<PlotData> {
             this.#labelsX.trySet(
                 Math.round(this.#paddings.left + i * this.#x.step),
                 this.data.xType == PlotAxisType.Date
-                ? Formatter.date(new Date(this.#allValuesX[i - 1]))
+                ? Formatter.date(new Date(this.#allValuesX[i]))
                 : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
                   ? this.#allValuesX[i - 1]
                   : Formatter.number(
