@@ -191,6 +191,20 @@
 
                     Simple
                 </label>
+
+                <label>
+                    X-axis type
+
+                    <select id="x-axis-type" onchange="refresh()">
+                        <option value="0">
+                            Numeric
+                        </option>
+
+                        <option value="1">
+                            Date
+                        </option>
+                    </select>
+                </label>
             </div>
 
             <div>
@@ -365,6 +379,8 @@
 
         switch (type) {
             case 0:
+                const xType = +document.getElementById('x-axis-type').value
+
                 for (let i = 0; i < count; i++) {
                     let points = []
 
@@ -374,9 +390,30 @@
                         let x = 0,
                             y = 0
 
+                        let xValue
+
+                        switch (xType) {
+                            case 0:
+                            default:
+                                xValue = j
+
+                                break
+
+                            case 1:
+                                function addDays(days) {
+                                    let result = new Date(Date.now())
+                                    result.setDate(result.getDate() + days)
+                                    return result
+                                }
+
+                                xValue = addDays(j).toISOString()
+
+                                break
+                        }
+
                         if (plotType === 1) {
                             points.push({
-                                x: j,
+                                x: xValue,
                                 y: sameValue
                             })
 
@@ -385,19 +422,19 @@
 
                         switch (valuesType) {
                             case 0:
-                                x = j
+                                x = xValue
                                 y = rng.nextFloat() * 1000
 
                                 break
 
                             case 1:
-                                x = j
+                                x = xValue
                                 y = j
 
                                 break
 
                             case 2:
-                                x = j
+                                x = xValue
                                 y = sameValue
 
                                 break
@@ -565,6 +602,7 @@
             padding = +document.getElementById('tree-padding').value,
             customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
             innerRadius = +document.getElementById('inner-radius').value,
+            xType = +document.getElementById('x-axis-type').value,
             contextMenu = !contextMenuEnabled
                 ? null
                 : [
@@ -601,6 +639,7 @@
                 values: values,
                 xTitle: xAxisTitle,
                 yTitle: yAxisTitle,
+                xType: xType,
                 min: gaugeMin,
                 max: gaugeMax,
                 padding: padding,
