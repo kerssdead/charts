@@ -31,6 +31,7 @@ export class TreeRenderer extends Renderer<TreeData> {
 
         if (this.data.values.filter(v => v.value > 0).length == 0) {
             this.#drawEmpty()
+            requestAnimationFrame(this.render.bind(this))
             return
         }
 
@@ -324,7 +325,7 @@ export class TreeRenderer extends Renderer<TreeData> {
         const ctx = Canvas.getContext(this.canvas)
 
         TextStyles.regular(ctx)
-        ctx.fillText(TextResources.incorrectValues,
+        ctx.fillText(TextResources.treeMapIsEmpty,
             this.canvas.width / 2,
             this.canvas.height / 2)
     }

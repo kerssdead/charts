@@ -24,4 +24,6 @@ export class TextResources {
     static Show = 'Show...'
 
     static NoLabel = 'No Label'
+
+    static treeMapIsEmpty = 'Tree Map is empty'
 }
