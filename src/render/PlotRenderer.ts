@@ -189,7 +189,7 @@ export class PlotRenderer extends Renderer<PlotData> {
 
             for (const value of series.values) {
                 let index = series.values.indexOf(value),
-                    xIndex = this.#allValuesX.indexOf(this.data.xType == PlotAxisType.Date ? value.x.toString() : value.x),
+                    xIndex = this.#allValuesX.indexOf(this.data.xType == PlotAxisType.Date ? value.x?.toString() : value.x),
                     yIndex = this.#allValuesY.indexOf(value.y)
 
                 const getTooltipValue = () => {
