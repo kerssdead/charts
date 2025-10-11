@@ -356,8 +356,11 @@
         navigator.clipboard.readText().then(text => {
             const input = prompt('Cookies', text)
 
-            if (input)
+            if (input) {
                 setCookie('state', input)
+
+                location.reload()
+            }
         })
     }
 
