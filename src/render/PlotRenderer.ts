@@ -74,6 +74,14 @@ export class PlotRenderer extends Renderer<PlotData> {
             left: 80
         }
 
+        if (this.data.simple)
+            this.#paddings = {
+                top: 10,
+                right: 10,
+                bottom: 10,
+                left: 10
+            }
+
         if (this.settings.title)
             this.#paddings.top += Constants.Values.titleOffset
 
@@ -977,7 +985,7 @@ export class PlotRenderer extends Renderer<PlotData> {
         }
 
         const yMaxWidth = Helper.stringWidth(Formatter.number(this.#y.max))
-        if (yMaxWidth > this.#paddings.left - 40) {
+        if (yMaxWidth > this.#paddings.left - 40 && !this.data.simple) {
             this.#paddings.left += yMaxWidth - this.#paddings.left + 40
             this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length
         }
