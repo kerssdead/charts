@@ -619,6 +619,8 @@
     }
 
     function refresh() {
+        initRNG()
+
         const titleEnabled = document.getElementById('title').checked,
             customTooltipEnabled = document.getElementById('custom-tooltip').checked,
             tooltipEnabled = document.getElementById('tooltip').checked || customTooltipEnabled,
