@@ -788,7 +788,7 @@ export class PlotRenderer extends Renderer<PlotData> {
         const offset = .5,
             isBar = this.data.values.filter(v => v.type == PlotType.Bar).length > 0
 
-        ctx.moveTo(this.#paddings.left - offset,
+        ctx.moveTo(this.#paddings.left - (isBar ? offset : 0),
             this.canvas.height - this.#paddings.bottom + (isBar ? -offset : offset))
 
         if (isBar)
