@@ -332,28 +332,22 @@ export class PlotRenderer extends Renderer<PlotData> {
                                     }
                                 })
                         } else {
-                            if (!anyHighlight) {
-                                if (this.#isInArea(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                        this.canvas.height - this.#paddings.bottom - y,
-                                        columnWidth,
-                                        y)
-                                    && (this.contextMenu?.isActive == undefined
-                                        || this.contextMenu?.isActive == false)) {
-                                    this.#hoverX = {
-                                        x: x,
-                                        y: y,
-                                        index: index,
-                                        data: value.data,
-                                        series: series
-                                    }
-
-                                    tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
-                                    this.#tooltipX = x
-
-                                    ctx.fillStyle += '88'
-                                } else {
-                                    ctx.fillStyle = series.color
+                            if (this.#isInArea(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
+                                    this.canvas.height - this.#paddings.bottom - y,
+                                    columnWidth,
+                                    y)
+                                && (this.contextMenu?.isActive == undefined
+                                    || this.contextMenu?.isActive == false)) {
+                                this.#hoverX = {
+                                    x: x,
+                                    y: y,
+                                    index: index,
+                                    data: value.data,
+                                    series: series
                                 }
+
+                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
+                                this.#tooltipX = x
                             }
 
                             ctx.roundRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
@@ -478,26 +472,20 @@ export class PlotRenderer extends Renderer<PlotData> {
                                 if (yValue + yHeight < this.#paddings.top)
                                     yHeight -= yValue + yHeight - this.#paddings.top
 
-                                if (!anyHighlight) {
-                                    if (this.#isInArea(x + (this.#x.step - columnWidth) / 2,
-                                        yValue + yHeight,
-                                        columnWidth,
-                                        Math.abs(yHeight))) {
-                                        this.#hoverX = {
-                                            x: x,
-                                            y: y,
-                                            index: xIndex,
-                                            data: value.data,
-                                            series: series
-                                        }
-
-                                        tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
-                                        this.#tooltipX = x
-
-                                        ctx.fillStyle += '88'
-                                    } else {
-                                        ctx.fillStyle = series.color
+                                if (this.#isInArea(x + (this.#x.step - columnWidth) / 2,
+                                    yValue + yHeight,
+                                    columnWidth,
+                                    Math.abs(yHeight))) {
+                                    this.#hoverX = {
+                                        x: x,
+                                        y: y,
+                                        index: xIndex,
+                                        data: value.data,
+                                        series: series
                                     }
+
+                                    tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().y }`, series.color))
+                                    this.#tooltipX = x
                                 }
 
                                 ctx.fillRect(x + (this.#x.step - columnWidth) / 2,
@@ -553,22 +541,8 @@ export class PlotRenderer extends Renderer<PlotData> {
 
                 case PlotType.Column:
                 case PlotType.StackingColumn:
-                    if (this.#hoverX) {
-                        let offset = stackingAccumulator[this.#hoverX.index] != undefined
-                                     ? stackingAccumulator[this.#hoverX.index]
-                                     : 0
-
-                        if (this.canvas.height - this.#paddings.bottom + offset > this.#paddings.top) {
-                            ctx.beginPath()
-                            ctx.lineWidth = 1
-                            ctx.strokeStyle = axisLineHoverColor
-                            ctx.moveTo(this.#tooltipX + this.#x.step / 2,
-                                this.#paddings.top)
-                            ctx.lineTo(this.#tooltipX + this.#x.step / 2,
-                                this.canvas.height - this.#paddings.bottom + offset)
-                            ctx.stroke()
-                        }
-                    }
+                    if (this.#hoverX)
+                        this.highlight(this.#hoverX.series)
 
                     columnsIndex++
 
@@ -611,6 +585,9 @@ export class PlotRenderer extends Renderer<PlotData> {
 
         if (this.onContextMenuEvent && !this.#hoverX)
             this.onContextMenuEvent = undefined
+
+        if (this.#hoverX == undefined)
+            this.highlight()
 
         if (this.#hoverX
             && (this.renderContextMenu(this.#hoverX.data)
