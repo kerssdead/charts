@@ -110,6 +110,8 @@ export class CircularRenderer extends Renderer<CircularData> {
 
         if (this.#currentHover)
             this.canvas.style.cursor = Styles.Cursor.Pointer
+        else
+            this.highlight()
     }
 
     #draw() {

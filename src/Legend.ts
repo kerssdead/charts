@@ -166,9 +166,6 @@ export class Legend extends Renderable {
                         translate(transition, AnimationType.MouseOver)
                     }
                 })
-
-            if (this.#hoverCount == 0)
-                this.#chart.highlight()
         }
 
         ctx.beginPath()
