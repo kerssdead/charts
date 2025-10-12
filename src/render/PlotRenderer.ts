@@ -428,7 +428,11 @@ export class PlotRenderer extends Renderer<PlotData> {
                                     duration: 800,
                                     continuous: true,
                                     body: transition => {
-                                        columnsIndex = this.data.values.filter(s => s.type == PlotType.StackingColumn && s.values.filter(v => v.x == value.x).length > 0)
+                                        columnsIndex = this.data.values.filter(s => s.type == PlotType.StackingColumn
+                                                                                    && s.values.filter(v => this.data.xType == PlotAxisType.Date
+                                                                                                            ? (v.x as Date).getTime() == (value.x as Date).getTime()
+                                                                                                            : v.x == value.x)
+                                                                                        .length > 0)
                                                            .indexOf(series)
 
                                         x = this.#paddings.left + xIndex * this.#x.step
