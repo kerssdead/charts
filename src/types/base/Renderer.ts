@@ -1,6 +1,6 @@
 import { Data } from 'types/interfaces/Data'
 import { Renderable } from 'types/base/Renderable'
-import { Helper } from 'Helper'
+import * as Helper from 'Helper'
 import { Value } from 'types/base/Value'
 import { Legend } from 'Legend'
 import { Dropdown } from 'Dropdown'

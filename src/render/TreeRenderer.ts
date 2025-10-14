@@ -1,7 +1,7 @@
 import { TreeData } from 'types/data/TreeData'
 import { Renderer } from 'types/base/Renderer'
 import { Sector } from 'types/Sector'
-import { Helper } from 'Helper'
+import * as Helper from 'Helper'
 import { DropdownItem } from 'types/DropdownItem'
 import { Dropdown } from 'Dropdown'
 import { Chart } from 'Chart'

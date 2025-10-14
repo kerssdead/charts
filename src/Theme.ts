@@ -1,4 +1,4 @@
-import { Helper } from 'Helper'
+import * as Helper from 'Helper'
 import { ThemeOptions } from 'static/ThemeOptions'
 import { Events } from 'static/Enums'
 

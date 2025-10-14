@@ -1,6 +1,6 @@
 import { Renderer } from 'types/base/Renderer'
 import { GaugeData } from 'types/data/GaugeData'
-import { Helper } from 'Helper'
+import * as Helper from 'Helper'
 import { Sector } from 'types/Sector'
 import { Dropdown } from 'Dropdown'
 import { Point } from 'types/Point'

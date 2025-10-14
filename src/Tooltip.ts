@@ -1,7 +1,7 @@
 import { Value } from 'types/base/Value'
 import { Theme } from 'Theme'
 import { TextStyles } from 'helpers/TextStyles'
-import { Helper } from 'Helper'
+import * as Helper from 'Helper'
 import { ChartSettings } from 'types/ChartSettings'
 import { TooltipValue } from 'types/TooltipValue'
 import { Data } from 'types/interfaces/Data'

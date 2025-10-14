@@ -1,5 +1,5 @@
 import { TableData } from 'types/TableData'
-import { Helper } from 'Helper'
+import * as Helper from 'Helper'
 import { Value } from 'types/base/Value'
 import { ChartSettings } from 'types/ChartSettings'
 import { Formatter } from 'helpers/Formatter'

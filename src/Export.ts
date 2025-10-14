@@ -1,5 +1,5 @@
 import { Theme } from 'Theme'
-import { Helper } from 'Helper'
+import * as Helper from 'Helper'
 import { Canvas } from 'helpers/Canvas'
 import { Icon, Tag } from 'static/Enums'
 

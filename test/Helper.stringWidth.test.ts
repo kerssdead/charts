@@ -1,4 +1,4 @@
-import { Helper } from '../src/Helper'
+import * as Helper from '../src/Helper'
 
 describe('Calculating string width', () => {
     it('Should calculate undefined string', () => {

@@ -1,6 +1,6 @@
 import { Value } from 'types/base/Value'
 import { Renderable } from 'types/base/Renderable'
-import { Helper } from 'Helper'
+import * as Helper from 'Helper'
 import { Sector } from 'types/Sector'
 import { Point } from 'types/Point'
 import { Theme } from 'Theme'
