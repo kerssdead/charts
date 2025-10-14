@@ -1,5 +1,5 @@
-import { Sector } from '../Sector'
-import { Data } from '../interfaces/Data'
+import { Sector } from 'types/Sector'
+import { Data } from 'types/interfaces/Data'
 
 export class GaugeData implements Data {
     values: Sector[]

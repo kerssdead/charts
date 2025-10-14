@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "removeComments": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "baseUrl": "./src"
   },
   "files": [
     "src/types/base/Value.ts",

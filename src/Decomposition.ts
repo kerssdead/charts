@@ -1,10 +1,10 @@
-import { TableData } from './types/TableData'
-import { Helper } from './Helper'
-import { Value } from './types/base/Value'
-import { ChartSettings } from './types/ChartSettings'
-import { Formatter } from './helpers/Formatter'
-import { Styles } from './static/constants/Styles'
-import { Tag } from './static/Enums'
+import { TableData } from 'types/TableData'
+import { Helper } from 'Helper'
+import { Value } from 'types/base/Value'
+import { ChartSettings } from 'types/ChartSettings'
+import { Formatter } from 'helpers/Formatter'
+import { Styles } from 'static/constants/Styles'
+import { Tag } from 'static/Enums'
 
 export class Decomposition {
     static toTable(values: TableData) {

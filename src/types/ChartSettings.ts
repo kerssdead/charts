@@ -1,6 +1,6 @@
-import { Data } from './interfaces/Data'
-import { DropdownItem } from './DropdownItem'
-import { ChartType, LegendPlace } from '../static/Enums'
+import { Data } from 'types/interfaces/Data'
+import { DropdownItem } from 'types/DropdownItem'
+import { ChartType, LegendPlace } from 'static/Enums'
 
 export class ChartSettings {
     enableLegend: boolean

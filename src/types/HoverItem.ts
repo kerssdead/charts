@@ -1,4 +1,4 @@
-import { PlotSeries } from './PlotSeries'
+import { PlotSeries } from 'types/PlotSeries'
 
 export class HoverItem {
     x: number

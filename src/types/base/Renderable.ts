@@ -1,12 +1,12 @@
-import { ChartSettings } from '../ChartSettings'
-import { Animations } from '../../Animations'
-import { Tooltip } from '../../Tooltip'
-import { Dropdown } from '../../Dropdown'
-import { Chart } from '../../Chart'
-import { Canvas } from '../../helpers/Canvas'
-import { Events, RenderState, Tag } from '../../static/Enums'
-import { Styles } from '../../static/constants/Styles'
-import { Theme } from '../../Theme'
+import { ChartSettings } from 'types/ChartSettings'
+import { Animations } from 'Animations'
+import { Tooltip } from 'Tooltip'
+import { Dropdown } from 'Dropdown'
+import { Chart } from 'Chart'
+import { Canvas } from 'helpers/Canvas'
+import { Events, RenderState, Tag } from 'static/Enums'
+import { Styles } from 'static/constants/Styles'
+import { Theme } from 'Theme'
 
 export class Renderable {
     node: HTMLElement

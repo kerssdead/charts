@@ -1,5 +1,5 @@
-import { Chart } from './Chart'
-import { ChartSettings } from './types/ChartSettings'
+import { Chart } from 'Chart'
+import { ChartSettings } from 'types/ChartSettings'
 
 function OCharts() {
 }

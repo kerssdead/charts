@@ -1,5 +1,5 @@
-import { Value } from './base/Value'
-import { Point } from './Point'
+import { Value } from 'types/base/Value'
+import { Point } from 'types/Point'
 
 export class Sector extends Value {
     current: number

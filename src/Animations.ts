@@ -1,5 +1,5 @@
-import { AnimationItem } from './types/AnimationItem'
-import { AnimationType } from './static/Enums'
+import { AnimationItem } from 'types/AnimationItem'
+import { AnimationType } from 'static/Enums'
 
 export class Animations {
     #queue: Map<string, AnimationItem>

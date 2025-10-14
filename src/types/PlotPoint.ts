@@ -1,4 +1,4 @@
-import { Value } from './base/Value'
+import { Value } from 'types/base/Value'
 
 export class PlotPoint extends Value {
     x: number | Date | string

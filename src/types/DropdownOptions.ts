@@ -1,5 +1,5 @@
-import { DropdownItem } from './DropdownItem'
-import { Icon } from '../static/Enums'
+import { DropdownItem } from 'types/DropdownItem'
+import { Icon } from 'static/Enums'
 
 export class DropdownOptions {
     items: DropdownItem[]

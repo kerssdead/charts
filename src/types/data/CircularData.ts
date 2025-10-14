@@ -1,7 +1,7 @@
-import { TableValue } from '../TableValue'
-import { Sector } from '../Sector'
-import { TableData } from '../TableData'
-import { Data } from '../interfaces/Data'
+import { TableValue } from 'types/TableValue'
+import { Sector } from 'types/Sector'
+import { TableData } from 'types/TableData'
+import { Data } from 'types/interfaces/Data'
 
 export class CircularData implements Data {
     values: Sector[]

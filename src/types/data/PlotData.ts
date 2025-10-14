@@ -1,10 +1,10 @@
-import { TableValue } from '../TableValue'
-import { PlotSeries } from '../PlotSeries'
-import { TableHeaderValue } from '../TableHeaderValue'
-import { TableData } from '../TableData'
-import { Data } from '../interfaces/Data'
-import { Formatter } from '../../helpers/Formatter'
-import { PlotAxisType } from '../../static/Enums'
+import { TableValue } from 'types/TableValue'
+import { PlotSeries } from 'types/PlotSeries'
+import { TableHeaderValue } from 'types/TableHeaderValue'
+import { TableData } from 'types/TableData'
+import { Data } from 'types/interfaces/Data'
+import { Formatter } from 'helpers/Formatter'
+import { PlotAxisType } from 'static/Enums'
 
 export class PlotData implements Data {
     shortLabels: boolean

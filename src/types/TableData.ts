@@ -1,5 +1,5 @@
-import { TableValue } from './TableValue'
-import { TableHeaderValue } from './TableHeaderValue'
+import { TableValue } from 'types/TableValue'
+import { TableHeaderValue } from 'types/TableHeaderValue'
 
 export class TableData {
     headers: TableHeaderValue[]

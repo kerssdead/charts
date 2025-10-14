@@ -1,6 +1,6 @@
-import { Helper } from './Helper'
-import { ThemeOptions } from './static/ThemeOptions'
-import { Events } from './static/Enums'
+import { Helper } from 'Helper'
+import { ThemeOptions } from 'static/ThemeOptions'
+import { Events } from 'static/Enums'
 
 export class Theme {
     static currentTheme = 0

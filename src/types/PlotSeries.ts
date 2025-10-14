@@ -1,6 +1,6 @@
-import { Value } from './base/Value'
-import { PlotPoint } from './PlotPoint'
-import { LineType, PlotType } from '../static/Enums'
+import { Value } from 'types/base/Value'
+import { PlotPoint } from 'types/PlotPoint'
+import { LineType, PlotType } from 'static/Enums'
 
 export class PlotSeries extends Value {
     values: PlotPoint[]

@@ -1,6 +1,6 @@
-import { Errors } from './Errors'
-import { ErrorType } from '../static/Enums'
-import { Theme } from '../Theme'
+import { Errors } from 'helpers/Errors'
+import { ErrorType } from 'static/Enums'
+import { Theme } from 'Theme'
 
 export abstract class Canvas {
     static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {

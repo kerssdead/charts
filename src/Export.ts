@@ -1,7 +1,7 @@
-import { Theme } from './Theme'
-import { Helper } from './Helper'
-import { Canvas } from './helpers/Canvas'
-import { Icon, Tag } from './static/Enums'
+import { Theme } from 'Theme'
+import { Helper } from 'Helper'
+import { Canvas } from 'helpers/Canvas'
+import { Icon, Tag } from 'static/Enums'
 
 export class Export {
     static asPng(canvas: HTMLCanvasElement, title: string) {

@@ -1,12 +1,12 @@
-import { Theme } from './Theme'
-import { DropdownOptions } from './types/DropdownOptions'
-import { Animations } from './Animations'
-import { Helper } from './Helper'
-import { TextStyles } from './helpers/TextStyles'
-import { Canvas } from './helpers/Canvas'
-import { AnimationType } from './static/Enums'
-import * as Constants from './static/constants/Index'
-import { Styles } from './static/constants/Styles'
+import { Theme } from 'Theme'
+import { DropdownOptions } from 'types/DropdownOptions'
+import { Animations } from 'Animations'
+import { Helper } from 'Helper'
+import { TextStyles } from 'helpers/TextStyles'
+import { Canvas } from 'helpers/Canvas'
+import { AnimationType } from 'static/Enums'
+import * as Constants from 'static/constants/Index'
+import { Styles } from 'static/constants/Styles'
 
 export class Dropdown {
     isActive: boolean = false

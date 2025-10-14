@@ -1,12 +1,12 @@
-import { TextStyles } from './helpers/TextStyles'
-import { Theme } from './Theme'
-import { Animations } from './Animations'
-import { Helper } from './Helper'
-import { ButtonOptions } from './types/ButtonOptions'
-import { Canvas } from './helpers/Canvas'
-import { AnimationType } from './static/Enums'
-import * as Constants from './static/constants/Index'
-import { Styles } from './static/constants/Styles'
+import { TextStyles } from 'helpers/TextStyles'
+import { Theme } from 'Theme'
+import { Animations } from 'Animations'
+import { Helper } from 'Helper'
+import { ButtonOptions } from 'types/ButtonOptions'
+import { Canvas } from 'helpers/Canvas'
+import { AnimationType } from 'static/Enums'
+import * as Constants from 'static/constants/Index'
+import { Styles } from 'static/constants/Styles'
 
 export class Button {
     #canvas: HTMLCanvasElement

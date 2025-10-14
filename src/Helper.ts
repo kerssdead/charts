@@ -1,5 +1,5 @@
-import { Color } from './types/Color'
-import { Theme } from './Theme'
+import { Color } from 'types/Color'
+import { Theme } from 'Theme'
 
 export class Helper {
     static adjustColor(color: string, amount: number) {

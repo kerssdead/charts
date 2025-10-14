@@ -1,4 +1,4 @@
-import { Theme } from '../Theme'
+import { Theme } from 'Theme'
 
 export abstract class TextStyles {
     static title(context: CanvasRenderingContext2D) {
