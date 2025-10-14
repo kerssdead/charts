@@ -55,14 +55,6 @@ export function hexToRgb(hex: string): Color {
     return new Color()
 }
 
-export function isColorVisible(background: string, foreground: string) {
-    const backgroundAsRgb = hexToRgb(background),
-        foregroundAsRgb = hexToRgb(foreground),
-        value = .77
-
-    return (backgroundAsRgb.r + backgroundAsRgb.g + backgroundAsRgb.b) / (foregroundAsRgb.r + foregroundAsRgb.g + foregroundAsRgb.b) < value
-}
-
 export function isISOString(str: string) {
     return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+/.test(str)
 }
