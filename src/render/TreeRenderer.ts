@@ -258,7 +258,7 @@ export class TreeRenderer extends Renderer<TreeData> {
                     ctx.beginPath()
                     TextStyles.large(ctx)
 
-                    ctx.strokeStyle = Helper.adjustColor(cell.color, -20)
+                    ctx.strokeStyle = Helper.adjustColor(cell.color, -30)
                     ctx.lineWidth = 4
                     ctx.lineJoin = 'round'
                     ctx.lineCap = 'round'
