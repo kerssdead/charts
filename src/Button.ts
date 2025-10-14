@@ -28,24 +28,6 @@ export class Button {
         this.animations = new Animations()
 
         this.#initAnimations()
-
-        const width = Helper.stringWidth(this.#options.text) + 12,
-            height = 20
-
-        this.#position = <DOMRect>{
-            x: this.#options.x + width > this.#canvas.width
-               ? this.#canvas.width - width
-               : this.#options.x < 0
-                 ? this.#canvas.width + this.#options.x - width
-                 : this.#options.x,
-            y: this.#options.y + height > this.#canvas.height
-               ? this.#canvas.height - height
-               : this.#options.y < 0
-                 ? this.#canvas.height + this.#options.y - height
-                 : this.#options.y,
-            width: width,
-            height: height
-        }
     }
 
     render(moveEvent: MouseEvent, clickEvent: MouseEvent | undefined) {
@@ -113,6 +95,24 @@ export class Button {
 
         this.#canvasPosition.x += scrollX
         this.#canvasPosition.y += scrollY
+
+        const width = Helper.stringWidth(this.#options.text) + 12,
+            height = 20
+
+        this.#position = <DOMRect>{
+            x: this.#options.x + width > this.#canvas.width
+               ? this.#canvas.width - width
+               : this.#options.x < 0
+                 ? this.#canvas.width + this.#options.x - width
+                 : this.#options.x,
+            y: this.#options.y + height > this.#canvas.height
+               ? this.#canvas.height - height
+               : this.#options.y < 0
+                 ? this.#canvas.height + this.#options.y - height
+                 : this.#options.y,
+            width: width,
+            height: height
+        }
     }
 
     #isOnButton(event: MouseEvent): boolean {

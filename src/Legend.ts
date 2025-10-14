@@ -42,11 +42,6 @@ export class Legend extends Renderable {
                             value.reset()
                     }
                 })
-
-        this.#offset = {
-            x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
-            y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width)) / 2
-        }
     }
 
     render() {
@@ -247,6 +242,11 @@ export class Legend extends Renderable {
                 this.node.style.flexDirection = Styles.FlexDirection.RowReverse
 
                 break
+        }
+
+        this.#offset = {
+            x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
+            y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width)) / 2
         }
     }
 
