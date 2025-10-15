@@ -33,6 +33,14 @@ export function guid() {
     return (S4() + S4() + '-' + S4() + '-4' + S4().slice(0, 3) + '-' + S4() + '-' + S4() + S4() + S4()).toLowerCase()
 }
 
+export function isColorVisible(background: string, foreground: string) {
+    const backgroundAsRgb = hexToRgb(background),
+        foregroundAsRgb = hexToRgb(foreground),
+        value = .77
+
+    return (backgroundAsRgb.r + backgroundAsRgb.g + backgroundAsRgb.b) / (foregroundAsRgb.r + foregroundAsRgb.g + foregroundAsRgb.b) < value
+}
+
 export function hexToRgb(hex: string): Color {
     if (hex.length > 4) {
         const value = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)

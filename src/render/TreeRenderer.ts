@@ -257,16 +257,9 @@ export class TreeRenderer extends Renderer<TreeData> {
                     && !this.animations.contains(cell.id, AnimationType.Init)) {
                     ctx.beginPath()
                     TextStyles.large(ctx)
-
-                    ctx.strokeStyle = Helper.adjustColor(cell.color, -30)
-                    ctx.lineWidth = 4
-                    ctx.lineJoin = 'round'
-                    ctx.lineCap = 'round'
-                    ctx.fillStyle = '#ffffff'
-
-                    ctx.strokeText(cell.label,
-                        x + 2 + cell.w / 2,
-                        y + 2 + cell.h / 2)
+                    ctx.fillStyle = !Helper.isColorVisible(cell.color, '#ffffff')
+                                    ? '#000000'
+                                    : '#ffffff'
                     ctx.fillText(cell.label,
                         x + 2 + cell.w / 2,
                         y + 2 + cell.h / 2)
