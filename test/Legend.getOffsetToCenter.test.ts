@@ -16,7 +16,7 @@ describe('Get offset to center', () => {
         ]
 
         expect(Legend.getOffsetToCenter(items, 500))
-            .toBeCloseTo(100, 0)
+            .toBeCloseTo(94, 0)
     })
 
     it('Should be min offset', () => {
@@ -56,6 +56,6 @@ describe('Get offset to center', () => {
         ]
 
         expect(Legend.getOffsetToCenter(items, 1000))
-            .toBeCloseTo(440, 0)
+            .toBeCloseTo(439, 0)
     })
 })

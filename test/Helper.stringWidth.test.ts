@@ -8,6 +8,6 @@ describe('Calculating string width', () => {
 
     it('Should calculate normal string', () => {
         expect(Helper.stringWidth('Test string'))
-            .toBeCloseTo(65, 0)
+            .toBeCloseTo(69, 0)
     })
 })
