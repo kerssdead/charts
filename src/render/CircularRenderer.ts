@@ -16,7 +16,7 @@ import { TextResources } from 'static/TextResources'
 import { Modal } from 'Modal'
 import { Canvas } from 'helpers/Canvas'
 import { Formatter } from 'helpers/Formatter'
-import { AnimationType, Events, Icon, RenderState } from 'static/Enums'
+import { AnimationType, Events, Icon, PlotAxisType, RenderState } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
 import { Styles } from 'static/constants/Styles'
 
@@ -113,7 +113,7 @@ export class CircularRenderer extends Renderer<CircularData> {
             this.tooltip.render(!!value && !this.dropdown?.isActive,
                 this.onMouseMoveEvent,
                 [
-                    new TooltipValue(`${ value?.label }: ${ Formatter.number(value?.current) }`)
+                    new TooltipValue(`${ value?.label }: ${ Formatter.format(value?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
                 ],
                 value)
 

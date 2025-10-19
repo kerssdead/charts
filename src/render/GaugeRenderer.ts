@@ -12,7 +12,7 @@ import { Export } from 'Export'
 import { Formatter } from 'helpers/Formatter'
 import { Canvas } from 'helpers/Canvas'
 import { TextResources } from 'static/TextResources'
-import { AnimationType, Icon, RenderState } from 'static/Enums'
+import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
 
 export class GaugeRenderer extends Renderer<GaugeData> {
     #radius: number
@@ -34,7 +34,7 @@ export class GaugeRenderer extends Renderer<GaugeData> {
         this.tooltip.render(this.#isInsideSector(this.onMouseMoveEvent, value) && !this.dropdown?.isActive,
             this.onMouseMoveEvent,
             [
-                new TooltipValue(`${ value?.label }: ${ Formatter.number(value?.current) }`)
+                new TooltipValue(`${ value?.label }: ${ Formatter.format(value?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
             ],
             value)
 

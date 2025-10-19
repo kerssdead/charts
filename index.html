@@ -153,6 +153,12 @@
 
                     Indexed custom label
                 </label>
+
+                <label>
+                    Postfix
+
+                    <input type="text" id="postfix" onchange="refresh()"/>
+                </label>
             </div>
 
             <div>
@@ -654,6 +660,7 @@
             customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
             innerRadius = +document.getElementById('inner-radius').value,
             xType = +document.getElementById('x-axis-type').value,
+            postfix = document.getElementById('postfix').value,
             contextMenu = !contextMenuEnabled
                 ? null
                 : [
@@ -694,6 +701,7 @@
             baseColor: baseColor,
             templateId: customTooltip,
             contextMenu: contextMenu,
+            valuePostfix: postfix,
             isDarkThemeFunction: () => darkThemeEnabled
         }
 

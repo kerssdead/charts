@@ -27,6 +27,8 @@ export class ChartSettings {
 
     templateId: string
 
+    valuePostfix: string | undefined
+
     type: ChartType
 
     legendPlace: LegendPlace

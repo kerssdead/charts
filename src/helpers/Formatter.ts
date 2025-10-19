@@ -13,17 +13,24 @@ export abstract class Formatter {
     static text = (value: string | undefined) =>
         value ?? ''
 
-    static format(value: any | undefined, type: PlotAxisType) {
+    static format(value: any | undefined, type: PlotAxisType, postfix?: string | undefined) {
+        let result = ''
+
         switch (type) {
             case PlotAxisType.Number:
-                return Formatter.number(value)
+                result = Formatter.number(value)
+                break
 
             case PlotAxisType.Date:
-                return Formatter.date(new Date(value))
+                result = Formatter.date(new Date(value))
+                break
 
             case PlotAxisType.Text:
-                return Formatter.text(value)
+                result = Formatter.text(value)
+                break
         }
+
+        return result + (postfix ?? '')
     }
 
 }

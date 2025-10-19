@@ -14,7 +14,7 @@ import { TextResources } from 'static/TextResources'
 import { Canvas } from 'helpers/Canvas'
 import { TreeCell } from 'types/TreeCell'
 import { Formatter } from 'helpers/Formatter'
-import { AnimationType, Icon, RenderState } from 'static/Enums'
+import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
 
 export class TreeRenderer extends Renderer<TreeData> {
@@ -291,7 +291,7 @@ export class TreeRenderer extends Renderer<TreeData> {
         this.tooltip.render(!!tooltipCell && !this.dropdown?.isActive,
             this.onMouseMoveEvent,
             [
-                new TooltipValue(`${ tooltipCell?.label }: ${ Formatter.number(tooltipCell?.value) }`)
+                new TooltipValue(`${ tooltipCell?.label }: ${ Formatter.format(tooltipCell?.value, PlotAxisType.Number, this.settings.valuePostfix) }`)
             ],
             this.data.values.find(v => v.id == tooltipCell?.id))
 
