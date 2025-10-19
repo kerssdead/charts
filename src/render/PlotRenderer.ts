@@ -636,6 +636,8 @@ export class PlotRenderer extends Renderer<PlotData> {
 
         const isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0
 
+        ctx.setLineDash([])
+
         if (this.data.xTitle || this.data.yTitle) {
             ctx.textAlign = 'center'
             ctx.textBaseline = 'bottom'
