@@ -683,7 +683,8 @@ export class PlotRenderer extends Renderer<PlotData> {
                 ctx.fillStyle = Theme.text + 'b7'
 
                 ctx.fillText(
-                    this.#labelsX.get(Math.round(acc - this.#x.step / 2)) ?? '',
+                    (this.#labelsX.get(Math.round(acc - this.#x.step / 2)) ?? '')
+                        + (!isContainsBar ? '' : this.settings.valuePostfix),
                     acc,
                     xYPos + axisLabelOffset / 2
                 )
@@ -707,7 +708,11 @@ export class PlotRenderer extends Renderer<PlotData> {
 
             if (!this.#labelsY.get(labelYAsKey))
                 this.#labelsY.set(labelYAsKey,
-                    Formatter.number(this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count))
+                    Formatter.format(
+                        this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count,
+                        PlotAxisType.Number,
+                        this.settings.valuePostfix
+                    ))
 
             if (i >= yCounter * yStep) {
                 const label = {
@@ -737,9 +742,13 @@ export class PlotRenderer extends Renderer<PlotData> {
                     }
                 }
 
-                ctx.fillText(Formatter.number(label.label) + postfix,
+                ctx.fillText(
+                    Formatter.number(label.label)
+                        + postfix
+                        + (isContainsBar ? '' : this.settings.valuePostfix ?? ''),
                     label.x - axisLabelOffset,
-                    label.y + (isContainsBar ? this.#y.step / 2 : 0))
+                    label.y + (isContainsBar ? this.#y.step / 2 : 0)
+                )
 
                 yCounter++
             }
