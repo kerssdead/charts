@@ -65,7 +65,11 @@ export enum LineType {
 }
 
 export enum PlotAxisType {
-    Date = 1
+    Number,
+
+    Date,
+
+    Text
 }
 
 export enum PlotType {

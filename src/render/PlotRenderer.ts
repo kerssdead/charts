@@ -166,9 +166,9 @@ export class PlotRenderer extends Renderer<PlotData> {
                 const getTooltipValue = () => {
                     return {
                         x: value.x
-                           ? this.data.xType == PlotAxisType.Date
-                             ? this.#allValuesX[xIndex]
-                             : Formatter.number(this.#allValuesX[xIndex])
+                           ? this.data.xType == PlotAxisType.Number
+                             ? Formatter.number(this.#allValuesX[xIndex])
+                             : this.#allValuesX[xIndex]
                            : '0',
                         y: value.y
                            ? Formatter.number(this.#allValuesY[yIndex])
@@ -673,13 +673,7 @@ export class PlotRenderer extends Renderer<PlotData> {
         for (let i = 0; i < this.#allValuesX.length + 1; i++)
             this.#labelsX.trySet(
                 Math.round(this.#paddings.left + i * this.#x.step),
-                this.data.xType == PlotAxisType.Date
-                ? Formatter.date(new Date(this.#allValuesX[i]))
-                : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                  ? this.#allValuesX[i - 1]
-                  : Formatter.number(
-                        this.#x.min + i * (this.#x.max - this.#x.min) / (this.#x.count - 1)
-                    )
+                Formatter.format(this.#allValuesX[i], this.data.xType)
             )
 
         const maxLabelWidth = Math.max(
@@ -808,13 +802,7 @@ export class PlotRenderer extends Renderer<PlotData> {
             for (let i = 0; i < this.#allValuesX.length + 1; i++)
                 this.#labelsX.trySet(
                     Math.round(this.#paddings.left + i * this.#x.step),
-                    this.data.xType == PlotAxisType.Date
-                    ? Formatter.date(new Date(this.#allValuesX[i - 1]))
-                    : isNaN(+this.#x.min) || !isFinite(+this.#x.min)
-                      ? this.#allValuesX[i - 1]
-                      : Formatter.number(
-                            this.#x.min + i * (this.#x.max - this.#x.min) / (this.#x.count - 1)
-                        )
+                    Formatter.format(this.#allValuesX[i - 1], this.data.xType)
                 )
 
             const maxLabelWidth = Math.max(
