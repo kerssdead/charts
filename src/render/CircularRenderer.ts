@@ -296,8 +296,9 @@ export class CircularRenderer extends Renderer<CircularData> {
                 let isBusy = false
 
                 const textWidth = Helper.stringWidth(value.label),
-                    imageDataX = dir == 1 ? endPoint.x + 12 : endPoint.x - textWidth - 12,
-                    imageData = new Uint32Array(ctx.getImageData(imageDataX, endPoint.y - 12, textWidth + 12, 28).data.buffer)
+                    imageDataX = dir == 1 ? endPoint.x + 12 : endPoint.x - textWidth - 12 + (value.translate ? value.translate.x : 0),
+                    imageDataY = endPoint.y - 12 + (value.translate ? value.translate.y : 0),
+                    imageData = new Uint32Array(ctx.getImageData(imageDataX, imageDataY, textWidth + 12, 28).data.buffer)
 
                 if (imageDataX < 0 || imageDataX + textWidth > this.canvas.width
                     || endPoint.y - 12 < 0 || endPoint.y + 12 > this.canvas.height)
