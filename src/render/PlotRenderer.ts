@@ -997,6 +997,9 @@ export class PlotRenderer extends Renderer<PlotData> {
     prepareSettings() {
         super.prepareSettings()
 
+        this.#base = undefined
+        this.#backLines = undefined
+
         this.data.values = this.data.values.map(v => new PlotSeries(v))
 
         if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0) {
