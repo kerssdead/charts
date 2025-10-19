@@ -7,8 +7,8 @@ export abstract class Formatter {
             maximumFractionDigits: 2
         }) ?? ''
 
-    static date = (value: Date) =>
-        value.toLocaleDateString()
+    static date = (value: Date | undefined) =>
+        value?.toLocaleDateString() ?? ''
 
     static text = (value: string | undefined) =>
         value ?? ''
