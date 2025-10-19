@@ -54,33 +54,7 @@ export class CircularRenderer extends Renderer<CircularData> {
     constructor(chart: Chart) {
         super(chart)
 
-        this.data.values = this.data.values.map(v => new Sector(v))
-
-        if (this.settings.enableOther) {
-            if (!this.settings.contextMenu)
-                this.settings.contextMenu = [] as DropdownItem[]
-            else
-                this.settings.contextMenu.push({
-                    isDivider: true
-                } as DropdownItem)
-
-            this.settings.contextMenu.push({
-                    text: TextResources.show,
-                    condition: data => data?._other,
-                    action: () => {
-                        new Modal(Decomposition.toChart<Sector>(this.settings, this.#other),
-                            {
-                                width: window.innerWidth * .8,
-                                height: window.innerHeight * .8
-                            } as DOMRect)
-                            .open()
-                    }
-                })
-        }
-
         this.#startAngle = Math.PI / 4
-
-        this.#pinned = []
 
         this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
     }
@@ -609,6 +583,32 @@ export class CircularRenderer extends Renderer<CircularData> {
 
     prepareSettings() {
         super.prepareSettings()
+
+        this.data.values = this.data.values.map(v => new Sector(v))
+
+        if (this.settings.enableOther) {
+            if (!this.settings.contextMenu)
+                this.settings.contextMenu = [] as DropdownItem[]
+            else
+                this.settings.contextMenu.push({
+                    isDivider: true
+                } as DropdownItem)
+
+            this.settings.contextMenu.push({
+                text: TextResources.show,
+                condition: data => data?._other,
+                action: () => {
+                    new Modal(Decomposition.toChart<Sector>(this.settings, this.#other),
+                        {
+                            width: window.innerWidth * .8,
+                            height: window.innerHeight * .8
+                        } as DOMRect)
+                        .open()
+                }
+            })
+        }
+
+        this.#pinned = []
 
         this.#isDonut = (this.data.innerRadius ?? 0) != 0
 

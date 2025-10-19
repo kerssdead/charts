@@ -12,6 +12,7 @@ import { TextResources } from 'static/TextResources'
 import * as Constants from 'static/constants/Index'
 import { Styles } from 'static/constants/Styles'
 import { AnimationType, Events, LegendPlace, RenderState } from 'static/Enums'
+import { ChartSettings } from './types/ChartSettings'
 
 export class Legend extends Renderable {
     #button: Button
@@ -29,19 +30,7 @@ export class Legend extends Renderable {
 
         this.#chart = chart
 
-        this.calculateSizes()
-
-        if (!this.settings.disableInteractions)
-            this.#button = new Button(this.canvas,
-                {
-                    x: -10,
-                    y: 12,
-                    text: TextResources.reset,
-                    action: () => {
-                        for (let value of this.settings.data.values)
-                            value.reset()
-                    }
-                })
+        this.prepareSettings()
     }
 
     render() {
@@ -248,6 +237,28 @@ export class Legend extends Renderable {
             x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
             y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width)) / 2
         }
+    }
+
+    applySettings(settings: ChartSettings) {
+        this.settings = settings
+
+        this.prepareSettings()
+    }
+
+    prepareSettings() {
+        this.calculateSizes()
+
+        if (!this.settings.disableInteractions)
+            this.#button = new Button(this.canvas,
+                {
+                    x: -10,
+                    y: 12,
+                    text: TextResources.reset,
+                    action: () => {
+                        for (let value of this.settings.data.values)
+                            value.reset()
+                    }
+                })
     }
 
     static getOffsetToCenter(values: Value[], width: number): number {

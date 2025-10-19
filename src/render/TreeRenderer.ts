@@ -22,8 +22,6 @@ export class TreeRenderer extends Renderer<TreeData> {
         super(chart)
 
         this.settings.enableLegend = false
-
-        this.data.values = this.data.values.map(v => new Sector(v))
     }
 
     render() {
@@ -152,7 +150,7 @@ export class TreeRenderer extends Renderer<TreeData> {
                 ctx.fillStyle = cell.color
 
                 const cellInit = this.state != RenderState.Init
-                    && !this.animations.contains(cell.id, AnimationType.Init)
+                                 && !this.animations.contains(cell.id, AnimationType.Init)
 
                 const cellIndex = i + cells.indexOf(cell) + (isLast && isSingle ? 1 : 0),
                     duration = 260
@@ -342,11 +340,15 @@ export class TreeRenderer extends Renderer<TreeData> {
     }
 
     prepareSettings() {
+        super.prepareSettings()
+
+        this.data.values = this.data.values.map(v => new Sector(v))
+
         this.data.values = this.data.values.filter(v => v.value > 0)
 
         this.data.values.sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
 
-        super.prepareSettings()
+        this.calculateColors(true)
 
         for (let item of this.data.values) {
             item.disabled = !item.value

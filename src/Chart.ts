@@ -19,21 +19,18 @@ export class Chart {
 
     #renderer: Renderer<Data>
 
-    #legend: Legend
+    #legend: Legend | undefined
 
     #observer: ResizeObserver
 
-    constructor(context: HTMLElement, settings: ChartSettings) {
-        this.#initialize(settings)
+    #currentType: ChartType
 
+    constructor(context: HTMLElement, settings: ChartSettings) {
         this.node = context
-        this.settings = settings
+
+        this.applySettings(settings)
 
         this.#applyStyles()
-        this.#prepareSettings()
-
-        if (settings.enableLegend)
-            this.#legend = new Legend(this)
 
         document.addEventListener(Events.VisibilityChanged, () => this.#renderer.resetMouse())
         window.addEventListener(Events.Blur, () => this.#renderer.resetMouse())
@@ -76,25 +73,63 @@ export class Chart {
         this.#initialize(this.settings)
     }
 
+    applySettings(settings: ChartSettings) {
+        this.settings = settings
+
+        this.reset()
+
+        const isNeedRestartRender = this.settings.type != this.#currentType
+
+        this.#prepareSettings()
+
+        if (this.settings.enableLegend && this.#legend != undefined)
+            this.#legend.applySettings(settings)
+
+        if (this.settings.enableLegend && this.#legend == undefined) {
+            this.#legend = new Legend(this)
+
+            this.#legend.render()
+        }
+
+        if (!this.settings.enableLegend && this.#legend != undefined) {
+            this.#legend.destroy()
+
+            this.#legend = undefined
+        }
+
+        if (isNeedRestartRender)
+            this.#renderer.render()
+    }
+
     #prepareSettings() {
         this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
 
-        switch (this.settings.type) {
-            case ChartType.Plot:
-                this.#renderer = new PlotRenderer(this)
-                break
+        if (this.#renderer == undefined || this.settings.type != this.#currentType) {
+            this.#renderer?.destroy()
 
-            case ChartType.Circular:
-                this.#renderer = new CircularRenderer(this)
-                break
+            switch (this.settings.type) {
+                case ChartType.Plot:
+                    this.#renderer = new PlotRenderer(this)
+                    this.#currentType = ChartType.Plot
+                    break
 
-            case ChartType.Gauge:
-                this.#renderer = new GaugeRenderer(this)
-                break
+                case ChartType.Circular:
+                    this.#renderer = new CircularRenderer(this)
+                    this.#currentType = ChartType.Circular
+                    break
 
-            case ChartType.TreeMap:
-                this.#renderer = new TreeRenderer(this)
-                break
+                case ChartType.Gauge:
+                    this.#renderer = new GaugeRenderer(this)
+                    this.#currentType = ChartType.Gauge
+                    break
+
+                case ChartType.TreeMap:
+                    this.#renderer = new TreeRenderer(this)
+                    this.#currentType = ChartType.TreeMap
+                    break
+            }
+        } else {
+            this.#renderer.applySettings(this.settings)
         }
 
         this.#renderer.prepareSettings()

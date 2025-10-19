@@ -42,8 +42,6 @@ export class Renderable {
 
         this.node.append(this.canvas)
 
-        this.tooltip = new Tooltip(this.canvas, this.settings)
-
         this.initAnimations()
     }
 
@@ -66,6 +64,8 @@ export class Renderable {
     }
 
     initAnimations() {
+        this.tooltip = new Tooltip(this.canvas, this.settings)
+
         this.canvasPosition = this.canvas.getBoundingClientRect()
 
         this.canvasPosition.x += scrollX
@@ -84,5 +84,9 @@ export class Renderable {
             }
             this.canvas.onmouseleave = () => this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
         }
+    }
+
+    destroy() {
+        this.canvas.remove()
     }
 }

@@ -52,43 +52,6 @@ export class PlotRenderer extends Renderer<PlotData> {
 
     constructor(chart: Chart) {
         super(chart)
-
-        this.data.values = this.data.values.map(v => new PlotSeries(v))
-
-        if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0) {
-            for (let series of this.data.values) {
-                for (let item of series.values) {
-                    const x = item.x
-                    item['x'] = item.y
-                    item['y'] = x
-                }
-
-                series.values.sort((a, b) => b.x > a.x ? 1 : -1)
-            }
-        }
-
-        this.#paddings = {
-            top: 30,
-            right: 40,
-            bottom: 50,
-            left: 80
-        }
-
-        if (this.data.simple)
-            this.#paddings = {
-                top: 10,
-                right: 10,
-                bottom: 10,
-                left: 10
-            }
-
-        if (this.settings.title)
-            this.#paddings.top += Constants.Values.titleOffset
-
-        this.tooltip = new Tooltip(this.canvas, this.settings)
-
-        this.#labelsX = new Map()
-        this.#labelsY = new Map()
     }
 
     render() {
@@ -1032,6 +995,20 @@ export class PlotRenderer extends Renderer<PlotData> {
     prepareSettings() {
         super.prepareSettings()
 
+        this.data.values = this.data.values.map(v => new PlotSeries(v))
+
+        if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0) {
+            for (let series of this.data.values) {
+                for (let item of series.values) {
+                    const x = item.x
+                    item['x'] = item.y
+                    item['y'] = x
+                }
+
+                series.values.sort((a, b) => b.x > a.x ? 1 : -1)
+            }
+        }
+
         for (let item of this.data.values) {
             item.disabled = !item.values
             item.type ??= PlotType.Line
@@ -1047,6 +1024,29 @@ export class PlotRenderer extends Renderer<PlotData> {
                 }
             }
         }
+
+        this.#paddings = {
+            top: 30,
+            right: 40,
+            bottom: 50,
+            left: 80
+        }
+
+        if (this.data.simple)
+            this.#paddings = {
+                top: 10,
+                right: 10,
+                bottom: 10,
+                left: 10
+            }
+
+        if (this.settings.title)
+            this.#paddings.top += Constants.Values.titleOffset
+
+        this.tooltip = new Tooltip(this.canvas, this.settings)
+
+        this.#labelsX = new Map()
+        this.#labelsY = new Map()
     }
 
     initDropdown() {

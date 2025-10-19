@@ -669,9 +669,7 @@
 
         let values = getValues(type, valuesCount, valuesType, pointsCount, plotType)
 
-        chart?.destroy()
-
-        chart = OCharts.chart(document.getElementById('chart'), {
+        const settings = {
             title: title,
             enableTooltip: tooltipEnabled,
             enableLegend: legendEnabled,
@@ -693,11 +691,12 @@
             templateId: customTooltip,
             contextMenu: contextMenu,
             isDarkThemeFunction: () => darkThemeEnabled
-        })
+        }
 
-        chart.reset()
-
-        chart.render()
+        if (chart === undefined)
+            chart = OCharts.chart(document.getElementById('chart'), settings)
+        else
+            chart.applySettings(settings)
 
         saveState()
     }

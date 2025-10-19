@@ -12,6 +12,7 @@ import { Canvas } from 'helpers/Canvas'
 import { TextStyles } from 'helpers/TextStyles'
 import { LegendPlace, RenderState } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
+import { ChartSettings } from '../ChartSettings'
 
 export class Renderer<T extends Data> extends Renderable {
     dropdown: Dropdown
@@ -24,8 +25,6 @@ export class Renderer<T extends Data> extends Renderable {
 
     constructor(chart: Chart) {
         super(chart)
-
-        this.data = <T>this.settings.data
 
         this.highlightItems = []
 
@@ -55,6 +54,8 @@ export class Renderer<T extends Data> extends Renderable {
     }
 
     prepareSettings() {
+        this.data = <T>this.settings.data
+
         const domRect = this.node.parentElement!.getBoundingClientRect()
 
         this.settings.minWidth = isNaN(+this.settings.width)
@@ -75,6 +76,22 @@ export class Renderer<T extends Data> extends Renderable {
         this.canvas.width = this.settings.width
         this.canvas.height = this.settings.height
 
+        for (let item of this.settings.data.values) {
+            item.id = Helper.guid()
+            item.label ??= TextResources.noLabel
+
+            if (item.label.length > 30)
+                item.label = item.label.slice(0, 27) + '...'
+        }
+
+        this.calculateColors()
+
+        for (let item of this.settings.contextMenu ?? [])
+            if (item.id != undefined)
+                item.action = data => this.node.dispatchEvent(new CustomEvent(item.id ?? '', { detail: data }))
+    }
+
+    calculateColors(force: boolean = false) {
         const baseColor = this.settings.baseColor ?? Helper.randomColor()
         let adjustStep = Math.round(100 / this.settings.data.values.length),
             adjustAmount = -50
@@ -82,18 +99,9 @@ export class Renderer<T extends Data> extends Renderable {
         if (adjustStep <= 1)
             adjustStep = 1
 
-        for (let item of this.settings.data.values) {
-            item.id = Helper.guid()
-            item.color ??= Helper.adjustColor(baseColor, adjustAmount += adjustStep)
-            item.label ??= TextResources.noLabel
-
-            if (item.label.length > 30)
-                item.label = item.label.slice(0, 27) + '...'
-        }
-
-        for (let item of this.settings.contextMenu ?? [])
-            if (item.id != undefined)
-                item.action = data => this.node.dispatchEvent(new CustomEvent(item.id ?? '', { detail: data }))
+        for (let item of this.settings.data.values)
+            if (item.color == undefined || force)
+                item.color = Helper.adjustColor(baseColor, adjustAmount += adjustStep)
     }
 
     initDropdown() {
@@ -202,5 +210,9 @@ export class Renderer<T extends Data> extends Renderable {
             x: event.clientX - this.canvasPosition.x + scrollX,
             y: event.clientY - this.canvasPosition.y + scrollY
         }
+    }
+
+    applySettings(settings: ChartSettings) {
+        this.settings = settings
     }
 }
