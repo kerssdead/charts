@@ -15,7 +15,7 @@ import * as Constants from 'static/constants/Index'
 import { ChartSettings } from '../ChartSettings'
 
 export class Renderer<T extends Data> extends Renderable {
-    dropdown: Dropdown
+    dropdown: Dropdown | undefined
 
     data: T
 
