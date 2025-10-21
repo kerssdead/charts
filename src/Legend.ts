@@ -246,7 +246,7 @@ export class Legend extends Renderable {
     }
 
     prepareSettings() {
-        this.calculateSizes()
+        this.resize()
 
         if (!this.settings.disableInteractions)
             this.#button = new Button(this.canvas,
