@@ -5,25 +5,19 @@
 
 import { expect, test } from '@playwright/test'
 import { Utils } from './utils/Utils'
+import Settings from './utils/Settings'
+import { ChartType } from '../src/static/Enums'
 
 test('Values with same names should decomposed to separate rows', async ({ page }) => {
-    await Utils.goto(page)
-
-    const chartType = page.locator('#chart-type'),
-        customLabel = page.locator('#custom-label'),
-        valuesCount = page.locator('#values-count')
+    await Utils.setup(page)
 
     const count = Math.ceil(Math.random() * 10)
 
-    await valuesCount.fill(count.toString())
-    await customLabel.fill('Same')
-    await chartType.selectOption('0')
+    await Settings.valuesCount(count)
+    await Settings.customLabel('Same')
+    await Settings.chartType(ChartType.Plot)
 
-    const chart = page.locator('#chart')
-
-    await chart.scrollIntoViewIfNeeded()
-
-    await chart.click()
+    await Utils.scrollToCanvas()
 
     await page.mouse.click(1084, 20)
 

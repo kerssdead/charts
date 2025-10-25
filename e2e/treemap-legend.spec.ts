@@ -5,16 +5,15 @@
 
 import { expect, test } from '@playwright/test'
 import { Utils } from './utils/Utils'
+import Settings from './utils/Settings'
+import { ChartType } from '../src/static/Enums'
 
 test('Tree Map should not has legend', async ({ page }) => {
-    await Utils.goto(page)
+    await Utils.setup(page)
 
-    const legend = page.locator('#legend'),
-        chartType = page.locator('#chart-type')
+    await Settings.enableLegend()
+    await Settings.chartType(ChartType.TreeMap)
 
-    await legend.click()
-
-    await chartType.selectOption('3')
-
-    expect(await page.locator('#chart >> *').count()).toBe(1)
+    expect(await page.locator('#chart >> *').count())
+        .toBe(1)
 })
