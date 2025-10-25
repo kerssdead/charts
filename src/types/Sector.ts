@@ -5,7 +5,7 @@ import { AnimationType } from '../static/Enums'
 import { LineStyles } from './LineStyles'
 
 export class Sector extends Value {
-    canRenderLabel: boolean
+    canRenderLabel: boolean | undefined
 
     isMouseInside: boolean
 

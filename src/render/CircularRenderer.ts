@@ -279,7 +279,7 @@ export class CircularRenderer extends Renderer<CircularData> {
         if (sector.current == 0)
             return sector.canRenderLabel = false
 
-        if (sector.state == AnimationType.None)
+        if (sector.state == AnimationType.None && sector.canRenderLabel)
             return sector.canRenderLabel
 
         const dir = sector.labelPoints[0].args[0] < sector.labelPoints[1].args[0] ? 1 : -1
@@ -799,7 +799,10 @@ export class CircularRenderer extends Renderer<CircularData> {
         for (let sector of this.data.values) {
             sector = this.calculatePoint(sector)
 
-            sector.state = AnimationType.Init
+            sector.textColor = Theme.text
+            sector.state = this.settings.disableInitAnimation
+                           ? AnimationType.None
+                           : AnimationType.Init
         }
     }
 
