@@ -1,7 +1,7 @@
 {
   "name": "charts",
-  "version": "1.0.21",
-  "description": "Javascript Canvas Charts",
+  "version": "1.0.22",
+  "description": "Typescript Canvas Charts",
   "jsdelivr": "./ch.in.js",
   "repository": "https://github.com/kerssdead/charts",
   "bugs": {
