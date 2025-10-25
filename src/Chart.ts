@@ -4,13 +4,13 @@ import { Data } from 'types/interfaces/Data'
 import { Legend } from 'Legend'
 import { Value } from 'types/base/Value'
 import { PlotRenderer } from 'render/PlotRenderer'
-import { CircularRenderer } from 'render/CircularRenderer'
 import { GaugeRenderer } from 'render/GaugeRenderer'
 import { TreeRenderer } from 'render/TreeRenderer'
 import { Animations } from 'Animations'
 import { Theme } from 'Theme'
 import { Styles } from 'static/constants/Styles'
 import { ChartType, Events } from 'static/Enums'
+import { CircularRenderer } from 'render/CircularRenderer'
 
 export class Chart {
     node: HTMLElement
@@ -45,13 +45,7 @@ export class Chart {
         this.#renderer.render()
         this.#legend?.render()
 
-        this.#observer = new ResizeObserver(() => {
-            if (this.#renderer.canvas)
-                this.#resize()
-            else
-                this.destroy()
-        })
-        this.#observer.observe(this.node)
+        this.#initializeObserver()
 
         this.#refresh()
     }
@@ -99,6 +93,8 @@ export class Chart {
 
         if (isNeedRestartRender)
             this.#renderer.render()
+
+        this.#initializeObserver()
     }
 
     #prepareSettings() {
@@ -166,5 +162,18 @@ export class Chart {
         this.node.style.alignItems = Styles.AlignItems.Center
         this.node.style.justifyContent = Styles.JustifyContent.Center
         this.node.style.height = '100%'
+    }
+
+    #initializeObserver() {
+        if (this.#observer != undefined)
+            return
+
+        this.#observer = new ResizeObserver(() => {
+            if (this.#renderer.canvas)
+                this.#resize()
+            else
+                this.destroy()
+        })
+        this.#observer.observe(this.node)
     }
 }

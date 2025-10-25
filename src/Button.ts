@@ -52,7 +52,7 @@ export class Button {
                 clickEvent = undefined
             }
 
-            this.animations.add('animation-button',
+            this.animations.handle('animation-button',
                 AnimationType.MouseOver,
                 {
                     duration: 300,
@@ -61,7 +61,7 @@ export class Button {
                     }
                 })
         } else {
-            this.animations.add('animation-button',
+            this.animations.handle('animation-button',
                 AnimationType.MouseLeave,
                 {
                     timer: Constants.Dates.minDate,

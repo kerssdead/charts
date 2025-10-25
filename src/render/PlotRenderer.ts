@@ -116,7 +116,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                 }
 
                 if (anyHighlight && !this.highlightItems.includes(series.id)) {
-                    this.animations.add(
+                    this.animations.handle(
                         series.id,
                         AnimationType.AnotherItemOver,
                         {
@@ -127,7 +127,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                         }
                     )
                 } else if (!anyHighlight) {
-                    this.animations.add(
+                    this.animations.handle(
                         series.id,
                         AnimationType.AnotherItemLeave,
                         {
@@ -184,7 +184,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                         const pointDuration = 1500 / series.values.length * 1.2
 
                         if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init)) {
-                            this.animations.add(value.id,
+                            this.animations.handle(value.id,
                                 AnimationType.Init,
                                 {
                                     timer: new Date(Date.now()).addMilliseconds(pointDuration * (index - 1)),
@@ -244,7 +244,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                         ctx.moveTo(this.#paddings.left, yValue)
 
                         if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init))
-                            this.animations.add(value.id,
+                            this.animations.handle(value.id,
                                 AnimationType.Init,
                                 {
                                     duration: 1500,
@@ -271,7 +271,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                         ctx.beginPath()
 
                         if (this.state == RenderState.Init || this.animations.contains(value.id + columnsIndex, AnimationType.Init)) {
-                            this.animations.add(value.id + columnsIndex,
+                            this.animations.handle(value.id + columnsIndex,
                                 AnimationType.Init,
                                 {
                                     duration: 800,
@@ -332,7 +332,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                         const seriesHeight = (series.width * this.#y.step / 100) / barsCount
 
                         if (this.state == RenderState.Init || this.animations.contains(value.id + barsIndex, AnimationType.Init)) {
-                            this.animations.add(value.id + barsIndex,
+                            this.animations.handle(value.id + barsIndex,
                                 AnimationType.Init,
                                 {
                                     duration: 800,
@@ -387,7 +387,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5)
 
                         if (this.state == RenderState.Init || this.animations.contains(value.id + index, AnimationType.Init)) {
-                            this.animations.add(value.id + index,
+                            this.animations.handle(value.id + index,
                                 AnimationType.Init,
                                 {
                                     duration: 800,

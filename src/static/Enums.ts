@@ -1,4 +1,6 @@
 export enum AnimationType {
+    None,
+
     MouseOver,
 
     MouseLeave,
@@ -106,4 +108,12 @@ export enum RenderState {
 
 export enum Icon {
     ThreeLines = '☰'
+}
+
+export enum DrawPointType {
+    Move,
+
+    Line,
+
+    QuadraticCurve
 }

@@ -1,7 +1,11 @@
 export class Value {
     id: string
 
+    baseColor: string
+
     color: string
+
+    textColor: string
 
     label: string
 

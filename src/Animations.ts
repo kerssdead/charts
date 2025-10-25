@@ -1,5 +1,6 @@
 import { AnimationItem } from 'types/AnimationItem'
 import { AnimationType } from 'static/Enums'
+import * as Constants from 'static/constants/Index'
 
 export class Animations {
     #queue: Map<string, AnimationItem>
@@ -10,7 +11,7 @@ export class Animations {
         this.#queue = new Map()
     }
 
-    add(id: string, type: AnimationType, value: AnimationItem) {
+    handle(id: string, type: AnimationType, value: AnimationItem) {
         const key = this.#getKey(id, type)
         if (!this.#queue.has(key))
             this.#queue.set(key, value)
@@ -32,6 +33,38 @@ export class Animations {
 
     clear() {
         this.#queue.forEach((_value, key) => !this.#is(key, AnimationType.Init) && this.#queue.delete(key))
+    }
+
+    reverse(id: string, type: AnimationType) {
+        if (this.contains(id, type)) {
+            let item = <AnimationItem>this.#queue.get(this.#getKey(id, type)),
+                stamp = new Date(),
+                passed = stamp.getTime() - (item.timer ?? stamp).getTime()
+
+            let reversedPassed = passed > item.duration ? 1 : item.duration - passed
+
+            item.timer = new Date(new Date().getTime() - reversedPassed)
+            item.backward = !item.backward
+        }
+    }
+
+    isBackward(id: string, type: AnimationType) {
+        return (this.#queue.get(this.#getKey(id, type)) as AnimationItem)?.backward ?? false
+    }
+
+    isEnd(id: string, type: AnimationType) {
+        let item = <AnimationItem>this.#queue.get(this.#getKey(id, type)),
+            stamp = new Date(),
+            passed = stamp.getTime() - (item.timer ?? stamp).getTime()
+
+        return passed >= item.duration
+    }
+
+    end(id: string, type: AnimationType) {
+        let item = <AnimationItem>this.#queue.get(this.#getKey(id, type))
+
+        if (item)
+            item.timer = Constants.Dates.minDate
     }
 
     #process(key: string) {

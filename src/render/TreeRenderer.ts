@@ -166,7 +166,7 @@ export class TreeRenderer extends Renderer<TreeData> {
                 const initAnimationDuration = duration - duration * cellIndex / (this.data.values.length + 1)
 
                 if (!cellInit) {
-                    this.animations.add(cell.id,
+                    this.animations.handle(cell.id,
                         AnimationType.Init,
                         {
                             duration: getPrev(),
@@ -222,7 +222,7 @@ export class TreeRenderer extends Renderer<TreeData> {
                         tooltipCell = cell
                         contextMenuData = cell.data
 
-                        this.animations.add(cell.id,
+                        this.animations.handle(cell.id,
                             AnimationType.MouseOver,
                             {
                                 duration: Constants.Animations.tree,
@@ -232,7 +232,7 @@ export class TreeRenderer extends Renderer<TreeData> {
                                 }
                             })
                     } else {
-                        this.animations.add(cell.id,
+                        this.animations.handle(cell.id,
                             AnimationType.MouseLeave,
                             {
                                 timer: Constants.Dates.minDate,

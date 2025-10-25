@@ -101,7 +101,7 @@ export class Legend extends Renderable {
             ctx.fill()
         }
 
-        this.animations.add(value.id,
+        this.animations.handle(value.id,
             AnimationType.Click,
             {
                 duration: Constants.Animations.legend,
@@ -123,7 +123,7 @@ export class Legend extends Renderable {
             })
 
         if (isHover(this.onMouseMoveEvent)) {
-            this.animations.add(value.id,
+            this.animations.handle(value.id,
                 AnimationType.MouseOver,
                 {
                     duration: Constants.Animations.button,
@@ -140,7 +140,7 @@ export class Legend extends Renderable {
 
             this.canvas.style.cursor = Styles.Cursor.Pointer
         } else {
-            this.animations.add(value.id,
+            this.animations.handle(value.id,
                 AnimationType.MouseLeave,
                 {
                     timer: Constants.Dates.minDate,

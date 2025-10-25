@@ -69,7 +69,7 @@ export class Dropdown {
                 }
 
                 if (!this.isActive)
-                    this.animations.add('animation-dropdown',
+                    this.animations.handle('animation-dropdown',
                         AnimationType.MouseOver,
                         {
                             duration: 300,
@@ -83,7 +83,7 @@ export class Dropdown {
                 this.#canvas.style.cursor = Styles.Cursor.Default
 
                 if (!this.isActive)
-                    this.animations.add('animation-dropdown',
+                    this.animations.handle('animation-dropdown',
                         AnimationType.MouseLeave,
                         {
                             timer: Constants.Dates.minDate,
@@ -197,7 +197,7 @@ export class Dropdown {
                 }
 
                 if (this.#isOnButton(moveEvent, x, y, maxWidth, 20)) {
-                    this.animations.add(animationKey,
+                    this.animations.handle(animationKey,
                         AnimationType.MouseOver,
                         {
                             duration: 300,
@@ -215,7 +215,7 @@ export class Dropdown {
                         this.isActive = false
                     }
                 } else {
-                    this.animations.add(animationKey,
+                    this.animations.handle(animationKey,
                         AnimationType.MouseLeave,
                         {
                             timer: Constants.Dates.minDate,

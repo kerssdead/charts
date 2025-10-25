@@ -52,7 +52,7 @@ export class GaugeRenderer extends Renderer<GaugeData> {
         const value = this.data.values[0] ?? { id: Helper.guid() }
 
         if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init))
-            this.animations.add(value.id,
+            this.animations.handle(value.id,
                 AnimationType.Init,
                 {
                     duration: 450,
