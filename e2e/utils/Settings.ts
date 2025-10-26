@@ -88,6 +88,14 @@ class Settings {
     static enableTooltip(value: boolean = true) {
         return Settings.check(Selectors.tooltip, value)
     }
+
+    static width(value: number) {
+        return Settings.fill(Selectors.width, value)
+    }
+
+    static height(value: number) {
+        return Settings.fill(Selectors.height, value)
+    }
 }
 
 export default Settings

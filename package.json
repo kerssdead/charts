@@ -18,7 +18,8 @@
     "watch": "webpack --watch",
     "test": "jest",
     "e2e": "npx playwright test",
-    "e2e-ui": "npx playwright test --ui"
+    "e2e-ui": "npx playwright test --ui",
+    "test-all" : "jest && npx playwright test"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

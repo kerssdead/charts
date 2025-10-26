@@ -34,4 +34,8 @@ export class Selectors {
     static treePadding = '#tree-padding'
 
     static tooltip = '#tooltip'
+
+    static width = '#width'
+
+    static height = '#height'
 }

@@ -3,7 +3,7 @@ import { Clip } from './Clip'
 
 export class Screenshot {
     static async get(page: Page, clip?: Clip) {
-        const chart = page.locator('#chart')
+        const chart = page.locator('.chart-container')
 
         await chart.scrollIntoViewIfNeeded()
 
