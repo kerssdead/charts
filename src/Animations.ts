@@ -93,7 +93,7 @@ export class Animations {
     }
 
     static initializeTransitions() {
-        const valuesCount = 30000,
+        const valuesCount = 22820,
             offset = .23,
             p0 = { x: 0, y: 0 },
             p1 = { x: 1 - offset, y: offset },
