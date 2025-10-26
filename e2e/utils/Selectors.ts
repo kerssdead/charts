@@ -1,4 +1,4 @@
-export class Selectors {
+class Selectors {
     static seed = '#seed'
 
     static valuesCount = '#values-count'
@@ -39,3 +39,5 @@ export class Selectors {
 
     static height = '#height'
 }
+
+export default Selectors

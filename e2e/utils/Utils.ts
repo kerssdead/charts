@@ -1,12 +1,12 @@
 import { expect, Page } from '@playwright/test'
-import { Selectors } from './Selectors'
+import Selectors from './Selectors'
 import { Screenshot } from './Screenshot'
-import { Clip } from './Clip'
+import Clip from './Clip'
 import Settings from './Settings'
 
 type BrowserName = 'chromium' | 'firefox' | 'webkit'
 
-export class Utils {
+class Utils {
     static page: Page
 
     static browserName: BrowserName | undefined
@@ -46,3 +46,5 @@ export class Utils {
         await Utils.goto()
     }
 }
+
+export default Utils

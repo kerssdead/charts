@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test'
-import { Selectors } from './Selectors'
+import Selectors from './Selectors'
 import { ChartType, PlotAxisType, PlotType } from '../../src/static/Enums'
 
 class Settings {

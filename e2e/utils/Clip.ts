@@ -1,4 +1,4 @@
-export class Clip {
+class Clip {
     x?: number
 
     y?: number
@@ -7,3 +7,5 @@ export class Clip {
 
     height?: number
 }
+
+export default Clip

@@ -4,7 +4,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { Utils } from './utils/Utils'
+import Utils from './utils/Utils'
 import Settings from './utils/Settings'
 import { ChartType } from '../src/static/Enums'
 
