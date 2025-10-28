@@ -752,7 +752,8 @@ export class CircularRenderer extends Renderer<CircularData> {
                         {
                             width: window.innerWidth * .8,
                             height: window.innerHeight * .8
-                        } as DOMRect)
+                        } as DOMRect,
+                        TextResources.other)
                         .open()
                 }
             })
@@ -833,7 +834,10 @@ export class CircularRenderer extends Renderer<CircularData> {
                     {
                         text: TextResources.decomposeToTable,
                         action: () => {
-                            new Modal(Decomposition.toTable(CircularData.getRows(this.data))).open()
+                            new Modal(Decomposition.toTable(CircularData.getRows(this.data)),
+                                undefined,
+                                this.settings.title ?? TextResources.dataAsTable)
+                                .open()
                         }
                     }
                 ]

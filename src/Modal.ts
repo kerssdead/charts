@@ -1,26 +1,26 @@
 import { Errors } from 'helpers/Errors'
-import { ErrorType, Tag } from 'static/Enums'
+import { ErrorType, Icon, Tag } from 'static/Enums'
 
 export class Modal {
     modal: HTMLDialogElement | undefined
 
     #content: HTMLDivElement | undefined
 
-    constructor(content?: HTMLElement, size?: DOMRect) {
+    constructor(content?: HTMLElement, size?: DOMRect, title?: string) {
         this.modal = document.createElement(Tag.Dialog)
 
-        this.modal.classList.add('o-modal')
+        this.modal.classList.add(ModalClasses.modal)
 
         if (size) {
-            this.modal.style.width = `${size.width}px`
-            this.modal.style.height = `${size.height}px`
+            this.modal.style.width = `${ size.width }px`
+            this.modal.style.height = `${ size.height }px`
         }
 
         this.modal.oncancel = () => this.close()
 
         document.body.appendChild(this.modal)
 
-        this.#setHeader()
+        this.#setHeader(title)
 
         this.#setContent(content)
     }
@@ -41,15 +41,27 @@ export class Modal {
         this.modal = undefined
     }
 
-    #setHeader() {
+    #setHeader(title: string | undefined) {
         Errors.throwIsUndefined(this.modal, ErrorType.ElementNotExist)
 
-        let closeButton = document.createElement('button')
+        let titleSpan = document.createElement(Tag.Span)
 
-        closeButton.classList.add('o-modal-close')
-        closeButton.innerHTML = 'x'
+        titleSpan.classList.add(ModalClasses.title)
+        titleSpan.innerHTML = title ?? ''
 
-        this.modal!.appendChild(closeButton)
+        let closeButton = document.createElement(Tag.Button)
+
+        closeButton.classList.add(ModalClasses.close)
+        closeButton.innerHTML = Icon.Close
+
+        let header = document.createElement(Tag.Div)
+
+        header.classList.add(ModalClasses.header)
+
+        header.appendChild(titleSpan)
+        header.appendChild(closeButton)
+
+        this.modal!.appendChild(header)
 
         closeButton.onclick = () => this.close()
     }
@@ -58,7 +70,7 @@ export class Modal {
         if (this.#content == undefined) {
             this.#content = document.createElement(Tag.Div)
 
-            this.#content.classList.add('o-modal-content')
+            this.#content.classList.add(ModalClasses.content)
 
             this.modal?.appendChild(this.#content)
         }
@@ -66,4 +78,16 @@ export class Modal {
         if (content != undefined)
             this.#content.appendChild(content)
     }
+}
+
+class ModalClasses {
+    static modal = 'o-modal'
+
+    static title = 'o-modal-title'
+
+    static close = 'o-modal-close'
+
+    static header = 'o-modal-header'
+
+    static content = 'o-modal-content'
 }

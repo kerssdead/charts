@@ -27,6 +27,6 @@ test('Values with same names should decomposed to separate rows', async ({ page 
 
     await page.waitForSelector('dialog')
 
-    expect(await page.locator('dialog tbody tr').count())
+    expect(await page.locator('dialog .o-table .o-table-row').count())
         .toBe(count)
 })

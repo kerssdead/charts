@@ -77,7 +77,7 @@ export class Export {
         })
     }
 
-    static asCsv(table: HTMLTableElement, title: string) {
+    static asCsv(table: HTMLElement, title: string) {
         let rows = table.querySelectorAll('tr'),
             csv = []
 

@@ -1,55 +1,697 @@
 .o-modal {
-    max-width:  80vw;
-    border-radius: 8px;
-    padding: 8px;
-    border: 2px solid #aeaeae;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  max-width: 80vw;
+  border-radius: 6px;
+  padding: 12px;
+  border: 2px solid #aeaeae;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .o-modal::backdrop {
-    background-color: #000000;
-    opacity: .2;
+  background-color: #000000;
+  opacity: 0.2;
 }
 
-.o-modal-close {
-    cursor: pointer;
-    position: sticky;
-    margin-left: auto;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    width: fit-content;
+.o-modal-header {
+  display: flex;
+  position: sticky;
+  top: 0;
+  gap: 12px;
+}
+
+.o-modal-header > .o-modal-title {
+  flex-grow: 1;
+}
+
+.o-modal-header > .o-modal-close {
+  cursor: pointer;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: fit-content;
 }
 
 .o-modal-content {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
 }
+
 .o-table {
-    border-collapse: collapse;
+  --o-header-color: #e9e9e9;
+  --o-row-hover-color: #f2f2f2;
 }
 
-.o-table th,
-.o-table td {
-    border: 1px solid black;
+.o-table {
+  border: 1px solid var(--o-header-color);
+  border-radius: 6px;
+  overflow: auto;
 }
 
-.o-table td {
-    padding: 2px 6px;
-    text-align: center;
+.o-table .o-table-row,
+.o-table .o-table-row > div,
+.o-table .o-table-header > div,
+.o-table .o-table-footer > div {
+  transition: 0.2s ease-in-out all;
 }
 
-.o-table tr:hover {
-    background-color: #f1f1f1;
+.o-table .o-table-row:hover {
+  background-color: var(--o-row-hover-color);
 }
 
-.o-table-label {
-    white-space: nowrap;
-    text-align: left !important;
+.o-table .o-table-header {
+  background: var(--o-header-color);
+  color: color-mix(in srgb, var(--o-header-color), #000 85%);
+  font-weight: 600;
 }
 
+.o-table .o-table-header,
+.o-table .o-table-body .o-table-row,
+.o-table .o-table-footer {
+  display: flex;
+  width: fit-content;
+}
 
-/*# sourceMappingURL=main.css.map*/
+.o-table .o-table-header > div,
+.o-table .o-table-body .o-table-row > div,
+.o-table .o-table-footer > div {
+  flex: 1;
+  flex-shrink: 0;
+  white-space: nowrap;
+  text-align: left;
+  padding: 2px 6px;
+  flex-basis: 10vw;
+}
+
+.o-table .o-table-header > div,
+.o-table .o-table-body .o-table-row > div {
+  border-bottom: 1px solid var(--o-header-color);
+}
+
+.o-table .o-table-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.o-table:has(.o-table-row > div:nth-child(1):hover) .o-table-row > div:nth-child(1),
+.o-table:has(.o-table-row > div:nth-child(1):hover) .o-table-header > div:nth-child(1),
+.o-table:has(.o-table-row > div:nth-child(1):hover) .o-table-footer > div:nth-child(1) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(2):hover) .o-table-row > div:nth-child(2),
+.o-table:has(.o-table-row > div:nth-child(2):hover) .o-table-header > div:nth-child(2),
+.o-table:has(.o-table-row > div:nth-child(2):hover) .o-table-footer > div:nth-child(2) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(3):hover) .o-table-row > div:nth-child(3),
+.o-table:has(.o-table-row > div:nth-child(3):hover) .o-table-header > div:nth-child(3),
+.o-table:has(.o-table-row > div:nth-child(3):hover) .o-table-footer > div:nth-child(3) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(4):hover) .o-table-row > div:nth-child(4),
+.o-table:has(.o-table-row > div:nth-child(4):hover) .o-table-header > div:nth-child(4),
+.o-table:has(.o-table-row > div:nth-child(4):hover) .o-table-footer > div:nth-child(4) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(5):hover) .o-table-row > div:nth-child(5),
+.o-table:has(.o-table-row > div:nth-child(5):hover) .o-table-header > div:nth-child(5),
+.o-table:has(.o-table-row > div:nth-child(5):hover) .o-table-footer > div:nth-child(5) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(6):hover) .o-table-row > div:nth-child(6),
+.o-table:has(.o-table-row > div:nth-child(6):hover) .o-table-header > div:nth-child(6),
+.o-table:has(.o-table-row > div:nth-child(6):hover) .o-table-footer > div:nth-child(6) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(7):hover) .o-table-row > div:nth-child(7),
+.o-table:has(.o-table-row > div:nth-child(7):hover) .o-table-header > div:nth-child(7),
+.o-table:has(.o-table-row > div:nth-child(7):hover) .o-table-footer > div:nth-child(7) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(8):hover) .o-table-row > div:nth-child(8),
+.o-table:has(.o-table-row > div:nth-child(8):hover) .o-table-header > div:nth-child(8),
+.o-table:has(.o-table-row > div:nth-child(8):hover) .o-table-footer > div:nth-child(8) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(9):hover) .o-table-row > div:nth-child(9),
+.o-table:has(.o-table-row > div:nth-child(9):hover) .o-table-header > div:nth-child(9),
+.o-table:has(.o-table-row > div:nth-child(9):hover) .o-table-footer > div:nth-child(9) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(10):hover) .o-table-row > div:nth-child(10),
+.o-table:has(.o-table-row > div:nth-child(10):hover) .o-table-header > div:nth-child(10),
+.o-table:has(.o-table-row > div:nth-child(10):hover) .o-table-footer > div:nth-child(10) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(11):hover) .o-table-row > div:nth-child(11),
+.o-table:has(.o-table-row > div:nth-child(11):hover) .o-table-header > div:nth-child(11),
+.o-table:has(.o-table-row > div:nth-child(11):hover) .o-table-footer > div:nth-child(11) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(12):hover) .o-table-row > div:nth-child(12),
+.o-table:has(.o-table-row > div:nth-child(12):hover) .o-table-header > div:nth-child(12),
+.o-table:has(.o-table-row > div:nth-child(12):hover) .o-table-footer > div:nth-child(12) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(13):hover) .o-table-row > div:nth-child(13),
+.o-table:has(.o-table-row > div:nth-child(13):hover) .o-table-header > div:nth-child(13),
+.o-table:has(.o-table-row > div:nth-child(13):hover) .o-table-footer > div:nth-child(13) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(14):hover) .o-table-row > div:nth-child(14),
+.o-table:has(.o-table-row > div:nth-child(14):hover) .o-table-header > div:nth-child(14),
+.o-table:has(.o-table-row > div:nth-child(14):hover) .o-table-footer > div:nth-child(14) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(15):hover) .o-table-row > div:nth-child(15),
+.o-table:has(.o-table-row > div:nth-child(15):hover) .o-table-header > div:nth-child(15),
+.o-table:has(.o-table-row > div:nth-child(15):hover) .o-table-footer > div:nth-child(15) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(16):hover) .o-table-row > div:nth-child(16),
+.o-table:has(.o-table-row > div:nth-child(16):hover) .o-table-header > div:nth-child(16),
+.o-table:has(.o-table-row > div:nth-child(16):hover) .o-table-footer > div:nth-child(16) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(17):hover) .o-table-row > div:nth-child(17),
+.o-table:has(.o-table-row > div:nth-child(17):hover) .o-table-header > div:nth-child(17),
+.o-table:has(.o-table-row > div:nth-child(17):hover) .o-table-footer > div:nth-child(17) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(18):hover) .o-table-row > div:nth-child(18),
+.o-table:has(.o-table-row > div:nth-child(18):hover) .o-table-header > div:nth-child(18),
+.o-table:has(.o-table-row > div:nth-child(18):hover) .o-table-footer > div:nth-child(18) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(19):hover) .o-table-row > div:nth-child(19),
+.o-table:has(.o-table-row > div:nth-child(19):hover) .o-table-header > div:nth-child(19),
+.o-table:has(.o-table-row > div:nth-child(19):hover) .o-table-footer > div:nth-child(19) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(20):hover) .o-table-row > div:nth-child(20),
+.o-table:has(.o-table-row > div:nth-child(20):hover) .o-table-header > div:nth-child(20),
+.o-table:has(.o-table-row > div:nth-child(20):hover) .o-table-footer > div:nth-child(20) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(21):hover) .o-table-row > div:nth-child(21),
+.o-table:has(.o-table-row > div:nth-child(21):hover) .o-table-header > div:nth-child(21),
+.o-table:has(.o-table-row > div:nth-child(21):hover) .o-table-footer > div:nth-child(21) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(22):hover) .o-table-row > div:nth-child(22),
+.o-table:has(.o-table-row > div:nth-child(22):hover) .o-table-header > div:nth-child(22),
+.o-table:has(.o-table-row > div:nth-child(22):hover) .o-table-footer > div:nth-child(22) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(23):hover) .o-table-row > div:nth-child(23),
+.o-table:has(.o-table-row > div:nth-child(23):hover) .o-table-header > div:nth-child(23),
+.o-table:has(.o-table-row > div:nth-child(23):hover) .o-table-footer > div:nth-child(23) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(24):hover) .o-table-row > div:nth-child(24),
+.o-table:has(.o-table-row > div:nth-child(24):hover) .o-table-header > div:nth-child(24),
+.o-table:has(.o-table-row > div:nth-child(24):hover) .o-table-footer > div:nth-child(24) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(25):hover) .o-table-row > div:nth-child(25),
+.o-table:has(.o-table-row > div:nth-child(25):hover) .o-table-header > div:nth-child(25),
+.o-table:has(.o-table-row > div:nth-child(25):hover) .o-table-footer > div:nth-child(25) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(26):hover) .o-table-row > div:nth-child(26),
+.o-table:has(.o-table-row > div:nth-child(26):hover) .o-table-header > div:nth-child(26),
+.o-table:has(.o-table-row > div:nth-child(26):hover) .o-table-footer > div:nth-child(26) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(27):hover) .o-table-row > div:nth-child(27),
+.o-table:has(.o-table-row > div:nth-child(27):hover) .o-table-header > div:nth-child(27),
+.o-table:has(.o-table-row > div:nth-child(27):hover) .o-table-footer > div:nth-child(27) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(28):hover) .o-table-row > div:nth-child(28),
+.o-table:has(.o-table-row > div:nth-child(28):hover) .o-table-header > div:nth-child(28),
+.o-table:has(.o-table-row > div:nth-child(28):hover) .o-table-footer > div:nth-child(28) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(29):hover) .o-table-row > div:nth-child(29),
+.o-table:has(.o-table-row > div:nth-child(29):hover) .o-table-header > div:nth-child(29),
+.o-table:has(.o-table-row > div:nth-child(29):hover) .o-table-footer > div:nth-child(29) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(30):hover) .o-table-row > div:nth-child(30),
+.o-table:has(.o-table-row > div:nth-child(30):hover) .o-table-header > div:nth-child(30),
+.o-table:has(.o-table-row > div:nth-child(30):hover) .o-table-footer > div:nth-child(30) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(31):hover) .o-table-row > div:nth-child(31),
+.o-table:has(.o-table-row > div:nth-child(31):hover) .o-table-header > div:nth-child(31),
+.o-table:has(.o-table-row > div:nth-child(31):hover) .o-table-footer > div:nth-child(31) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(32):hover) .o-table-row > div:nth-child(32),
+.o-table:has(.o-table-row > div:nth-child(32):hover) .o-table-header > div:nth-child(32),
+.o-table:has(.o-table-row > div:nth-child(32):hover) .o-table-footer > div:nth-child(32) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(33):hover) .o-table-row > div:nth-child(33),
+.o-table:has(.o-table-row > div:nth-child(33):hover) .o-table-header > div:nth-child(33),
+.o-table:has(.o-table-row > div:nth-child(33):hover) .o-table-footer > div:nth-child(33) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(34):hover) .o-table-row > div:nth-child(34),
+.o-table:has(.o-table-row > div:nth-child(34):hover) .o-table-header > div:nth-child(34),
+.o-table:has(.o-table-row > div:nth-child(34):hover) .o-table-footer > div:nth-child(34) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(35):hover) .o-table-row > div:nth-child(35),
+.o-table:has(.o-table-row > div:nth-child(35):hover) .o-table-header > div:nth-child(35),
+.o-table:has(.o-table-row > div:nth-child(35):hover) .o-table-footer > div:nth-child(35) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(36):hover) .o-table-row > div:nth-child(36),
+.o-table:has(.o-table-row > div:nth-child(36):hover) .o-table-header > div:nth-child(36),
+.o-table:has(.o-table-row > div:nth-child(36):hover) .o-table-footer > div:nth-child(36) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(37):hover) .o-table-row > div:nth-child(37),
+.o-table:has(.o-table-row > div:nth-child(37):hover) .o-table-header > div:nth-child(37),
+.o-table:has(.o-table-row > div:nth-child(37):hover) .o-table-footer > div:nth-child(37) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(38):hover) .o-table-row > div:nth-child(38),
+.o-table:has(.o-table-row > div:nth-child(38):hover) .o-table-header > div:nth-child(38),
+.o-table:has(.o-table-row > div:nth-child(38):hover) .o-table-footer > div:nth-child(38) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(39):hover) .o-table-row > div:nth-child(39),
+.o-table:has(.o-table-row > div:nth-child(39):hover) .o-table-header > div:nth-child(39),
+.o-table:has(.o-table-row > div:nth-child(39):hover) .o-table-footer > div:nth-child(39) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(40):hover) .o-table-row > div:nth-child(40),
+.o-table:has(.o-table-row > div:nth-child(40):hover) .o-table-header > div:nth-child(40),
+.o-table:has(.o-table-row > div:nth-child(40):hover) .o-table-footer > div:nth-child(40) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(41):hover) .o-table-row > div:nth-child(41),
+.o-table:has(.o-table-row > div:nth-child(41):hover) .o-table-header > div:nth-child(41),
+.o-table:has(.o-table-row > div:nth-child(41):hover) .o-table-footer > div:nth-child(41) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(42):hover) .o-table-row > div:nth-child(42),
+.o-table:has(.o-table-row > div:nth-child(42):hover) .o-table-header > div:nth-child(42),
+.o-table:has(.o-table-row > div:nth-child(42):hover) .o-table-footer > div:nth-child(42) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(43):hover) .o-table-row > div:nth-child(43),
+.o-table:has(.o-table-row > div:nth-child(43):hover) .o-table-header > div:nth-child(43),
+.o-table:has(.o-table-row > div:nth-child(43):hover) .o-table-footer > div:nth-child(43) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(44):hover) .o-table-row > div:nth-child(44),
+.o-table:has(.o-table-row > div:nth-child(44):hover) .o-table-header > div:nth-child(44),
+.o-table:has(.o-table-row > div:nth-child(44):hover) .o-table-footer > div:nth-child(44) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(45):hover) .o-table-row > div:nth-child(45),
+.o-table:has(.o-table-row > div:nth-child(45):hover) .o-table-header > div:nth-child(45),
+.o-table:has(.o-table-row > div:nth-child(45):hover) .o-table-footer > div:nth-child(45) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(46):hover) .o-table-row > div:nth-child(46),
+.o-table:has(.o-table-row > div:nth-child(46):hover) .o-table-header > div:nth-child(46),
+.o-table:has(.o-table-row > div:nth-child(46):hover) .o-table-footer > div:nth-child(46) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(47):hover) .o-table-row > div:nth-child(47),
+.o-table:has(.o-table-row > div:nth-child(47):hover) .o-table-header > div:nth-child(47),
+.o-table:has(.o-table-row > div:nth-child(47):hover) .o-table-footer > div:nth-child(47) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(48):hover) .o-table-row > div:nth-child(48),
+.o-table:has(.o-table-row > div:nth-child(48):hover) .o-table-header > div:nth-child(48),
+.o-table:has(.o-table-row > div:nth-child(48):hover) .o-table-footer > div:nth-child(48) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(49):hover) .o-table-row > div:nth-child(49),
+.o-table:has(.o-table-row > div:nth-child(49):hover) .o-table-header > div:nth-child(49),
+.o-table:has(.o-table-row > div:nth-child(49):hover) .o-table-footer > div:nth-child(49) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(50):hover) .o-table-row > div:nth-child(50),
+.o-table:has(.o-table-row > div:nth-child(50):hover) .o-table-header > div:nth-child(50),
+.o-table:has(.o-table-row > div:nth-child(50):hover) .o-table-footer > div:nth-child(50) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(51):hover) .o-table-row > div:nth-child(51),
+.o-table:has(.o-table-row > div:nth-child(51):hover) .o-table-header > div:nth-child(51),
+.o-table:has(.o-table-row > div:nth-child(51):hover) .o-table-footer > div:nth-child(51) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(52):hover) .o-table-row > div:nth-child(52),
+.o-table:has(.o-table-row > div:nth-child(52):hover) .o-table-header > div:nth-child(52),
+.o-table:has(.o-table-row > div:nth-child(52):hover) .o-table-footer > div:nth-child(52) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(53):hover) .o-table-row > div:nth-child(53),
+.o-table:has(.o-table-row > div:nth-child(53):hover) .o-table-header > div:nth-child(53),
+.o-table:has(.o-table-row > div:nth-child(53):hover) .o-table-footer > div:nth-child(53) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(54):hover) .o-table-row > div:nth-child(54),
+.o-table:has(.o-table-row > div:nth-child(54):hover) .o-table-header > div:nth-child(54),
+.o-table:has(.o-table-row > div:nth-child(54):hover) .o-table-footer > div:nth-child(54) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(55):hover) .o-table-row > div:nth-child(55),
+.o-table:has(.o-table-row > div:nth-child(55):hover) .o-table-header > div:nth-child(55),
+.o-table:has(.o-table-row > div:nth-child(55):hover) .o-table-footer > div:nth-child(55) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(56):hover) .o-table-row > div:nth-child(56),
+.o-table:has(.o-table-row > div:nth-child(56):hover) .o-table-header > div:nth-child(56),
+.o-table:has(.o-table-row > div:nth-child(56):hover) .o-table-footer > div:nth-child(56) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(57):hover) .o-table-row > div:nth-child(57),
+.o-table:has(.o-table-row > div:nth-child(57):hover) .o-table-header > div:nth-child(57),
+.o-table:has(.o-table-row > div:nth-child(57):hover) .o-table-footer > div:nth-child(57) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(58):hover) .o-table-row > div:nth-child(58),
+.o-table:has(.o-table-row > div:nth-child(58):hover) .o-table-header > div:nth-child(58),
+.o-table:has(.o-table-row > div:nth-child(58):hover) .o-table-footer > div:nth-child(58) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(59):hover) .o-table-row > div:nth-child(59),
+.o-table:has(.o-table-row > div:nth-child(59):hover) .o-table-header > div:nth-child(59),
+.o-table:has(.o-table-row > div:nth-child(59):hover) .o-table-footer > div:nth-child(59) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(60):hover) .o-table-row > div:nth-child(60),
+.o-table:has(.o-table-row > div:nth-child(60):hover) .o-table-header > div:nth-child(60),
+.o-table:has(.o-table-row > div:nth-child(60):hover) .o-table-footer > div:nth-child(60) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(61):hover) .o-table-row > div:nth-child(61),
+.o-table:has(.o-table-row > div:nth-child(61):hover) .o-table-header > div:nth-child(61),
+.o-table:has(.o-table-row > div:nth-child(61):hover) .o-table-footer > div:nth-child(61) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(62):hover) .o-table-row > div:nth-child(62),
+.o-table:has(.o-table-row > div:nth-child(62):hover) .o-table-header > div:nth-child(62),
+.o-table:has(.o-table-row > div:nth-child(62):hover) .o-table-footer > div:nth-child(62) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(63):hover) .o-table-row > div:nth-child(63),
+.o-table:has(.o-table-row > div:nth-child(63):hover) .o-table-header > div:nth-child(63),
+.o-table:has(.o-table-row > div:nth-child(63):hover) .o-table-footer > div:nth-child(63) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(64):hover) .o-table-row > div:nth-child(64),
+.o-table:has(.o-table-row > div:nth-child(64):hover) .o-table-header > div:nth-child(64),
+.o-table:has(.o-table-row > div:nth-child(64):hover) .o-table-footer > div:nth-child(64) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(65):hover) .o-table-row > div:nth-child(65),
+.o-table:has(.o-table-row > div:nth-child(65):hover) .o-table-header > div:nth-child(65),
+.o-table:has(.o-table-row > div:nth-child(65):hover) .o-table-footer > div:nth-child(65) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(66):hover) .o-table-row > div:nth-child(66),
+.o-table:has(.o-table-row > div:nth-child(66):hover) .o-table-header > div:nth-child(66),
+.o-table:has(.o-table-row > div:nth-child(66):hover) .o-table-footer > div:nth-child(66) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(67):hover) .o-table-row > div:nth-child(67),
+.o-table:has(.o-table-row > div:nth-child(67):hover) .o-table-header > div:nth-child(67),
+.o-table:has(.o-table-row > div:nth-child(67):hover) .o-table-footer > div:nth-child(67) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(68):hover) .o-table-row > div:nth-child(68),
+.o-table:has(.o-table-row > div:nth-child(68):hover) .o-table-header > div:nth-child(68),
+.o-table:has(.o-table-row > div:nth-child(68):hover) .o-table-footer > div:nth-child(68) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(69):hover) .o-table-row > div:nth-child(69),
+.o-table:has(.o-table-row > div:nth-child(69):hover) .o-table-header > div:nth-child(69),
+.o-table:has(.o-table-row > div:nth-child(69):hover) .o-table-footer > div:nth-child(69) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(70):hover) .o-table-row > div:nth-child(70),
+.o-table:has(.o-table-row > div:nth-child(70):hover) .o-table-header > div:nth-child(70),
+.o-table:has(.o-table-row > div:nth-child(70):hover) .o-table-footer > div:nth-child(70) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(71):hover) .o-table-row > div:nth-child(71),
+.o-table:has(.o-table-row > div:nth-child(71):hover) .o-table-header > div:nth-child(71),
+.o-table:has(.o-table-row > div:nth-child(71):hover) .o-table-footer > div:nth-child(71) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(72):hover) .o-table-row > div:nth-child(72),
+.o-table:has(.o-table-row > div:nth-child(72):hover) .o-table-header > div:nth-child(72),
+.o-table:has(.o-table-row > div:nth-child(72):hover) .o-table-footer > div:nth-child(72) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(73):hover) .o-table-row > div:nth-child(73),
+.o-table:has(.o-table-row > div:nth-child(73):hover) .o-table-header > div:nth-child(73),
+.o-table:has(.o-table-row > div:nth-child(73):hover) .o-table-footer > div:nth-child(73) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(74):hover) .o-table-row > div:nth-child(74),
+.o-table:has(.o-table-row > div:nth-child(74):hover) .o-table-header > div:nth-child(74),
+.o-table:has(.o-table-row > div:nth-child(74):hover) .o-table-footer > div:nth-child(74) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(75):hover) .o-table-row > div:nth-child(75),
+.o-table:has(.o-table-row > div:nth-child(75):hover) .o-table-header > div:nth-child(75),
+.o-table:has(.o-table-row > div:nth-child(75):hover) .o-table-footer > div:nth-child(75) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(76):hover) .o-table-row > div:nth-child(76),
+.o-table:has(.o-table-row > div:nth-child(76):hover) .o-table-header > div:nth-child(76),
+.o-table:has(.o-table-row > div:nth-child(76):hover) .o-table-footer > div:nth-child(76) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(77):hover) .o-table-row > div:nth-child(77),
+.o-table:has(.o-table-row > div:nth-child(77):hover) .o-table-header > div:nth-child(77),
+.o-table:has(.o-table-row > div:nth-child(77):hover) .o-table-footer > div:nth-child(77) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(78):hover) .o-table-row > div:nth-child(78),
+.o-table:has(.o-table-row > div:nth-child(78):hover) .o-table-header > div:nth-child(78),
+.o-table:has(.o-table-row > div:nth-child(78):hover) .o-table-footer > div:nth-child(78) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(79):hover) .o-table-row > div:nth-child(79),
+.o-table:has(.o-table-row > div:nth-child(79):hover) .o-table-header > div:nth-child(79),
+.o-table:has(.o-table-row > div:nth-child(79):hover) .o-table-footer > div:nth-child(79) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(80):hover) .o-table-row > div:nth-child(80),
+.o-table:has(.o-table-row > div:nth-child(80):hover) .o-table-header > div:nth-child(80),
+.o-table:has(.o-table-row > div:nth-child(80):hover) .o-table-footer > div:nth-child(80) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(81):hover) .o-table-row > div:nth-child(81),
+.o-table:has(.o-table-row > div:nth-child(81):hover) .o-table-header > div:nth-child(81),
+.o-table:has(.o-table-row > div:nth-child(81):hover) .o-table-footer > div:nth-child(81) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(82):hover) .o-table-row > div:nth-child(82),
+.o-table:has(.o-table-row > div:nth-child(82):hover) .o-table-header > div:nth-child(82),
+.o-table:has(.o-table-row > div:nth-child(82):hover) .o-table-footer > div:nth-child(82) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(83):hover) .o-table-row > div:nth-child(83),
+.o-table:has(.o-table-row > div:nth-child(83):hover) .o-table-header > div:nth-child(83),
+.o-table:has(.o-table-row > div:nth-child(83):hover) .o-table-footer > div:nth-child(83) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(84):hover) .o-table-row > div:nth-child(84),
+.o-table:has(.o-table-row > div:nth-child(84):hover) .o-table-header > div:nth-child(84),
+.o-table:has(.o-table-row > div:nth-child(84):hover) .o-table-footer > div:nth-child(84) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(85):hover) .o-table-row > div:nth-child(85),
+.o-table:has(.o-table-row > div:nth-child(85):hover) .o-table-header > div:nth-child(85),
+.o-table:has(.o-table-row > div:nth-child(85):hover) .o-table-footer > div:nth-child(85) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(86):hover) .o-table-row > div:nth-child(86),
+.o-table:has(.o-table-row > div:nth-child(86):hover) .o-table-header > div:nth-child(86),
+.o-table:has(.o-table-row > div:nth-child(86):hover) .o-table-footer > div:nth-child(86) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(87):hover) .o-table-row > div:nth-child(87),
+.o-table:has(.o-table-row > div:nth-child(87):hover) .o-table-header > div:nth-child(87),
+.o-table:has(.o-table-row > div:nth-child(87):hover) .o-table-footer > div:nth-child(87) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(88):hover) .o-table-row > div:nth-child(88),
+.o-table:has(.o-table-row > div:nth-child(88):hover) .o-table-header > div:nth-child(88),
+.o-table:has(.o-table-row > div:nth-child(88):hover) .o-table-footer > div:nth-child(88) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(89):hover) .o-table-row > div:nth-child(89),
+.o-table:has(.o-table-row > div:nth-child(89):hover) .o-table-header > div:nth-child(89),
+.o-table:has(.o-table-row > div:nth-child(89):hover) .o-table-footer > div:nth-child(89) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(90):hover) .o-table-row > div:nth-child(90),
+.o-table:has(.o-table-row > div:nth-child(90):hover) .o-table-header > div:nth-child(90),
+.o-table:has(.o-table-row > div:nth-child(90):hover) .o-table-footer > div:nth-child(90) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(91):hover) .o-table-row > div:nth-child(91),
+.o-table:has(.o-table-row > div:nth-child(91):hover) .o-table-header > div:nth-child(91),
+.o-table:has(.o-table-row > div:nth-child(91):hover) .o-table-footer > div:nth-child(91) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(92):hover) .o-table-row > div:nth-child(92),
+.o-table:has(.o-table-row > div:nth-child(92):hover) .o-table-header > div:nth-child(92),
+.o-table:has(.o-table-row > div:nth-child(92):hover) .o-table-footer > div:nth-child(92) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(93):hover) .o-table-row > div:nth-child(93),
+.o-table:has(.o-table-row > div:nth-child(93):hover) .o-table-header > div:nth-child(93),
+.o-table:has(.o-table-row > div:nth-child(93):hover) .o-table-footer > div:nth-child(93) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(94):hover) .o-table-row > div:nth-child(94),
+.o-table:has(.o-table-row > div:nth-child(94):hover) .o-table-header > div:nth-child(94),
+.o-table:has(.o-table-row > div:nth-child(94):hover) .o-table-footer > div:nth-child(94) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(95):hover) .o-table-row > div:nth-child(95),
+.o-table:has(.o-table-row > div:nth-child(95):hover) .o-table-header > div:nth-child(95),
+.o-table:has(.o-table-row > div:nth-child(95):hover) .o-table-footer > div:nth-child(95) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(96):hover) .o-table-row > div:nth-child(96),
+.o-table:has(.o-table-row > div:nth-child(96):hover) .o-table-header > div:nth-child(96),
+.o-table:has(.o-table-row > div:nth-child(96):hover) .o-table-footer > div:nth-child(96) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(97):hover) .o-table-row > div:nth-child(97),
+.o-table:has(.o-table-row > div:nth-child(97):hover) .o-table-header > div:nth-child(97),
+.o-table:has(.o-table-row > div:nth-child(97):hover) .o-table-footer > div:nth-child(97) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(98):hover) .o-table-row > div:nth-child(98),
+.o-table:has(.o-table-row > div:nth-child(98):hover) .o-table-header > div:nth-child(98),
+.o-table:has(.o-table-row > div:nth-child(98):hover) .o-table-footer > div:nth-child(98) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(99):hover) .o-table-row > div:nth-child(99),
+.o-table:has(.o-table-row > div:nth-child(99):hover) .o-table-header > div:nth-child(99),
+.o-table:has(.o-table-row > div:nth-child(99):hover) .o-table-footer > div:nth-child(99) {
+  background: var(--o-row-hover-color);
+}
+
+.o-table:has(.o-table-row > div:nth-child(100):hover) .o-table-row > div:nth-child(100),
+.o-table:has(.o-table-row > div:nth-child(100):hover) .o-table-header > div:nth-child(100),
+.o-table:has(.o-table-row > div:nth-child(100):hover) .o-table-footer > div:nth-child(100) {
+  background: var(--o-row-hover-color);
+}
+
+/*# sourceMappingURL=main.css.map */

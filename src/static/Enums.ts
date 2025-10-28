@@ -97,7 +97,11 @@ export enum Tag {
 
     Table = 'table',
 
-    Script = 'script'
+    Script = 'script',
+
+    Button = 'button',
+
+    Span = 'span'
 }
 
 export enum RenderState {
@@ -107,7 +111,9 @@ export enum RenderState {
 }
 
 export enum Icon {
-    ThreeLines = '☰'
+    ThreeLines = '☰',
+
+    Close = '×'
 }
 
 export enum DrawPointType {

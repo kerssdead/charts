@@ -8,7 +8,7 @@ import { Tag } from 'static/Enums'
 
 export class Decomposition {
     static toTable(values: TableData) {
-        let table = document.createElement(Tag.Table)
+        let table = document.createElement(Tag.Div)
 
         table.classList.add('o-table')
 
@@ -39,9 +39,9 @@ export class Decomposition {
 
         for (const tableHeader of values.headers)
             headers += `
-                <th>
+                <div>
                     ${ tableHeader.display }
-                </th>
+                </div>
             `
 
         for (const [key, value] of valuesMap) {
@@ -49,9 +49,9 @@ export class Decomposition {
 
             for (const [vKey, vValue] of value) {
                 columns += `
-                    <td>
+                    <div>
                         ${ vValue == undefined ? '' : Formatter.number(vValue) }
-                    </td>
+                    </div>
                 `
 
                 if (totals.has(vKey)) {
@@ -63,13 +63,13 @@ export class Decomposition {
             }
 
             rows += `
-                <tr>
-                    <td class="o-table-label">
+                <div class="o-table-row">
+                    <div>
                         ${ key.trim() }
-                    </td>
+                    </div>
                     
                     ${ columns } 
-                </tr>
+                </div>
             `
         }
 
@@ -77,31 +77,27 @@ export class Decomposition {
 
         for (const [, value] of totals)
             totalColumns += `
-                <td>
+                <div>
                     ${ value == undefined ? '' : Formatter.number(value) }
-                </td>
+                </div>
             `
 
         table.innerHTML = `
-            <thead>
-                <tr>
-                    <th></th>
-                
-                    ${ headers }
-                </tr>
-            </thead>
+            <div class="o-table-header">
+                <div></div>
+
+                ${ headers }
+            </div>
         
-            <tbody>
+            <div class="o-table-body">
                 ${ rows }
-            </tbody>
+            </div>
             
-            <tfoot>
-                <tr>
-                    <td></td>
-                
-                    ${ totalColumns }
-                </tr>
-            </tfoot>
+            <div class="o-table-footer">
+                <div></div>
+
+                ${ totalColumns }
+            </div>
         `
 
         return table

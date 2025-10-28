@@ -1073,7 +1073,10 @@ export class PlotRenderer extends Renderer<PlotData> {
                         {
                             text: TextResources.decomposeToTable,
                             action: () => {
-                                new Modal(Decomposition.toTable(PlotData.getRows(this.data))).open()
+                                new Modal(Decomposition.toTable(PlotData.getRows(this.data)),
+                                    undefined,
+                                    this.settings.title ?? TextResources.dataAsTable)
+                                    .open()
                             }
                         }
                     ]

@@ -1,0 +1,63 @@
+.o-table {
+    --o-header-color: #e9e9e9;
+    --o-row-hover-color: #f2f2f2;
+}
+
+.o-table {
+    border: 1px solid var(--o-header-color);
+    border-radius: 6px;
+    overflow: auto;
+}
+
+.o-table .o-table-row,
+.o-table .o-table-row > div,
+.o-table .o-table-header > div,
+.o-table .o-table-footer > div {
+    transition: .2s ease-in-out all;
+}
+
+.o-table .o-table-row:hover {
+    background-color: var(--o-row-hover-color);
+}
+
+.o-table .o-table-header {
+    background: var(--o-header-color);
+    color: color-mix(in srgb, var(--o-header-color), #000 85%);
+    font-weight: 600;
+}
+
+.o-table .o-table-header,
+.o-table .o-table-body .o-table-row,
+.o-table .o-table-footer {
+    display: flex;
+    width: fit-content;
+}
+
+.o-table .o-table-header > div,
+.o-table .o-table-body .o-table-row > div,
+.o-table .o-table-footer > div {
+    flex: 1;
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-align: left;
+    padding: 2px 6px;
+    flex-basis: 10vw;
+}
+
+.o-table .o-table-header > div,
+.o-table .o-table-body .o-table-row > div {
+    border-bottom: 1px solid var(--o-header-color);
+}
+
+.o-table .o-table-body {
+    display: flex;
+    flex-direction: column;
+}
+
+@for $i from 1 through 100 {
+  .o-table:has(.o-table-row > div:nth-child(#{$i}):hover) .o-table-row > div:nth-child(#{$i}),
+  .o-table:has(.o-table-row > div:nth-child(#{$i}):hover) .o-table-header > div:nth-child(#{$i}),
+  .o-table:has(.o-table-row > div:nth-child(#{$i}):hover) .o-table-footer > div:nth-child(#{$i}) {
+    background: var(--o-row-hover-color);
+  }
+}

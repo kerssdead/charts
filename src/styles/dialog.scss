@@ -1,11 +1,11 @@
 .o-modal {
-    max-width:  80vw;
-    border-radius: 8px;
-    padding: 8px;
+    max-width: 80vw;
+    border-radius: 6px;
+    padding: 12px;
     border: 2px solid #aeaeae;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .o-modal::backdrop {
@@ -13,10 +13,19 @@
     opacity: .2;
 }
 
-.o-modal-close {
-    cursor: pointer;
+.o-modal-header {
+    display: flex;
     position: sticky;
-    margin-left: auto;
+    top: 0;
+    gap: 12px;
+}
+
+.o-modal-header > .o-modal-title {
+    flex-grow: 1;
+}
+
+.o-modal-header > .o-modal-close {
+    cursor: pointer;
     border: 0;
     outline: 0;
     background: transparent;

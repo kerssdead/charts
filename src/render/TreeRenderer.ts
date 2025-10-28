@@ -377,7 +377,10 @@ export class TreeRenderer extends Renderer<TreeData> {
                     {
                         text: TextResources.decomposeToTable,
                         action: () => {
-                            new Modal(Decomposition.toTable(TreeData.getRows(this.data))).open()
+                            new Modal(Decomposition.toTable(TreeData.getRows(this.data)),
+                                undefined,
+                                this.settings.title ?? TextResources.dataAsTable)
+                                .open()
                         }
                     }
                 ]
