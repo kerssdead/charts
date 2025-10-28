@@ -152,11 +152,11 @@ export class GaugeRenderer extends Renderer<GaugeData> {
     }
 
     #calculateSizes() {
-        const longSide = this.canvas.width < this.canvas.height
-                         ? this.canvas.height - 250
+        const longSide = this.canvas.width < this.canvas.height / 2
+                         ? this.canvas.height / 2
                          : this.canvas.width
 
-        this.#radius = longSide / 3
+        this.#radius = longSide / 2 - 200
 
         this.#center = {
             x: this.canvas.width / 2,
