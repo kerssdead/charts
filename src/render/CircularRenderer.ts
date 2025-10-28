@@ -725,8 +725,10 @@ export class CircularRenderer extends Renderer<CircularData> {
         this.calculateSizes()
         this.dropdown?.resize()
 
-        for (let sector of this.data.values)
+        for (let sector of this.data.values) {
+            sector.canRenderLabel = undefined
             sector = this.calculatePoint(sector)
+        }
     }
 
     prepareSettings() {
