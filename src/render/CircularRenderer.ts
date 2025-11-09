@@ -22,35 +22,35 @@ import Styles from 'static/constants/Styles'
 import DrawPoint from 'types/DrawPoint'
 
 class CircularRenderer extends Renderer<CircularData> {
-    #canRenderInnerTitle: boolean
-
-    #isDonut: boolean
-
-    #radius: number
-
-    #hoverCount: number
-
-    #currentHover: string | undefined
-
-    #pinned: string[]
-
-    #center: Point
-
-    #startPoint: Point
-
-    #angles: CircularAngle[]
-
-    #other: Sector[]
-
-    #innerTitleStyle: Function
-
     private readonly startAngle: number
 
     private isMousePositionChanged: boolean
 
     private isInsideCircle: boolean
 
+    private canRenderInnerTitle: boolean
+
+    private isDonut: boolean
+
+    private radius: number
+
+    private hoverCount: number
+
+    private currentHover: string | undefined
+
+    private pinned: string[]
+
     private prevPoint: Point
+
+    private center: Point
+
+    private startPoint: Point
+
+    private angles: CircularAngle[]
+
+    private other: Sector[]
+
+    private innerTitleStyle: Function
 
     constructor(chart: Chart) {
         super(chart)
@@ -69,7 +69,7 @@ class CircularRenderer extends Renderer<CircularData> {
         const valuesSum = this.data.values.reduce((acc, v) => acc + v.current, 0)
 
         let anglesSum = this.startAngle
-        this.#angles = this.data.values.flatMap(sector => {
+        this.angles = this.data.values.flatMap(sector => {
                                const angle = sector.current / valuesSum * 2 * Math.PI
 
                                return {
@@ -82,11 +82,11 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private getAngle(sector: Sector) {
-        return this.#angles.find(o => o.id == sector.id)?.value ?? 0
+        return this.angles.find(o => o.id == sector.id)?.value ?? 0
     }
 
     private getAccumulator(sector: Sector) {
-        return this.#angles.find(o => o.id == sector.id)?.sum ?? this.startAngle
+        return this.angles.find(o => o.id == sector.id)?.sum ?? this.startAngle
     }
 
     private calculatePoint(sector: Sector): Sector {
@@ -99,22 +99,22 @@ class CircularRenderer extends Renderer<CircularData> {
             }
         }
 
-        this.#startPoint = getPoint(this.#radius, 0, this.#center)
+        this.startPoint = getPoint(this.radius, 0, this.center)
 
         const angle = this.getAngle(sector)
 
         sector.direction = accumulator + angle / 2
 
-        let point2 = getPoint(this.#radius, angle, this.#center)
+        let point2 = getPoint(this.radius, angle, this.center)
 
         let points: DrawPoint[] = []
 
         if (angle > 0) {
             if (sector.current > 0) {
-                let labelStartPoint = getPoint(this.#radius + 10, angle / 2, this.#center),
-                    labelMidPoint = getPoint(this.#radius + 20, angle / 2, this.#center)
+                let labelStartPoint = getPoint(this.radius + 10, angle / 2, this.center),
+                    labelMidPoint = getPoint(this.radius + 20, angle / 2, this.center)
 
-                const dir = labelStartPoint.x > this.#center.x ? 1 : -1
+                const dir = labelStartPoint.x > this.center.x ? 1 : -1
 
                 let endPoint = {
                     x: labelMidPoint.x + 10 * dir,
@@ -127,10 +127,10 @@ class CircularRenderer extends Renderer<CircularData> {
                 ]
             }
 
-            if (!this.#isDonut)
-                points.push(new DrawPoint(DrawPointType.Move, this.#center.x, this.#center.y))
+            if (!this.isDonut)
+                points.push(new DrawPoint(DrawPointType.Move, this.center.x, this.center.y))
 
-            points.push(new DrawPoint(DrawPointType.Line, this.#startPoint.x, this.#startPoint.y))
+            points.push(new DrawPoint(DrawPointType.Line, this.startPoint.x, this.startPoint.y))
 
             let localAccumulator = 0,
                 localAngle = angle
@@ -140,11 +140,11 @@ class CircularRenderer extends Renderer<CircularData> {
                                    ? Math.PI / 6
                                    : localAngle
 
-                point2 = getPoint(this.#radius, localAccumulator + currentAngle, this.#center)
+                point2 = getPoint(this.radius, localAccumulator + currentAngle, this.center)
 
                 const tangentIntersectionAngle = Math.PI - currentAngle,
-                    lengthToTangentIntersection = this.#radius / Math.sin(tangentIntersectionAngle / 2),
-                    tangentIntersectionPoint = getPoint(lengthToTangentIntersection, localAccumulator + currentAngle / 2, this.#center)
+                    lengthToTangentIntersection = this.radius / Math.sin(tangentIntersectionAngle / 2),
+                    tangentIntersectionPoint = getPoint(lengthToTangentIntersection, localAccumulator + currentAngle / 2, this.center)
 
                 points.push(new DrawPoint(DrawPointType.QuadraticCurve, tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y))
 
@@ -153,12 +153,12 @@ class CircularRenderer extends Renderer<CircularData> {
                 localAngle -= Math.PI / 6
             }
 
-            if (this.#isDonut || sector.innerRadius != 0) {
-                const innerRadius = this.#radius * (sector.innerRadius / 100)
+            if (this.isDonut || sector.innerRadius != 0) {
+                const innerRadius = this.radius * (sector.innerRadius / 100)
 
                 const innerPoint2 = {
-                    x: point2.x - (((this.#radius - innerRadius) * (point2.x - this.#center.x)) / this.#radius),
-                    y: point2.y - (((this.#radius - innerRadius) * (point2.y - this.#center.y)) / this.#radius)
+                    x: point2.x - (((this.radius - innerRadius) * (point2.x - this.center.x)) / this.radius),
+                    y: point2.y - (((this.radius - innerRadius) * (point2.y - this.center.y)) / this.radius)
                 }
 
                 points.push(new DrawPoint(DrawPointType.Line, innerPoint2.x, innerPoint2.y))
@@ -171,11 +171,11 @@ class CircularRenderer extends Renderer<CircularData> {
                                        ? Math.PI / 6
                                        : angle - localAngle
 
-                    point2 = getPoint(innerRadius, localAccumulator - currentAngle, this.#center)
+                    point2 = getPoint(innerRadius, localAccumulator - currentAngle, this.center)
 
                     const tangentIntersectionAngle = Math.PI - currentAngle,
                         lengthToTangentIntersection = innerRadius / Math.sin(tangentIntersectionAngle / 2),
-                        tangentIntersectionPoint = getPoint(lengthToTangentIntersection, localAccumulator - currentAngle / 2, this.#center)
+                        tangentIntersectionPoint = getPoint(lengthToTangentIntersection, localAccumulator - currentAngle / 2, this.center)
 
                     points.push(new DrawPoint(DrawPointType.QuadraticCurve, tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y))
 
@@ -184,13 +184,13 @@ class CircularRenderer extends Renderer<CircularData> {
                     localAngle += Math.PI / 6
                 }
 
-                point2 = getPoint(this.#radius, angle, this.#center)
+                point2 = getPoint(this.radius, angle, this.center)
             }
 
             accumulator += angle
         }
 
-        this.#startPoint = point2
+        this.startPoint = point2
 
         sector.points = points
 
@@ -199,8 +199,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private scale(sector: Sector, value: number, transition: number) {
         const centerOfSector = {
-            x: this.#center.x + this.#radius / 2 * Math.cos(sector.direction),
-            y: this.#center.y + this.#radius / 2 * Math.sin(sector.direction)
+            x: this.center.x + this.radius / 2 * Math.cos(sector.direction),
+            y: this.center.y + this.radius / 2 * Math.sin(sector.direction)
         }
 
         for (let p of sector.points) {
@@ -237,8 +237,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private translate(sector: Sector, value: number, transition: number) {
         const offset = {
-            x: (this.#center.x + this.#radius * Math.cos(sector.direction) - this.#center.x) * value,
-            y: (this.#center.y + this.#radius * Math.sin(sector.direction) - this.#center.y) * value
+            x: (this.center.x + this.radius * Math.cos(sector.direction) - this.center.x) * value,
+            y: (this.center.y + this.radius * Math.sin(sector.direction) - this.center.y) * value
         }
 
         sector.translate = {
@@ -466,12 +466,12 @@ class CircularRenderer extends Renderer<CircularData> {
         if (sector.state == AnimationType.None && !this.isInsideCircle)
             return
 
-        const isInsideSector = this.isInsideSector(this.moveEvent, sector, this.#center),
-            isInsideSectorClick = this.clickEvent ? this.isInsideSector(this.clickEvent, sector, this.#center) : false
+        const isInsideSector = this.isInsideSector(this.moveEvent, sector, this.center),
+            isInsideSectorClick = this.clickEvent ? this.isInsideSector(this.clickEvent, sector, this.center) : false
 
         if (this.moveEvent && isInsideSector) {
-            this.#currentHover = sector.id
-            this.#hoverCount++
+            this.currentHover = sector.id
+            this.hoverCount++
         }
 
         if (this.data.values.filter(s => !s.disabled).length == 1)
@@ -480,15 +480,15 @@ class CircularRenderer extends Renderer<CircularData> {
         if (isInsideSectorClick) {
             sector.state = AnimationType.Click
 
-            if (this.#pinned.includes(sector.id))
-                this.#pinned = this.#pinned.filter(id => id != sector.id)
+            if (this.pinned.includes(sector.id))
+                this.pinned = this.pinned.filter(id => id != sector.id)
             else
-                this.#pinned.push(sector.id)
+                this.pinned.push(sector.id)
 
             this.clickEvent = undefined
 
             return
-        } else if (this.#pinned.includes(sector.id)) {
+        } else if (this.pinned.includes(sector.id)) {
             return
         }
 
@@ -559,8 +559,8 @@ class CircularRenderer extends Renderer<CircularData> {
         if (this.isMousePositionChanged) {
             const point = this.getMousePosition(this.moveEvent)
             this.isInsideCircle = this.isWithinRadius({
-                x: point.x - this.#center.x,
-                y: point.y - this.#center.y
+                x: point.x - this.center.x,
+                y: point.y - this.center.y
             })
         }
 
@@ -581,7 +581,7 @@ class CircularRenderer extends Renderer<CircularData> {
             return
         }
 
-        this.#hoverCount = 0
+        this.hoverCount = 0
 
         const ctx = Canvas.getContext(this.canvas)
 
@@ -597,8 +597,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
         super.renderDropdown()
 
-        const currentHover = this.data.values.find(v => v.id == this.#currentHover),
-            isAnyHover = this.#hoverCount > 0
+        const currentHover = this.data.values.find(v => v.id == this.currentHover),
+            isAnyHover = this.hoverCount > 0
 
         if (isAnyHover || this.contextMenu)
             this.renderContextMenu(currentHover?.data ?? {})
@@ -614,7 +614,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         this.innerTitle()
 
-        this.canvas.style.cursor = this.#hoverCount > 0
+        this.canvas.style.cursor = this.hoverCount > 0
                                    ? Styles.Cursor.Pointer
                                    : Styles.Cursor.Default
 
@@ -623,7 +623,7 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private isWithinRadius(v: Point) {
-        return v.x * v.x + v.y * v.y <= this.#radius * this.#radius
+        return v.x * v.x + v.y * v.y <= this.radius * this.radius
     }
 
     private isInsideSector(event: MouseEvent, sector: Sector, center: Point): boolean {
@@ -637,12 +637,12 @@ class CircularRenderer extends Renderer<CircularData> {
             if (a < this.startAngle)
                 a = Math.PI * 2 - Math.abs(this.startAngle - a) + this.startAngle
 
-            let index = this.#angles.findIndex(o => o.id == sector.id),
-                sumBefore = this.#angles[index].sum
+            let index = this.angles.findIndex(o => o.id == sector.id),
+                sumBefore = this.angles[index].sum
 
             return !(this.dropdown?.isActive ?? false)
                    && sumBefore <= a
-                   && sumBefore + this.#angles[index].value - a >= 0
+                   && sumBefore + this.angles[index].value - a >= 0
         }
 
         const point = this.getMousePosition(event)
@@ -655,22 +655,22 @@ class CircularRenderer extends Renderer<CircularData> {
 
         ctx.beginPath()
 
-        ctx.arc(this.#center.x, this.#center.y, this.#radius, 0, 2 * Math.PI)
+        ctx.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI)
         ctx.strokeStyle = Theme.text
         ctx.stroke()
 
         TextStyles.regular(ctx)
-        ctx.fillText(TextResources.allDataIsHidden, this.#center.x, this.#center.y)
+        ctx.fillText(TextResources.allDataIsHidden, this.center.x, this.center.y)
 
         requestAnimationFrame(this.render.bind(this))
     }
 
     private innerTitle() {
-        if (this.#canRenderInnerTitle) {
+        if (this.canRenderInnerTitle) {
             const ctx = Canvas.getContext(this.canvas)
 
-            this.#innerTitleStyle(ctx)
-            ctx.fillText(this.data.innerTitle, this.#center.x, this.#center.y)
+            this.innerTitleStyle(ctx)
+            ctx.fillText(this.data.innerTitle, this.center.x, this.center.y)
         }
     }
 
@@ -683,7 +683,7 @@ class CircularRenderer extends Renderer<CircularData> {
                           ? this.canvas.height - titleOffset * 2
                           : this.canvas.width
 
-        this.#center = {
+        this.center = {
             x: this.canvas.width / 2,
             y: titleOffset + this.canvas.height / 2
         }
@@ -697,23 +697,23 @@ class CircularRenderer extends Renderer<CircularData> {
                 longestLabel = width
         }
 
-        this.#radius = shortSide / 2 - (longestLabel + 50)
+        this.radius = shortSide / 2 - (longestLabel + 50)
 
-        if (this.#radius < shortSide / 2 - 50)
-            this.#radius = shortSide / 2 - 50
+        if (this.radius < shortSide / 2 - 50)
+            this.radius = shortSide / 2 - 50
 
         if (this.data.innerTitle != undefined && this.data.innerTitle != '') {
-            this.#innerTitleStyle = TextStyles.large
-            this.#canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 16)
-                                        < (this.data.innerRadius / 100) * this.#radius * 2
+            this.innerTitleStyle = TextStyles.large
+            this.canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 16)
+                                        < (this.data.innerRadius / 100) * this.radius * 2
 
-            if (!this.#canRenderInnerTitle) {
-                this.#innerTitleStyle = TextStyles.regular
-                this.#canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 14)
-                                            < (this.data.innerRadius / 100) * this.#radius * 2
+            if (!this.canRenderInnerTitle) {
+                this.innerTitleStyle = TextStyles.regular
+                this.canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 14)
+                                            < (this.data.innerRadius / 100) * this.radius * 2
             }
 
-            if (!this.#canRenderInnerTitle)
+            if (!this.canRenderInnerTitle)
                 console.warn(`Inner title is declared, but can't be rendered`)
         }
     }
@@ -756,7 +756,7 @@ class CircularRenderer extends Renderer<CircularData> {
                 text: TextResources.show,
                 condition: data => data?._other,
                 action: () => {
-                    new Modal(Decomposition.toChart<Sector>(this.settings, this.#other),
+                    new Modal(Decomposition.toChart<Sector>(this.settings, this.other),
                         {
                             width: window.innerWidth * .8,
                             height: window.innerHeight * .8
@@ -767,9 +767,9 @@ class CircularRenderer extends Renderer<CircularData> {
             })
         }
 
-        this.#pinned = []
+        this.pinned = []
 
-        this.#isDonut = (this.data.innerRadius ?? 0) != 0
+        this.isDonut = (this.data.innerRadius ?? 0) != 0
 
         for (let item of this.data.values) {
             item.disabled = !item.value
@@ -784,9 +784,9 @@ class CircularRenderer extends Renderer<CircularData> {
         this.data.values = this.data.values.filter(v => v.value >= 0)
 
         if (this.settings.enableOther && this.data.values.length > 20) {
-            this.#other = this.data.values.splice(20)
+            this.other = this.data.values.splice(20)
 
-            const sum = this.#other.reduce((acc, v) => acc + v.current, 0)
+            const sum = this.other.reduce((acc, v) => acc + v.current, 0)
 
             this.data.values = this.data.values.slice(0, 20)
 
@@ -795,7 +795,7 @@ class CircularRenderer extends Renderer<CircularData> {
                 current: sum,
                 label: TextResources.other,
                 id: Helper.guid(),
-                color: this.#other[this.#other.length - 1].color,
+                color: this.other[this.other.length - 1].color,
                 innerRadius: this.data.innerRadius,
                 data: {
                     _other: true
