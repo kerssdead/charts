@@ -219,7 +219,7 @@ export class PlotRenderer extends Renderer<PlotData> {
                             ctx.lineTo(x, y)
 
                             if (this.#isOnX(x)) {
-                                const mouse = this.getMousePosition(this.onMouseMoveEvent)
+                                const mouse = this.getMousePosition(this.moveEvent)
 
                                 if (Math.abs(mouse.y - y) < 5) {
                                     this.#hoverX = {
@@ -538,12 +538,14 @@ export class PlotRenderer extends Renderer<PlotData> {
 
         this.renderTitle()
 
-        this.tooltip.render(tooltipLines.length > 1 && !this.dropdown?.isActive,
-            this.onMouseMoveEvent,
+        this.tooltip.render(
+            tooltipLines.length > 1 && !this.dropdown?.isActive,
+            this.moveEvent,
             tooltipLines,
             this.#hoverX
-            ? this.#hoverX.series!.values[this.#hoverX.index]
-            : undefined)
+                ? this.#hoverX.series!.values[this.#hoverX.index]
+                : undefined
+        )
 
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
@@ -552,15 +554,15 @@ export class PlotRenderer extends Renderer<PlotData> {
 
         super.renderDropdown()
 
-        if (this.onContextMenuEvent && !this.#hoverX)
-            this.onContextMenuEvent = undefined
+        if (this.menuEvent && !this.#hoverX)
+            this.menuEvent = undefined
 
         if (this.#hoverX == undefined)
             this.highlight()
 
         if (this.#hoverX
             && (this.renderContextMenu(this.#hoverX.data)
-                || !this.onContextMenuEvent))
+                || !this.menuEvent))
             this.#hoverX = undefined
     }
 
@@ -577,10 +579,10 @@ export class PlotRenderer extends Renderer<PlotData> {
     }
 
     #isOnX(x: number): boolean {
-        if (!this.onMouseMoveEvent)
+        if (!this.moveEvent)
             return false
 
-        const mouse = this.getMousePosition(this.onMouseMoveEvent)
+        const mouse = this.getMousePosition(this.moveEvent)
 
         return !(this.dropdown?.isActive ?? false)
                && x - this.#x.step / 2 <= mouse.x && mouse.x < x + this.#x.step / 2
@@ -589,10 +591,10 @@ export class PlotRenderer extends Renderer<PlotData> {
     }
 
     #isInArea(x: number, y: number, w: number, h: number): boolean {
-        if (!this.onMouseMoveEvent)
+        if (!this.moveEvent)
             return false
 
-        const mouse = this.getMousePosition(this.onMouseMoveEvent)
+        const mouse = this.getMousePosition(this.moveEvent)
 
         return !(this.dropdown?.isActive ?? false)
                && mouse.x >= x && mouse.x <= x + w

@@ -58,7 +58,7 @@ export class Legend extends Renderable {
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
 
-        this.onClickEvent = this.#button?.render(this.onMouseMoveEvent, this.onClickEvent)
+        this.clickEvent = this.#button?.render(this.moveEvent, this.clickEvent)
 
         this.state = RenderState.Idle
     }
@@ -107,8 +107,8 @@ export class Legend extends Renderable {
                 duration: Constants.Animations.legend,
                 continuous: true,
                 before: () => {
-                    return this.onClickEvent != undefined
-                           && (isHover(this.onClickEvent)
+                    return this.clickEvent != undefined
+                           && (isHover(this.clickEvent)
                                || (value instanceof Sector
                                    && value.current !== 0
                                    && value.value !== value.current))
@@ -118,11 +118,11 @@ export class Legend extends Renderable {
                     value.toggle(transition)
 
                     if (transition == 1)
-                        this.onClickEvent = new PointerEvent(Events.Click)
+                        this.clickEvent = new PointerEvent(Events.Click)
                 }
             })
 
-        if (isHover(this.onMouseMoveEvent)) {
+        if (isHover(this.moveEvent)) {
             this.animations.handle(value.id,
                 AnimationType.MouseOver,
                 {

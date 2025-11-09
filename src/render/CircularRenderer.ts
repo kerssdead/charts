@@ -62,7 +62,7 @@ export class CircularRenderer extends Renderer<CircularData> {
             y: 0
         }
 
-        this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
+        this.moveEvent = new MouseEvent(Events.MouseMove)
     }
 
     private calculateAngles() {
@@ -466,10 +466,10 @@ export class CircularRenderer extends Renderer<CircularData> {
         if (sector.state == AnimationType.None && !this.isInsideCircle)
             return
 
-        const isInsideSector = this.isInsideSector(this.onMouseMoveEvent, sector, this.#center),
-            isInsideSectorClick = this.onClickEvent ? this.isInsideSector(this.onClickEvent, sector, this.#center) : false
+        const isInsideSector = this.isInsideSector(this.moveEvent, sector, this.#center),
+            isInsideSectorClick = this.clickEvent ? this.isInsideSector(this.clickEvent, sector, this.#center) : false
 
-        if (this.onMouseMoveEvent && isInsideSector) {
+        if (this.moveEvent && isInsideSector) {
             this.#currentHover = sector.id
             this.#hoverCount++
         }
@@ -485,7 +485,7 @@ export class CircularRenderer extends Renderer<CircularData> {
             else
                 this.#pinned.push(sector.id)
 
-            this.onClickEvent = undefined
+            this.clickEvent = undefined
 
             return
         } else if (this.#pinned.includes(sector.id)) {
@@ -553,11 +553,11 @@ export class CircularRenderer extends Renderer<CircularData> {
         const isAnyCollapsing = this.data.values.filter(s => s.value != s.current && s.current != 0)
                                     .length > 0
 
-        this.isMousePositionChanged = this.prevPoint.x != this.onMouseMoveEvent.clientX
-                                      || this.prevPoint.y != this.onMouseMoveEvent.clientY
+        this.isMousePositionChanged = this.prevPoint.x != this.moveEvent.clientX
+                                      || this.prevPoint.y != this.moveEvent.clientY
 
         if (this.isMousePositionChanged) {
-            const point = this.getMousePosition(this.onMouseMoveEvent)
+            const point = this.getMousePosition(this.moveEvent)
             this.isInsideCircle = this.isWithinRadius({
                 x: point.x - this.#center.x,
                 y: point.y - this.#center.y
@@ -565,8 +565,8 @@ export class CircularRenderer extends Renderer<CircularData> {
         }
 
         this.prevPoint = {
-            x: this.onMouseMoveEvent.clientX,
-            y: this.onMouseMoveEvent.clientY
+            x: this.moveEvent.clientX,
+            y: this.moveEvent.clientY
         }
 
         if (isAnyCollapsing) {
@@ -603,10 +603,10 @@ export class CircularRenderer extends Renderer<CircularData> {
         if (isAnyHover || this.contextMenu)
             this.renderContextMenu(currentHover?.data ?? {})
         else
-            this.onContextMenuEvent = undefined
+            this.menuEvent = undefined
 
         this.tooltip.render(isAnyHover && !this.dropdown?.isActive,
-            this.onMouseMoveEvent,
+            this.moveEvent,
             [
                 new TooltipValue(`${ currentHover?.label }: ${ Formatter.format(currentHover?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
             ],

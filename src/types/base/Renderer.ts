@@ -44,7 +44,7 @@ export class Renderer<T extends Data> extends Renderable {
     }
 
     renderDropdown() {
-        this.onClickEvent = this.dropdown?.render(this.onMouseMoveEvent, this.onClickEvent)
+        this.clickEvent = this.dropdown?.render(this.moveEvent, this.clickEvent)
     }
 
     resize() {
@@ -110,12 +110,12 @@ export class Renderer<T extends Data> extends Renderable {
 
     renderContextMenu(data: any) {
         if (this.dropdown?.isActive) {
-            this.onContextMenuEvent = undefined
+            this.menuEvent = undefined
 
             return false
         }
 
-        if (this.onContextMenuEvent != undefined && this.settings.contextMenu?.length != 0) {
+        if (this.menuEvent != undefined && this.settings.contextMenu?.length != 0) {
             if (this.contextMenu == undefined && this.settings.contextMenu != undefined) {
                 let clone: DropdownItem[] = []
 
@@ -128,30 +128,30 @@ export class Renderer<T extends Data> extends Renderable {
                             action: () => {
                                 item.action(data)
 
-                                this.onContextMenuEvent = undefined
+                                this.menuEvent = undefined
                                 this.contextMenu = undefined
                             }
                         })
 
                 this.contextMenu = new Dropdown(this.canvas, {
-                    x: this.onContextMenuEvent.x - this.canvasPosition.x,
-                    y: this.onContextMenuEvent.y - this.canvasPosition.y,
+                    x: this.menuEvent.x - this.canvasPosition.x,
+                    y: this.menuEvent.y - this.canvasPosition.y,
                     items: clone,
                     data: data
                 })
 
                 this.contextMenu.resize()
 
-                this.onClickEvent = undefined
+                this.clickEvent = undefined
             }
 
-            const isClick = this.onClickEvent != undefined
+            const isClick = this.clickEvent != undefined
 
-            this.onClickEvent = this.contextMenu?.render(this.onMouseMoveEvent, this.onClickEvent)
+            this.clickEvent = this.contextMenu?.render(this.moveEvent, this.clickEvent)
 
-            if (this.onClickEvent == undefined && isClick) {
+            if (this.clickEvent == undefined && isClick) {
                 this.contextMenu = undefined
-                this.onContextMenuEvent = undefined
+                this.menuEvent = undefined
 
                 return true
             }
@@ -169,7 +169,7 @@ export class Renderer<T extends Data> extends Renderable {
 
     closeDropdowns() {
         this.dropdown?.close()
-        this.onContextMenuEvent = undefined
+        this.menuEvent = undefined
     }
 
     protected renderTitle() {

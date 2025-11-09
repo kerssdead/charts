@@ -288,12 +288,14 @@ export class TreeRenderer extends Renderer<TreeData> {
             isVertical = !isVertical
         }
 
-        this.tooltip.render(!!tooltipCell && !this.dropdown?.isActive,
-            this.onMouseMoveEvent,
+        this.tooltip.render(
+            !!tooltipCell && !this.dropdown?.isActive,
+            this.moveEvent,
             [
                 new TooltipValue(`${ tooltipCell?.label }: ${ Formatter.format(tooltipCell?.value, PlotAxisType.Number, this.settings.valuePostfix) }`)
             ],
-            this.data.values.find(v => v.id == tooltipCell?.id))
+            this.data.values.find(v => v.id == tooltipCell?.id)
+        )
 
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
@@ -305,14 +307,14 @@ export class TreeRenderer extends Renderer<TreeData> {
         if (tooltipCell || this.contextMenu)
             this.renderContextMenu(contextMenuData)
         else
-            this.onContextMenuEvent = undefined
+            this.menuEvent = undefined
     }
 
     #isInCell(cell: TreeCell) {
-        if (!this.onMouseMoveEvent || !cell)
+        if (!this.moveEvent || !cell)
             return false
 
-        const mouse = this.getMousePosition(this.onMouseMoveEvent)
+        const mouse = this.getMousePosition(this.moveEvent)
 
         return !(this.dropdown?.isActive ?? false)
                && cell.x <= mouse.x && mouse.x <= cell.x + cell.w

@@ -23,11 +23,11 @@ export class Renderable {
 
     protected canvasPosition: DOMRect
 
-    protected onMouseMoveEvent: MouseEvent
+    protected moveEvent: MouseEvent
 
-    protected onClickEvent: MouseEvent | undefined
+    protected clickEvent: MouseEvent | undefined
 
-    protected onContextMenuEvent: MouseEvent | undefined
+    protected menuEvent: MouseEvent | undefined
 
     protected contextMenu: Dropdown | undefined
 
@@ -58,9 +58,9 @@ export class Renderable {
     }
 
     resetMouse() {
-        this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
-        this.onClickEvent = new MouseEvent(Events.Click)
-        this.onContextMenuEvent = undefined
+        this.moveEvent = new MouseEvent(Events.MouseMove)
+        this.clickEvent = new MouseEvent(Events.Click)
+        this.menuEvent = undefined
     }
 
     initAnimations() {
@@ -72,17 +72,17 @@ export class Renderable {
         this.canvasPosition.y += scrollY
 
         if (this.state == RenderState.Init && !this.settings.disableInteractions) {
-            this.canvas.onmousemove = event => this.onMouseMoveEvent = event
-            this.canvas.onclick = event => this.onClickEvent = event
+            this.canvas.onmousemove = event => this.moveEvent = event
+            this.canvas.onclick = event => this.clickEvent = event
             this.canvas.oncontextmenu = event => {
                 event.preventDefault()
                 this.contextMenu = undefined
-                if (this.onContextMenuEvent)
-                    this.onContextMenuEvent = undefined
+                if (this.menuEvent)
+                    this.menuEvent = undefined
                 else
-                    this.onContextMenuEvent = event
+                    this.menuEvent = event
             }
-            this.canvas.onmouseleave = () => this.onMouseMoveEvent = new MouseEvent(Events.MouseMove)
+            this.canvas.onmouseleave = () => this.moveEvent = new MouseEvent(Events.MouseMove)
         }
     }
 

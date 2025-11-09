@@ -31,12 +31,14 @@ export class GaugeRenderer extends Renderer<GaugeData> {
         this.#draw()
 
         const value = this.data.values[0]
-        this.tooltip.render(this.#isInsideSector(this.onMouseMoveEvent, value) && !this.dropdown?.isActive,
-            this.onMouseMoveEvent,
+        this.tooltip.render(
+            this.#isInsideSector(this.moveEvent, value) && !this.dropdown?.isActive,
+            this.moveEvent,
             [
                 new TooltipValue(`${ value?.label }: ${ Formatter.format(value?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
             ],
-            value)
+            value
+        )
 
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
