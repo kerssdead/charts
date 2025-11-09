@@ -41,23 +41,27 @@ export function isColorVisible(background: string, foreground: string) {
     return (backgroundAsRgb.r + backgroundAsRgb.g + backgroundAsRgb.b) / (foregroundAsRgb.r + foregroundAsRgb.g + foregroundAsRgb.b) < value
 }
 
+export function getColor(red: string, green: string, blue: string) {
+    return {
+        r: parseInt(red, 16),
+        g: parseInt(green, 16),
+        b: parseInt(blue, 16)
+    } as Color
+}
+
 export function hexToRgb(hex: string): Color {
     if (hex.length > 4) {
-        const value = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+        const value = getHexValues(hex)
         if (value)
-            return {
-                r: parseInt(value[1], 16),
-                g: parseInt(value[2], 16),
-                b: parseInt(value[3], 16)
-            }
+            return getColor(value[1], value[2], value[3])
     } else {
-        const value = /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(hex)
+        const value = getShortHexValues(hex)
         if (value)
-            return {
-                r: parseInt(value[1] + value[1], 16),
-                g: parseInt(value[2] + value[2], 16),
-                b: parseInt(value[3] + value[3], 16)
-            }
+            return getColor(
+                value[1] + value[1],
+                value[2] + value[2],
+                value[3] + value[3]
+            )
     }
 
     return new Color()
@@ -67,29 +71,27 @@ export function isISOString(str: string) {
     return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+/.test(str)
 }
 
+export function getHexValues(str: string) {
+    return /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(str)
+}
+
+export function getShortHexValues(str: string) {
+    return /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(str)
+}
+
 export function applyAlpha(color: string, opacity: number) {
     function hexToRgb(hex: string) {
-        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-        return result
-               ? {
-                   r: parseInt(result[1], 16),
-                   g: parseInt(result[2], 16),
-                   b: parseInt(result[3], 16)
-               } as Color
-               : {
-                   r: 0,
-                   g: 0,
-                   b: 0
-               } as Color
-    }
-
-    function componentToHex(c: number) {
-        let hex = c.toString(16)
-        return hex.length == 1 ? '0' + hex : hex
+        const result = getHexValues(hex)
+        return result ? getColor(result[1], result[2], result[3]) : new Color()
     }
 
     function rgbToHex(r: number, g: number, b: number) {
-        return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
+        function toHex(c: number) {
+            let hex = c.toString(16)
+            return hex.length == 1 ? '0' + hex : hex
+        }
+
+        return '#' + toHex(r) + toHex(g) + toHex(b)
     }
 
     const rgb = hexToRgb(color),
