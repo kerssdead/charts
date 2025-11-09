@@ -48,6 +48,8 @@ export class CircularRenderer extends Renderer<CircularData> {
 
     private isMousePositionChanged: boolean
 
+    private isInsideCircle: boolean
+
     private prevPoint: Point
 
     constructor(chart: Chart) {
@@ -276,6 +278,9 @@ export class CircularRenderer extends Renderer<CircularData> {
     }
 
     private canRenderLabel(sector: Sector, ctx: CanvasRenderingContext2D) {
+        if (sector.state == AnimationType.None && sector.canRenderLabel != undefined)
+            return sector.canRenderLabel
+
         if (sector.current == 0)
             return sector.canRenderLabel = false
 
@@ -458,6 +463,9 @@ export class CircularRenderer extends Renderer<CircularData> {
         if (sector.disabled)
             return
 
+        if (sector.state == AnimationType.None && !this.isInsideCircle)
+            return
+
         const isInsideSector = this.isInsideSector(this.onMouseMoveEvent, sector, this.#center),
             isInsideSectorClick = this.onClickEvent ? this.isInsideSector(this.onClickEvent, sector, this.#center) : false
 
@@ -548,6 +556,14 @@ export class CircularRenderer extends Renderer<CircularData> {
         this.isMousePositionChanged = this.prevPoint.x != this.onMouseMoveEvent.clientX
                                       || this.prevPoint.y != this.onMouseMoveEvent.clientY
 
+        if (this.isMousePositionChanged) {
+            const point = this.getMousePosition(this.onMouseMoveEvent)
+            this.isInsideCircle = this.isWithinRadius({
+                x: point.x - this.#center.x,
+                y: point.y - this.#center.y
+            })
+        }
+
         this.prevPoint = {
             x: this.onMouseMoveEvent.clientX,
             y: this.onMouseMoveEvent.clientY
@@ -606,6 +622,10 @@ export class CircularRenderer extends Renderer<CircularData> {
             requestAnimationFrame(this.render.bind(this))
     }
 
+    private isWithinRadius(v: Point) {
+        return v.x * v.x + v.y * v.y <= this.#radius * this.#radius
+    }
+
     private isInsideSector(event: MouseEvent, sector: Sector, center: Point): boolean {
         if (!this.isMousePositionChanged)
             return sector.isMouseInside
@@ -625,23 +645,9 @@ export class CircularRenderer extends Renderer<CircularData> {
                    && sumBefore + this.#angles[index].value - a >= 0
         }
 
-        const isWithinRadius = (v: Point) => {
-            return v.x * v.x + v.y * v.y <= this.#radius * this.#radius
-                   && (!this.#isDonut || v.x * v.x + v.y * v.y
-                       >= this.#radius * (sector.innerRadius / 100) * this.#radius * (sector.innerRadius / 100))
-        }
+        const point = this.getMousePosition(event)
 
-        const point = this.getMousePosition(event),
-            inner = {
-                x: point.x - center.x,
-                y: point.y - center.y
-            },
-            outer = {
-                x: point.x - center.x - sector.translate?.x,
-                y: point.y - center.y - sector.translate?.y
-            }
-
-        return sector.isMouseInside = isAngle(point) && (isWithinRadius(inner) || isWithinRadius(outer))
+        return sector.isMouseInside = isAngle(point) && this.isInsideCircle
     }
 
     private empty() {
