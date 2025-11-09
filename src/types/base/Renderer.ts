@@ -89,8 +89,8 @@ export class Renderer<T extends Data> extends Renderable {
     }
 
     calculateColors(force: boolean = false) {
-        const baseColor = this.settings.baseColor ?? Helper.randomColor(),
-            adjustAmount = -50
+        const baseColor = Helper.adjustColor(this.settings.baseColor ?? Helper.randomColor(), -67),
+            adjustAmount = 134
 
         let index = 0
 
