@@ -9,6 +9,10 @@ declare global {
         trySet: (key: K, value: V) => void
     }
 
+    interface Array {
+        sum: (predicate: (value: any) => number) => number
+    }
+
     interface Date {
         addDays: (days: number) => Date
 

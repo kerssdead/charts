@@ -38,7 +38,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private hover: string[]
 
-    private prevPoint: Point
+    private prevMousePos: Point
 
     private center: Point
 
@@ -53,7 +53,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         this.startAngle = Math.PI / 4
         this.isMousePositionChanged = false
-        this.prevPoint = {
+        this.prevMousePos = {
             x: 0,
             y: 0
         }
@@ -62,7 +62,7 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private calculateAngles() {
-        const valuesSum = this.data.values.reduce((acc, v) => acc + v.current, 0)
+        const valuesSum = this.data.values.sum(v => v.current)
 
         let anglesSum = this.startAngle
         this.angles = this.data.values.flatMap(sector => {
@@ -96,14 +96,12 @@ class CircularRenderer extends Renderer<CircularData> {
         }
 
         const startPoint = getPoint(this.radius, 0, this.center)
-
         const angle = this.getAngle(sector)
 
-        sector.direction = accumulator + angle / 2
-
         let nextPoint = getPoint(this.radius, angle, this.center)
-
         let points: DrawPoint[] = []
+
+        sector.direction = accumulator + angle / 2
 
         if (angle > 0) {
             if (sector.current > 0) {
@@ -543,8 +541,8 @@ class CircularRenderer extends Renderer<CircularData> {
         const isAnyCollapsing = this.data.values.filter(s => s.value != s.current && s.current != 0)
                                     .length > 0
 
-        this.isMousePositionChanged = this.prevPoint.x != this.moveEvent.clientX
-                                      || this.prevPoint.y != this.moveEvent.clientY
+        this.isMousePositionChanged = this.prevMousePos.x != this.moveEvent.clientX
+                                      || this.prevMousePos.y != this.moveEvent.clientY
 
         if (this.isMousePositionChanged) {
             const point = this.getMousePosition(this.moveEvent)
@@ -554,7 +552,7 @@ class CircularRenderer extends Renderer<CircularData> {
             })
         }
 
-        this.prevPoint = {
+        this.prevMousePos = {
             x: this.moveEvent.clientX,
             y: this.moveEvent.clientY
         }
@@ -776,7 +774,7 @@ class CircularRenderer extends Renderer<CircularData> {
         if (this.settings.enableOther && this.data.values.length > 20) {
             this.other = this.data.values.splice(20)
 
-            const sum = this.other.reduce((acc, v) => acc + v.current, 0)
+            const sum = this.other.sum(v => v.current)
 
             this.data.values = this.data.values.slice(0, 20)
 

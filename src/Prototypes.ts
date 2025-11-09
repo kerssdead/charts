@@ -18,3 +18,7 @@ Map.prototype.trySet = function (key: any, value: any) {
     if (!this.has(key))
         this.set(key, value)
 }
+
+Array.prototype.sum = function (predicate: (value: any) => number) {
+    return this.reduce((acc, v) => acc + predicate(v), 0)
+}
