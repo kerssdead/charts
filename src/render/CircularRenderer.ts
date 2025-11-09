@@ -34,11 +34,9 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private radius: number
 
-    private hoverCount: number
-
-    private currentHover: string | undefined
-
     private pinned: string[]
+
+    private hover: string[]
 
     private prevPoint: Point
 
@@ -469,10 +467,8 @@ class CircularRenderer extends Renderer<CircularData> {
         const isInsideSector = this.isInsideSector(this.moveEvent, sector, this.center),
             isInsideSectorClick = this.clickEvent ? this.isInsideSector(this.clickEvent, sector, this.center) : false
 
-        if (this.moveEvent && isInsideSector) {
-            this.currentHover = sector.id
-            this.hoverCount++
-        }
+        if (this.moveEvent && isInsideSector)
+            this.hover?.push(sector.id)
 
         if (this.data.values.filter(s => !s.disabled).length == 1)
             return
@@ -581,7 +577,7 @@ class CircularRenderer extends Renderer<CircularData> {
             return
         }
 
-        this.hoverCount = 0
+        this.hover = []
 
         const ctx = Canvas.getContext(this.canvas)
 
@@ -597,8 +593,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
         super.renderDropdown()
 
-        const currentHover = this.data.values.find(v => v.id == this.currentHover),
-            isAnyHover = this.hoverCount > 0
+        const currentHover = this.data.values.find(v => v.id == this.hover[0]),
+            isAnyHover = this.hover.length > 0
 
         if (isAnyHover || this.contextMenu)
             this.renderContextMenu(currentHover?.data ?? {})
@@ -614,7 +610,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         this.innerTitle()
 
-        this.canvas.style.cursor = this.hoverCount > 0
+        this.canvas.style.cursor = isAnyHover
                                    ? Styles.Cursor.Pointer
                                    : Styles.Cursor.Default
 
