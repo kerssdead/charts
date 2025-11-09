@@ -1,8 +1,8 @@
-import { Data } from 'types/interfaces/Data'
-import { DropdownItem } from 'types/DropdownItem'
+import Data from 'types/interfaces/Data'
+import DropdownItem from 'types/DropdownItem'
 import { ChartType, LegendPlace } from 'static/Enums'
 
-export class ChartSettings {
+class ChartSettings {
     enableLegend: boolean
 
     enableTooltip: boolean
@@ -39,3 +39,5 @@ export class ChartSettings {
 
     isDarkThemeFunction: Function | undefined
 }
+
+export default ChartSettings

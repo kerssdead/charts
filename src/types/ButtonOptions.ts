@@ -1,4 +1,4 @@
-export class ButtonOptions {
+class ButtonOptions {
     x: number
 
     y: number
@@ -7,3 +7,5 @@ export class ButtonOptions {
 
     action: () => void
 }
+
+export default ButtonOptions

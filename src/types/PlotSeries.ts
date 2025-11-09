@@ -1,8 +1,8 @@
-import { Value } from 'types/base/Value'
-import { PlotPoint } from 'types/PlotPoint'
+import Value from 'types/base/Value'
+import PlotPoint from 'types/PlotPoint'
 import { LineType, PlotType } from 'static/Enums'
 
-export class PlotSeries extends Value {
+class PlotSeries extends Value {
     values: PlotPoint[]
 
     type: PlotType
@@ -31,3 +31,5 @@ export class PlotSeries extends Value {
         super.reset()
     }
 }
+
+export default PlotSeries

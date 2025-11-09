@@ -1,20 +1,20 @@
-import { Renderer } from 'types/base/Renderer'
-import { GaugeData } from 'types/data/GaugeData'
+import Renderer from 'types/base/Renderer'
+import GaugeData from 'types/data/GaugeData'
 import * as Helper from 'Helper'
-import { Sector } from 'types/Sector'
-import { Dropdown } from 'Dropdown'
-import { Point } from 'types/Point'
-import { Chart } from 'Chart'
-import { Theme } from 'Theme'
-import { TextStyles } from 'helpers/TextStyles'
-import { TooltipValue } from 'types/TooltipValue'
-import { Export } from 'Export'
-import { Formatter } from 'helpers/Formatter'
-import { Canvas } from 'helpers/Canvas'
-import { TextResources } from 'static/TextResources'
+import Sector from 'types/Sector'
+import Dropdown from 'Dropdown'
+import Point from 'types/Point'
+import Chart from 'Chart'
+import Theme from 'Theme'
+import TextStyles from 'helpers/TextStyles'
+import TooltipValue from 'types/TooltipValue'
+import Export from 'Export'
+import Formatter from 'helpers/Formatter'
+import Canvas from 'helpers/Canvas'
+import TextResources from 'static/TextResources'
 import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
 
-export class GaugeRenderer extends Renderer<GaugeData> {
+class GaugeRenderer extends Renderer<GaugeData> {
     #radius: number
 
     #center: Point
@@ -208,3 +208,5 @@ export class GaugeRenderer extends Renderer<GaugeData> {
             })
     }
 }
+
+export default GaugeRenderer

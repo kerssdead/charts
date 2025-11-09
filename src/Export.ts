@@ -1,9 +1,9 @@
-import { Theme } from 'Theme'
+import Theme from 'Theme'
 import * as Helper from 'Helper'
-import { Canvas } from 'helpers/Canvas'
+import Canvas from 'helpers/Canvas'
 import { Icon, Tag } from 'static/Enums'
 
-export class Export {
+class Export {
     static asPng(canvas: HTMLCanvasElement, title: string) {
         requestAnimationFrame(() => {
             const ctx = Canvas.getContext(canvas)
@@ -149,3 +149,5 @@ export class Export {
         }
     }
 }
+
+export default Export

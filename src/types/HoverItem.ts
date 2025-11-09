@@ -1,6 +1,6 @@
-import { PlotSeries } from 'types/PlotSeries'
+import PlotSeries from 'types/PlotSeries'
 
-export class HoverItem {
+class HoverItem {
     x: number
 
     y: number
@@ -11,3 +11,5 @@ export class HoverItem {
 
     series?: PlotSeries | undefined
 }
+
+export default HoverItem

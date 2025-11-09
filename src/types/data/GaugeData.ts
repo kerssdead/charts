@@ -1,8 +1,10 @@
-import { Sector } from 'types/Sector'
-import { Data } from 'types/interfaces/Data'
+import Sector from 'types/Sector'
+import Data from 'types/interfaces/Data'
 
-export class GaugeData implements Data {
+class GaugeData implements Data {
     values: Sector[]
 
     max: number
 }
+
+export default GaugeData

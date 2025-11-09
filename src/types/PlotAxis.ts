@@ -1,4 +1,4 @@
-export class PlotAxis {
+class PlotAxis {
     min: number
 
     max: number
@@ -11,3 +11,5 @@ export class PlotAxis {
 
     minStep: number
 }
+
+export default PlotAxis

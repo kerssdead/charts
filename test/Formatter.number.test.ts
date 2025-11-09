@@ -1,4 +1,4 @@
-import { Formatter } from '../src/helpers/Formatter'
+import Formatter from '../src/helpers/Formatter'
 
 describe('Getting formatted number', () => {
     it('Number', () => {

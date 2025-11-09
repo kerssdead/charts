@@ -1,5 +1,5 @@
-import { Color } from 'types/Color'
-import { Theme } from 'Theme'
+import Color from 'types/Color'
+import Theme from 'Theme'
 
 export function adjustColor(color: string, amount: number) {
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).slice(-2))

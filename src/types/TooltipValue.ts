@@ -1,4 +1,4 @@
-export class TooltipValue {
+class TooltipValue {
     text: string | undefined
 
     color: string | undefined
@@ -8,3 +8,5 @@ export class TooltipValue {
         this.color = color
     }
 }
+
+export default TooltipValue

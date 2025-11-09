@@ -1,5 +1,7 @@
-export class TableHeaderValue {
+class TableHeaderValue {
     display: string
 
     value: string
 }
+
+export default TableHeaderValue

@@ -1,7 +1,7 @@
-import { DropdownItem } from 'types/DropdownItem'
+import DropdownItem from 'types/DropdownItem'
 import { Icon } from 'static/Enums'
 
-export class DropdownOptions {
+class DropdownOptions {
     items: DropdownItem[]
 
     x: number
@@ -14,3 +14,5 @@ export class DropdownOptions {
 
     data?: any
 }
+
+export default DropdownOptions

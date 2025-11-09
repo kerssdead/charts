@@ -1,4 +1,4 @@
-import { TreeData } from '../src/types/data/TreeData'
+import TreeData from '../src/types/data/TreeData'
 
 describe('Getting tree map rows for decomposition', () => {
     it('Should has 3 rows', () => {

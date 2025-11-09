@@ -1,4 +1,4 @@
-export class Value {
+class Value {
     id: string
 
     baseColor: string
@@ -30,3 +30,5 @@ export class Value {
         this.disabled = false
     }
 }
+
+export default Value

@@ -1,6 +1,6 @@
 import { ErrorType } from 'static/Enums'
 
-export abstract class Errors {
+abstract class Errors {
     static throw(error: ErrorType): never {
         throw new Error(error)
     }
@@ -10,3 +10,5 @@ export abstract class Errors {
             Errors.throw(error)
     }
 }
+
+export default Errors

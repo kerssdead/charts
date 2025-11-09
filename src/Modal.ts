@@ -1,7 +1,7 @@
-import { Errors } from 'helpers/Errors'
+import Errors from 'helpers/Errors'
 import { ErrorType, Icon, Tag } from 'static/Enums'
 
-export class Modal {
+class Modal {
     modal: HTMLDialogElement | undefined
 
     #content: HTMLDivElement | undefined
@@ -79,6 +79,8 @@ export class Modal {
             this.#content.appendChild(content)
     }
 }
+
+export default Modal
 
 class ModalClasses {
     static modal = 'o-modal'

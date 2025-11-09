@@ -1,27 +1,27 @@
-import { Renderer } from 'types/base/Renderer'
-import { CircularData } from 'types/data/CircularData'
-import { Sector } from 'types/Sector'
-import { CircularAngle } from 'types/CircularAngle'
-import { Point } from 'types/Point'
-import { DropdownItem } from 'types/DropdownItem'
+import Renderer from 'types/base/Renderer'
+import CircularData from 'types/data/CircularData'
+import Sector from 'types/Sector'
+import CircularAngle from 'types/CircularAngle'
+import Point from 'types/Point'
+import DropdownItem from 'types/DropdownItem'
 import * as Helper from 'Helper'
-import { Dropdown } from 'Dropdown'
-import { Theme } from 'Theme'
-import { TextStyles } from 'helpers/TextStyles'
-import { Chart } from 'Chart'
-import { TooltipValue } from 'types/TooltipValue'
-import { Decomposition } from 'Decomposition'
-import { Export } from 'Export'
-import { TextResources } from 'static/TextResources'
-import { Modal } from 'Modal'
-import { Canvas } from 'helpers/Canvas'
-import { Formatter } from 'helpers/Formatter'
+import Dropdown from 'Dropdown'
+import Theme from 'Theme'
+import TextStyles from 'helpers/TextStyles'
+import Chart from 'Chart'
+import TooltipValue from 'types/TooltipValue'
+import Decomposition from 'Decomposition'
+import Export from 'Export'
+import TextResources from 'static/TextResources'
+import Modal from 'Modal'
+import Canvas from 'helpers/Canvas'
+import Formatter from 'helpers/Formatter'
 import { AnimationType, DrawPointType, Events, Icon, PlotAxisType } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
-import { Styles } from 'static/constants/Styles'
-import { DrawPoint } from 'types/DrawPoint'
+import Styles from 'static/constants/Styles'
+import DrawPoint from 'types/DrawPoint'
 
-export class CircularRenderer extends Renderer<CircularData> {
+class CircularRenderer extends Renderer<CircularData> {
     #canRenderInnerTitle: boolean
 
     #isDonut: boolean
@@ -852,3 +852,5 @@ export class CircularRenderer extends Renderer<CircularData> {
             })
     }
 }
+
+export default CircularRenderer

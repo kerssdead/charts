@@ -1,5 +1,7 @@
-import { Value } from 'types/base/Value'
+import Value from 'types/base/Value'
 
-export interface Data {
+interface Data {
     values: Value[]
 }
+
+export default Data

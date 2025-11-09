@@ -1,10 +1,10 @@
-import { Value } from 'types/base/Value'
-import { Point } from 'types/Point'
-import { DrawPoint } from 'types/DrawPoint'
-import { AnimationType } from '../static/Enums'
-import { LineStyles } from './LineStyles'
+import Value from 'types/base/Value'
+import Point from 'types/Point'
+import DrawPoint from 'types/DrawPoint'
+import { AnimationType } from 'static/Enums'
+import LineStyles from 'types/LineStyles'
 
-export class Sector extends Value {
+class Sector extends Value {
     canRenderLabel: boolean | undefined
 
     isMouseInside: boolean
@@ -61,3 +61,5 @@ export class Sector extends Value {
         this.current = this.value
     }
 }
+
+export default Sector

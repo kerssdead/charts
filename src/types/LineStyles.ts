@@ -1,7 +1,9 @@
-export class LineStyles {
+class LineStyles {
     lineWidth: number
 
     lineJoin: CanvasLineJoin
 
     lineCap: CanvasLineCap
 }
+
+export default LineStyles

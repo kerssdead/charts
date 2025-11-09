@@ -1,4 +1,4 @@
-import { CircularData } from '../src/types/data/CircularData'
+import CircularData from '../src/types/data/CircularData'
 
 describe('Getting circular rows for decomposition', () => {
     it('Should has 3 rows', () => {

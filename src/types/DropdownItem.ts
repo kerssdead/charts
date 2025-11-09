@@ -1,4 +1,4 @@
-export class DropdownItem {
+class DropdownItem {
     isDivider?: boolean | undefined
 
     condition?: (arg?: any) => boolean
@@ -9,3 +9,5 @@ export class DropdownItem {
 
     action: (arg?: any) => void
 }
+
+export default DropdownItem

@@ -1,23 +1,23 @@
-import { TreeData } from 'types/data/TreeData'
-import { Renderer } from 'types/base/Renderer'
-import { Sector } from 'types/Sector'
+import TreeData from 'types/data/TreeData'
+import Renderer from 'types/base/Renderer'
+import Sector from 'types/Sector'
 import * as Helper from 'Helper'
-import { DropdownItem } from 'types/DropdownItem'
-import { Dropdown } from 'Dropdown'
-import { Chart } from 'Chart'
-import { TextStyles } from 'helpers/TextStyles'
-import { TooltipValue } from 'types/TooltipValue'
-import { Export } from 'Export'
-import { Decomposition } from 'Decomposition'
-import { Modal } from 'Modal'
-import { TextResources } from 'static/TextResources'
-import { Canvas } from 'helpers/Canvas'
-import { TreeCell } from 'types/TreeCell'
-import { Formatter } from 'helpers/Formatter'
+import DropdownItem from 'types/DropdownItem'
+import Dropdown from 'Dropdown'
+import Chart from 'Chart'
+import TextStyles from 'helpers/TextStyles'
+import TooltipValue from 'types/TooltipValue'
+import Export from 'Export'
+import Decomposition from 'Decomposition'
+import Modal from 'Modal'
+import TextResources from 'static/TextResources'
+import Canvas from 'helpers/Canvas'
+import TreeCell from 'types/TreeCell'
+import Formatter from 'helpers/Formatter'
 import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
 
-export class TreeRenderer extends Renderer<TreeData> {
+class TreeRenderer extends Renderer<TreeData> {
     constructor(chart: Chart) {
         super(chart)
 
@@ -389,3 +389,5 @@ export class TreeRenderer extends Renderer<TreeData> {
             })
     }
 }
+
+export default TreeRenderer

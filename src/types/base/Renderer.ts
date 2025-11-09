@@ -1,20 +1,20 @@
-import { Data } from 'types/interfaces/Data'
-import { Renderable } from 'types/base/Renderable'
+import Data from 'types/interfaces/Data'
+import Renderable from 'types/base/Renderable'
 import * as Helper from 'Helper'
-import { Value } from 'types/base/Value'
-import { Legend } from 'Legend'
-import { Dropdown } from 'Dropdown'
-import { DropdownItem } from 'types/DropdownItem'
-import { Point } from 'types/Point'
-import { TextResources } from 'static/TextResources'
-import { Chart } from 'Chart'
-import { Canvas } from 'helpers/Canvas'
-import { TextStyles } from 'helpers/TextStyles'
+import Value from 'types/base/Value'
+import Legend from 'Legend'
+import Dropdown from 'Dropdown'
+import DropdownItem from 'types/DropdownItem'
+import Point from 'types/Point'
+import TextResources from 'static/TextResources'
+import Chart from 'Chart'
+import Canvas from 'helpers/Canvas'
+import TextStyles from 'helpers/TextStyles'
 import { LegendPlace, RenderState } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
-import { ChartSettings } from '../ChartSettings'
+import ChartSettings from '../ChartSettings'
 
-export class Renderer<T extends Data> extends Renderable {
+class Renderer<T extends Data> extends Renderable {
     dropdown: Dropdown | undefined
 
     data: T
@@ -217,3 +217,5 @@ export class Renderer<T extends Data> extends Renderable {
         this.settings = settings
     }
 }
+
+export default Renderer

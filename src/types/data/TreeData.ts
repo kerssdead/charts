@@ -1,9 +1,9 @@
-import { Value } from 'types/base/Value'
-import { TableValue } from 'types/TableValue'
-import { TableData } from 'types/TableData'
-import { Data } from 'types/interfaces/Data'
+import Value from 'types/base/Value'
+import TableValue from 'types/TableValue'
+import TableData from 'types/TableData'
+import Data from 'types/interfaces/Data'
 
-export class TreeData implements Data {
+class TreeData implements Data {
     values: Value[]
 
     padding: number
@@ -30,3 +30,5 @@ export class TreeData implements Data {
         }
     }
 }
+
+export default TreeData

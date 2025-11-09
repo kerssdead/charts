@@ -1,4 +1,4 @@
-export class Paddings {
+class Paddings {
     top: number
 
     right: number
@@ -7,3 +7,5 @@ export class Paddings {
 
     left: number
 }
+
+export default Paddings

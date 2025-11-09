@@ -1,8 +1,10 @@
-import { TableValue } from 'types/TableValue'
-import { TableHeaderValue } from 'types/TableHeaderValue'
+import TableValue from 'types/TableValue'
+import TableHeaderValue from 'types/TableHeaderValue'
 
-export class TableData {
+class TableData {
     headers: TableHeaderValue[]
 
     values: TableValue[]
 }
+
+export default TableData

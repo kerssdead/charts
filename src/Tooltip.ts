@@ -1,17 +1,17 @@
-import { Value } from 'types/base/Value'
-import { Theme } from 'Theme'
-import { TextStyles } from 'helpers/TextStyles'
+import Value from 'types/base/Value'
+import Theme from 'Theme'
+import TextStyles from 'helpers/TextStyles'
 import * as Helper from 'Helper'
-import { ChartSettings } from 'types/ChartSettings'
-import { TooltipValue } from 'types/TooltipValue'
-import { Data } from 'types/interfaces/Data'
-import { Canvas } from 'helpers/Canvas'
+import ChartSettings from 'types/ChartSettings'
+import TooltipValue from 'types/TooltipValue'
+import Data from 'types/interfaces/Data'
+import Canvas from 'helpers/Canvas'
 import * as Constants from 'static/constants/Index'
-import { Styles } from 'static/constants/Styles'
-import { HTMLTooltipElement } from 'types/extends/HTMLTooltipElement'
+import Styles from 'static/constants/Styles'
+import HTMLTooltipElement from 'types/extends/HTMLTooltipElement'
 import { Attribute, Tag } from 'static/Enums'
 
-export class Tooltip {
+class Tooltip {
     canvas: HTMLCanvasElement
 
     data: Data
@@ -252,3 +252,5 @@ export class Tooltip {
         return opacityValue
     }
 }
+
+export default Tooltip

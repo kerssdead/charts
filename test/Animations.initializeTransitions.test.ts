@@ -1,4 +1,4 @@
-import { Animations } from '../src/Animations'
+import Animations from '../src/Animations'
 
 describe('Calculating animation transitions', ()=>{
     it('Should has all values for 0 -> 1 with resolution of thousands',()=>{

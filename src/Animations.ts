@@ -1,8 +1,8 @@
-import { AnimationItem } from 'types/AnimationItem'
+import AnimationItem from 'types/AnimationItem'
 import { AnimationType } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
 
-export class Animations {
+class Animations {
     #queue: Map<string, AnimationItem>
 
     static transitionCurve: Map<number, number> = new Map()
@@ -122,3 +122,5 @@ export class Animations {
         return Animations.transitionCurve.get(+value.toFixed(4)) ?? 0
     }
 }
+
+export default Animations

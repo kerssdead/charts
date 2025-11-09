@@ -1,4 +1,4 @@
-export namespace Styles {
+namespace Styles {
     export class Cursor {
         static Default = 'default'
 
@@ -45,3 +45,4 @@ export namespace Styles {
         static Pixelated = 'pixelated'
     }
 }
+export default Styles

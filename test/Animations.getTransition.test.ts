@@ -1,4 +1,4 @@
-import { Animations } from '../src/Animations'
+import Animations from '../src/Animations'
 
 describe('Getting calculated animations transition',()=>{
     it('Should be 0',()=>{

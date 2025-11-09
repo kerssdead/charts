@@ -1,5 +1,5 @@
-import { Value } from '../src/types/base/Value'
-import { Legend } from '../src/Legend'
+import Value from '../src/types/base/Value'
+import Legend from '../src/Legend'
 
 describe('Calculate legend height', () => {
     it('Should be single row height', () => {

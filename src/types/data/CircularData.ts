@@ -1,9 +1,9 @@
-import { TableValue } from 'types/TableValue'
-import { Sector } from 'types/Sector'
-import { TableData } from 'types/TableData'
-import { Data } from 'types/interfaces/Data'
+import TableValue from 'types/TableValue'
+import Sector from 'types/Sector'
+import TableData from 'types/TableData'
+import Data from 'types/interfaces/Data'
 
-export class CircularData implements Data {
+class CircularData implements Data {
     values: Sector[]
 
     innerRadius: number
@@ -32,3 +32,5 @@ export class CircularData implements Data {
         }
     }
 }
+
+export default CircularData

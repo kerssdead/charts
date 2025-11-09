@@ -1,3 +1,5 @@
-export interface HTMLTooltipElement extends HTMLDivElement {
+interface HTMLTooltipElement extends HTMLDivElement {
     position: DOMRect
 }
+
+export default HTMLTooltipElement

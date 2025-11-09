@@ -1,8 +1,8 @@
 import * as Helper from 'Helper'
-import { ThemeOptions } from 'static/ThemeOptions'
+import ThemeOptions from 'static/ThemeOptions'
 import { Events } from 'static/Enums'
 
-export class Theme {
+class Theme {
     static currentTheme = 0
 
     static text: string
@@ -61,3 +61,5 @@ export class Theme {
         this.function = undefined
     }
 }
+
+export default Theme

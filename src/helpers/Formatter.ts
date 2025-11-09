@@ -1,6 +1,6 @@
 import { PlotAxisType } from 'static/Enums'
 
-export abstract class Formatter {
+abstract class Formatter {
     static number = (value: number | undefined) =>
         value?.toLocaleString(undefined, {
             minimumFractionDigits: 2,
@@ -34,3 +34,5 @@ export abstract class Formatter {
     }
 
 }
+
+export default Formatter

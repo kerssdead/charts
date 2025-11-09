@@ -1,5 +1,5 @@
 import { PlotAxisType } from '../src/static/Enums'
-import { Formatter } from '../src/helpers/Formatter'
+import Formatter from '../src/helpers/Formatter'
 
 describe('Getting formatted values', () => {
     it('Number', () => {

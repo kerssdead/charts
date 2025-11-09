@@ -1,4 +1,4 @@
-export class TreeCell {
+class TreeCell {
     s: number
 
     value: number
@@ -22,3 +22,5 @@ export class TreeCell {
     constructor() {
     }
 }
+
+export default TreeCell

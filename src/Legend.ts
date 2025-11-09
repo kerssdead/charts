@@ -1,20 +1,20 @@
-import { Value } from 'types/base/Value'
-import { Renderable } from 'types/base/Renderable'
+import Value from 'types/base/Value'
+import Renderable from 'types/base/Renderable'
 import * as Helper from 'Helper'
-import { Sector } from 'types/Sector'
-import { Point } from 'types/Point'
-import { Theme } from 'Theme'
-import { Chart } from 'Chart'
-import { TextStyles } from 'helpers/TextStyles'
-import { Canvas } from 'helpers/Canvas'
-import { Button } from 'Button'
-import { TextResources } from 'static/TextResources'
+import Sector from 'types/Sector'
+import Point from 'types/Point'
+import Theme from 'Theme'
+import Chart from 'Chart'
+import TextStyles from 'helpers/TextStyles'
+import Canvas from 'helpers/Canvas'
+import Button from 'Button'
+import TextResources from 'static/TextResources'
 import * as Constants from 'static/constants/Index'
-import { Styles } from 'static/constants/Styles'
+import Styles from 'static/constants/Styles'
 import { AnimationType, Events, LegendPlace, RenderState } from 'static/Enums'
-import { ChartSettings } from './types/ChartSettings'
+import ChartSettings from './types/ChartSettings'
 
-export class Legend extends Renderable {
+class Legend extends Renderable {
     #button: Button
 
     #offset: Point
@@ -295,3 +295,5 @@ export class Legend extends Renderable {
         return 24 + count * 20 + (count - 1) * 6
     }
 }
+
+export default Legend

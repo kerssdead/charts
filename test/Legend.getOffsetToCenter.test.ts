@@ -1,5 +1,5 @@
-import { Value } from '../src/types/base/Value'
-import { Legend } from '../src/Legend'
+import Value from '../src/types/base/Value'
+import Legend from '../src/Legend'
 
 describe('Get offset to center', () => {
     it('Should close to 100 pixels', () => {

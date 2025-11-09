@@ -1,14 +1,14 @@
-import { TextStyles } from 'helpers/TextStyles'
-import { Theme } from 'Theme'
-import { Animations } from 'Animations'
+import TextStyles from 'helpers/TextStyles'
+import Theme from 'Theme'
+import Animations from 'Animations'
 import * as Helper from 'Helper'
-import { ButtonOptions } from 'types/ButtonOptions'
-import { Canvas } from 'helpers/Canvas'
+import ButtonOptions from 'types/ButtonOptions'
+import Canvas from 'helpers/Canvas'
 import { AnimationType } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
-import { Styles } from 'static/constants/Styles'
+import Styles from 'static/constants/Styles'
 
-export class Button {
+class Button {
     #canvas: HTMLCanvasElement
 
     #options: ButtonOptions
@@ -126,3 +126,5 @@ export class Button {
                && trueY >= this.#position.y && trueY <= this.#position.y + this.#position.height
     }
 }
+
+export default Button

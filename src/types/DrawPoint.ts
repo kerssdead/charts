@@ -1,6 +1,6 @@
 import { DrawPointType } from 'static/Enums'
 
-export class DrawPoint {
+class DrawPoint {
     /**
      * Method invocation arguments, where even indexed is x-axis points and odd is y-axis points
      */
@@ -16,3 +16,5 @@ export class DrawPoint {
         this.base = JSON.parse(JSON.stringify(args))
     }
 }
+
+export default DrawPoint
