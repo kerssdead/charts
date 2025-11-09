@@ -89,16 +89,20 @@ export class Renderer<T extends Data> extends Renderable {
     }
 
     calculateColors(force: boolean = false) {
-        const baseColor = this.settings.baseColor ?? Helper.randomColor()
-        let adjustStep = Math.round(100 / this.settings.data.values.length),
+        const baseColor = this.settings.baseColor ?? Helper.randomColor(),
             adjustAmount = -50
 
-        if (adjustStep <= 1)
-            adjustStep = 1
+        let index = 0
 
-        for (let item of this.settings.data.values)
-            if (item.color == undefined || force)
-                item.color = Helper.adjustColor(baseColor, adjustAmount += adjustStep)
+        for (let item of this.settings.data.values) {
+            if (item.color == undefined || force) {
+                let amount = Math.round(index / this.settings.data.values.length  * adjustAmount)
+
+                item.color = Helper.adjustColor(baseColor, amount)
+            }
+
+            index++
+        }
     }
 
     initDropdown() {
