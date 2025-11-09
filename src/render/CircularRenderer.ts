@@ -42,8 +42,6 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private center: Point
 
-    private startPoint: Point
-
     private angles: CircularAngle[]
 
     private other: Sector[]
@@ -97,13 +95,13 @@ class CircularRenderer extends Renderer<CircularData> {
             }
         }
 
-        this.startPoint = getPoint(this.radius, 0, this.center)
+        const startPoint = getPoint(this.radius, 0, this.center)
 
         const angle = this.getAngle(sector)
 
         sector.direction = accumulator + angle / 2
 
-        let point2 = getPoint(this.radius, angle, this.center)
+        let nextPoint = getPoint(this.radius, angle, this.center)
 
         let points: DrawPoint[] = []
 
@@ -128,7 +126,7 @@ class CircularRenderer extends Renderer<CircularData> {
             if (!this.isDonut)
                 points.push(new DrawPoint(DrawPointType.Move, this.center.x, this.center.y))
 
-            points.push(new DrawPoint(DrawPointType.Line, this.startPoint.x, this.startPoint.y))
+            points.push(new DrawPoint(DrawPointType.Line, startPoint.x, startPoint.y))
 
             let localAccumulator = 0,
                 localAngle = angle
@@ -138,13 +136,13 @@ class CircularRenderer extends Renderer<CircularData> {
                                    ? Math.PI / 6
                                    : localAngle
 
-                point2 = getPoint(this.radius, localAccumulator + currentAngle, this.center)
+                nextPoint = getPoint(this.radius, localAccumulator + currentAngle, this.center)
 
                 const tangentIntersectionAngle = Math.PI - currentAngle,
                     lengthToTangentIntersection = this.radius / Math.sin(tangentIntersectionAngle / 2),
                     tangentIntersectionPoint = getPoint(lengthToTangentIntersection, localAccumulator + currentAngle / 2, this.center)
 
-                points.push(new DrawPoint(DrawPointType.QuadraticCurve, tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y))
+                points.push(new DrawPoint(DrawPointType.QuadraticCurve, tangentIntersectionPoint.x, tangentIntersectionPoint.y, nextPoint.x, nextPoint.y))
 
                 localAccumulator += currentAngle
 
@@ -155,8 +153,8 @@ class CircularRenderer extends Renderer<CircularData> {
                 const innerRadius = this.radius * (sector.innerRadius / 100)
 
                 const innerPoint2 = {
-                    x: point2.x - (((this.radius - innerRadius) * (point2.x - this.center.x)) / this.radius),
-                    y: point2.y - (((this.radius - innerRadius) * (point2.y - this.center.y)) / this.radius)
+                    x: nextPoint.x - (((this.radius - innerRadius) * (nextPoint.x - this.center.x)) / this.radius),
+                    y: nextPoint.y - (((this.radius - innerRadius) * (nextPoint.y - this.center.y)) / this.radius)
                 }
 
                 points.push(new DrawPoint(DrawPointType.Line, innerPoint2.x, innerPoint2.y))
@@ -169,26 +167,22 @@ class CircularRenderer extends Renderer<CircularData> {
                                        ? Math.PI / 6
                                        : angle - localAngle
 
-                    point2 = getPoint(innerRadius, localAccumulator - currentAngle, this.center)
+                    nextPoint = getPoint(innerRadius, localAccumulator - currentAngle, this.center)
 
                     const tangentIntersectionAngle = Math.PI - currentAngle,
                         lengthToTangentIntersection = innerRadius / Math.sin(tangentIntersectionAngle / 2),
                         tangentIntersectionPoint = getPoint(lengthToTangentIntersection, localAccumulator - currentAngle / 2, this.center)
 
-                    points.push(new DrawPoint(DrawPointType.QuadraticCurve, tangentIntersectionPoint.x, tangentIntersectionPoint.y, point2.x, point2.y))
+                    points.push(new DrawPoint(DrawPointType.QuadraticCurve, tangentIntersectionPoint.x, tangentIntersectionPoint.y, nextPoint.x, nextPoint.y))
 
                     localAccumulator -= currentAngle
 
                     localAngle += Math.PI / 6
                 }
-
-                point2 = getPoint(this.radius, angle, this.center)
             }
 
             accumulator += angle
         }
-
-        this.startPoint = point2
 
         sector.points = points
 
