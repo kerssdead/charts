@@ -193,31 +193,23 @@ class CircularRenderer extends Renderer<CircularData> {
             y: this.center.y + this.radius / 2 * Math.sin(sector.direction)
         }
 
-        for (let p of sector.points) {
-            for (let i = 0; i < p.args.length; i += 2) {
-                const x = p.base[i],
-                    y = p.base[i + 1],
-                    length = Math.sqrt(Math.pow(x - centerOfSector.x, 2) + Math.pow(y - centerOfSector.y, 2)),
-                    computed = length * value + length * (1 - value) * transition,
-                    ratio = computed / length
+        const setArgs = (points: DrawPoint[]) => {
+            for (let p of points) {
+                for (let i = 0; i < p.args.length; i += 2) {
+                    const x = p.base[i],
+                        y = p.base[i + 1],
+                        length = Math.sqrt(Math.pow(x - centerOfSector.x, 2) + Math.pow(y - centerOfSector.y, 2)),
+                        computed = length * value + length * (1 - value) * transition,
+                        ratio = computed / length
 
-                p.args[i] = ratio * x + (1 - ratio) * centerOfSector.x
-                p.args[i + 1] = ratio * y + (1 - ratio) * centerOfSector.y
+                    p.args[i] = ratio * x + (1 - ratio) * centerOfSector.x
+                    p.args[i + 1] = ratio * y + (1 - ratio) * centerOfSector.y
+                }
             }
         }
 
-        for (let p of sector.labelPoints) {
-            for (let i = 0; i < p.args.length; i += 2) {
-                const x = p.base[i],
-                    y = p.base[i + 1],
-                    length = Math.sqrt(Math.pow(x - centerOfSector.x, 2) + Math.pow(y - centerOfSector.y, 2)),
-                    computed = length * value + length * (1 - value) * transition,
-                    ratio = computed / length
-
-                p.args[i] = ratio * x + (1 - ratio) * centerOfSector.x
-                p.args[i + 1] = ratio * y + (1 - ratio) * centerOfSector.y
-            }
-        }
+        setArgs(sector.points)
+        setArgs(sector.labelPoints)
     }
 
     private focus(sector: Sector, value: number, transition: number) {
@@ -236,19 +228,17 @@ class CircularRenderer extends Renderer<CircularData> {
             y: offset.y * transition
         }
 
-        for (let p of sector.points) {
-            for (let i = 0; i < p.args.length; i += 2) {
-                p.args[i] = p.base[i] + offset.x * transition
-                p.args[i + 1] = p.base[i + 1] + offset.y * transition
+        const setArgs = (points: DrawPoint[]) => {
+            for (let p of points) {
+                for (let i = 0; i < p.args.length; i += 2) {
+                    p.args[i] = p.base[i] + sector.translate.x
+                    p.args[i + 1] = p.base[i + 1] + sector.translate.y
+                }
             }
         }
 
-        for (let p of sector.labelPoints) {
-            for (let i = 0; i < p.args.length; i += 2) {
-                p.args[i] = p.base[i] + offset.x * transition
-                p.args[i + 1] = p.base[i + 1] + offset.y * transition
-            }
-        }
+        setArgs(sector.points)
+        setArgs(sector.labelPoints)
     }
 
     private outline(sector: Sector, value: number, transition: number) {
