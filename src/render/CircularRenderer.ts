@@ -53,10 +53,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         this.startAngle = Math.PI / 4
         this.isMousePositionChanged = false
-        this.prevMousePos = {
-            x: 0,
-            y: 0
-        }
+        this.prevMousePos = new Point()
 
         this.moveEvent = new MouseEvent(Events.MouseMove)
     }
