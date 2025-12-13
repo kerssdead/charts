@@ -187,6 +187,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
                     localAngle += Math.PI
                 }
+            } else {
+                points.push(new DrawPoint(DrawPointType.Line, this.center.x, this.center.y))
             }
 
             accumulator += angle
