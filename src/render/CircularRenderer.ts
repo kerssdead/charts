@@ -719,6 +719,9 @@ class CircularRenderer extends Renderer<CircularData> {
         if (this.radius < shortSide / 2 - 50)
             this.radius = shortSide / 2 - 50
 
+        if (this.radius < 0)
+            this.radius = 0
+
         if (this.data.innerTitle != undefined && this.data.innerTitle != '') {
             this.innerTitleStyle = TextStyles.large
             this.canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 16)
