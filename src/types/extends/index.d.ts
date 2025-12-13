@@ -18,4 +18,8 @@ declare global {
 
         addMilliseconds: (seconds: number) => Date
     }
+
+    interface CanvasRenderingContext2D {
+        resetLine: () => void
+    }
 }

@@ -117,9 +117,13 @@ export enum Icon {
 }
 
 export enum DrawPointType {
-    Move,
+    Move = 'move',
 
-    Line,
+    Line = 'line',
 
-    QuadraticCurve
+    QuadraticCurve = 'quadratic-curve',
+
+    ArcTo = 'arc-to',
+
+    SemiCircle = 'semi-circle'
 }

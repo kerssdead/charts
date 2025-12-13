@@ -63,15 +63,15 @@ class CircularRenderer extends Renderer<CircularData> {
 
         let anglesSum = this.startAngle
         this.angles = this.data.values.flatMap(sector => {
-                               const angle = sector.current / valuesSum * 2 * Math.PI
+                              const angle = sector.current / valuesSum * 2 * Math.PI
 
-                               return {
-                                   id: sector.id,
-                                   value: angle,
-                                   sum: (anglesSum += angle) - angle
-                               }
-                           })
-                           .reverse()
+                              return {
+                                  id: sector.id,
+                                  value: angle,
+                                  sum: (anglesSum += angle) - angle
+                              }
+                          })
+                          .reverse()
     }
 
     private getAngle(sector: Sector) {
@@ -121,27 +121,34 @@ class CircularRenderer extends Renderer<CircularData> {
             if (!this.isDonut)
                 points.push(new DrawPoint(DrawPointType.Move, this.center.x, this.center.y))
 
-            points.push(new DrawPoint(DrawPointType.Line, startPoint.x, startPoint.y))
+            points.push(new DrawPoint(DrawPointType.Move, startPoint.x, startPoint.y))
 
             let localAccumulator = 0,
                 localAngle = angle
 
             while (localAngle > 0) {
-                let currentAngle = localAngle - Math.PI / 6 > 0
-                                   ? Math.PI / 6
+                let currentAngle = localAngle - Math.PI > 0
+                                   ? Math.PI
                                    : localAngle
 
                 nextPoint = getPoint(this.radius, localAccumulator + currentAngle, this.center)
 
-                const tangentIntersectionAngle = Math.PI - currentAngle,
-                    lengthToTangentIntersection = this.radius / Math.sin(tangentIntersectionAngle / 2),
-                    tangentIntersectionPoint = getPoint(lengthToTangentIntersection, localAccumulator + currentAngle / 2, this.center)
+                if (currentAngle == Math.PI) {
+                    points.push(new DrawPoint(DrawPointType.SemiCircle, this.center.x, this.center.y, this.radius, accumulator, accumulator + Math.PI, false))
+                } else {
+                    const p1Angle = Math.PI - currentAngle,
+                        p1Length = this.radius / Math.sin(p1Angle / 2),
+                        p1 = getPoint(p1Length, localAccumulator + currentAngle / 2, this.center)
 
-                points.push(new DrawPoint(DrawPointType.QuadraticCurve, tangentIntersectionPoint.x, tangentIntersectionPoint.y, nextPoint.x, nextPoint.y))
+                    points.push(new DrawPoint(DrawPointType.ArcTo, p1.x, p1.y, nextPoint.x, nextPoint.y, this.radius))
+                }
 
                 localAccumulator += currentAngle
 
-                localAngle -= Math.PI / 6
+                if (this.data.values.length == 1)
+                    accumulator += localAccumulator
+
+                localAngle -= Math.PI
             }
 
             if (this.isDonut || sector.innerRadius != 0) {
@@ -158,21 +165,27 @@ class CircularRenderer extends Renderer<CircularData> {
                 localAccumulator = angle
 
                 while (localAngle < angle) {
-                    let currentAngle = localAngle + Math.PI / 6 < angle
-                                       ? Math.PI / 6
+                    let currentAngle = localAngle + Math.PI < angle
+                                       ? Math.PI
                                        : angle - localAngle
 
                     nextPoint = getPoint(innerRadius, localAccumulator - currentAngle, this.center)
 
-                    const tangentIntersectionAngle = Math.PI - currentAngle,
-                        lengthToTangentIntersection = innerRadius / Math.sin(tangentIntersectionAngle / 2),
-                        tangentIntersectionPoint = getPoint(lengthToTangentIntersection, localAccumulator - currentAngle / 2, this.center)
+                    if (currentAngle == Math.PI) {
+                        const offset = angle - Math.PI
 
-                    points.push(new DrawPoint(DrawPointType.QuadraticCurve, tangentIntersectionPoint.x, tangentIntersectionPoint.y, nextPoint.x, nextPoint.y))
+                        points.push(new DrawPoint(DrawPointType.SemiCircle, this.center.x, this.center.y, innerRadius, accumulator - Math.PI + offset, accumulator + offset, true))
+                    } else {
+                        const p1Angle = Math.PI - currentAngle,
+                            p1Length = innerRadius / Math.sin(p1Angle / 2),
+                            p1 = getPoint(p1Length, localAccumulator - currentAngle / 2, this.center)
+
+                        points.push(new DrawPoint(DrawPointType.ArcTo, p1.x, p1.y, nextPoint.x, nextPoint.y, innerRadius))
+                    }
 
                     localAccumulator -= currentAngle
 
-                    localAngle += Math.PI / 6
+                    localAngle += Math.PI
                 }
             }
 
@@ -227,9 +240,28 @@ class CircularRenderer extends Renderer<CircularData> {
 
         const setArgs = (points: DrawPoint[]) => {
             for (let p of points) {
-                for (let i = 0; i < p.args.length; i += 2) {
-                    p.args[i] = p.base[i] + sector.translate.x
-                    p.args[i + 1] = p.base[i + 1] + sector.translate.y
+                switch (p.type) {
+                    case DrawPointType.SemiCircle:
+                        p.args[0] = p.base[0] + sector.translate.x
+                        p.args[1] = p.base[1] + sector.translate.y
+
+                        break
+
+                    case DrawPointType.ArcTo:
+                        p.args[0] = p.base[0] + sector.translate.x
+                        p.args[1] = p.base[1] + sector.translate.y
+                        p.args[2] = p.base[2] + sector.translate.x
+                        p.args[3] = p.base[3] + sector.translate.y
+
+                        break
+
+                    default:
+                        for (let i = 0; i < p.args.length; i += 2) {
+                            p.args[i] = p.base[i] + sector.translate.x
+                            p.args[i + 1] = p.base[i + 1] + sector.translate.y
+                        }
+
+                        break
                 }
             }
         }
@@ -240,12 +272,12 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private outline(sector: Sector, value: number, transition: number) {
         sector.lineStyles = transition == 0
-                       ? {
+                            ? {
                 lineWidth: 1,
                 lineJoin: 'miter',
                 lineCap: 'butt'
             }
-                       : {
+                            : {
                 lineWidth: this.getAngle(sector) > Math.PI / 6
                            ? value * transition
                            : 1,
@@ -315,9 +347,7 @@ class CircularRenderer extends Renderer<CircularData> {
         if (sector.current != 0 && sector.current != sector.value)
             ctx.strokeStyle = Helper.applyAlpha(sector.textColor, Math.round(255 * (sector.current / sector.value)))
 
-        ctx.lineWidth = 1
-        ctx.lineJoin = 'miter'
-        ctx.lineCap = 'butt'
+        ctx.resetLine()
 
         ctx.stroke()
 
@@ -343,6 +373,8 @@ class CircularRenderer extends Renderer<CircularData> {
             ctx.lineWidth = sector.lineStyles.lineWidth
             ctx.lineJoin = sector.lineStyles.lineJoin
             ctx.lineCap = sector.lineStyles.lineCap
+        } else {
+            ctx.resetLine()
         }
 
         for (const point of sector.points) {
@@ -359,6 +391,16 @@ class CircularRenderer extends Renderer<CircularData> {
 
                 case DrawPointType.QuadraticCurve:
                     ctx.quadraticCurveTo(point.args[0], point.args[1], point.args[2], point.args[3])
+
+                    break
+
+                case DrawPointType.ArcTo:
+                    ctx.arcTo(point.args[0], point.args[1], point.args[2], point.args[3], point.args[4])
+
+                    break
+
+                case DrawPointType.SemiCircle:
+                    ctx.arc(point.args[0], point.args[1], point.args[2], point.args[3], point.args[4], point.args[5])
 
                     break
             }
@@ -680,12 +722,12 @@ class CircularRenderer extends Renderer<CircularData> {
         if (this.data.innerTitle != undefined && this.data.innerTitle != '') {
             this.innerTitleStyle = TextStyles.large
             this.canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 16)
-                                        < (this.data.innerRadius / 100) * this.radius * 2
+                                       < (this.data.innerRadius / 100) * this.radius * 2
 
             if (!this.canRenderInnerTitle) {
                 this.innerTitleStyle = TextStyles.regular
                 this.canRenderInnerTitle = Helper.stringWidth(this.data.innerTitle, 14)
-                                            < (this.data.innerRadius / 100) * this.radius * 2
+                                           < (this.data.innerRadius / 100) * this.radius * 2
             }
 
             if (!this.canRenderInnerTitle)

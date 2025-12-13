@@ -22,3 +22,9 @@ Map.prototype.trySet = function (key: any, value: any) {
 Array.prototype.sum = function (predicate: (value: any) => number) {
     return this.reduce((acc, v) => acc + predicate(v), 0)
 }
+
+CanvasRenderingContext2D.prototype.resetLine = function () {
+    this.lineWidth = 1
+    this.lineJoin = 'miter'
+    this.lineCap = 'butt'
+}
