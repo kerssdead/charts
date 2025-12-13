@@ -11,9 +11,12 @@ class Utils {
 
     static browserName: BrowserName | undefined
 
+    static errors: Array<Error>
+
     static initialize(page: Page, browserName?: BrowserName) {
         this.page = page
         this.browserName = browserName
+        this.errors = []
     }
 
     static async goto() {
@@ -39,9 +42,18 @@ class Utils {
             }[Utils.browserName ?? 'chromium'])
     }
 
+    static async checkForErrors() {
+        expect(this.errors).toHaveLength(0)
+    }
+
     static async setup(page: Page, browserName?: BrowserName) {
         Utils.initialize(page, browserName)
         Settings.initialize(page)
+
+        page.addListener(
+            "pageerror",
+            error => this.errors.push(error)
+        )
 
         await Utils.goto()
     }
