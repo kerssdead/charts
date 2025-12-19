@@ -14,7 +14,7 @@ abstract class Formatter {
         value ?? ''
 
     static format(value: any | undefined, type: PlotAxisType, postfix?: string | undefined) {
-        let result = ''
+        let result = value
 
         switch (type) {
             case PlotAxisType.Number:

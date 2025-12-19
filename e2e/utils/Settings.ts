@@ -14,7 +14,7 @@ class Settings {
     }
 
     private static option(selector: string, option: any) {
-        return Settings.page.locator(selector).selectOption(option.toString())
+        return Settings.page.locator(selector).selectOption(option?.toString() ?? 'undefined')
     }
 
     private static check(selector: string, enabled: boolean) {
@@ -57,7 +57,7 @@ class Settings {
         return Settings.option(Selectors.plotType, type)
     }
 
-    static xAxisType(type: PlotAxisType) {
+    static xAxisType(type?: PlotAxisType) {
         return Settings.option(Selectors.xAxisType, type)
     }
 
