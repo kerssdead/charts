@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Custom
+    </title>
+
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
+
+    <script src="../dist/ocharts.js"></script>
+</head>
+
+<body>
+<div></div>
+</body>
+
+<script>
+    const values = JSON.parse(`[]`)
+
+    const chart = OCharts.chart(
+        document.querySelector('div'),
+        {
+
+        }
+    )
+
+    chart.render()
+</script>
+</html>
