@@ -5,7 +5,7 @@ class ThemeOptions {
 
     static readonly lines = ['#000000', '#eeeeee']
 
-    static readonly lineAxes = ['#e0e0e0', '#212121']
+    static readonly lineAxes = ['#e0e0e0', '#434343']
 
     static readonly lineActives = ['#898989', '#898989']
 
