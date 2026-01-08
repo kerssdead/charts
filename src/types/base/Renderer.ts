@@ -172,7 +172,7 @@ class Renderer<T extends Data> extends Renderable {
         this.menuEvent = undefined
     }
 
-    protected renderTitle() {
+    renderTitle() {
         const ctx = Canvas.getContext(this.canvas)
 
         if (this.settings.title) {

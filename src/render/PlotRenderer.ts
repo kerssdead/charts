@@ -10,7 +10,6 @@ import PlotSeries from 'types/PlotSeries'
 import Tooltip from 'Tooltip'
 import Theme from 'Theme'
 import Chart from 'Chart'
-import TextStyles from 'helpers/TextStyles'
 import TooltipValue from 'types/TooltipValue'
 import Export from 'Export'
 import Decomposition from 'Decomposition'
@@ -20,13 +19,15 @@ import Formatter from 'helpers/Formatter'
 import Canvas from 'helpers/Canvas'
 import { AnimationType, Icon, LineType, PlotAxisType, PlotType, RenderState } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
+import TextStyles from 'helpers/TextStyles'
+import Box from 'types/Box'
 
 class PlotRenderer extends Renderer<PlotData> {
     #x: PlotAxis
 
     #y: PlotAxis
 
-    #paddings: Paddings
+    paddings: Paddings
 
     #tooltipX: number
 
@@ -40,37 +41,76 @@ class PlotRenderer extends Renderer<PlotData> {
 
     #allValuesY: any[]
 
+    // ~! remove ?
     #base: ImageBitmap | undefined
 
+    // ~! remove ?
     #backLines: ImageData | undefined
 
+    // ~! remove ?
     #yAxisStep: number
 
-    #plot: DOMRect
+    plot: Box
 
     #hoverX: HoverItem | undefined
 
+
+    base: PlotBase
+
+
     constructor(chart: Chart) {
         super(chart)
+
+        this.plot = new Box()
     }
 
     render() {
+        // ~! move after empty ? or remove ?
         super.render()
 
-        let tooltipLines = [
-            new TooltipValue(this.#labelsX.get(Math.round(this.#tooltipX))
-                             ?? this.#labelsY.get(Math.round(this.#tooltipY)))
-        ]
+        this.empty()
 
-        const ctx = Canvas.getContext(this.canvas)
+        // ~! if empty is rendered, then return
 
-        TextStyles.regular(ctx)
+        this.base.render()
+
+        this.series()
+
+        this.animate()
+        this.interact()
+
+        this.tooltip2()
+        this.dropdown2()
+
+        this.state = RenderState.Idle
+
+        this.nextFrame()
+    }
+
+    empty() { }
+
+    series() {
+        const ctx = Canvas.getContext(this.canvas),
+            paddings = this.paddings,
+            canvas = this.canvas
+
+        // setting default styles
+
+        // TextStyles.regular(ctx)
         ctx.lineJoin = 'round'
 
-        const axisLineHoverColor = Theme.lineActive
+        //
 
-        this.#renderBackLines()
-        this.#renderBase(true)
+        const seriesClass = this.data.values.map(s => new PlotSeries2(s))
+
+        for (const series of seriesClass)
+            series.render()
+
+        //
+
+        let tooltipLines = []
+
+        const axisLineHoverColor = Theme.lineActive
 
         let x = 0,
             y = 0,
@@ -170,7 +210,7 @@ class PlotRenderer extends Renderer<PlotData> {
                     }
                 }
 
-                x = this.#paddings.left
+                x = paddings.left
                 if (series.type != PlotType.Bar)
                     x += xIndex * this.#x.step
                 if (series.type == PlotType.Line)
@@ -178,7 +218,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
                 switch (series.type) {
                     case PlotType.Line:
-                        y = this.#paddings.top + this.#plot.height - <number>value.y / this.#y.unit * this.#y.step
+                        y = paddings.top + this.plot.height - <number>value.y / this.#y.unit * this.#y.step
                             - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
 
                         const pointDuration = 1500 / series.values.length * 1.2
@@ -187,31 +227,34 @@ class PlotRenderer extends Renderer<PlotData> {
                             this.animations.handle(value.id,
                                 AnimationType.Init,
                                 {
-                                    timer: new Date(Date.now()).addMilliseconds(pointDuration * (index - 1)),
+                                    timer: new Date(Date.now()).addMilliseconds(pointDuration * index),
                                     duration: pointDuration,
                                     continuous: true,
                                     body: transition => {
                                         if (index == 0)
                                             return
 
-                                        x = this.#paddings.left + xIndex * this.#x.step - this.#x.step / 2
-                                        y = this.#paddings.top + this.#plot.height - <number>value.y / this.#y.unit * this.#y.step
+                                        // ~! if use gradient then no need to calculate intermediate values ?
+
+                                        x = paddings.left + (xIndex - .5) * this.#x.step
+                                        y = paddings.top + this.plot.height - <number>value.y / this.#y.unit * this.#y.step
                                             - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
 
                                         const next = series.values[index - 1]
 
-                                        let prevValue = {
-                                            x: this.#paddings.left + xIndex * this.#x.step - this.#x.step / 2,
-                                            y: this.#paddings.top + this.#plot.height - <number>next.y / this.#y.unit * this.#y.step
+                                        const prevValue = {
+                                            x: paddings.left + (xIndex - .5) * this.#x.step,
+                                            y: paddings.top + this.plot.height - <number>next.y / this.#y.unit * this.#y.step
                                                - Math.abs(this.#y.min / this.#y.unit * this.#y.step)
-                                        }
+                                        },
+                                            endPoint = {
+                                                x: prevValue.x + (this.#x.step + (x - prevValue.x)) * transition,
+                                                y: prevValue.y + (y - prevValue.y) * transition
+                                            }
 
-                                        const endPointX = prevValue.x + (this.#x.step + (x - prevValue.x)) * transition,
-                                            endPointY = prevValue.y + (y - prevValue.y) * transition
-
-                                        if (prevValue.x != endPointX && prevValue.y != endPointY) {
+                                        if (prevValue.x != endPoint.x && prevValue.y != endPoint.y) {
                                             ctx.moveTo(prevValue.x, prevValue.y)
-                                            ctx.lineTo(endPointX, endPointY)
+                                            ctx.lineTo(endPoint.x, endPoint.y)
                                         }
                                     }
                                 })
@@ -239,9 +282,9 @@ class PlotRenderer extends Renderer<PlotData> {
                         break
 
                     case PlotType.AttentionLine:
-                        yValue = this.canvas.height - this.#paddings.bottom - <number>value.y / this.#y.unit * this.#y.step
+                        yValue = canvas.height - paddings.bottom - <number>value.y / this.#y.unit * this.#y.step
 
-                        ctx.moveTo(this.#paddings.left, yValue)
+                        ctx.moveTo(paddings.left, yValue)
 
                         if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init))
                             this.animations.handle(value.id,
@@ -250,19 +293,19 @@ class PlotRenderer extends Renderer<PlotData> {
                                     duration: 1500,
                                     continuous: true,
                                     body: transition => {
-                                        ctx.lineTo(this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) * transition,
-                                            this.canvas.height - this.#paddings.bottom - <number>value.y / this.#y.unit * this.#y.step)
+                                        ctx.lineTo(paddings.left + (canvas.width - paddings.left - paddings.right) * transition,
+                                            canvas.height - paddings.bottom - <number>value.y / this.#y.unit * this.#y.step)
                                     }
                                 })
                         else
-                            ctx.lineTo(this.canvas.width - this.#paddings.right, yValue)
+                            ctx.lineTo(canvas.width - paddings.right, yValue)
 
                         break
 
                     case PlotType.Column:
                         yValue = <number>value.y > this.data.yMax ? this.data.yMax : <number>value.y
 
-                        y = this.#plot.height * yValue / this.#y.max
+                        y = this.plot.height * yValue / this.#y.max
                         if (y < this.#y.minStep)
                             y = this.#y.minStep
 
@@ -279,8 +322,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                     body: transition => {
                                         yValue = <number>value.y > this.data.yMax ? this.data.yMax : <number>value.y
 
-                                        x = this.#paddings.left + xIndex * this.#x.step
-                                        y = this.#plot.height * yValue / this.#y.max * transition
+                                        x = paddings.left + xIndex * this.#x.step
+                                        y = this.plot.height * yValue / this.#y.max * transition
 
                                         if (y < this.#y.minStep)
                                             y = this.#y.minStep * transition
@@ -289,7 +332,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                                            .indexOf(series)
 
                                         ctx.roundRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                            this.canvas.height - this.#paddings.bottom - y,
+                                            canvas.height - paddings.bottom - y,
                                             columnWidth,
                                             y,
                                             [6, 6, 0, 0])
@@ -298,7 +341,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                 })
                         } else {
                             if (this.#isInArea(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                    this.canvas.height - this.#paddings.bottom - y,
+                                    canvas.height - paddings.bottom - y,
                                     columnWidth,
                                     y)
                                 && (this.contextMenu?.isActive == undefined
@@ -316,7 +359,7 @@ class PlotRenderer extends Renderer<PlotData> {
                             }
 
                             ctx.roundRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                this.canvas.height - this.#paddings.bottom - y,
+                                canvas.height - paddings.bottom - y,
                                 columnWidth,
                                 y,
                                 [6, 6, 0, 0])
@@ -326,7 +369,7 @@ class PlotRenderer extends Renderer<PlotData> {
                         break
 
                     case PlotType.Bar:
-                        y = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
+                        y = paddings.top + yIndex * this.#y.step + this.#y.step / 2
                             + (100 - series.width) * this.#y.step / 100 / 2
 
                         const seriesHeight = (series.width * this.#y.step / 100) / barsCount
@@ -338,7 +381,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                     duration: 800,
                                     continuous: true,
                                     body: transition => {
-                                        y = this.#paddings.top + yIndex * this.#y.step + this.#y.step / 2
+                                        y = paddings.top + yIndex * this.#y.step + this.#y.step / 2
                                             + (100 - series.width) * this.#y.step / 100 / 2
 
                                         barsIndex = this.data.values.filter(s => s.type == PlotType.Bar)
@@ -382,7 +425,7 @@ class PlotRenderer extends Renderer<PlotData> {
                         break
 
                     case PlotType.StackingColumn:
-                        y = this.canvas.height - this.#paddings.bottom - <number>value.y / this.#y.unit * this.#y.step
+                        y = canvas.height - paddings.bottom - <number>value.y / this.#y.unit * this.#y.step
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5)
 
@@ -400,8 +443,8 @@ class PlotRenderer extends Renderer<PlotData> {
                                                                                         .length > 0)
                                                            .indexOf(series)
 
-                                        x = this.#paddings.left + xIndex * this.#x.step
-                                        y = this.canvas.height - this.#paddings.bottom - <number>value.y / this.#y.unit * this.#y.step
+                                        x = paddings.left + xIndex * this.#x.step
+                                        y = canvas.height - paddings.bottom - <number>value.y / this.#y.unit * this.#y.step
 
                                         if (columnsIndex == 0)
                                             stackingAccumulator[xIndex] = 0
@@ -410,12 +453,12 @@ class PlotRenderer extends Renderer<PlotData> {
                                                      ? stackingAccumulator[xIndex]
                                                      : 0
 
-                                        yValue = this.canvas.height - this.#paddings.bottom + offset
-                                        yHeight = (y - this.canvas.height + this.#paddings.bottom) * transition
+                                        yValue = canvas.height - paddings.bottom + offset
+                                        yHeight = (y - canvas.height + paddings.bottom) * transition
 
-                                        if (yValue > this.#paddings.top) {
-                                            if (yValue + yHeight < this.#paddings.top)
-                                                yHeight -= yValue + yHeight - this.#paddings.top
+                                        if (yValue > paddings.top) {
+                                            if (yValue + yHeight < paddings.top)
+                                                yHeight -= yValue + yHeight - paddings.top
 
                                             ctx.fillRect(x + (this.#x.step - columnWidth) / 2,
                                                 yValue,
@@ -423,7 +466,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                                 yHeight)
                                         }
 
-                                        stackingAccumulator[xIndex] += (y - this.canvas.height + this.#paddings.bottom) * transition
+                                        stackingAccumulator[xIndex] += (y - canvas.height + paddings.bottom) * transition
                                     }
                                 })
                         } else {
@@ -434,12 +477,12 @@ class PlotRenderer extends Renderer<PlotData> {
                                          ? stackingAccumulator[xIndex]
                                          : 0
 
-                            yValue = this.canvas.height - this.#paddings.bottom + offset
-                            yHeight = y - this.canvas.height + this.#paddings.bottom
+                            yValue = canvas.height - paddings.bottom + offset
+                            yHeight = y - canvas.height + paddings.bottom
 
-                            if (yValue > this.#paddings.top) {
-                                if (yValue + yHeight < this.#paddings.top)
-                                    yHeight -= yValue + yHeight - this.#paddings.top
+                            if (yValue > paddings.top) {
+                                if (yValue + yHeight < paddings.top)
+                                    yHeight -= yValue + yHeight - paddings.top
 
                                 if (this.#isInArea(x + (this.#x.step - columnWidth) / 2,
                                     yValue + yHeight,
@@ -463,7 +506,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                     yHeight)
                             }
 
-                            stackingAccumulator[xIndex] += (y - this.canvas.height + this.#paddings.bottom)
+                            stackingAccumulator[xIndex] += (y - canvas.height + paddings.bottom)
                         }
 
                         break
@@ -480,8 +523,8 @@ class PlotRenderer extends Renderer<PlotData> {
                         ctx.beginPath()
                         ctx.lineWidth = 1
                         ctx.strokeStyle = axisLineHoverColor
-                        ctx.moveTo(this.#paddings.left, this.#hoverX.y)
-                        ctx.lineTo(this.canvas.width - this.#paddings.right, this.#hoverX.y)
+                        ctx.moveTo(paddings.left, this.#hoverX.y)
+                        ctx.lineTo(canvas.width - paddings.right, this.#hoverX.y)
                         ctx.stroke()
 
                         let radius = Math.round(series.width * 1.1)
@@ -503,8 +546,8 @@ class PlotRenderer extends Renderer<PlotData> {
 
                     TextStyles.regular(ctx)
                     ctx.fillText(series.label,
-                        this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
-                        this.canvas.height - this.#paddings.bottom - <number>series.values[0].y / this.#y.unit * this.#y.step + 16)
+                        paddings.left + (canvas.width - paddings.left - paddings.right) / 2,
+                        canvas.height - paddings.bottom - <number>series.values[0].y / this.#y.unit * this.#y.step + 16)
 
                     break
 
@@ -521,9 +564,9 @@ class PlotRenderer extends Renderer<PlotData> {
                     if (this.#hoverX) {
                         ctx.lineWidth = 1
                         ctx.strokeStyle = axisLineHoverColor
-                        ctx.moveTo(this.#paddings.left,
+                        ctx.moveTo(paddings.left,
                             this.#tooltipY + this.#y.step / 2)
-                        ctx.lineTo(this.canvas.width - this.#paddings.right,
+                        ctx.lineTo(canvas.width - paddings.right,
                             this.#tooltipY + this.#y.step / 2)
                         ctx.stroke()
                     }
@@ -533,38 +576,11 @@ class PlotRenderer extends Renderer<PlotData> {
                     break
             }
         }
-
-        this.#renderBase()
-
-        this.renderTitle()
-
-        this.tooltip.render(
-            tooltipLines.length > 1 && !this.dropdown?.isActive,
-            this.moveEvent,
-            tooltipLines,
-            this.#hoverX
-                ? this.#hoverX.series!.values[this.#hoverX.index]
-                : undefined
-        )
-
-        if (!this.isDestroy)
-            requestAnimationFrame(this.render.bind(this))
-
-        this.state = RenderState.Idle
-
-        super.renderDropdown()
-
-        if (this.menuEvent && !this.#hoverX)
-            this.menuEvent = undefined
-
-        if (this.#hoverX == undefined)
-            this.highlight()
-
-        if (this.#hoverX
-            && (this.renderContextMenu(this.#hoverX.data)
-                || !this.menuEvent))
-            this.#hoverX = undefined
     }
+
+    animate() { }
+
+    interact() { }
 
     refresh() {
         super.refresh()
@@ -573,311 +589,53 @@ class PlotRenderer extends Renderer<PlotData> {
     resize() {
         super.resize()
 
-        this.#base = undefined
-
-        this.#calculateSizes()
+        this.size()
     }
 
-    #isOnX(x: number): boolean {
-        if (!this.moveEvent)
-            return false
+    // ~! better name ?
+    prepareSettings() {
+        super.prepareSettings()
 
-        const mouse = this.getMousePosition(this.moveEvent)
+        // v | map data
+        // v | flip bar series
+        // v | normalize data
 
-        return !(this.dropdown?.isActive ?? false)
-               && x - this.#x.step / 2 <= mouse.x && mouse.x < x + this.#x.step / 2
-               && this.#paddings.top <= mouse.y && mouse.y <= this.canvas.height - this.#paddings.bottom
-               && this.#paddings.left < mouse.x
+        for (let series of this.data.values) {
+            series = new PlotSeries(series)
+
+            if (series.type == PlotType.Bar)
+                series.inverse()
+
+            series.normalize(this.data.xType)
+        }
+
+        // v | set paddings
+
+        this.setPaddings()
+
+        // init tooltip
+
+        this.tooltip = new Tooltip(this.canvas, this.settings)
+
+        // reset labels
+
+        this.#labelsX = new Map()
+        this.#labelsY = new Map()
+
+        this.base = new PlotBase(this, this.data)
     }
 
-    #isInArea(x: number, y: number, w: number, h: number): boolean {
-        if (!this.moveEvent)
-            return false
+    size() {
+        // flat values
 
-        const mouse = this.getMousePosition(this.moveEvent)
-
-        return !(this.dropdown?.isActive ?? false)
-               && mouse.x >= x && mouse.x <= x + w
-               && mouse.y >= y && mouse.y <= y + h
-    }
-
-    #renderBase(skip: boolean = false) {
-        if (this.#base && skip)
-            return
-
-        if (this.data.simple)
-            return
-
-        const ctx = Canvas.getContext(this.canvas)
-
-        if (skip)
-            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-
-        if (this.#base) {
-            ctx.drawImage(this.#base, 0, 0)
-            return
-        }
-
-        if (!skip)
-            return
-
-        const axisLabelOffset = 12
-
-        ctx.fillStyle = Theme.canvasBackground
-
-        ctx.fillRect(0, 0, this.#paddings.left, this.canvas.height)
-        ctx.fillRect(0, 0, this.canvas.width, this.#paddings.top)
-        ctx.fillRect(this.canvas.width - this.#paddings.right, 0, this.canvas.width, this.canvas.height)
-        ctx.fillRect(0, this.canvas.height - this.#paddings.bottom, this.canvas.width, this.canvas.height)
-
-        const isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0
-
-        ctx.setLineDash([])
-
-        if (this.data.xTitle || this.data.yTitle) {
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'bottom'
-            ctx.fillStyle = Theme.text
-
-            if (this.data.xTitle)
-                ctx.fillText(this.data.xTitle,
-                    this.#paddings.left + (this.canvas.width - this.#paddings.left - this.#paddings.right) / 2,
-                    this.canvas.height - 4)
-
-            if (this.data.yTitle) {
-                ctx.rotate(-Math.PI / 2)
-
-                ctx.textBaseline = 'top'
-
-                ctx.fillText(this.data.yTitle,
-                    -(this.#paddings.top + (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / 2),
-                    8)
-
-                ctx.resetTransform()
-            }
-        }
-
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'top'
-
-        const step = this.#x.step,
-            xYPos = this.canvas.height - this.#paddings.bottom
-
-        let xCounter = 0,
-            acc = this.#paddings.left + step / 2
-
-        for (let i = 0; i < this.#allValuesX.length + 1; i++)
-            this.#labelsX.trySet(
-                Math.round(this.#paddings.left + i * this.#x.step),
-                Formatter.format(this.#allValuesX[i], this.data.xType)
-            )
-
-        const maxLabelWidth = Math.max(
-            ...[...this.#labelsX.values()].map(label => Math.ceil(Helper.stringWidth(label)))
-        ) + 10
-        const maxCount = Math.floor(
-            (this.canvas.width - this.#paddings.left - this.#paddings.right) / maxLabelWidth
-        )
-        const renderStep = Math.ceil(1 / (maxCount / this.#allValuesX.length))
-
-        while (acc < this.canvas.width - this.#paddings.right) {
-            if (xCounter % renderStep == 0) {
-                ctx.fillStyle = Theme.text + 'b7'
-
-                ctx.fillText(
-                    (this.#labelsX.get(Math.round(acc - this.#x.step / 2)) ?? '')
-                        + (!isContainsBar ? '' : this.settings.valuePostfix),
-                    acc,
-                    xYPos + axisLabelOffset / 2
-                )
-            }
-
-            acc += step
-            xCounter++
-        }
-
-        ctx.textAlign = 'right'
-        ctx.textBaseline = 'middle'
-
-        const yCount = this.#y.count > 10 ? 10 : this.#y.count
-
-        let yCounter = isContainsBar ? 1 : 0,
-            yStep = this.#allValuesY.length / yCount
-
-        for (let i = isContainsBar ? 1 : 0; i < this.#allValuesY.length + 1; i++) {
-            const labelY = this.canvas.height - yCounter * yStep * this.#y.step - this.#paddings.bottom,
-                labelYAsKey = Math.round(this.canvas.height - i * this.#y.step - this.#paddings.bottom)
-
-            if (!this.#labelsY.get(labelYAsKey))
-                this.#labelsY.set(labelYAsKey,
-                    Formatter.format(
-                        this.#y.min + (i + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count,
-                        PlotAxisType.Number,
-                        this.settings.valuePostfix
-                    ))
-
-            if (i >= yCounter * yStep) {
-                const label = {
-                    x: this.#paddings.left,
-                    y: labelY,
-                    label: this.#yAxisStep >= 1
-                           ? Math.round((this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count) / this.#yAxisStep) * this.#yAxisStep
-                           : Math.round(this.#y.min + (yCounter * yStep + (isContainsBar ? -1 : 0)) * (this.#y.max - this.#y.min) / this.#y.count / this.#yAxisStep) * this.#yAxisStep
-                }
-
-                if (label.label == -0)
-                    label.label = 0
-
-                let postfix = ''
-
-                if (this.data.shortLabels) {
-                    const countOfTens = Math.floor(label.label.toString().length / 4)
-
-                    if (countOfTens > 0) {
-                        label.label /= Math.pow(1000, countOfTens)
-
-                        postfix = [
-                            TextResources.thousandShort,
-                            TextResources.millionShort,
-                            TextResources.billionShort
-                        ][countOfTens - 1]
-                    }
-                }
-
-                ctx.fillText(
-                    Formatter.number(label.label)
-                        + postfix
-                        + (isContainsBar ? '' : this.settings.valuePostfix ?? ''),
-                    label.x - axisLabelOffset,
-                    label.y + (isContainsBar ? this.#y.step / 2 : 0)
-                )
-
-                yCounter++
-            }
-        }
-
-        ctx.beginPath()
-
-        ctx.strokeStyle = Theme.line
-        ctx.lineWidth = 1
-
-        const offset = .5,
-            isBar = this.data.values.filter(v => v.type == PlotType.Bar).length > 0
-
-        ctx.moveTo(this.#paddings.left - (isBar ? offset : 0),
-            this.canvas.height - this.#paddings.bottom + (isBar ? -offset : offset))
-
-        if (isBar)
-            ctx.lineTo(this.#paddings.left - offset, this.#paddings.top)
-        else
-            ctx.lineTo(this.canvas.width - this.#paddings.right, this.canvas.height - this.#paddings.bottom + offset)
-
-        ctx.stroke()
-
-        if (this.canvas.width > 0 && this.canvas.height > 0)
-            createImageBitmap(ctx.getImageData(0, 0, this.canvas.width, this.canvas.height))
-                .then(res => this.#base = res)
-    }
-
-    #renderBackLines() {
-        if (this.data.simple)
-            return
-
-        const ctx = Canvas.getContext(this.canvas)
-
-        if (this.#backLines) {
-            ctx.putImageData(this.#backLines, 0, 0)
-            return
-        }
-
-        ctx.fillStyle = Theme.canvasBackground
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-
-        const axisLineColor = Theme.lineAxis
-
-        const isContainsBar = this.data.values.filter(s => s.type == PlotType.Bar).length > 0
-
-        if (isContainsBar) {
-            const step = this.#x.step,
-                xYPos = this.canvas.height - this.#paddings.bottom
-
-            let xCounter = 0,
-                acc = this.#paddings.left + step / 2
-
-            for (let i = 0; i < this.#allValuesX.length + 1; i++)
-                this.#labelsX.trySet(
-                    Math.round(this.#paddings.left + i * this.#x.step),
-                    Formatter.format(this.#allValuesX[i - 1], this.data.xType)
-                )
-
-            const maxLabelWidth = Math.max(
-                ...[...this.#labelsX.values()].map(label => Math.ceil(Helper.stringWidth(label)))
-            ) + 10
-            const maxCount = Math.floor(
-                (this.canvas.width - this.#paddings.left - this.#paddings.right) / maxLabelWidth
-            )
-            const renderStep = Math.ceil(1 / (maxCount / this.#allValuesX.length))
-
-            while (acc < this.canvas.width - this.#paddings.right) {
-                if (xCounter % renderStep == 0) {
-                    ctx.beginPath()
-
-                    ctx.moveTo(acc, xYPos)
-                    ctx.lineTo(acc, this.#paddings.top)
-
-                    ctx.lineWidth = 1
-                    ctx.strokeStyle = axisLineColor
-                    ctx.setLineDash([6, 6])
-                    ctx.stroke()
-                }
-
-                acc += step
-                xCounter++
-            }
-        }
-
-        ctx.textAlign = 'right'
-        ctx.textBaseline = 'middle'
-
-        const yCount = this.#y.count > 10 ? 10 : this.#y.count
-
-        let yCounter = isContainsBar ? 1 : 0,
-            yStep = this.#allValuesY.length / yCount
-
-        for (let i = isContainsBar ? 1 : 0; i < this.#allValuesY.length + 1; i++) {
-            const labelY = this.canvas.height - yCounter * yStep * this.#y.step - this.#paddings.bottom
-
-            if (i >= yCounter * yStep) {
-                const label = {
-                    x: this.#paddings.left,
-                    y: labelY
-                }
-
-                if (this.data.values.filter(s => s.type.isAnyEquals(PlotType.Column, PlotType.StackingColumn, PlotType.Line)).length > 0) {
-                    ctx.beginPath()
-
-                    ctx.moveTo(label.x, label.y)
-                    ctx.lineTo(this.canvas.width - this.#paddings.right, label.y)
-
-                    ctx.lineWidth = 1
-                    ctx.strokeStyle = axisLineColor
-                    ctx.setLineDash([6, 6])
-                    ctx.stroke()
-                }
-
-                yCounter++
-            }
-        }
-
-        if (this.canvas.width > 0 && this.canvas.height > 0)
-            this.#backLines = ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
-    }
-
-    #calculateSizes() {
         let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
             yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
 
         const isDate = this.data.xType == PlotAxisType.Date
+
+        // adding missed dates to x-axis
+
+        const byAsc = (a: string | number | Date, b: string | number | Date) => b > a ? -1 : 1
 
         if (isDate) {
             let tempDate = new Date(Math.min(...(<number[]>xValues)))
@@ -889,35 +647,39 @@ class PlotRenderer extends Renderer<PlotData> {
                 tempDate = tempDate.addDays(1)
             }
 
-            xValues.sort((a, b) => a < b ? -1 : 1)
+            xValues.sort(byAsc)
         }
 
-        yValues.sort((a, b) => b > a ? -1 : 1)
+        // setting all values
+
+        yValues.sort(byAsc)
 
         this.#allValuesX = [...new Set(xValues.filter(x => x != undefined).map(x => isDate ? x.toString() : x))]
         this.#allValuesY = [...new Set(yValues.filter(y => y != undefined))]
+
+        // setting variables for x-axis
 
         this.#x = {
             min: Math.min(...(<number[]>xValues)),
             max: Math.max(...(<number[]>xValues)),
             unit: (Math.abs(Math.min(...(<number[]>xValues))) + Math.abs(Math.max(...(<number[]>xValues)))) / (this.#allValuesX.length - 1),
-            step: (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length,
-            minStep: 0,
-            count: this.#allValuesX.length
+            step: (this.canvas.width - this.paddings.left - this.paddings.right) / this.#allValuesX.length,
+            minStep: 0
         }
 
-        let yMin = Math.min(...(<number[]>yValues))
-        if (yMin > 0)
-            yMin = 0
+        // setting variables for y-axis
+
+        const yMin = Math.min(Math.min(...(<number[]>yValues)), 0)
 
         this.#y = {
             min: yMin,
             max: this.data.yMax ?? Math.max(...(<number[]>yValues)),
             unit: (Math.abs(yMin) + Math.abs(this.data.yMax ?? Math.max(...(<number[]>yValues)))) / (this.#allValuesY.length - 1),
-            step: (this.canvas.height - this.#paddings.top - this.#paddings.bottom) / this.#allValuesY.length,
-            minStep: 0,
-            count: this.#allValuesY.length
+            step: (this.canvas.height - this.paddings.top - this.paddings.bottom) / this.#allValuesY.length,
+            minStep: 0
         }
+
+        // init settings for stacking columns
 
         let stackingColumns = this.data.values.filter(s => s.type == PlotType.StackingColumn)
 
@@ -942,96 +704,114 @@ class PlotRenderer extends Renderer<PlotData> {
             this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
         }
 
+        // getting max width for y label and add offset to left padding
+        // ~! remove ?
+
         const yMaxWidth = Helper.stringWidth(Formatter.number(this.#y.max))
-        if (yMaxWidth > this.#paddings.left - 40 && !this.data.simple) {
-            this.#paddings.left += yMaxWidth - this.#paddings.left + 40
-            this.#x.step = (this.canvas.width - this.#paddings.left - this.#paddings.right) / this.#allValuesX.length
+        if (yMaxWidth > this.paddings.left - 40 && !this.data.simple) {
+            this.paddings.left += yMaxWidth - this.paddings.left + 40
+            this.#x.step = (this.canvas.width - this.paddings.left - this.paddings.right) / this.#allValuesX.length
         }
 
-        this.#yAxisStep = Math.abs(this.#y.min) + Math.abs(this.#y.max)
+        // v | settings plot sizes
 
-        if (.5 <= this.#yAxisStep && this.#yAxisStep < 1)
-            this.#yAxisStep = .05
-        else if (1 <= this.#yAxisStep && this.#yAxisStep < 10)
-            this.#yAxisStep = .1
-        else if (10 <= this.#yAxisStep && this.#yAxisStep < 100)
-            this.#yAxisStep = 2
-        else if (100 <= this.#yAxisStep && this.#yAxisStep < 1000)
-            this.#yAxisStep = 20
-        else if (1000 <= this.#yAxisStep && this.#yAxisStep < 10000)
-            this.#yAxisStep = 50
-        else if (10000 <= this.#yAxisStep && this.#yAxisStep < 100000)
-            this.#yAxisStep = 1000
-        else if (100000 <= this.#yAxisStep && this.#yAxisStep < 1000000)
-            this.#yAxisStep = 10000
-        else if (1000000 <= this.#yAxisStep && this.#yAxisStep < 10000000)
-            this.#yAxisStep = 50000
-        else
-            this.#yAxisStep = 1
-
-        if (this.#yAxisStep != 1) {
-            max = yValues.length > 10
-                  ? (this.#y.max / 10 + this.#yAxisStep - (this.#y.max / 10) % this.#yAxisStep) * 10
-                  : Math.ceil(this.#y.max / this.#yAxisStep) * this.#yAxisStep
-
-            this.#y.max = max > this.data.yMax ? this.data.yMax : max
-            this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / this.#allValuesY.length
-        }
-
-        this.#plot = {
-            width: this.canvas.width - this.#paddings.left - this.#paddings.right,
-            height: this.canvas.height - this.#paddings.top - this.#paddings.bottom
-        } as DOMRect
-
-        this.#x.minStep = this.#plot.width * 0.002
-        this.#y.minStep = this.#plot.height * 0.002
+        this.plot.set(
+            this.canvas.width - this.paddings.left - this.paddings.right,
+            this.canvas.height - this.paddings.top - this.paddings.bottom
+        )
     }
 
-    prepareSettings() {
-        super.prepareSettings()
+    initDropdown() {
+        super.initDropdown()
 
-        this.#base = undefined
-        this.#backLines = undefined
+        if (this.data.simple) {
+            this.dropdown = undefined
 
-        this.data.values = this.data.values.map(v => new PlotSeries(v))
+            return
+        }
 
-        if (this.data.values.filter(v => v.type == PlotType.Bar).length > 0) {
-            for (let series of this.data.values) {
-                for (let item of series.values) {
-                    const x = item.x
-                    item['x'] = item.y
-                    item['y'] = x
-                }
+        this.dropdown = new Dropdown(this.canvas,
+            {
+                x: -10,
+                y: 10,
+                icon: Icon.ThreeLines,
+                items: [
+                    DropdownItem.button(
+                        TextResources.exportPNG,
+                        () => Export.asPng(this.canvas, this.settings.title)
+                    ),
+                    DropdownItem.button(
+                        TextResources.exportCSV,
+                        () => Export.asCsv(
+                            Decomposition.toTable(PlotData.getRows(this.data)),
+                            this.settings.title
+                        )
+                    ),
+                    DropdownItem.divider(),
+                    DropdownItem.button(
+                        TextResources.decomposeToTable,
+                        () => new Modal(
+                            Decomposition.toTable(PlotData.getRows(this.data)),
+                            undefined,
+                            this.settings.title ?? TextResources.dataAsTable)
+                            .open()
+                    )
+                ]
+            })
+    }
 
-                series.values.sort((a, b) => b.x > a.x ? 1 : -1)
+    tooltip2() {
+        // collect tooltip data
+
+        let tooltipLines = [
+            new TooltipValue(this.#labelsX.get(Math.round(this.#tooltipX))
+                             ?? this.#labelsY.get(Math.round(this.#tooltipY)))
+        ]
+
+        // render tooltip
+
+        this.tooltip.render(
+            tooltipLines.length > 1 && !this.dropdown?.isActive,
+            this.moveEvent,
+            tooltipLines,
+            this.#hoverX
+            ? this.#hoverX.series!.values[this.#hoverX.index]
+            : undefined
+        )
+    }
+
+    dropdown2() {
+        super.renderDropdown()
+
+        if (this.menuEvent && !this.#hoverX)
+            this.menuEvent = undefined
+
+        if (this.#hoverX == undefined)
+            this.highlight()
+
+        // reset hover if context menu is open
+
+        if (this.#hoverX
+            && (this.renderContextMenu(this.#hoverX.data)
+                || !this.menuEvent))
+            this.#hoverX = undefined
+    }
+
+    nextFrame() {
+        if (!this.isDestroy)
+            requestAnimationFrame(this.render.bind(this))
+    }
+
+    private setPaddings() {
+        if (!this.data.simple)
+            this.paddings = {
+                top: 30,
+                right: 40,
+                bottom: 50,
+                left: 80
             }
-        }
-
-        for (let item of this.data.values) {
-            item.disabled = !item.values
-            item.type ??= PlotType.Line
-
-            for (let it of item.values) {
-                it.id = Helper.guid()
-
-                if (this.data.xType == PlotAxisType.Date) {
-                    if (Helper.isISOString(it.x as string))
-                        it.x = new Date(it.x)
-                    else
-                        console.warn(`${ it.x } is not a date in ISO format.`)
-                }
-            }
-        }
-
-        this.#paddings = {
-            top: 30,
-            right: 40,
-            bottom: 50,
-            left: 80
-        }
-
-        if (this.data.simple)
-            this.#paddings = {
+        else
+            this.paddings = {
                 top: 10,
                 right: 10,
                 bottom: 10,
@@ -1039,52 +819,345 @@ class PlotRenderer extends Renderer<PlotData> {
             }
 
         if (this.settings.title)
-            this.#paddings.top += Constants.Values.titleOffset
-
-        this.tooltip = new Tooltip(this.canvas, this.settings)
-
-        this.#labelsX = new Map()
-        this.#labelsY = new Map()
+            this.paddings.top += Constants.Values.titleOffset
     }
 
-    initDropdown() {
-        super.initDropdown()
 
-        if (!this.data.simple)
-            this.dropdown = new Dropdown(this.canvas,
-                {
-                    x: -10,
-                    y: 10,
-                    icon: Icon.ThreeLines,
-                    items: [
-                        {
-                            text: TextResources.exportPNG,
-                            action: () => {
-                                Export.asPng(this.canvas, this.settings.title)
-                            }
-                        },
-                        {
-                            text: TextResources.exportCSV,
-                            action: () => {
-                                Export.asCsv(Decomposition.toTable(PlotData.getRows(this.data)), this.settings.title)
-                            }
-                        },
-                        {
-                            isDivider: true
-                        } as DropdownItem,
-                        {
-                            text: TextResources.decomposeToTable,
-                            action: () => {
-                                new Modal(Decomposition.toTable(PlotData.getRows(this.data)),
-                                    undefined,
-                                    this.settings.title ?? TextResources.dataAsTable)
-                                    .open()
-                            }
-                        }
-                    ]
-                })
+
+    #isInArea(x: number, y: number, w: number, h: number) {
+        if (!this.moveEvent)
+            return false
+
+        const mouse = this.getMousePosition(this.moveEvent)
+
+        return !(this.dropdown?.isActive ?? false)
+               && mouse.x >= x && mouse.x <= x + w
+               && mouse.y >= y && mouse.y <= y + h
+    }
+
+    // ~! combine with this.isInArea()
+    #isOnX(x: number) {
+        if (!this.moveEvent)
+            return false
+
+        const mouse = this.getMousePosition(this.moveEvent)
+
+        return !(this.dropdown?.isActive ?? false)
+               && x - this.#x.step / 2 <= mouse.x && mouse.x < x + this.#x.step / 2
+               && this.paddings.top <= mouse.y && mouse.y <= this.canvas.height - this.paddings.bottom
+               && this.paddings.left < mouse.x
+    }
+}
+
+class PlotSeries2 extends PlotSeries {
+    constructor(obj: object) {
+        super(obj)
+
+        Object.assign(this, obj)
+    }
+
+    render() {
+        this.area()
+        this.label2()
+
+        this.animate()
+        this.interact()
+    }
+
+    animate() { }
+
+    interact() { }
+
+    area() { }
+
+    label2() { }
+
+    // isInArea(x: number, y: number, w: number, h: number) {
+    //     // if (!this.moveEvent)
+    //     //     return false
+    //     //
+    //     // const mouse = this.getMousePosition(this.moveEvent)
+    //     //
+    //     // return !(this.dropdown?.isActive ?? false)
+    //     //        && mouse.x >= x && mouse.x <= x + w
+    //     //        && mouse.y >= y && mouse.y <= y + h
+    // }
+    //
+    // // ~! combine with this.isInArea()
+    // isOnX(x: number) {
+    //     // if (!this.moveEvent)
+    //     //     return false
+    //     //
+    //     // const mouse = this.getMousePosition(this.moveEvent)
+    //     //
+    //     // return !(this.dropdown?.isActive ?? false)
+    //     //        && x - this.#x.step / 2 <= mouse.x && mouse.x < x + this.#x.step / 2
+    //     //        && this.#paddings.top <= mouse.y && mouse.y <= this.canvas.height - this.#paddings.bottom
+    //     //        && this.#paddings.left < mouse.x
+    // }
+
+    canRenderLabel() { }
+}
+
+class PlotBase {
+    renderer: PlotRenderer
+
+    data: PlotData
+
+    isVertical: boolean
+
+    labelsX: Map<string | number | Date, string>
+
+    labelsY: Map<string | number | Date, string>
+
+    // ~! uncomment
+    // labels: PlotBaseLabels
+
+    constructor(renderer: PlotRenderer, data: PlotData) {
+        this.renderer = renderer
+        this.data = data
+
+        this.isVertical = data.values.filter(s => s.type == PlotType.Bar).length > 0
+
+        // this.calculateLabels()
+    }
+
+    render() {
+        this.clear()
+
+        if (this.data.simple)
+            return
+
+        this.calculateLabels()
+
+        this.lines()
+        this.backlines()
+        this.labels()
+        this.titles()
+
+        this.renderer.renderTitle()
+    }
+
+    clear() {
+        const canvas = this.renderer.canvas,
+            ctx = Canvas.getContext(canvas)
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+    }
+
+    lines() {
+        const canvas = this.renderer.canvas,
+            paddings = this.renderer.paddings
+
+        const ctx = Canvas.getContext(canvas)
+
+        // clear area around this.#plot
+
+        ctx.fillStyle = Theme.canvasBackground
+
+        ctx.fillRect(0, 0, paddings.left, canvas.height)
+        ctx.fillRect(0, 0, canvas.width, paddings.top)
+        ctx.fillRect(canvas.width - paddings.right, 0, canvas.width, canvas.height)
+        ctx.fillRect(0, canvas.height - paddings.bottom, canvas.width, canvas.height)
+
+        ctx.setLineDash([])
+
+        // set baselines
+
+        ctx.beginPath()
+
+        ctx.strokeStyle = Theme.line
+        ctx.lineWidth = 1
+
+        ctx.moveTo(paddings.left, canvas.height - paddings.bottom)
+
+        if (this.isVertical)
+            ctx.lineTo(paddings.left, paddings.top)
         else
-            this.dropdown = undefined
+            ctx.lineTo(canvas.width - paddings.right, canvas.height - paddings.bottom)
+
+        ctx.stroke()
+    }
+
+    backlines() {
+        const canvas = this.renderer.canvas,
+            paddings = this.renderer.paddings
+
+        const ctx = Canvas.getContext(canvas)
+
+        ctx.lineWidth = 1
+        ctx.strokeStyle = Theme.lineAxis
+        ctx.setLineDash([6, 6])
+
+        if (this.isVertical) {
+            const count = this.labelsX.size > 10 ? 10 : this.labelsX.size,
+                step = this.renderer.plot.width / count
+
+            for (let i = 0; i < count; i++) {
+                const x = canvas.width - paddings.right - step * i
+
+                ctx.beginPath()
+
+                ctx.moveTo(x, paddings.top)
+                ctx.lineTo(x, canvas.height - paddings.bottom)
+
+                ctx.stroke()
+            }
+        }
+
+        if (!this.isVertical) {
+            const count = this.labelsY.size > 10 ? 10 : this.labelsY.size,
+                step = this.renderer.plot.height / count
+
+            for (let i = 0; i < count; i++) {
+                const y = paddings.top + i * step
+
+                ctx.beginPath()
+
+                ctx.moveTo(paddings.left, y)
+                ctx.lineTo(canvas.width - paddings.right, y)
+
+                ctx.stroke()
+            }
+        }
+    }
+
+    labels() {
+        const canvas = this.renderer.canvas,
+            paddings = this.renderer.paddings
+
+        const ctx = Canvas.getContext(canvas)
+
+        for (const point of this.labelsX) {
+            const x = point[0] as number
+
+            TextStyles.regular(ctx)
+
+            // ~! render only if possible
+            ctx.fillText(
+                point[1],
+                x,
+                canvas.height - paddings.bottom + 20
+            )
+        }
+
+        for (const point of this.labelsY) {
+            const y = point[0] as number
+
+            TextStyles.regular(ctx)
+
+            ctx.textAlign = 'end'
+
+            // ~! render only if possible
+            ctx.fillText(
+                point[1],
+                paddings.left - 10,
+                y
+            )
+        }
+    }
+
+    titles() {
+        /*
+         * render x-axis title
+         * render y-axis title
+         */
+
+        const canvas = this.renderer.canvas,
+            paddings = this.renderer.paddings
+
+        const ctx = Canvas.getContext(canvas)
+
+        if (this.data.xTitle || this.data.yTitle) {
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'bottom'
+            ctx.fillStyle = Theme.text
+
+            if (this.data.xTitle)
+                ctx.fillText(this.data.xTitle,
+                    paddings.left + (canvas.width - paddings.left - paddings.right) / 2,
+                    canvas.height - 4)
+
+            if (this.data.yTitle) {
+                ctx.rotate(-Math.PI / 2)
+
+                ctx.textBaseline = 'top'
+
+                ctx.fillText(this.data.yTitle,
+                    -(paddings.top + (canvas.height - paddings.top - paddings.bottom) / 2),
+                    8)
+
+                ctx.resetTransform()
+            }
+        }
+    }
+
+    calculateLabels() {
+        const canvas = this.renderer.canvas,
+            paddings = this.renderer.paddings
+
+        this.labelsX = new Map<string | number | Date, string>()
+        this.labelsY = new Map<string | number | Date, string>()
+
+        const uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x))],
+            uniqueY = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.y as number))]
+
+        //
+
+        let minY = Math.min(...uniqueY),
+            maxY = Math.max(...uniqueY)
+
+        if (minY > 0)
+            minY = 0
+
+
+
+        //
+
+        const countX = uniqueX.length,
+            stepX = this.renderer.plot.width / countX
+
+        for (let i = 0; i < countX; i++)
+            this.labelsX.set(
+                Math.round(paddings.left + stepX * (i + .5)),
+                Formatter.format(
+                    uniqueX[i],
+                    this.renderer.data.xType
+                )
+            )
+
+        const countY = uniqueY.length > 10 ? 10 : uniqueY.length,
+            stepY = this.renderer.plot.height / countY
+
+        // ~! fix rounding
+        const labelStepY = (maxY - minY) / countY
+
+        for (let i = 0; i < countY + 1; i++)
+            this.labelsY.set(
+                canvas.height - paddings.bottom - stepY * (countY - i),
+                Formatter.format(
+                    labelStepY * (countY - i),
+                    PlotAxisType.Number
+                )
+            )
+    }
+}
+
+class PlotBaseLabels {
+    constructor() {
+
+    }
+
+    calculate() {
+
+    }
+
+    render() {
+
+    }
+
+    private round() {
+
     }
 }
 
