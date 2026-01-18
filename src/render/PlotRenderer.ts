@@ -600,6 +600,8 @@ class PlotRenderer extends Renderer<PlotData> {
         // v | flip bar series
         // v | normalize data
 
+        let values = []
+
         for (let series of this.data.values) {
             series = new PlotSeries(series)
 
@@ -607,7 +609,11 @@ class PlotRenderer extends Renderer<PlotData> {
                 series.inverse()
 
             series.normalize(this.data.xType)
+
+            values.push(series)
         }
+
+        this.data.values = values
 
         // v | set paddings
 
