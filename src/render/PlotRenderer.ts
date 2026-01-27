@@ -1117,16 +1117,28 @@ class PlotBase {
             stepY = this.renderer.plot.height / countY
 
         // ~! fix rounding
-        const labelStepY = (maxY - minY) / countY
+        const labelStepY = (maxY - minY) / (this.isVertical ? countY - 1 : countY)
 
-        for (let i = 0; i < countY + 1; i++)
-            this.labelsY.set(
-                canvas.height - paddings.bottom - stepY * (countY - i),
-                Formatter.format(
-                    labelStepY * (countY - i),
-                    PlotAxisType.Number
+        const cY = this.isVertical ? countY : countY + 1
+
+        for (let i = 0; i < cY; i++) {
+            if (this.isVertical)
+                this.labelsY.set(
+                    canvas.height - paddings.bottom - stepY * (cY - i - .5),
+                    Formatter.format(
+                        labelStepY * (cY - i - 1),
+                        PlotAxisType.Number
+                    )
                 )
-            )
+            else
+                this.labelsY.set(
+                    canvas.height - paddings.bottom - stepY * (countY - i),
+                    Formatter.format(
+                        labelStepY * (countY - i),
+                        PlotAxisType.Number
+                    )
+                )
+        }
     }
 }
 
