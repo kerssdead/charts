@@ -394,26 +394,20 @@ class PlotRenderer extends Renderer<PlotData> {
                                     }
                                 })
                         } else {
-                            if (!anyHighlight) {
-                                if (this.#isInArea(x,
-                                    y - this.#y.step / 2 + barsIndex * seriesHeight,
-                                    <number>value.x / this.#x.unit * this.#x.step,
-                                    seriesHeight)) {
-                                    this.#hoverX = {
-                                        x: x,
-                                        y: y,
-                                        index: index,
-                                        data: value.data,
-                                        series: series
-                                    }
-
-                                    ctx.fillStyle += '88'
-
-                                    tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().x }`, series.color))
-                                    this.#tooltipY = y - this.#y.step / 2
-                                } else {
-                                    ctx.fillStyle = series.color
+                            if (this.#isInArea(x,
+                                y - this.#y.step / 2 + barsIndex * seriesHeight,
+                                <number>value.x / this.#x.unit * this.#x.step,
+                                seriesHeight)) {
+                                this.#hoverX = {
+                                    x: x,
+                                    y: y,
+                                    index: index,
+                                    data: value.data,
+                                    series: series
                                 }
+
+                                tooltipLines.push(new TooltipValue(`${ series.label }: ${ getTooltipValue().x }`, series.color))
+                                this.#tooltipY = y - this.#y.step / 2
                             }
 
                             ctx.fillRect(x,
@@ -553,24 +547,11 @@ class PlotRenderer extends Renderer<PlotData> {
 
                 case PlotType.Column:
                 case PlotType.StackingColumn:
+                case PlotType.Bar:
                     if (this.#hoverX)
                         this.highlight(this.#hoverX.series)
 
                     columnsIndex++
-
-                    break
-
-                case PlotType.Bar:
-                    if (this.#hoverX) {
-                        ctx.lineWidth = 1
-                        ctx.strokeStyle = axisLineHoverColor
-                        ctx.moveTo(paddings.left,
-                            this.#tooltipY + this.#y.step / 2)
-                        ctx.lineTo(canvas.width - paddings.right,
-                            this.#tooltipY + this.#y.step / 2)
-                        ctx.stroke()
-                    }
-
                     barsIndex++
 
                     break
