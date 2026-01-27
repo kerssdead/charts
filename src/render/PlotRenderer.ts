@@ -1089,10 +1089,13 @@ class PlotBase {
         let uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x))],
             uniqueY = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.y as number))]
 
-        if (this.isVertical)
-            uniqueX = uniqueX.reverse()
-
         //
+
+        let minX = Math.min(...uniqueX as number[]),
+            maxX = Math.max(...uniqueX as number[])
+
+        if (minX > 0)
+            minX = 0
 
         let minY = Math.min(...uniqueY),
             maxY = Math.max(...uniqueY)
@@ -1104,17 +1107,32 @@ class PlotBase {
 
         //
 
-        const countX = uniqueX.length,
+        const countX = uniqueX.length > 10 && this.isVertical ? 10 : uniqueX.length,
             stepX = this.renderer.plot.width / countX
 
-        for (let i = 0; i < countX; i++)
-            this.labelsX.set(
-                Math.round(paddings.left + stepX * (i + .5)),
-                Formatter.format(
-                    uniqueX[i],
-                    this.renderer.data.xType
+        // ~! fix rounding
+        const labelStepX = (maxX - minX) / (this.isVertical ? countX - 1 : countX)
+
+        const cX = this.isVertical ? countX + 1 : countX
+
+        for (let i = 0; i < cX; i++) {
+            if (this.isVertical)
+                this.labelsX.set(
+                    Math.round(paddings.left + stepX * i),
+                    Formatter.format(
+                        labelStepX * i,
+                        this.renderer.data.xType
+                    )
                 )
-            )
+            else
+                this.labelsX.set(
+                    Math.round(paddings.left + stepX * (i + .5)),
+                    Formatter.format(
+                        uniqueX[i],
+                        this.renderer.data.xType
+                    )
+                )
+        }
 
         const countY = uniqueY.length > 10 ? 10 : uniqueY.length,
             stepY = this.renderer.plot.height / countY
