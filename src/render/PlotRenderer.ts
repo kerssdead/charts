@@ -1086,8 +1086,11 @@ class PlotBase {
         this.labelsX = new Map<string | number | Date, string>()
         this.labelsY = new Map<string | number | Date, string>()
 
-        const uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x))],
+        let uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x))],
             uniqueY = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.y as number))]
+
+        if (this.isVertical)
+            uniqueX = uniqueX.reverse()
 
         //
 
