@@ -41,15 +41,6 @@ class PlotRenderer extends Renderer<PlotData> {
 
     #allValuesY: any[]
 
-    // ~! remove ?
-    #base: ImageBitmap | undefined
-
-    // ~! remove ?
-    #backLines: ImageData | undefined
-
-    // ~! remove ?
-    #yAxisStep: number
-
     plot: Box
 
     #hoverX: HoverItem | undefined
@@ -1086,7 +1077,7 @@ class PlotBase {
         this.labelsX = new Map<string | number | Date, string>()
         this.labelsY = new Map<string | number | Date, string>()
 
-        let uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x))],
+        const uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x))],
             uniqueY = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.y as number))]
 
         //

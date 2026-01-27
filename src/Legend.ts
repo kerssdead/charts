@@ -110,8 +110,8 @@ class Legend extends Renderable {
                     return this.clickEvent != undefined
                            && (isHover(this.clickEvent)
                                || (value instanceof Sector
-                                   && value.current !== 0
-                                   && value.value !== value.current))
+                                   && value.current != 0
+                                   && value.value != value.current))
                            && value.checkCondition()
                 },
                 body: transition => {
