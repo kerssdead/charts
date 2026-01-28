@@ -214,8 +214,16 @@ class CircularRenderer extends Renderer<CircularData> {
                         computed = length * value + length * (1 - value) * transition,
                         ratio = computed / length
 
-                    p.args[i] = ratio * x + (1 - ratio) * centerOfSector.x
-                    p.args[i + 1] = ratio * y + (1 - ratio) * centerOfSector.y
+                    const xx = ratio * x + (1 - ratio) * centerOfSector.x,
+                        yy = ratio * y + (1 - ratio) * centerOfSector.y
+
+                    if (!isNaN(xx) && !isNaN(yy)) {
+                        p.args[i] = xx
+                        p.args[i + 1] = yy
+                    } else {
+                        p.args[i] = p.base[i] * value + p.base[i] * (1 - value) * transition
+                        p.args[i + 1] = p.base[i + 1] * value + p.base[i + 1] * (1 - value) * transition
+                    }
                 }
             }
         }
