@@ -207,6 +207,12 @@ class CircularRenderer extends Renderer<CircularData> {
 
         const setArgs = (points: DrawPoint[]) => {
             for (let p of points) {
+                if (p.type == DrawPointType.SemiCircle) {
+                    p.args[2] = p.base[2] * value + p.base[2] * (1 - value) * transition
+
+                    continue
+                }
+
                 for (let i = 0; i < p.args.length; i += 2) {
                     const x = p.base[i],
                         y = p.base[i + 1],
@@ -612,7 +618,11 @@ class CircularRenderer extends Renderer<CircularData> {
 
         const ctx = Canvas.getContext(this.canvas)
 
+        let index = 0
+
         for (const sector of this.data.values) {
+            index
+
             this.animate(sector)
 
             this.drawSector(sector, ctx)
