@@ -33,10 +33,6 @@ class PlotRenderer extends Renderer<PlotData> {
 
     #tooltipY: number
 
-    #labelsX: Map<number, string>
-
-    #labelsY: Map<number, string>
-
     #allValuesX: any[]
 
     #allValuesY: any[]
@@ -598,11 +594,6 @@ class PlotRenderer extends Renderer<PlotData> {
 
         this.tooltip = new Tooltip(this.canvas, this.settings)
 
-        // reset labels
-
-        this.#labelsX = new Map()
-        this.#labelsY = new Map()
-
         this.base = new PlotBase(this, this.data)
     }
 
@@ -758,11 +749,9 @@ class PlotRenderer extends Renderer<PlotData> {
                 return labels.get(curr)
             }
 
-            const isVertical = this.data.values.find(v => v.type == PlotType.Bar)
-
             this.tooltipValues.unshift(
                 new TooltipValue(
-                    isVertical
+                    this.base.isVertical
                     ? getValue(this.base.labelsY, this.#tooltipY)
                     : getValue(this.base.labelsX, this.#tooltipX)
                 )
