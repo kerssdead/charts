@@ -48,6 +48,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
     base: PlotBase
 
+    tooltipValues: TooltipValue[]
 
     constructor(chart: Chart) {
         super(chart)
@@ -548,6 +549,8 @@ class PlotRenderer extends Renderer<PlotData> {
                     break
             }
         }
+
+        this.tooltipValues = tooltipLines
     }
 
     animate() { }
@@ -739,19 +742,34 @@ class PlotRenderer extends Renderer<PlotData> {
     }
 
     tooltip2() {
-        // collect tooltip data
+        if (this.tooltipValues.length > 0) {
+            const getValue = (labels: Map<string | number | Date, string>, pos: number) => {
+                let curr = 0,
+                    index = 0
 
-        let tooltipLines = [
-            new TooltipValue(this.#labelsX.get(Math.round(this.#tooltipX))
-                             ?? this.#labelsY.get(Math.round(this.#tooltipY)))
-        ]
+                let keys = [...labels.keys() as MapIterator<number>]
 
-        // render tooltip
+                while (curr < pos)
+                    curr = keys[index++]
+
+                return labels.get(curr)
+            }
+
+            const isVertical = this.data.values.find(v => v.type == PlotType.Bar)
+
+            this.tooltipValues.unshift(
+                new TooltipValue(
+                    isVertical
+                    ? getValue(this.base.labelsY, this.#tooltipY)
+                    : getValue(this.base.labelsX, this.#tooltipX)
+                )
+            )
+        }
 
         this.tooltip.render(
-            tooltipLines.length > 1 && !this.dropdown?.isActive,
+            this.tooltipValues.length > 1 && !this.dropdown?.isActive,
             this.moveEvent,
-            tooltipLines,
+            this.tooltipValues,
             this.#hoverX
             ? this.#hoverX.series!.values[this.#hoverX.index]
             : undefined
@@ -884,8 +902,10 @@ class PlotBase {
 
     isVertical: boolean
 
+    // ~! key is point on x-axis and value is label
     labelsX: Map<string | number | Date, string>
 
+    // ~! key is point on y-axis and value is label
     labelsY: Map<string | number | Date, string>
 
     // ~! uncomment
