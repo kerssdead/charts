@@ -742,6 +742,9 @@ class PlotRenderer extends Renderer<PlotData> {
     }
 
     tooltip2() {
+        if (this.data.simple)
+            return
+
         if (this.tooltipValues.length > 0) {
             const getValue = (labels: Map<string | number | Date, string>, pos: number) => {
                 let curr = 0,
