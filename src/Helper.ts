@@ -108,10 +108,10 @@ export function applyAlpha(color: string, opacity: number) {
     )
 }
 
-export function closestDigitOrder(value: number, all: number[]) {
+export function closestDigitOrder(value: number, all: number[], extraCount: number) {
     const max = Math.max(...all),
         count = all.length > 10 ? 10 : all.length,
-        str = Math.round(max / (count - 1)).toString(),
+        str = Math.round(max / (count - extraCount)).toString(),
         symbolsCount = str.length
 
     let v = str[0]

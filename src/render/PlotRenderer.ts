@@ -625,9 +625,9 @@ class PlotRenderer extends Renderer<PlotData> {
         // add rounded to last
 
         if (this.base.isVertical)
-            xValues.push(Helper.closestDigitOrder(xValues[xValues.length - 1] as number, xValues as number[]))
+            xValues.push(Helper.closestDigitOrder(xValues[xValues.length - 1] as number, xValues as number[], 0))
         else
-            yValues.push(Helper.closestDigitOrder(yValues[yValues.length - 1] as number, yValues as number[]))
+            yValues.push(Helper.closestDigitOrder(yValues[yValues.length - 1] as number, yValues as number[], 1))
 
         // setting all values
 
@@ -1094,9 +1094,9 @@ class PlotBase {
         // add rounded to last
 
         if (this.isVertical)
-            uniqueX.push(Helper.closestDigitOrder(uniqueX[uniqueX.length - 1] as number, uniqueX as number[]))
+            uniqueX.push(Helper.closestDigitOrder(uniqueX[uniqueX.length - 1] as number, uniqueX as number[], 0))
         else
-            uniqueY.push(Helper.closestDigitOrder(uniqueY[uniqueY.length - 1] as number, uniqueY))
+            uniqueY.push(Helper.closestDigitOrder(uniqueY[uniqueY.length - 1] as number, uniqueY, 1))
 
         //
 
