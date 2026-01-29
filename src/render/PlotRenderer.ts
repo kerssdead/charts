@@ -1029,32 +1029,24 @@ class PlotBase {
 
         const ctx = Canvas.getContext(canvas)
 
+        TextStyles.regular(ctx)
+
         for (const point of this.labelsX) {
-            const x = point[0] as number
+            const x = point[0] as number,
+                y = canvas.height - paddings.bottom + 20
 
-            TextStyles.regular(ctx)
-
-            // ~! render only if possible
-            ctx.fillText(
-                point[1],
-                x,
-                canvas.height - paddings.bottom + 20
-            )
+            if (Canvas.isCanRender(ctx, x, y, point[1], 20))
+                ctx.fillText(point[1], x, y)
         }
 
         for (const point of this.labelsY) {
-            const y = point[0] as number
-
-            TextStyles.regular(ctx)
+            const x = paddings.left - 10,
+                y = point[0] as number
 
             ctx.textAlign = 'end'
 
-            // ~! render only if possible
-            ctx.fillText(
-                point[1],
-                paddings.left - 10,
-                y
-            )
+            if (Canvas.isCanRender(ctx, x, y, point[1], 20, true))
+                ctx.fillText(point[1], x, y)
         }
     }
 
