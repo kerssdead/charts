@@ -127,28 +127,24 @@ class CircularRenderer extends Renderer<CircularData> {
                 localAngle = angle
 
             while (localAngle > 0) {
-                let currentAngle = localAngle - Math.PI > 0
-                                   ? Math.PI
+                let currentAngle = localAngle - Math.PI / 2 > 0
+                                   ? Math.PI / 2
                                    : localAngle
 
                 nextPoint = getPoint(this.radius, localAccumulator + currentAngle, this.center)
 
-                if (currentAngle == Math.PI) {
-                    points.push(new DrawPoint(DrawPointType.SemiCircle, this.center.x, this.center.y, this.radius, accumulator, accumulator + Math.PI, false))
-                } else {
-                    const p1Angle = Math.PI - currentAngle,
-                        p1Length = this.radius / Math.sin(p1Angle / 2),
-                        p1 = getPoint(p1Length, localAccumulator + currentAngle / 2, this.center)
+                const p1Angle = Math.PI - currentAngle,
+                    p1Length = this.radius / Math.sin(p1Angle / 2),
+                    p1 = getPoint(p1Length, localAccumulator + currentAngle / 2, this.center)
 
-                    points.push(new DrawPoint(DrawPointType.ArcTo, p1.x, p1.y, nextPoint.x, nextPoint.y, this.radius))
-                }
+                points.push(new DrawPoint(DrawPointType.ArcTo, p1.x, p1.y, nextPoint.x, nextPoint.y, this.radius))
 
                 localAccumulator += currentAngle
 
                 if (this.data.values.length == 1)
                     accumulator += localAccumulator
 
-                localAngle -= Math.PI
+                localAngle -= Math.PI / 2
             }
 
             if (this.isDonut || sector.innerRadius != 0) {
@@ -165,27 +161,21 @@ class CircularRenderer extends Renderer<CircularData> {
                 localAccumulator = angle
 
                 while (localAngle < angle) {
-                    let currentAngle = localAngle + Math.PI < angle
-                                       ? Math.PI
+                    let currentAngle = localAngle + Math.PI / 2 < angle
+                                       ? Math.PI / 2
                                        : angle - localAngle
 
                     nextPoint = getPoint(innerRadius, localAccumulator - currentAngle, this.center)
 
-                    if (currentAngle == Math.PI) {
-                        const offset = angle - Math.PI
+                    const p1Angle = Math.PI - currentAngle,
+                        p1Length = innerRadius / Math.sin(p1Angle / 2),
+                        p1 = getPoint(p1Length, localAccumulator - currentAngle / 2, this.center)
 
-                        points.push(new DrawPoint(DrawPointType.SemiCircle, this.center.x, this.center.y, innerRadius, accumulator - Math.PI + offset, accumulator + offset, true))
-                    } else {
-                        const p1Angle = Math.PI - currentAngle,
-                            p1Length = innerRadius / Math.sin(p1Angle / 2),
-                            p1 = getPoint(p1Length, localAccumulator - currentAngle / 2, this.center)
-
-                        points.push(new DrawPoint(DrawPointType.ArcTo, p1.x, p1.y, nextPoint.x, nextPoint.y, innerRadius))
-                    }
+                    points.push(new DrawPoint(DrawPointType.ArcTo, p1.x, p1.y, nextPoint.x, nextPoint.y, innerRadius))
 
                     localAccumulator -= currentAngle
 
-                    localAngle += Math.PI
+                    localAngle += Math.PI / 2
                 }
             } else {
                 points.push(new DrawPoint(DrawPointType.Line, this.center.x, this.center.y))
@@ -618,11 +608,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         const ctx = Canvas.getContext(this.canvas)
 
-        let index = 0
-
         for (const sector of this.data.values) {
-            index
-
             this.animate(sector)
 
             this.drawSector(sector, ctx)
