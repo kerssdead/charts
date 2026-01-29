@@ -107,3 +107,30 @@ export function applyAlpha(color: string, opacity: number) {
         Math.round((opacity * (rgb.b / 255) + (alpha * (bg.b / 255))) * 255)
     )
 }
+
+export function closestDigitOrder(value: number, all: number[]) {
+    let min = Math.min(...all)
+    let max = Math.max(...all)
+
+    if (min > 0)
+        min = 0
+
+    let count = all.length > 10 ? 10 : all.length
+
+    let str = Math.round(max / (count - 1)).toString()
+    let symbolsCount = str.length
+
+    let v = str[0]
+
+    for (let i = 0; i < symbolsCount - 1; i++)
+        v += 0
+
+    let result = Math.ceil(value / +v) * +v
+
+    while (true) {
+        if (result > max)
+            return result
+
+        result += +v
+    }
+}
