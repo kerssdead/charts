@@ -1129,7 +1129,7 @@ class PlotBase {
                 this.labelsX.set(
                     Math.round(paddings.left + stepX * i),
                     Formatter.format(
-                        labelStepX * i,
+                        minX + labelStepX * i,
                         this.renderer.data.xType
                     )
                 )
@@ -1156,7 +1156,7 @@ class PlotBase {
                 this.labelsY.set(
                     canvas.height - paddings.bottom - stepY * (cY - i - .5),
                     Formatter.format(
-                        labelStepY * (cY - i - 1),
+                        minY + labelStepY * (cY - i - 1),
                         PlotAxisType.Number
                     )
                 )
@@ -1164,7 +1164,7 @@ class PlotBase {
                 this.labelsY.set(
                     canvas.height - paddings.bottom - stepY * (countY - i),
                     Formatter.format(
-                        labelStepY * (countY - i),
+                        minY + labelStepY * (countY - i),
                         PlotAxisType.Number
                     )
                 )
