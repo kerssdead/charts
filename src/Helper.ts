@@ -1,7 +1,8 @@
 import Color from 'types/Color'
 import Theme from 'Theme'
 import Errors from 'helpers/Errors'
-import { ErrorType } from './static/Enums'
+import { ErrorType } from 'static/Enums'
+import { Plot } from 'static/constants/Index'
 
 export function adjustColor(color: string, amount: number) {
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).slice(-2))
@@ -146,9 +147,8 @@ export function getRoundedValues(all: number[]) {
     let countOfElements = all.length
     if (!all.includes(0))
         countOfElements++
-    // ~! move 6 to global constants
-    if (countOfElements > 6)
-        countOfElements = 6
+    if (countOfElements > Plot.maxLabelsCount)
+        countOfElements = Plot.maxLabelsCount
     if (countOfElements % 2 == 0)
         countOfElements++
 
