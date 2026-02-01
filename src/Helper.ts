@@ -1,5 +1,7 @@
 import Color from 'types/Color'
 import Theme from 'Theme'
+import Errors from 'helpers/Errors'
+import { ErrorType } from './static/Enums'
 
 export function adjustColor(color: string, amount: number) {
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).slice(-2))
@@ -128,5 +130,68 @@ export function closestDigitOrder(value: number, all: number[], extraCount: numb
             return result
 
         result += vn
+    }
+}
+
+// Result should have contained all.length values (+ 1 if no 0 values in source array)
+// ~! add negative values handlers
+export function getRoundedValues(all: number[]) {
+    let min = Math.min(...all),
+        max = Math.max(...all)
+
+    if (min > 0)
+        min = 0
+
+
+    let countOfElements = all.length
+    if (!all.includes(0))
+        countOfElements++
+    // ~! move 6 to global constants
+    if (countOfElements > 6)
+        countOfElements = 6
+    if (countOfElements % 2 == 0)
+        countOfElements++
+
+
+    const isSatisfyDividing = (value: number) => {
+        const divides = [10, 7.5, 5, 2.5, 2]
+
+        let satisfied = 0
+
+        for (const d of divides)
+            satisfied += value % d == 0 ? 1 : 0
+
+        return satisfied >= 4
+    }
+
+    const isSatisfyElementsCount = (values: number[]) => {
+        return values.length == countOfElements
+    }
+
+    const startValue = Math.round(max / countOfElements)
+
+    let attempt = 0,
+        value = startValue
+
+    while (true) {
+        if (isSatisfyDividing(value)) {
+            let result = []
+
+            for (let i = 0; i < countOfElements; i++)
+                result.push(value * i)
+
+            if (result[result.length - 1] <= max)
+                result = []
+
+            if (isSatisfyElementsCount(result))
+                return result
+            else
+                result = []
+        }
+
+        value++
+
+        if (attempt++ > startValue)
+            throw Errors.throw(ErrorType.MaxCallsReach)
     }
 }
