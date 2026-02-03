@@ -53,12 +53,12 @@ class PlotRenderer extends Renderer<PlotData> {
     }
 
     render() {
-        // ~! move after empty ? or remove ?
+        // TODO: move after empty ? or remove ?
         super.render()
 
         this.empty()
 
-        // ~! if empty is rendered, then return
+        // TODO: if empty is rendered, then return
 
         this.base.render()
 
@@ -222,7 +222,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                         if (index == 0)
                                             return
 
-                                        // ~! if use gradient then no need to calculate intermediate values ?
+                                        // TODO: if use gradient then no need to calculate intermediate values ?
 
                                         x = paddings.left + (xIndex - .5) * this.#x.step
                                         y = paddings.top + this.plot.height - <number>value.y / this.#y.unit * this.#y.step
@@ -563,7 +563,7 @@ class PlotRenderer extends Renderer<PlotData> {
         this.size()
     }
 
-    // ~! better name ?
+    // TODO: better name ?
     prepareSettings() {
         super.prepareSettings()
 
@@ -684,7 +684,7 @@ class PlotRenderer extends Renderer<PlotData> {
         }
 
         // getting max width for y label and add offset to left padding
-        // ~! remove ?
+        // TODO: remove ?
 
         const yMaxWidth = Helper.stringWidth(Formatter.number(this.#y.max))
         if (yMaxWidth > this.paddings.left - 40 && !this.data.simple) {
@@ -830,7 +830,7 @@ class PlotRenderer extends Renderer<PlotData> {
                && mouse.y >= y && mouse.y <= y + h
     }
 
-    // ~! combine with this.isInArea()
+    // TODO: combine with this.isInArea()
     #isOnX(x: number) {
         if (!this.moveEvent)
             return false
@@ -878,7 +878,7 @@ class PlotSeries2 extends PlotSeries {
     //     //        && mouse.y >= y && mouse.y <= y + h
     // }
     //
-    // // ~! combine with this.isInArea()
+    // // TODO: combine with this.isInArea()
     // isOnX(x: number) {
     //     // if (!this.moveEvent)
     //     //     return false
@@ -901,13 +901,13 @@ class PlotBase {
 
     isVertical: boolean
 
-    // ~! key is point on x-axis and value is label
+    // TODO: key is point on x-axis and value is label
     labelsX: Map<string | number | Date, string>
 
-    // ~! key is point on y-axis and value is label
+    // TODO: key is point on y-axis and value is label
     labelsY: Map<string | number | Date, string>
 
-    // ~! uncomment
+    // TODO: uncomment
     // labels: PlotBaseLabels
 
     constructor(renderer: PlotRenderer, data: PlotData) {
@@ -1119,7 +1119,7 @@ class PlotBase {
         const countX = uniqueX.length > 10 && this.isVertical ? 10 : uniqueX.length,
             stepX = this.renderer.plot.width / countX
 
-        // ~! fix rounding
+        // TODO: fix rounding
         const labelStepX = (maxX - minX) / (this.isVertical ? countX - 1 : countX)
 
         const cX = this.isVertical ? countX + 1 : countX
@@ -1146,7 +1146,7 @@ class PlotBase {
         const countY = uniqueY.length > 10 ? 10 : uniqueY.length,
             stepY = this.renderer.plot.height / countY
 
-        // ~! fix rounding
+        // TODO: fix rounding
         const labelStepY = (maxY - minY) / (this.isVertical ? countY - 1 : countY)
 
         const cY = this.isVertical ? countY : countY + 1

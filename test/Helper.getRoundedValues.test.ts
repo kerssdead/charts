@@ -21,5 +21,15 @@ describe('Calculating rounded values', () => {
             .toStrictEqual([0, 710, 1420, 2130, 2840, 3550, 4260])
     })
 
-    // ~! add negative values tests
+    it('Should be 4 in (w/o zero value) and 5 out values with 120 diff', () => {
+        expect(Helper.getRoundedValues([-222, -76, 22, 344]))
+            .toStrictEqual([-240, -120, 0, 120, 240, 360])
+    })
+
+    it('Should be 8 in (w/o zero value) and 9 values with _ diff', () => {
+        expect(Helper.getRoundedValues([-12, -55, -211, -26, -99, -505, -123, 12]))
+            .toStrictEqual([-540, -450, -360, -270, -180, -90, 0, 90])
+    })
+
+    // TODO: add small fractional values tests
 })

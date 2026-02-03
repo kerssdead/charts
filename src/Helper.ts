@@ -135,13 +135,16 @@ export function closestDigitOrder(value: number, all: number[], extraCount: numb
 }
 
 // Result should have contained all.length values (+ 1 if no 0 values in source array)
-// ~! add negative values handlers
 export function getRoundedValues(all: number[]) {
     let min = Math.min(...all),
         max = Math.max(...all)
 
     if (min > 0)
         min = 0
+
+
+    const negativeElements = all.filter(v => v < 0).length,
+        hasNegative = negativeElements > 0
 
 
     let countOfElements = all.length
@@ -151,12 +154,17 @@ export function getRoundedValues(all: number[]) {
         countOfElements = Plot.maxLabelsCount
     if (countOfElements % 2 == 0)
         countOfElements++
+    if (hasNegative)
+        countOfElements++
+
 
 
     const isSatisfyDividing = (value: number) => {
         const divides = [10, 7.5, 5, 2.5, 2]
 
         let satisfied = 0
+
+        value = Math.abs(value)
 
         for (const d of divides)
             satisfied += value % d == 0 ? 1 : 0
@@ -168,7 +176,7 @@ export function getRoundedValues(all: number[]) {
         return values.length == countOfElements
     }
 
-    const startValue = Math.round(max / countOfElements)
+    const startValue = Math.round((Math.abs(min) + Math.abs(max)) / countOfElements)
 
     let attempt = 0,
         value = startValue
@@ -177,10 +185,18 @@ export function getRoundedValues(all: number[]) {
         if (isSatisfyDividing(value)) {
             let result = []
 
-            for (let i = 0; i < countOfElements; i++)
+            let startIndex = hasNegative ? -negativeElements : 0,
+                endIndex = hasNegative ? countOfElements - negativeElements : countOfElements
+
+            if (negativeElements > countOfElements - negativeElements) {
+                startIndex++
+                endIndex = countOfElements - negativeElements + 1
+            }
+
+            for (let i = startIndex; i < endIndex; i++)
                 result.push(value * i)
 
-            if (result[result.length - 1] <= max)
+            if (result[0] > min || result[result.length - 1] <= max)
                 result = []
 
             if (isSatisfyElementsCount(result))
