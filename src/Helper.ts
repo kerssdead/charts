@@ -176,38 +176,59 @@ export function getRoundedValues(all: number[]) {
         return values.length == countOfElements
     }
 
-    const startValue = Math.round((Math.abs(min) + Math.abs(max)) / countOfElements)
+    const amplitude = Math.abs(min) + Math.abs(max),
+        diff = Math.abs(Math.abs(min) - Math.abs(max))
+
+    let startValue = amplitude / countOfElements
 
     let attempt = 0,
-        value = startValue
+        value = 0
+
+    let step = 1
+
+    const isFractional = Math.abs(min) < 10 && Math.abs(max) < 10
+
+    if (isFractional)
+        step = .1
+    else
+        value = Math.round(startValue)
+
+    const round = (value: number) => {
+        return Math.round((value + Number.EPSILON) * 100) / 100
+    }
+
+    let startIndex = 0,
+        endIndex = countOfElements + startIndex
+
+    if (hasNegative) {
+        const negativeWeight = Math.abs(min) / amplitude
+        startIndex = -Math.floor(countOfElements * negativeWeight)
+        endIndex = countOfElements + startIndex
+
+        if (max > 0 && endIndex <= 1) {
+            startIndex++
+            endIndex++
+        }
+    }
 
     while (true) {
-        if (isSatisfyDividing(value)) {
+        if (isSatisfyDividing(value) || isFractional) {
             let result = []
 
-            let startIndex = hasNegative ? -negativeElements : 0,
-                endIndex = hasNegative ? countOfElements - negativeElements : countOfElements
-
-            if (negativeElements > countOfElements - negativeElements) {
-                startIndex++
-                endIndex = countOfElements - negativeElements + 1
-            }
-
             for (let i = startIndex; i < endIndex; i++)
-                result.push(value * i)
+                result.push(round(value * i))
 
             if (result[0] > min || result[result.length - 1] <= max)
                 result = []
 
             if (isSatisfyElementsCount(result))
                 return result
-            else
-                result = []
         }
 
-        value++
+        value = round(value + step)
+        attempt = round(attempt + step)
 
-        if (attempt++ > startValue)
+        if (attempt > amplitude)
             throw Errors.throw(ErrorType.MaxCallsReach)
     }
 }

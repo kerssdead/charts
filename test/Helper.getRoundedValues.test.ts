@@ -16,20 +16,33 @@ describe('Calculating rounded values', () => {
             .toStrictEqual([0, 650, 1300])
     })
 
-    it('Should be 14 in (w/o zero value) and 11 out values with 390 diff', () => {
+    it('Should be 14 in (w/o zero value) and 7 out values with 390 diff', () => {
         expect(Helper.getRoundedValues([12, 14, 4221, 14, 12, 421, 4, 21, 4, 12, 4122, 2222, 1234, 2211]))
             .toStrictEqual([0, 710, 1420, 2130, 2840, 3550, 4260])
     })
 
-    it('Should be 4 in (w/o zero value) and 5 out values with 120 diff', () => {
+    it('Should be 4 in (w/o zero value) and 6 out values with 120 diff', () => {
         expect(Helper.getRoundedValues([-222, -76, 22, 344]))
             .toStrictEqual([-240, -120, 0, 120, 240, 360])
     })
 
-    it('Should be 8 in (w/o zero value) and 9 values with _ diff', () => {
+    it('Should be 8 in (w/o zero value) and 9 values with 90 diff', () => {
         expect(Helper.getRoundedValues([-12, -55, -211, -26, -99, -505, -123, 12]))
             .toStrictEqual([-540, -450, -360, -270, -180, -90, 0, 90])
     })
 
-    // TODO: add small fractional values tests
+    it('Should be 5 in (w/o zero value) and 5 values with 0.8 diff', () => {
+        expect(Helper.getRoundedValues([1.2, 4.2, 0.5, 1.22, 3.4]))
+            .toStrictEqual([0, 0.8, 1.6, 2.4, 3.2, 4.0, 4.8])
+    })
+
+    it('Should be 4 in and 5 values with 2.5 diff', () => {
+        expect(Helper.getRoundedValues([2.4, 0, 3.3, 9.82]))
+            .toStrictEqual([0, 2.5, 5, 7.5, 10])
+    })
+
+    it('Should be 5 in (w/o zero value) and 5 values with _ diff', () => {
+        expect(Helper.getRoundedValues([-1.2, 4.5, 6.66, 2.5, -8.76]))
+            .toStrictEqual([-9.2, -6.9, -4.6, -2.3, 0, 2.3, 4.6, 6.9])
+    })
 })
