@@ -212,6 +212,9 @@ export function getRoundedValues(all: number[]) {
     }
 
     while (true) {
+        if (!isFinite(value))
+            return []
+
         if (isSatisfyDividing(value) || isFractional) {
             let result = []
 
