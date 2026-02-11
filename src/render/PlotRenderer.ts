@@ -606,7 +606,7 @@ class PlotRenderer extends Renderer<PlotData> {
         // flat values
 
         let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
-            yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
+            yValues = this.data.values.flatMap(s => s.values.map(p => p.y as number))
 
         const isDate = this.data.xType == PlotAxisType.Date,
             isText = this.data.xType == PlotAxisType.Text,
@@ -634,7 +634,7 @@ class PlotRenderer extends Renderer<PlotData> {
         if (this.base.isVertical)
             xValues = Helper.getRoundedValues(xValues as number[])
         else
-            yValues = Helper.getRoundedValues(yValues as number[])
+            yValues = Helper.getRoundedValues(yValues)
 
         // setting all values
 
@@ -661,14 +661,14 @@ class PlotRenderer extends Renderer<PlotData> {
 
         // setting variables for y-axis
 
-        const yMin = Math.min(Math.min(...(<number[]>yValues)), 0)
-        const yUnit = (yValues[1] as number) - (yValues[0] as number)
+        const yMin = Math.min(Math.min(...yValues), 0)
+        const yUnit = yValues[1] - yValues[0]
 
         const yStepOffset = this.base.isVertical ? 0 : 1
 
         this.#y = {
             min: yMin,
-            max: this.data.yMax ?? Math.max(...(<number[]>yValues)),
+            max: this.data.yMax ?? Math.max(...yValues),
             unit: yUnit,
             step: plot.height / (this.#allValuesY.length - yStepOffset),
             minStep: 0
@@ -756,11 +756,11 @@ class PlotRenderer extends Renderer<PlotData> {
             return
 
         if (this.tooltipValues.length > 0) {
-            const getValue = (labels: Map<string | number | Date, string>, pos: number) => {
+            const getValue = (labels: Map<number, string>, pos: number) => {
                 let curr = 0,
                     index = 0
 
-                let keys = [...labels.keys() as MapIterator<number>]
+                let keys = [...labels.keys()]
 
                 while (curr < pos)
                     curr = keys[index++]
@@ -913,11 +913,9 @@ class PlotBase {
 
     isVertical: boolean
 
-    // TODO: key is point on x-axis and value is label
-    labelsX: Map<string | number | Date, string>
+    labelsX: Map<number, string>
 
-    // TODO: key is point on y-axis and value is label
-    labelsY: Map<string | number | Date, string>
+    labelsY: Map<number, string>
 
     // TODO: uncomment
     // labels: PlotBaseLabels
@@ -1000,7 +998,7 @@ class PlotBase {
 
         if (this.isVertical) {
             for (const l of this.labelsX) {
-                const x = l[0] as number
+                const x = l[0]
 
                 if (x == paddings.left)
                     continue
@@ -1016,7 +1014,7 @@ class PlotBase {
 
         if (!this.isVertical) {
             for (const l of this.labelsY) {
-                const y = l[0] as number
+                const y = l[0]
 
                 if (y == canvas.height - paddings.bottom)
                     continue
@@ -1040,7 +1038,7 @@ class PlotBase {
         TextStyles.regular(ctx)
 
         for (const point of this.labelsX) {
-            const x = point[0] as number,
+            const x = point[0],
                 y = canvas.height - paddings.bottom + 20
 
             if (Canvas.isCanRender(ctx, x, y, point[1], 20))
@@ -1049,7 +1047,7 @@ class PlotBase {
 
         for (const point of this.labelsY) {
             const x = paddings.left - 10,
-                y = point[0] as number
+                y = point[0]
 
             ctx.textAlign = 'end'
 
@@ -1094,11 +1092,10 @@ class PlotBase {
     }
 
     calculateLabels() {
-        const canvas = this.renderer.canvas,
-            paddings = this.renderer.paddings
+        const paddings = this.renderer.paddings
 
-        this.labelsX = new Map<string | number | Date, string>()
-        this.labelsY = new Map<string | number | Date, string>()
+        this.labelsX = new Map<number, string>()
+        this.labelsY = new Map<number, string>()
 
         let uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x))],
             uniqueY = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.y as number))]
@@ -1108,7 +1105,7 @@ class PlotBase {
         if (this.isVertical)
             uniqueX = Helper.getRoundedValues(uniqueX as number[])
         else
-            uniqueY = Helper.getRoundedValues(uniqueY as number[]).reverse()
+            uniqueY = Helper.getRoundedValues(uniqueY).reverse()
 
         //
 

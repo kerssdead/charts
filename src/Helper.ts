@@ -111,31 +111,6 @@ export function applyAlpha(color: string, opacity: number) {
     )
 }
 
-// TODO: remove if not uses
-export function closestDigitOrder(value: number, all: number[], extraCount: number) {
-    const max = Math.max(...all),
-        count = all.length > 10 ? 10 : all.length,
-        str = Math.round(max / (count - extraCount)).toString(),
-        symbolsCount = str.length
-
-    let v = str[0]
-
-    for (let i = 0; i < symbolsCount - 1; i++)
-        v += 0
-
-    const vn = +v
-
-    let result = Math.ceil(value / vn) * vn
-
-    while (true) {
-        if (result > max)
-            return result
-
-        result += vn
-    }
-}
-
-// Result should have contained all.length values (+ 1 if no 0 values in source array)
 export function getRoundedValues(all: number[]) {
     let min = Math.min(...all),
         max = Math.max(...all)
@@ -143,10 +118,8 @@ export function getRoundedValues(all: number[]) {
     if (min > 0)
         min = 0
 
-
     const negativeElements = all.filter(v => v < 0).length,
         hasNegative = negativeElements > 0
-
 
     let countOfElements = all.length
     if (!all.includes(0))
@@ -157,8 +130,6 @@ export function getRoundedValues(all: number[]) {
         countOfElements++
     if (hasNegative)
         countOfElements++
-
-
 
     const isSatisfyDividing = (value: number) => {
         const divides = [10, 7.5, 5, 2.5, 2]
@@ -177,8 +148,7 @@ export function getRoundedValues(all: number[]) {
         return values.length == countOfElements
     }
 
-    const amplitude = Math.abs(min) + Math.abs(max),
-        diff = Math.abs(Math.abs(min) - Math.abs(max))
+    const amplitude = Math.abs(min) + Math.abs(max)
 
     let startValue = amplitude / countOfElements
 
