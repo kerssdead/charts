@@ -598,6 +598,11 @@ class PlotRenderer extends Renderer<PlotData> {
     }
 
     size() {
+        this.plot.set(
+            this.canvas.width - this.paddings.left - this.paddings.right,
+            this.canvas.height - this.paddings.top - this.paddings.bottom
+        )
+
         // flat values
 
         let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
@@ -650,7 +655,7 @@ class PlotRenderer extends Renderer<PlotData> {
             min: Math.min(...(<number[]>xValues)),
             max: Math.max(...(<number[]>xValues)),
             unit: xUnit,
-            step: plot.width / (this.#allValuesX.length - 1),
+            step: plot.width / this.#allValuesX.length,
             minStep: 0
         }
 
@@ -695,20 +700,16 @@ class PlotRenderer extends Renderer<PlotData> {
         }
 
         // getting max width for y label and add offset to left padding
-        // TODO: remove ?
+        // TODO: remove ? rework ?
 
-        const yMaxWidth = Helper.stringWidth(Formatter.number(this.#y.max))
-        if (yMaxWidth > this.paddings.left - 40 && !this.data.simple) {
-            this.paddings.left += yMaxWidth - this.paddings.left + 40
-            this.#x.step = (this.canvas.width - this.paddings.left - this.paddings.right) / this.#allValuesX.length
-        }
-
-        // v | settings plot sizes
-
-        this.plot.set(
-            this.canvas.width - this.paddings.left - this.paddings.right,
-            this.canvas.height - this.paddings.top - this.paddings.bottom
-        )
+        // const paddings = this.paddings,
+        //     canvas = this.canvas
+        //
+        // const yMaxWidth = Helper.stringWidth(Formatter.number(this.#y.max))
+        // if (yMaxWidth > this.paddings.left - 40 && !this.data.simple) {
+        //     this.paddings.left += yMaxWidth - this.paddings.left + 40
+        //     this.#x.step = (this.canvas.width - this.paddings.left - this.paddings.right) / this.#allValuesX.length
+        // }
     }
 
     initDropdown() {
