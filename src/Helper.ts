@@ -111,6 +111,7 @@ export function applyAlpha(color: string, opacity: number) {
     )
 }
 
+// TODO: remove if not uses
 export function closestDigitOrder(value: number, all: number[], extraCount: number) {
     const max = Math.max(...all),
         count = all.length > 10 ? 10 : all.length,
