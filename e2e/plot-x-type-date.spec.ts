@@ -17,7 +17,7 @@ test('Plot with x-axis types is date first date shouldn`t be "Invalid Date"', as
     await Settings.xAxisType(PlotAxisType.Date)
 
     await Utils.checkScreenshot({
-            x: 54,
+            x: 65,
             y: 634,
             width: 80,
             height: 22

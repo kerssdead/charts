@@ -626,12 +626,10 @@ class PlotRenderer extends Renderer<PlotData> {
 
         // add rounded to last
 
-        if (isNumber) {
-            if (this.base.isVertical)
-                xValues = Helper.getRoundedValues(xValues as number[])
-            else
-                yValues = Helper.getRoundedValues(yValues as number[])
-        }
+        if (this.base.isVertical)
+            xValues = Helper.getRoundedValues(xValues as number[])
+        else
+            yValues = Helper.getRoundedValues(yValues as number[])
 
         // setting all values
 
@@ -640,25 +638,34 @@ class PlotRenderer extends Renderer<PlotData> {
         this.#allValuesX = [...new Set(xValues.filter(x => x != undefined).map(x => isDate ? x.toString() : x))]
         this.#allValuesY = [...new Set(yValues.filter(y => y != undefined))]
 
+        //
+
+        const plot = this.plot
+
         // setting variables for x-axis
+
+        const xUnit = (xValues[1] as number) - (xValues[0] as number)
 
         this.#x = {
             min: Math.min(...(<number[]>xValues)),
             max: Math.max(...(<number[]>xValues)),
-            unit: (Math.abs(Math.min(...(<number[]>xValues))) + Math.abs(Math.max(...(<number[]>xValues)))) / (this.#allValuesX.length - 1),
-            step: (this.canvas.width - this.paddings.left - this.paddings.right) / this.#allValuesX.length,
+            unit: xUnit,
+            step: plot.width / (this.#allValuesX.length - 1),
             minStep: 0
         }
 
         // setting variables for y-axis
 
         const yMin = Math.min(Math.min(...(<number[]>yValues)), 0)
+        const yUnit = (yValues[1] as number) - (yValues[0] as number)
+
+        const yStepOffset = this.base.isVertical ? 0 : 1
 
         this.#y = {
             min: yMin,
             max: this.data.yMax ?? Math.max(...(<number[]>yValues)),
-            unit: (Math.abs(yMin) + Math.abs(this.data.yMax ?? Math.max(...(<number[]>yValues)))) / (this.#allValuesY.length - 1),
-            step: (this.canvas.height - this.paddings.top - this.paddings.bottom) / this.#allValuesY.length,
+            unit: yUnit,
+            step: plot.height / (this.#allValuesY.length - yStepOffset),
             minStep: 0
         }
 
@@ -991,11 +998,11 @@ class PlotBase {
         ctx.setLineDash([6, 6])
 
         if (this.isVertical) {
-            const count = this.labelsX.size > 10 ? 10 : this.labelsX.size,
-                step = this.renderer.plot.width / count
+            for (const l of this.labelsX) {
+                const x = l[0] as number
 
-            for (let i = 0; i < count; i++) {
-                const x = canvas.width - paddings.right - step * i
+                if (x == paddings.left)
+                    continue
 
                 ctx.beginPath()
 
@@ -1007,11 +1014,11 @@ class PlotBase {
         }
 
         if (!this.isVertical) {
-            const count = this.labelsY.size > 10 ? 10 : this.labelsY.size,
-                step = this.renderer.plot.height / count
+            for (const l of this.labelsY) {
+                const y = l[0] as number
 
-            for (let i = 0; i < count; i++) {
-                const y = paddings.top + i * step
+                if (y == canvas.height - paddings.bottom)
+                    continue
 
                 ctx.beginPath()
 
@@ -1095,84 +1102,40 @@ class PlotBase {
         let uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x))],
             uniqueY = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.y as number))]
 
-        // add rounded to last
+        // getting rounded values
 
         if (this.isVertical)
             uniqueX = Helper.getRoundedValues(uniqueX as number[])
         else
-            uniqueY = Helper.getRoundedValues(uniqueY as number[])
+            uniqueY = Helper.getRoundedValues(uniqueY as number[]).reverse()
 
         //
 
-        let minX = Math.min(...uniqueX as number[]),
-            maxX = Math.max(...uniqueX as number[])
+        const stepXOffset = this.isVertical ? 1 : 0,
+            stepYOffset = this.isVertical ? 0 : 1
+        const xOffset = this.isVertical ? 0 : .5,
+            yOffset = this.isVertical ? .5 : 0
 
-        if (minX > 0)
-            minX = 0
+        const stepX = this.renderer.plot.width / (uniqueX.length - stepXOffset),
+            stepY = this.renderer.plot.height / (uniqueY.length - stepYOffset)
 
-        let minY = Math.min(...uniqueY),
-            maxY = Math.max(...uniqueY)
-
-        if (minY > 0)
-            minY = 0
-
-
-
-        //
-
-        const countX = uniqueX.length > 10 && this.isVertical ? 10 : uniqueX.length,
-            stepX = this.renderer.plot.width / countX
-
-        // TODO: fix rounding
-        const labelStepX = (maxX - minX) / (this.isVertical ? countX - 1 : countX)
-
-        const cX = this.isVertical ? countX + 1 : countX
-
-        for (let i = 0; i < cX; i++) {
-            if (this.isVertical)
-                this.labelsX.set(
-                    Math.round(paddings.left + stepX * i),
-                    Formatter.format(
-                        minX + labelStepX * i,
-                        this.renderer.data.xType
-                    )
+        for (let i = 0; i < uniqueX.length; i++)
+            this.labelsX.set(
+                Math.round(paddings.left + stepX * (i + xOffset)),
+                Formatter.format(
+                    uniqueX[i],
+                    this.renderer.data.xType
                 )
-            else
-                this.labelsX.set(
-                    Math.round(paddings.left + stepX * (i + .5)),
-                    Formatter.format(
-                        uniqueX[i],
-                        this.renderer.data.xType
-                    )
+            )
+
+        for (let i = 0; i < uniqueY.length; i++)
+            this.labelsY.set(
+                paddings.top + stepY * (i + yOffset),
+                Formatter.format(
+                    uniqueY[i],
+                    PlotAxisType.Number
                 )
-        }
-
-        const countY = uniqueY.length > 10 ? 10 : uniqueY.length,
-            stepY = this.renderer.plot.height / countY
-
-        // TODO: fix rounding
-        const labelStepY = (maxY - minY) / (this.isVertical ? countY - 1 : countY)
-
-        const cY = this.isVertical ? countY : countY + 1
-
-        for (let i = 0; i < cY; i++) {
-            if (this.isVertical)
-                this.labelsY.set(
-                    canvas.height - paddings.bottom - stepY * (cY - i - .5),
-                    Formatter.format(
-                        minY + labelStepY * (cY - i - 1),
-                        PlotAxisType.Number
-                    )
-                )
-            else
-                this.labelsY.set(
-                    canvas.height - paddings.bottom - stepY * (countY - i),
-                    Formatter.format(
-                        minY + labelStepY * (countY - i),
-                        PlotAxisType.Number
-                    )
-                )
-        }
+            )
     }
 }
 
