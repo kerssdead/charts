@@ -1,5 +1,8 @@
 import Color from 'types/Color'
 import Theme from 'Theme'
+import Errors from 'helpers/Errors'
+import { ErrorType } from 'static/Enums'
+import { Plot } from 'static/constants/Index'
 
 export function adjustColor(color: string, amount: number) {
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).slice(-2))
@@ -128,5 +131,107 @@ export function closestDigitOrder(value: number, all: number[], extraCount: numb
             return result
 
         result += vn
+    }
+}
+
+// Result should have contained all.length values (+ 1 if no 0 values in source array)
+export function getRoundedValues(all: number[]) {
+    let min = Math.min(...all),
+        max = Math.max(...all)
+
+    if (min > 0)
+        min = 0
+
+
+    const negativeElements = all.filter(v => v < 0).length,
+        hasNegative = negativeElements > 0
+
+
+    let countOfElements = all.length
+    if (!all.includes(0))
+        countOfElements++
+    if (countOfElements > Plot.maxLabelsCount)
+        countOfElements = Plot.maxLabelsCount
+    if (countOfElements % 2 == 0)
+        countOfElements++
+    if (hasNegative)
+        countOfElements++
+
+
+
+    const isSatisfyDividing = (value: number) => {
+        const divides = [10, 7.5, 5, 2.5, 2]
+
+        let satisfied = 0
+
+        value = Math.abs(value)
+
+        for (const d of divides)
+            satisfied += value % d == 0 ? 1 : 0
+
+        return satisfied >= 4
+    }
+
+    const isSatisfyElementsCount = (values: number[]) => {
+        return values.length == countOfElements
+    }
+
+    const amplitude = Math.abs(min) + Math.abs(max),
+        diff = Math.abs(Math.abs(min) - Math.abs(max))
+
+    let startValue = amplitude / countOfElements
+
+    let attempt = 0,
+        value = 0
+
+    let step = 1
+
+    const isFractional = Math.abs(min) < 10 && Math.abs(max) < 10
+
+    if (isFractional)
+        step = .1
+    else
+        value = Math.round(startValue)
+
+    const round = (value: number) => {
+        return Math.round((value + Number.EPSILON) * 100) / 100
+    }
+
+    let startIndex = 0,
+        endIndex = countOfElements + startIndex
+
+    if (hasNegative) {
+        const negativeWeight = Math.abs(min) / amplitude
+        startIndex = -Math.floor(countOfElements * negativeWeight)
+        endIndex = countOfElements + startIndex
+
+        if (max > 0 && endIndex <= 1) {
+            startIndex++
+            endIndex++
+        }
+    }
+
+    while (true) {
+        if (!isFinite(value))
+            return []
+
+        if (isSatisfyDividing(value) || isFractional) {
+            let result = []
+
+            for (let i = startIndex; i < endIndex; i++)
+                result.push(round(value * i))
+
+            if (result[0] > min || result[result.length - 1] <= max)
+                result = []
+
+            if (isSatisfyElementsCount(result))
+                return result
+        }
+
+        value = round(value + step)
+        attempt = round(attempt + step)
+
+        if (attempt > amplitude)
+            throw Errors.throw(ErrorType.MaxCallsReach)
     }
 }

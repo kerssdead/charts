@@ -32,7 +32,7 @@ class PlotSeries extends Value {
         super.reset()
     }
 
-    // ~! better name ?
+    // TODO: better name ?
     inverse() {
         this.values = this.values.map(v => new PlotPoint(v))
 
@@ -42,7 +42,7 @@ class PlotSeries extends Value {
         this.values.sort((a, b) => b.x > a.x ? 1 : -1)
     }
 
-    // ~! better name ?
+    // TODO: better name ?
     normalize(xType: PlotAxisType) {
         this.disabled = !this.values
         this.type ??= PlotType.Line

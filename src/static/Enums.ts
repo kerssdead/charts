@@ -31,7 +31,9 @@ export enum ChartType {
 export enum ErrorType {
     NullContext = 'Can\'t find context',
 
-    ElementNotExist = 'Element does not exist'
+    ElementNotExist = 'Element does not exist',
+
+    MaxCallsReach = 'Max calls reach'
 }
 
 export enum Events {

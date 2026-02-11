@@ -11,7 +11,7 @@ class PlotPoint extends Value {
         Object.assign(this, obj)
     }
 
-    // ~! better name ?
+    // TODO: better name ?
     inverse() {
         const x = this.x
         this.x = this.y as any
