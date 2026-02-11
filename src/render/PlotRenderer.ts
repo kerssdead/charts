@@ -603,7 +603,9 @@ class PlotRenderer extends Renderer<PlotData> {
         let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
             yValues = this.data.values.flatMap(s => s.values.map(p => p.y))
 
-        const isDate = this.data.xType == PlotAxisType.Date
+        const isDate = this.data.xType == PlotAxisType.Date,
+            isText = this.data.xType == PlotAxisType.Text,
+            isNumber = !isDate && !isText
 
         // adding missed dates to x-axis
 
@@ -624,10 +626,12 @@ class PlotRenderer extends Renderer<PlotData> {
 
         // add rounded to last
 
-        if (this.base.isVertical)
-            xValues.push(Helper.closestDigitOrder(xValues[xValues.length - 1] as number, xValues as number[], 0))
-        else
-            yValues.push(Helper.closestDigitOrder(yValues[yValues.length - 1] as number, yValues as number[], 1))
+        if (isNumber) {
+            if (this.base.isVertical)
+                xValues = Helper.getRoundedValues(xValues as number[])
+            else
+                yValues = Helper.getRoundedValues(yValues as number[])
+        }
 
         // setting all values
 
@@ -1094,9 +1098,9 @@ class PlotBase {
         // add rounded to last
 
         if (this.isVertical)
-            uniqueX.push(Helper.closestDigitOrder(uniqueX[uniqueX.length - 1] as number, uniqueX as number[], 0))
+            uniqueX = Helper.getRoundedValues(uniqueX as number[])
         else
-            uniqueY.push(Helper.closestDigitOrder(uniqueY[uniqueY.length - 1] as number, uniqueY, 1))
+            uniqueY = Helper.getRoundedValues(uniqueY as number[])
 
         //
 
