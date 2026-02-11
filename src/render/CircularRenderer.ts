@@ -184,6 +184,11 @@ class CircularRenderer extends Renderer<CircularData> {
             accumulator += angle
         }
 
+        if (this.data.values.length == 1)
+            points = [
+                new DrawPoint(DrawPointType.SemiCircle, this.center.x, this.center.y, this.radius, 0, Math.PI * 2)
+            ]
+
         sector.points = points
 
         return sector
@@ -835,7 +840,7 @@ class CircularRenderer extends Renderer<CircularData> {
             sector = this.calculatePoint(sector)
 
             sector.textColor = Theme.text
-            sector.state = this.settings.disableInitAnimation
+            sector.state = this.settings.disableInitAnimation || this.data.values.length == 1
                            ? AnimationType.None
                            : AnimationType.Init
         }
