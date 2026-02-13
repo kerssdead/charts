@@ -259,20 +259,14 @@ class Dropdown {
 
     #initAnimations() {
         this.#canvasPosition = this.#canvas.getBoundingClientRect()
-
-        this.#canvasPosition.x += scrollX
-        this.#canvasPosition.y += scrollY
     }
 
     #isOnButton(event: MouseEvent, x: number, y: number, w: number, h: number): boolean {
         if (!event)
             return false
 
-        let trueX = event.clientX - this.#canvasPosition.x + scrollX,
-            trueY = event.clientY - this.#canvasPosition.y + scrollY
-
-        return trueX >= x && trueX <= x + w
-               && trueY >= y && trueY <= y + h
+        return event.offsetX >= x && event.offsetX <= x + w
+               && event.offsetY >= y && event.offsetY <= y + h
     }
 
     refresh() {
