@@ -1,2 +1,2 @@
-`https://cdn.jsdelivr.net/gh/kerssdead/charts/dist/ocharts.js`
-`https://cdn.jsdelivr.net/gh/kerssdead/charts/dist/main.css`
+`https://cdn.jsdelivr.net/gh/kerssdead/charts@1.0.21/dist/ocharts.js`
+`https://cdn.jsdelivr.net/gh/kerssdead/charts@1.0.21/dist/main.css`
