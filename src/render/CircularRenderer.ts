@@ -201,7 +201,7 @@ class CircularRenderer extends Renderer<CircularData> {
         }
 
         const setArgs = (points: DrawPoint[]) => {
-            for (let p of points) {
+            for (let p of points ?? []) {
                 if (p.type == DrawPointType.SemiCircle) {
                     p.args[2] = p.base[2] * value + p.base[2] * (1 - value) * transition
 
@@ -250,7 +250,7 @@ class CircularRenderer extends Renderer<CircularData> {
         }
 
         const setArgs = (points: DrawPoint[]) => {
-            for (let p of points) {
+            for (let p of points ?? []) {
                 switch (p.type) {
                     case DrawPointType.SemiCircle:
                         p.args[0] = p.base[0] + sector.translate.x
