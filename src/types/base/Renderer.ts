@@ -208,8 +208,8 @@ class Renderer<T extends Data> extends Renderable {
 
     protected getMousePosition(event: MouseEvent): Point {
         return {
-            x: event.clientX - this.canvasPosition.x + scrollX,
-            y: event.clientY - this.canvasPosition.y + scrollY
+            x: event.offsetX,
+            y: event.offsetY
         }
     }
 

@@ -68,9 +68,6 @@ class Renderable {
 
         this.canvasPosition = this.canvas.getBoundingClientRect()
 
-        this.canvasPosition.x += scrollX
-        this.canvasPosition.y += scrollY
-
         if (this.state == RenderState.Init && !this.settings.disableInteractions) {
             this.canvas.onmousemove = event => this.moveEvent = event
             this.canvas.onclick = event => this.clickEvent = event
