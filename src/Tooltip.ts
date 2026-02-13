@@ -95,8 +95,8 @@ class Tooltip {
         const padding = 6,
             borderRadius = 6
 
-        let x = event.clientX - this.#canvasPosition.x + 10,
-            y = event.clientY - this.#canvasPosition.y + scrollY + 10
+        let x = event.offsetX + 10,
+            y = event.offsetY + 10
 
         if (x + textWidth + 25 > this.#canvasPosition.width)
             x = this.#canvasPosition.width - (textWidth + 25)
@@ -200,16 +200,16 @@ class Tooltip {
 
         let opacity = '1'
 
-        let x = event.clientX,
-            y = event.clientY + scrollY
+        let x = event.pageX,
+            y = event.pageY
 
-        if (x + tooltip.position.width - this.#canvasPosition.x > this.#canvasPosition.width - offset) {
-            x = this.#canvasPosition.width - tooltip.position.width + this.#canvasPosition.x - offset
+        if (event.offsetX + tooltip.position.width > this.#canvasPosition.width - offset) {
+            x = this.#canvasPosition.width + event.pageX - event.offsetX - tooltip.position.width - offset
             opacity = '.67'
         }
 
-        if (y + tooltip.position.height - this.#canvasPosition.y > this.#canvasPosition.height - offset) {
-            y = this.#canvasPosition.height - tooltip.position.height + this.#canvasPosition.y - offset
+        if (event.offsetY + tooltip.position.height > this.#canvasPosition.height - offset) {
+            y = this.#canvasPosition.height + event.pageY - event.offsetY - tooltip.position.height - offset
             opacity = '.67'
         }
 
@@ -223,8 +223,6 @@ class Tooltip {
 
     refresh() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
-        this.#canvasPosition.x += scrollX
-        this.#canvasPosition.y += scrollY
     }
 
     #hideAll() {
