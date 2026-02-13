@@ -48,6 +48,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private innerTitleStyle: Function
 
+    private ctx: CanvasRenderingContext2D
+
     constructor(chart: Chart) {
         super(chart)
 
@@ -338,7 +340,9 @@ class CircularRenderer extends Renderer<CircularData> {
         return sector.canRenderLabel = !isBusy
     }
 
-    private drawLabel(sector: Sector, ctx: CanvasRenderingContext2D) {
+    private drawLabel(sector: Sector) {
+        const ctx = this.ctx
+
         if (!this.canRenderLabel(sector, ctx))
             return
 
@@ -380,7 +384,9 @@ class CircularRenderer extends Renderer<CircularData> {
         )
     }
 
-    private drawSector(sector: Sector, ctx: CanvasRenderingContext2D) {
+    private drawSector(sector: Sector) {
+        const ctx = this.ctx
+
         ctx.beginPath()
 
         if (sector.lineStyles) {
@@ -606,6 +612,8 @@ class CircularRenderer extends Renderer<CircularData> {
                 sector = this.calculatePoint(sector)
         }
 
+        this.ctx ??= Canvas.getContext(this.canvas)
+
         if (this.data.values.filter(s => !s.disabled).length == 0) {
             this.empty()
 
@@ -614,13 +622,11 @@ class CircularRenderer extends Renderer<CircularData> {
 
         this.hover = []
 
-        const ctx = Canvas.getContext(this.canvas)
-
         for (const sector of this.data.values) {
             this.animate(sector)
 
-            this.drawSector(sector, ctx)
-            this.drawLabel(sector, ctx)
+            this.drawSector(sector)
+            this.drawLabel(sector)
 
             if (sector.state != AnimationType.Init)
                 this.handle(sector)
@@ -644,10 +650,6 @@ class CircularRenderer extends Renderer<CircularData> {
             currentHover)
 
         this.innerTitle()
-
-        this.canvas.style.cursor = isAnyHover
-                                   ? Styles.Cursor.Pointer
-                                   : Styles.Cursor.Default
 
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
@@ -682,7 +684,7 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private empty() {
-        const ctx = Canvas.getContext(this.canvas)
+        const ctx = this.ctx
 
         ctx.beginPath()
 
@@ -698,7 +700,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private innerTitle() {
         if (this.canRenderInnerTitle) {
-            const ctx = Canvas.getContext(this.canvas)
+            const ctx = this.ctx
 
             this.innerTitleStyle(ctx)
             ctx.fillText(this.data.innerTitle, this.center.x, this.center.y)

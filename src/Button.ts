@@ -45,8 +45,6 @@ class Button {
         }
 
         if (this.#isOnButton(moveEvent)) {
-            this.#canvas.style.cursor = Styles.Cursor.Pointer
-
             if (clickEvent && this.#isOnButton(clickEvent)) {
                 this.#options.action()
                 clickEvent = undefined

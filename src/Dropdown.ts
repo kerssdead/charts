@@ -61,8 +61,6 @@ class Dropdown {
             }
 
             if (this.#isOnButton(moveEvent, x, y, width, height)) {
-                this.#canvas.style.cursor = Styles.Cursor.Pointer
-
                 if (clickEvent && moveEvent.x == clickEvent.x && moveEvent.y == clickEvent.y) {
                     this.isActive = !this.isActive
                     clickEvent = undefined
@@ -80,8 +78,6 @@ class Dropdown {
                 else
                     ctx.fillStyle = Helper.adjustColor(Theme.canvasBackground, -25)
             } else {
-                this.#canvas.style.cursor = Styles.Cursor.Default
-
                 if (!this.isActive)
                     this.animations.handle('animation-dropdown',
                         AnimationType.MouseLeave,
@@ -205,8 +201,6 @@ class Dropdown {
                                 translate(transition, AnimationType.MouseLeave)
                             }
                         })
-
-                    this.#canvas.style.cursor = Styles.Cursor.Pointer
 
                     if (clickEvent) {
                         item.action()

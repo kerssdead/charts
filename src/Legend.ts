@@ -40,8 +40,6 @@ class Legend extends Renderable {
 
         let nextPoint = { x: 20, y: 21 }
 
-        this.canvas.style.cursor = Styles.Cursor.Default
-
         TextStyles.regular(ctx)
         ctx.textAlign = 'start'
         ctx.textBaseline = 'alphabetic'
@@ -137,8 +135,6 @@ class Legend extends Renderable {
 
                 this.#chart.highlight(value)
             }
-
-            this.canvas.style.cursor = Styles.Cursor.Pointer
         } else {
             this.animations.handle(value.id,
                 AnimationType.MouseLeave,
