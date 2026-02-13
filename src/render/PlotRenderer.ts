@@ -194,7 +194,7 @@ class PlotRenderer extends Renderer<PlotData> {
                 const getTooltipValue = () => {
                     return {
                         x: Formatter.format(value.x, this.data.xType),
-                        y: Formatter.format(value.y, this.data.xType, this.settings.valuePostfix)
+                        y: Formatter.format(value.y, PlotAxisType.Number, this.settings.valuePostfix)
                     }
                 }
 
