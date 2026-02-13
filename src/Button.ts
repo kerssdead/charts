@@ -93,9 +93,6 @@ class Button {
     #initAnimations() {
         this.#canvasPosition = this.#canvas.getBoundingClientRect()
 
-        this.#canvasPosition.x += scrollX
-        this.#canvasPosition.y += scrollY
-
         const width = Helper.stringWidth(this.#options.text) + 12,
             height = 20
 
@@ -119,8 +116,8 @@ class Button {
         if (!event)
             return false
 
-        let trueX = event.clientX - this.#canvasPosition.x + scrollX,
-            trueY = event.clientY - this.#canvasPosition.y + scrollY
+        let trueX = event.offsetX,
+            trueY = event.offsetY
 
         return trueX >= this.#position.x && trueX <= this.#position.x + this.#position.width
                && trueY >= this.#position.y && trueY <= this.#position.y + this.#position.height
