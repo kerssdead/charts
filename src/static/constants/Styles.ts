@@ -40,9 +40,5 @@ namespace Styles {
     export class JustifyContent {
         static Center = 'center'
     }
-
-    export class ImageRendering {
-        static Pixelated = 'pixelated'
-    }
 }
 export default Styles

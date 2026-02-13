@@ -5,7 +5,6 @@ import Dropdown from 'Dropdown'
 import Chart from 'Chart'
 import Canvas from 'helpers/Canvas'
 import { Events, RenderState, Tag } from 'static/Enums'
-import Styles from 'static/constants/Styles'
 import Theme from 'Theme'
 
 class Renderable {
@@ -37,8 +36,6 @@ class Renderable {
         this.animations = new Animations()
 
         this.canvas = document.createElement(Tag.Canvas)
-
-        this.canvas.style.imageRendering = Styles.ImageRendering.Pixelated
 
         this.node.append(this.canvas)
 
