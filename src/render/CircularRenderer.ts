@@ -85,6 +85,9 @@ class CircularRenderer extends Renderer<CircularData> {
     private calculatePoint(sector: Sector): Sector {
         let accumulator = this.getAccumulator(sector)
 
+        const center = this.center,
+            radius = this.radius
+
         const getPoint = (radius: number, angle: number, center: Point): Point => {
             return {
                 x: center.x + radius * Math.cos(accumulator + angle),
@@ -92,20 +95,20 @@ class CircularRenderer extends Renderer<CircularData> {
             }
         }
 
-        const startPoint = getPoint(this.radius, 0, this.center)
+        const startPoint = getPoint(radius, 0, center)
         const angle = this.getAngle(sector)
 
-        let nextPoint = getPoint(this.radius, angle, this.center)
+        let nextPoint = getPoint(radius, angle, center)
         let points: DrawPoint[] = []
 
         sector.direction = accumulator + angle / 2
 
         if (angle > 0) {
             if (sector.current > 0) {
-                let labelStartPoint = getPoint(this.radius + 10, angle / 2, this.center),
-                    labelMidPoint = getPoint(this.radius + 20, angle / 2, this.center)
+                let labelStartPoint = getPoint(radius + 10, angle / 2, center),
+                    labelMidPoint = getPoint(radius + 20, angle / 2, center)
 
-                const dir = labelStartPoint.x > this.center.x ? 1 : -1
+                const dir = labelStartPoint.x > center.x ? 1 : -1
 
                 let endPoint = {
                     x: labelMidPoint.x + 10 * dir,
@@ -119,7 +122,7 @@ class CircularRenderer extends Renderer<CircularData> {
             }
 
             if (!this.isDonut)
-                points.push(new DrawPoint(DrawPointType.Move, this.center.x, this.center.y))
+                points.push(new DrawPoint(DrawPointType.Move, center.x, center.y))
 
             points.push(new DrawPoint(DrawPointType.Move, startPoint.x, startPoint.y))
 
@@ -131,13 +134,13 @@ class CircularRenderer extends Renderer<CircularData> {
                                    ? Math.PI / 2
                                    : localAngle
 
-                nextPoint = getPoint(this.radius, localAccumulator + currentAngle, this.center)
+                nextPoint = getPoint(radius, localAccumulator + currentAngle, center)
 
                 const p1Angle = Math.PI - currentAngle,
-                    p1Length = this.radius / Math.sin(p1Angle / 2),
-                    p1 = getPoint(p1Length, localAccumulator + currentAngle / 2, this.center)
+                    p1Length = radius / Math.sin(p1Angle / 2),
+                    p1 = getPoint(p1Length, localAccumulator + currentAngle / 2, center)
 
-                points.push(new DrawPoint(DrawPointType.ArcTo, p1.x, p1.y, nextPoint.x, nextPoint.y, this.radius))
+                points.push(new DrawPoint(DrawPointType.ArcTo, p1.x, p1.y, nextPoint.x, nextPoint.y, radius))
 
                 localAccumulator += currentAngle
 
@@ -148,11 +151,11 @@ class CircularRenderer extends Renderer<CircularData> {
             }
 
             if (this.isDonut || sector.innerRadius != 0) {
-                const innerRadius = this.radius * (sector.innerRadius / 100)
+                const innerRadius = radius * (sector.innerRadius / 100)
 
                 const innerPoint2 = {
-                    x: nextPoint.x - (((this.radius - innerRadius) * (nextPoint.x - this.center.x)) / this.radius),
-                    y: nextPoint.y - (((this.radius - innerRadius) * (nextPoint.y - this.center.y)) / this.radius)
+                    x: nextPoint.x - (((radius - innerRadius) * (nextPoint.x - center.x)) / radius),
+                    y: nextPoint.y - (((radius - innerRadius) * (nextPoint.y - center.y)) / radius)
                 }
 
                 points.push(new DrawPoint(DrawPointType.Line, innerPoint2.x, innerPoint2.y))
@@ -165,11 +168,11 @@ class CircularRenderer extends Renderer<CircularData> {
                                        ? Math.PI / 2
                                        : angle - localAngle
 
-                    nextPoint = getPoint(innerRadius, localAccumulator - currentAngle, this.center)
+                    nextPoint = getPoint(innerRadius, localAccumulator - currentAngle, center)
 
                     const p1Angle = Math.PI - currentAngle,
                         p1Length = innerRadius / Math.sin(p1Angle / 2),
-                        p1 = getPoint(p1Length, localAccumulator - currentAngle / 2, this.center)
+                        p1 = getPoint(p1Length, localAccumulator - currentAngle / 2, center)
 
                     points.push(new DrawPoint(DrawPointType.ArcTo, p1.x, p1.y, nextPoint.x, nextPoint.y, innerRadius))
 
@@ -178,7 +181,7 @@ class CircularRenderer extends Renderer<CircularData> {
                     localAngle += Math.PI / 2
                 }
             } else {
-                points.push(new DrawPoint(DrawPointType.Line, this.center.x, this.center.y))
+                points.push(new DrawPoint(DrawPointType.Line, center.x, center.y))
             }
 
             accumulator += angle
@@ -186,7 +189,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
         if (this.data.values.length == 1)
             points = [
-                new DrawPoint(DrawPointType.SemiCircle, this.center.x, this.center.y, this.radius, 0, Math.PI * 2)
+                new DrawPoint(DrawPointType.SemiCircle, center.x, center.y, radius, 0, Math.PI * 2)
             ]
 
         sector.points = points
