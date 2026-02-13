@@ -83,8 +83,8 @@ class Legend extends Renderable {
             if (!event)
                 return false
 
-            const px = event.clientX - this.canvasPosition.x + scrollX - this.#offset.x,
-                py = event.clientY - this.canvasPosition.y + scrollY - this.#offset.y
+            const px = event.offsetX - this.#offset.x,
+                py = event.offsetY - this.#offset.y
 
             return px >= rectX && px <= rectX + rectW
                    && py >= rectY && py <= rectY + rectH
