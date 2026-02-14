@@ -23,6 +23,9 @@ abstract class Canvas {
     ) {
         const width = typeof w == 'number' ? w : Helper.stringWidth(w)
 
+        if (width <= 0)
+            return false
+
         const pos = !isLeft
                     ? { x: x - width / 2, y: y - h / 2 }
                     : { x: x, y: y + h / 2 }
