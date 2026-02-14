@@ -312,9 +312,6 @@ class CircularRenderer extends Renderer<CircularData> {
         if (sector.state == AnimationType.None && sector.canRenderLabel)
             return sector.canRenderLabel
 
-        if (!sector.labelPoints)
-            return sector.canRenderLabel = false
-
         const dir = sector.labelPoints[0].args[0] < sector.labelPoints[1].args[0] ? 1 : -1
 
         let isBusy = false

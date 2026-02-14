@@ -1,8 +1,8 @@
 {
   "name": "charts",
-  "version": "1.0.22",
+  "version": "1.0.24",
   "description": "Typescript Canvas Charts",
-  "jsdelivr": "./ch.in.js",
+  "jsdelivr": "./dist/ocharts.js",
   "repository": "https://github.com/kerssdead/charts",
   "bugs": {
     "email": "kerss26rus@gmail.com",
@@ -11,7 +11,8 @@
   "author": "Sergey Ryabko <kerss26rus@gmail.com>",
   "license": "MIT",
   "keywords": [
-    "charts"
+    "charts",
+    "typescript"
   ],
   "scripts": {
     "build": "webpack && npm run sass",
