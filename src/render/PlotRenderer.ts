@@ -1133,6 +1133,21 @@ class PlotBase {
                     PlotAxisType.Number
                 )
             )
+
+        this.fixLeftPadding()
+    }
+
+    private fixLeftPadding() {
+        const max = Math.max(...[...this.labelsY.values()].map(v => Helper.stringWidth(v)))
+
+        console.log(this.renderer.paddings.left, '<', 72)
+        console.log(max, '>', 44)
+
+        if (this.renderer.paddings.left <= 80 && max > 54) {
+            this.renderer.paddings.left += max - 44
+
+            this.calculateLabels()
+        }
     }
 }
 
