@@ -925,8 +925,6 @@ class PlotBase {
         this.data = data
 
         this.isVertical = data.values.filter(s => s.type == PlotType.Bar).length > 0
-
-        // this.calculateLabels()
     }
 
     render() {
@@ -935,7 +933,8 @@ class PlotBase {
         if (this.data.simple)
             return
 
-        this.calculateLabels()
+        if (!this.labelsX || !this.labelsY)
+            this.calculateLabels()
 
         this.lines()
         this.backlines()
