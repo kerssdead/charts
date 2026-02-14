@@ -10,7 +10,7 @@ declare global {
     }
 
     interface Array {
-        sum: (predicate: (value: any) => number) => number
+        sumByField: (predicate: (value: any) => number) => number
     }
 
     interface Date {

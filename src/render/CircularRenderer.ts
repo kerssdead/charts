@@ -61,7 +61,7 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private calculateAngles() {
-        const valuesSum = this.data.values.sum(v => v.current)
+        const valuesSum = this.data.values.sumByField(v => v.current)
 
         let anglesSum = this.startAngle
         this.angles = this.data.values.flatMap(sector => {
@@ -822,7 +822,7 @@ class CircularRenderer extends Renderer<CircularData> {
         if (this.settings.enableOther && this.data.values.length > 20) {
             this.other = this.data.values.splice(20)
 
-            const sum = this.other.sum(v => v.current)
+            const sum = this.other.sumByField(v => v.current)
 
             this.data.values = this.data.values.slice(0, 20)
 

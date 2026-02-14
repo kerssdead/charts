@@ -38,7 +38,7 @@ class TreeRenderer extends Renderer<TreeData> {
         const maxWidth = this.canvas.width - this.data.padding * 2,
             maxHeight = this.canvas.height - this.data.padding * 2 - titleOffset
 
-        let sum = this.data.values.sum(cur => cur.value),
+        let sum = this.data.values.sumByField(cur => cur.value),
             totalSquare = maxWidth * maxHeight
 
         let x = this.data.padding,
