@@ -601,6 +601,8 @@ class PlotRenderer extends Renderer<PlotData> {
             this.canvas.height - this.paddings.top - this.paddings.bottom
         )
 
+        this.base.calculateLabels()
+
         // flat values
 
         let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
