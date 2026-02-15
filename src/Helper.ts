@@ -118,18 +118,23 @@ export function getRoundedValues(all: number[]) {
     if (min > 0)
         min = 0
 
+    const maxStr = max.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                      .replace(',', '')
+                      .replace('.', ''),
+        dividersMultiplier = Math.pow(10, Math.floor(maxStr.length / 2 - .5))
+
     const negativeElements = all.filter(v => v < 0).length,
         hasNegative = negativeElements > 0
 
     let countOfElements = all.length
     if (!all.includes(0))
         countOfElements++
-    if (countOfElements > Plot.maxLabelsCount)
-        countOfElements = Plot.maxLabelsCount
     if (countOfElements % 2 == 0)
         countOfElements++
     if (hasNegative)
         countOfElements++
+    if (countOfElements > Plot.maxLabelsCount)
+        countOfElements = Plot.maxLabelsCount
 
     const isSatisfyDividing = (value: number) => {
         const divides = [10, 7.5, 5, 2.5, 2]
@@ -139,13 +144,13 @@ export function getRoundedValues(all: number[]) {
         value = Math.abs(value)
 
         for (const d of divides)
-            satisfied += value % d == 0 ? 1 : 0
+            satisfied += value % (d * dividersMultiplier) == 0 ? 1 : 0
 
         return satisfied >= 4
     }
 
     const isSatisfyElementsCount = (values: number[]) => {
-        return values.length == countOfElements
+        return values.length > 2 && values.length <= countOfElements
     }
 
     const amplitude = Math.abs(min) + Math.abs(max)

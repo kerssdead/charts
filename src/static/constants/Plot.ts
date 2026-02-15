@@ -1,3 +1,3 @@
 export class Plot {
-    static readonly maxLabelsCount = 6
+    static readonly maxLabelsCount = 5
 }
