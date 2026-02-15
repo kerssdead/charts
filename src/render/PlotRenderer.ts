@@ -1144,6 +1144,9 @@ class PlotBase {
     }
 
     private fixLeftPadding() {
+        if (this.data.simple)
+            return
+
         const max = Math.max(...[...this.labelsY.values()].map(v => Helper.stringWidth(v)))
 
         if (this.renderer.paddings.left <= 80 && max > 54) {
