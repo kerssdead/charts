@@ -100,7 +100,9 @@ class PlotRenderer extends Renderer<PlotData> {
 
         const axisLineHoverColor = Theme.lineActive
 
-        const topPadding = [...this.base.labelsY].find(kv => kv[1].startsWith('0'))![0]
+        const topPadding = !this.base.labelsY
+                           ? canvas.height - paddings.bottom
+                           : [...this.base.labelsY].find(kv => kv[1].startsWith('0'))![0]
 
         let x = 0,
             y = 0,
