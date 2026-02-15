@@ -1012,10 +1012,12 @@ class PlotBase {
         }
 
         if (!this.isVertical) {
+            let index = 0
+
             for (const l of this.labelsY) {
                 const y = l[0]
 
-                if (y == canvas.height - paddings.bottom)
+                if (index++ == this.labelsY.size - 1)
                     continue
 
                 ctx.beginPath()
@@ -1139,9 +1141,6 @@ class PlotBase {
 
     private fixLeftPadding() {
         const max = Math.max(...[...this.labelsY.values()].map(v => Helper.stringWidth(v)))
-
-        console.log(this.renderer.paddings.left, '<', 72)
-        console.log(max, '>', 44)
 
         if (this.renderer.paddings.left <= 80 && max > 54) {
             this.renderer.paddings.left += max - 44
