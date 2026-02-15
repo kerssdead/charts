@@ -18,7 +18,7 @@ abstract class Formatter {
 
         switch (type) {
             case PlotAxisType.Number:
-                result = Formatter.number(value)
+                result = Formatter.number(+value)
                 break
 
             case PlotAxisType.Date:
