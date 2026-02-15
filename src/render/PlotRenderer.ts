@@ -100,6 +100,8 @@ class PlotRenderer extends Renderer<PlotData> {
 
         const axisLineHoverColor = Theme.lineActive
 
+        const topPadding = [...this.base.labelsY].find(kv => kv[1].startsWith('0'))![0]
+
         let x = 0,
             y = 0,
             yValue = 0,
@@ -291,15 +293,17 @@ class PlotRenderer extends Renderer<PlotData> {
                         break
 
                     case PlotType.Column:
+                        const offset = (canvas.height - paddings.bottom - topPadding)
+
                         yValue = <number>value.y > this.data.yMax ? this.data.yMax : <number>value.y
 
-                        y = this.plot.height * yValue / this.#y.max
-                        if (y < this.#y.minStep)
-                            y = this.#y.minStep
+                        y = (this.plot.height - offset) * yValue / this.#y.max
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
 
                         ctx.beginPath()
+
+                        const topCorners = [6, 6, 0, 0]
 
                         if (this.state == RenderState.Init || this.animations.contains(value.id + columnsIndex, AnimationType.Init)) {
                             this.animations.handle(value.id + columnsIndex,
@@ -311,29 +315,25 @@ class PlotRenderer extends Renderer<PlotData> {
                                         yValue = <number>value.y > this.data.yMax ? this.data.yMax : <number>value.y
 
                                         x = paddings.left + xIndex * this.#x.step
-                                        y = this.plot.height * yValue / this.#y.max * transition
-
-                                        if (y < this.#y.minStep)
-                                            y = this.#y.minStep * transition
+                                        y = (this.plot.height - offset) * yValue / this.#y.max * transition
 
                                         columnsIndex = this.data.values.filter(s => s.type == PlotType.Column)
                                                            .indexOf(series)
 
-                                        ctx.roundRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                            canvas.height - paddings.bottom - y,
-                                            columnWidth,
-                                            y,
-                                            [6, 6, 0, 0])
+                                        const xPos = x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
+                                            yPos = canvas.height - paddings.bottom - y - offset
+
+                                        ctx.roundRect(xPos, yPos, columnWidth, y, topCorners)
                                         ctx.fill()
                                     }
                                 })
                         } else {
-                            if (this.#isInArea(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                    canvas.height - paddings.bottom - y,
-                                    columnWidth,
-                                    y)
-                                && (this.contextMenu?.isActive == undefined
-                                    || this.contextMenu?.isActive == false)) {
+                            const xPos = x + columnsIndex * columnWidth
+                                         + (this.#x.step - columnsCount * columnWidth) / 2,
+                                yPos = canvas.height - paddings.bottom - y - offset
+
+                            if (this.#isInArea(xPos, yPos, columnWidth, y)
+                                && !this.contextMenu?.isActive) {
                                 this.#hoverX = {
                                     x: x,
                                     y: y,
@@ -346,11 +346,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                 this.#tooltipX = x
                             }
 
-                            ctx.roundRect(x + columnsIndex * columnWidth + (this.#x.step - columnsCount * columnWidth) / 2,
-                                canvas.height - paddings.bottom - y,
-                                columnWidth,
-                                y,
-                                [6, 6, 0, 0])
+                            ctx.roundRect(xPos, yPos, columnWidth, y, topCorners)
                             ctx.fill()
                         }
 
@@ -837,9 +833,13 @@ class PlotRenderer extends Renderer<PlotData> {
 
         const mouse = this.getMousePosition(this.moveEvent)
 
+        let offset = 0
+        if (h < 0)
+            offset = h = -h
+
         return !(this.dropdown?.isActive ?? false)
                && mouse.x >= x && mouse.x <= x + w
-               && mouse.y >= y && mouse.y <= y + h
+               && mouse.y >= y - offset && mouse.y <= y - offset + h
     }
 
     // TODO: combine with this.isInArea()
