@@ -159,6 +159,12 @@
 
                     <input type="text" id="postfix" onchange="refresh()"/>
                 </label>
+
+                <label>
+                    Base Value
+
+                    <input type="number" id="base-value" onchange="refresh()" value="1000"/>
+                </label>
             </div>
 
             <div>
@@ -421,6 +427,8 @@
             }
         }
 
+        const baseValue = document.getElementById('base-value').value ?? 1000
+
         switch (type) {
             case 0:
                 const xType = +document.getElementById('x-axis-type').value
@@ -428,7 +436,7 @@
                 for (let i = 0; i < count; i++) {
                     let points = []
 
-                    sameValue = rng.nextFloat() * 1000
+                    sameValue = rng.nextFloat() * baseValue
 
                     for (let j = 0; j < pointsCount; j++) {
                         let x = 0,
@@ -467,8 +475,8 @@
                         switch (valuesType) {
                             case 0:
                                 x = xValue
-                                y = rng.nextFloat() * 1000
-                                    - (enableNegativeValuesInPlot ? 500 : 0)
+                                y = rng.nextFloat() * baseValue
+                                    - (enableNegativeValuesInPlot ? baseValue / 2 : 0)
 
                                 break
 
@@ -512,14 +520,14 @@
                 break
 
             case 1:
-                sameValue = rng.nextFloat() * 1000
+                sameValue = rng.nextFloat() * baseValue
 
                 for (let i = 0; i < count; i++) {
                     let value = 0
 
                     switch (valuesType) {
                         case 0:
-                            value = rng.nextFloat() * 1000
+                            value = rng.nextFloat() * baseValue
 
                             break
 
@@ -554,11 +562,11 @@
             case 2:
                 let value = 0
 
-                sameValue = rng.nextFloat() * 1000
+                sameValue = rng.nextFloat() * baseValue
 
                 switch (valuesType) {
                     case 0:
-                        value = rng.nextFloat() * 1000
+                        value = rng.nextFloat() * baseValue
 
                         break
 
@@ -587,14 +595,14 @@
                 break
 
             case 3:
-                sameValue = rng.nextFloat() * 1000
+                sameValue = rng.nextFloat() * baseValue
 
                 for (let i = 0; i < count; i++) {
                     let value = 0
 
                     switch (valuesType) {
                         case 0:
-                            value = rng.nextFloat() * 1000
+                            value = rng.nextFloat() * baseValue
 
                             break
 
