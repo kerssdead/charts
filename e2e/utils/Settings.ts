@@ -96,6 +96,14 @@ class Settings {
     static height(value: number) {
         return Settings.fill(Selectors.height, value)
     }
+
+    static baseValue(value: number) {
+        return Settings.fill(Selectors.baseValue, value)
+    }
+
+    static yAxisTitle(value: boolean = true) {
+        return Settings.check(Selectors.yAxisTitle, value)
+    }
 }
 
 export default Settings

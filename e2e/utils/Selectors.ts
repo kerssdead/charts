@@ -38,6 +38,12 @@ class Selectors {
     static width = '#width'
 
     static height = '#height'
+
+    static baseValue = '#base-value'
+
+    static yAxisTitle = '#y-axis-label'
+
+    static xAxisTitle = '#x-axis-label'
 }
 
 export default Selectors
