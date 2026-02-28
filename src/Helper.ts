@@ -212,13 +212,7 @@ export function getRoundedValues(all: number[]) {
         value = round(value + step)
         attempt = round(attempt + step)
 
-        const f = (value: any) => '\n _ ' + value
-
         if (attempt > amplitude)
-            // throw Errors.throw(ErrorType.MaxCallsReach + ' _ ' + attempt)
-            throw new Error(ErrorType.MaxCallsReach
-                            + f(attempt)
-                            + f(startIndex)
-                            + f(endIndex))
+            throw Errors.throw(ErrorType.MaxCallsReach)
     }
 }
