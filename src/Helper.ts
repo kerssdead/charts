@@ -181,6 +181,11 @@ export function getRoundedValues(all: number[]) {
         startIndex = -Math.floor(countOfElements * negativeWeight)
         endIndex = countOfElements + startIndex
 
+        if (startIndex == 0) {
+            startIndex--
+            endIndex--
+        }
+
         if (max > 0 && endIndex <= 1) {
             startIndex++
             endIndex++
