@@ -5,6 +5,10 @@ declare global {
         isAnyEquals: (...values: number[]) => boolean
     }
 
+    interface NumberConstructor {
+        divide: (a: number, b: number) => number
+    }
+
     interface Map<K, V> {
         trySet: (key: K, value: V) => void
     }

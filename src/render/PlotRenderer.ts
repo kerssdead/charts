@@ -295,11 +295,16 @@ class PlotRenderer extends Renderer<PlotData> {
                         break
 
                     case PlotType.Column:
-                        const offset = (canvas.height - paddings.bottom - topPadding)
+                        const offset = (canvas.height - paddings.bottom - topPadding),
+                            maxYValue = this.#y.max == 0
+                                        ? Math.abs(this.#y.min)
+                                        : this.#y.max
+
+                        let yOffsetValue = offset == this.plot.height ? 0 : offset
 
                         yValue = <number>value.y > this.data.yMax ? this.data.yMax : <number>value.y
 
-                        y = (this.plot.height - offset) * yValue / this.#y.max
+                        y = Number.divide((this.plot.height - yOffsetValue) * yValue, maxYValue)
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5) / columnsCount
 
@@ -317,7 +322,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                         yValue = <number>value.y > this.data.yMax ? this.data.yMax : <number>value.y
 
                                         x = paddings.left + xIndex * this.#x.step
-                                        y = (this.plot.height - offset) * yValue / this.#y.max * transition
+                                        y = (this.plot.height - yOffsetValue) * yValue / maxYValue * transition
 
                                         columnsIndex = this.data.values.filter(s => s.type == PlotType.Column)
                                                            .indexOf(series)

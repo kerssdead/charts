@@ -2,6 +2,10 @@ Number.prototype.isAnyEquals = function (...values) {
     return values.includes(<number>this)
 }
 
+Number.divide = function (a: number, b: number) {
+    return a / (b == 0 ? 1 : b)
+}
+
 Date.prototype.addDays = function (days: number) {
     let result = new Date(this)
     result.setDate(result.getDate() + days)
