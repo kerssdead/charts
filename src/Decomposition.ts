@@ -48,9 +48,11 @@ class Decomposition {
             let columns = ''
 
             for (const [vKey, vValue] of value) {
+                const text = vValue == undefined ? '' : Formatter.number(vValue)
+
                 columns += `
-                    <div>
-                        ${ vValue == undefined ? '' : Formatter.number(vValue) }
+                    <div title="${ text }">
+                        ${ text }
                     </div>
                 `
 
@@ -62,25 +64,30 @@ class Decomposition {
                 }
             }
 
+            const k = key.trim()
+
             rows += `
                 <div class="o-table-row">
-                    <div>
-                        ${ key.trim() }
+                    <div title="${ k }">
+                        ${ k }
                     </div>
                     
-                    ${ columns } 
+                    ${ columns }
                 </div>
             `
         }
 
         let totalColumns = ''
 
-        for (const [, value] of totals)
+        for (const [, value] of totals) {
+            const total = value == undefined ? '' : Formatter.number(value)
+
             totalColumns += `
-                <div>
-                    ${ value == undefined ? '' : Formatter.number(value) }
+                <div title="${ value == undefined ? '' : `Total: ${ total }` }">
+                    ${ total }
                 </div>
             `
+        }
 
         table.innerHTML = `
             <div class="o-table-header">

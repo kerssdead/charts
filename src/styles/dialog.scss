@@ -6,6 +6,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    font-family: Arial;
 }
 
 .o-modal::backdrop {
@@ -22,6 +23,7 @@
 
 .o-modal-header > .o-modal-title {
     flex-grow: 1;
+    font-size: 16px;
 }
 
 .o-modal-header > .o-modal-close {
@@ -30,6 +32,16 @@
     outline: 0;
     background: transparent;
     width: fit-content;
+    font-size: 20px;
+    line-height: 16px;
+
+    opacity: 1;
+
+    transition: opacity .3s ease-in-out;
+}
+
+.o-modal-header > .o-modal-close:hover {
+    opacity: .5;
 }
 
 .o-modal-content {
