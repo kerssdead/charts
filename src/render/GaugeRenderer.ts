@@ -111,14 +111,18 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
             const opacity = Math.PI - localAngle > angle ? '66' : 'ff'
 
-            ctx.moveTo(point1.x, point1.y)
-            ctx.lineTo(point2.x, point2.y)
-            ctx.strokeStyle = Theme.text + opacity
-            ctx.stroke()
+            const text = Formatter.number(this.data.max - localAngle / Math.PI * (this.data.max - this.data.min))
 
-            TextStyles.regular(ctx)
-            ctx.fillStyle = Theme.text + opacity
-            ctx.fillText(Formatter.number(this.data.max - localAngle / Math.PI * (this.data.max - this.data.min)), point3.x, point3.y)
+            if (this.canRenderLabel(point3.x, point3.y, text, ctx)) {
+                ctx.moveTo(point1.x, point1.y)
+                ctx.lineTo(point2.x, point2.y)
+                ctx.strokeStyle = Theme.text + opacity
+                ctx.stroke()
+
+                TextStyles.regular(ctx)
+                ctx.fillStyle = Theme.text + opacity
+                ctx.fillText(text, point3.x, point3.y)
+            }
 
             localAccumulator += currentAngle
 
@@ -174,6 +178,23 @@ class GaugeRenderer extends Renderer<GaugeData> {
             x: this.canvas.width / 2,
             y: this.canvas.height - this.#radius / 5
         }
+    }
+
+    private canRenderLabel(x: number, y: number, text: string, ctx: CanvasRenderingContext2D) {
+        const textWidth = Helper.stringWidth(text),
+            imageDataX = x - textWidth / 2,
+            imageDataY = y - 12,
+            imageData = new Uint32Array(ctx.getImageData(imageDataX, imageDataY, textWidth, 28).data.buffer)
+
+        if (imageDataX < 0 || imageDataX + textWidth > this.canvas.width
+            || y - 12 < 0 || y + 12 > this.canvas.height)
+            return false
+
+        for (let i = 0; i < imageData.length; i++)
+            if (Canvas.isPixelBusy(imageData[i]))
+                return false
+
+        return true
     }
 
     refresh() {
