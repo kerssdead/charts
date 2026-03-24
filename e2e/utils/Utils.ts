@@ -43,6 +43,8 @@ class Utils {
     }
 
     static async checkForErrors() {
+        await Utils.page.waitForTimeout(1000)
+
         expect(this.errors).toHaveLength(0)
     }
 

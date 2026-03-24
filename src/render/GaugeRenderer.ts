@@ -49,6 +49,11 @@ class GaugeRenderer extends Renderer<GaugeData> {
     }
 
     #draw() {
+        if (this.#radius <= 0) {
+            console.warn('Radius can\'t be negative.')
+            return
+        }
+
         const ctx = Canvas.getContext(this.canvas)
 
         const value = this.data.values[0] ?? { id: Helper.guid() }
