@@ -70,7 +70,9 @@ class GaugeRenderer extends Renderer<GaugeData> {
         ctx.lineCap = 'round'
         ctx.lineWidth = 40
 
-        const piece = value.current / this.data.max,
+        const negativeOffset = this.data.min < 0 ? Math.abs(this.data.min) : 0
+
+        const piece = (value.current + negativeOffset) / (this.data.max - this.data.min),
             angle = (isNaN(piece) ? 1 : piece) * Math.PI
 
         if (value.value) {
@@ -111,7 +113,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
             TextStyles.regular(ctx)
             ctx.fillStyle = Theme.text + opacity
-            ctx.fillText(Formatter.number(this.data.max - localAngle / Math.PI * this.data.max), point3.x, point3.y)
+            ctx.fillText(Formatter.number(this.data.max - localAngle / Math.PI * (this.data.max - this.data.min)), point3.x, point3.y)
 
             localAccumulator += currentAngle
 
@@ -128,7 +130,10 @@ class GaugeRenderer extends Renderer<GaugeData> {
             if (a < 0)
                 a += Math.PI * 2
 
-            const piece = value.current / this.data.max,
+
+            const negativeOffset = this.data.min < 0 ? Math.abs(this.data.min) : 0
+
+            const piece = (value.current + negativeOffset) / (this.data.max - this.data.min),
                 angle = (isNaN(piece) ? 1 : piece) * Math.PI
 
             return a > Math.PI && Math.PI + angle >= a
