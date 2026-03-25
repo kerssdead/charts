@@ -654,12 +654,14 @@ class CircularRenderer extends Renderer<CircularData> {
         else
             this.menuEvent = undefined
 
-        this.tooltip.render(isAnyHover && !this.dropdown?.isActive,
+        this.tooltip.render(
+            isAnyHover && !this.dropdown?.isActive && !this.menuEvent,
             this.moveEvent,
             [
                 new TooltipValue(`${ currentHover?.label }: ${ Formatter.format(currentHover?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
             ],
-            currentHover)
+            currentHover
+        )
 
         this.innerTitle()
 
