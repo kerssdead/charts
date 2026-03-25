@@ -15,9 +15,9 @@ import TextResources from 'static/TextResources'
 import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
 
 class GaugeRenderer extends Renderer<GaugeData> {
-    #radius: number
+    private radius: number
 
-    #center: Point
+    private center: Point
 
     constructor(chart: Chart) {
         super(chart)
@@ -28,11 +28,11 @@ class GaugeRenderer extends Renderer<GaugeData> {
     render() {
         super.render()
 
-        this.#draw()
+        this.draw()
 
         const value = this.data.values[0]
         this.tooltip.render(
-            this.#isInsideSector(this.moveEvent, value) && !this.dropdown?.isActive,
+            this.isInsideSector(this.moveEvent, value) && !this.dropdown?.isActive,
             this.moveEvent,
             [
                 new TooltipValue(`${ value?.label }: ${ Formatter.format(value?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
@@ -48,8 +48,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
         super.renderDropdown()
     }
 
-    #draw() {
-        if (this.#radius <= 0) {
+    private draw() {
+        if (this.radius <= 0) {
             console.warn('Radius can\'t be negative.')
             return
         }
@@ -81,7 +81,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
             angle = (isNaN(piece) ? 1 : piece) * Math.PI
 
         if (value.value) {
-            ctx.arc(this.#center.x, this.#center.y, this.#radius, Math.PI, angle - Math.PI)
+            ctx.arc(this.center.x, this.center.y, this.radius, Math.PI, angle - Math.PI)
             ctx.stroke()
         }
 
@@ -100,8 +100,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
             const getPoint = (offset: number) => {
                 return {
-                    x: this.#center.x + (this.#radius + offset) * Math.cos(Math.PI + localAccumulator),
-                    y: this.#center.y + (this.#radius + offset) * Math.sin(Math.PI + localAccumulator)
+                    x: this.center.x + (this.radius + offset) * Math.cos(Math.PI + localAccumulator),
+                    y: this.center.y + (this.radius + offset) * Math.sin(Math.PI + localAccumulator)
                 }
             }
 
@@ -130,12 +130,12 @@ class GaugeRenderer extends Renderer<GaugeData> {
         }
     }
 
-    #isInsideSector(event: MouseEvent, value: Sector): boolean {
+    private isInsideSector(event: MouseEvent, value: Sector): boolean {
         if (!event)
             return false
 
         const isAngle = (point: Point) => {
-            let a = Math.atan2(point.y - this.#center.y, point.x - this.#center.x)
+            let a = Math.atan2(point.y - this.center.y, point.x - this.center.x)
             if (a < 0)
                 a += Math.PI * 2
 
@@ -149,8 +149,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
         }
 
         const isWithinRadius = (v: Point) => {
-            const outerRadius = this.#radius + 20,
-                innerRadius = this.#radius - 20
+            const outerRadius = this.radius + 20,
+                innerRadius = this.radius - 20
 
             return v.x * v.x + v.y * v.y <= outerRadius * outerRadius
                    && v.x * v.x + v.y * v.y >= innerRadius * innerRadius
@@ -158,8 +158,8 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
         const point = this.getMousePosition(event),
             inner = {
-                x: point.x - this.#center.x,
-                y: point.y - this.#center.y
+                x: point.x - this.center.x,
+                y: point.y - this.center.y
             }
 
         return !(this.dropdown?.isActive ?? false)
@@ -167,16 +167,16 @@ class GaugeRenderer extends Renderer<GaugeData> {
                && isWithinRadius(inner)
     }
 
-    #calculateSizes() {
+    private calculateSizes() {
         const longSide = this.canvas.width < this.canvas.height / 2
                          ? this.canvas.height / 2
                          : this.canvas.width
 
-        this.#radius = longSide / 2 - 200
+        this.radius = longSide / 2 - 200
 
-        this.#center = {
+        this.center = {
             x: this.canvas.width / 2,
-            y: this.canvas.height - this.#radius / 5
+            y: this.canvas.height - this.radius / 5
         }
     }
 
@@ -205,7 +205,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
         super.resize()
 
         this.initAnimations()
-        this.#calculateSizes()
+        this.calculateSizes()
     }
 
     prepareSettings() {
