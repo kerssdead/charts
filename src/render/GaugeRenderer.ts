@@ -13,6 +13,7 @@ import Formatter from 'helpers/Formatter'
 import Canvas from 'helpers/Canvas'
 import TextResources from 'static/TextResources'
 import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
+import Debug from 'Debug'
 
 class GaugeRenderer extends Renderer<GaugeData> {
     private radius: number
@@ -50,7 +51,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
     private draw() {
         if (this.radius <= 0) {
-            console.warn('Radius can\'t be negative.')
+            Debug.error('Radius can\'t be negative.')
             return
         }
 

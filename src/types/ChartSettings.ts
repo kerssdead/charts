@@ -13,6 +13,8 @@ class ChartSettings {
 
     disableInteractions: boolean
 
+    enableDebugMode: boolean
+
     width: number
 
     height: number

@@ -11,6 +11,7 @@ import Theme from 'Theme'
 import Styles from 'static/constants/Styles'
 import { ChartType, Events } from 'static/Enums'
 import CircularRenderer from 'render/CircularRenderer'
+import Debug from 'Debug'
 
 class Chart {
     node: HTMLElement
@@ -149,6 +150,7 @@ class Chart {
     }
 
     #initialize(settings: ChartSettings) {
+        Debug.initialize(settings.enableDebugMode)
         Theme.initialize(
             () => this.#resize(),
             settings.isDarkThemeFunction
