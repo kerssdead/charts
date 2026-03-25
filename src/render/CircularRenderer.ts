@@ -30,6 +30,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private canRenderInnerTitle: boolean
 
+    private isRecalculating: boolean
+
     private isDonut: boolean
 
     private radius: number
@@ -606,10 +608,12 @@ class CircularRenderer extends Renderer<CircularData> {
             y: this.moveEvent.clientY
         }
 
-        if (isAnyCollapsing) {
+        if (isAnyCollapsing || this.isRecalculating) {
             this.calculateAngles()
             for (let sector of this.data.values)
                 sector = this.calculatePoint(sector)
+
+            this.isRecalculating = isAnyCollapsing
         }
 
         this.ctx ??= Canvas.getContext(this.canvas)
@@ -624,6 +628,9 @@ class CircularRenderer extends Renderer<CircularData> {
 
         for (const sector of this.data.values) {
             this.animate(sector)
+
+            if (sector.current == 0)
+                continue
 
             this.drawSector(sector)
             this.drawLabel(sector)
