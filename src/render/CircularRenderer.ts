@@ -18,7 +18,6 @@ import Canvas from 'helpers/Canvas'
 import Formatter from 'helpers/Formatter'
 import { AnimationType, DrawPointType, Events, Icon, PlotAxisType } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
-import Styles from 'static/constants/Styles'
 import DrawPoint from 'types/DrawPoint'
 
 class CircularRenderer extends Renderer<CircularData> {
@@ -504,7 +503,10 @@ class CircularRenderer extends Renderer<CircularData> {
         if (sector.disabled)
             return
 
-        if (sector.state == AnimationType.None && !this.isInsideCircle)
+        const anyHighlight = this.highlightItems.length != 0,
+            isHighlight = this.highlightItems.includes(sector.id)
+
+        if (sector.state == AnimationType.None && !this.isInsideCircle && !anyHighlight)
             return
 
         const isInsideSector = this.isInsideSector(this.moveEvent, sector, this.center),
@@ -531,7 +533,7 @@ class CircularRenderer extends Renderer<CircularData> {
             return
         }
 
-        if (isInsideSector) {
+        if (isInsideSector || isHighlight) {
             sector.state = AnimationType.MouseOver
 
             if (this.animations.isBackward(sector.id, AnimationType.MouseOver))
@@ -541,7 +543,7 @@ class CircularRenderer extends Renderer<CircularData> {
         }
 
         if (sector.state == AnimationType.MouseOver
-            && !isInsideSector) {
+            && !(isInsideSector || isHighlight)) {
             sector.state = AnimationType.MouseLeave
 
             if (!this.animations.isBackward(sector.id, AnimationType.MouseOver))
@@ -560,7 +562,8 @@ class CircularRenderer extends Renderer<CircularData> {
         if (sector.state == AnimationType.MouseLeave)
             return
 
-        if (this.data.values.filter(s => s.state == AnimationType.MouseOver).length > 0) {
+        if (this.data.values.filter(s => s.state == AnimationType.MouseOver).length > 0
+            || anyHighlight) {
             sector.state = AnimationType.AnotherItemOver
 
             if (this.animations.isBackward(sector.id, AnimationType.AnotherItemOver))
@@ -638,6 +641,8 @@ class CircularRenderer extends Renderer<CircularData> {
             if (sector.state != AnimationType.Init)
                 this.handle(sector)
         }
+
+        this.highlight()
 
         super.renderDropdown()
 
