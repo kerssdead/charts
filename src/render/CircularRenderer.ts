@@ -643,6 +643,8 @@ class CircularRenderer extends Renderer<CircularData> {
         }
 
         this.highlight()
+        if (this.clickEvent)
+            this.clickEvent = undefined
 
         super.renderDropdown()
 
