@@ -32,6 +32,8 @@ class Tooltip {
 
     #lines: TooltipValue[]
 
+    private event : MouseEvent
+
     constructor(canvas: HTMLCanvasElement, settings: ChartSettings) {
         this.canvas = canvas
         this.data = settings.data
@@ -49,6 +51,9 @@ class Tooltip {
 
         if (!this.#enabled || !event)
             return
+
+        if (event.x == 0 && event.y == 0)
+            event = this.event
 
         if (condition || this.#inProgress || this.#toHide) {
             if (condition)
@@ -85,6 +90,8 @@ class Tooltip {
         } else {
             this.#timer = undefined
         }
+
+        this.event = event
     }
 
     #renderRegular(event: MouseEvent) {
