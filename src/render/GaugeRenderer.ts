@@ -204,6 +204,10 @@ class GaugeRenderer extends Renderer<GaugeData> {
     resize() {
         super.resize()
 
+        const value = this.data.values[0] ?? { id: Helper.guid() }
+        if (!value.current)
+            value.current = value.value
+
         this.initAnimations()
         this.calculateSizes()
     }
