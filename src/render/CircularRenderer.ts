@@ -500,10 +500,7 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private handle(sector: Sector) {
-        if (sector.disabled)
-            return
-
-        const anyHighlight = this.highlightItems.length != 0,
+        const anyHighlight = this.highlightItems.length != 0 && this.data.values.filter(s => !s.disabled).length > 1,
             isHighlight = this.highlightItems.includes(sector.id)
 
         if (sector.state == AnimationType.None && !this.isInsideCircle && !anyHighlight)
@@ -514,9 +511,6 @@ class CircularRenderer extends Renderer<CircularData> {
 
         if (this.moveEvent && isInsideSector)
             this.hover?.push(sector.id)
-
-        if (this.data.values.filter(s => !s.disabled).length == 1)
-            return
 
         if (isInsideSectorClick) {
             sector.state = AnimationType.Click
