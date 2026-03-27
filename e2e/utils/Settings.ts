@@ -104,6 +104,10 @@ class Settings {
     static yAxisTitle(value: boolean = true) {
         return Settings.check(Selectors.yAxisTitle, value)
     }
+
+    static enableContextMenu(value: boolean = true) {
+        return Settings.check(Selectors.contextMenu, value)
+    }
 }
 
 export default Settings

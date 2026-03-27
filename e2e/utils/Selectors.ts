@@ -44,6 +44,8 @@ class Selectors {
     static yAxisTitle = '#y-axis-label'
 
     static xAxisTitle = '#x-axis-label'
+
+    static contextMenu = '#context-menu'
 }
 
 export default Selectors

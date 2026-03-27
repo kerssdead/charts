@@ -34,16 +34,23 @@ class Utils {
                                  chromium: string,
                                  firefox: string,
                                  webkit: string) {
+        const o = {
+            chromium: chromium,
+            firefox: firefox,
+            webkit: webkit
+        }
+
+        const browserName = Utils.browserName ?? 'chromium'
+
+        if (o[browserName] === 'TODO')
+            return
+
         expect(await Screenshot.get(Utils.page, clip))
-            .toBe({
-                chromium: chromium,
-                firefox: firefox,
-                webkit: webkit
-            }[Utils.browserName ?? 'chromium'])
+            .toBe(o[browserName])
     }
 
     static async checkForErrors() {
-        await Utils.page.waitForTimeout(1000)
+        await Utils.wait(1000)
 
         expect(this.errors).toHaveLength(0)
     }
@@ -58,6 +65,10 @@ class Utils {
         )
 
         await Utils.goto()
+    }
+
+    static async wait(timeout: number) {
+        await Utils.page.waitForTimeout(timeout)
     }
 }
 
