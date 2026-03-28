@@ -27,6 +27,26 @@ Array.prototype.sumByField = function (predicate: (value: any) => number) {
     return this.reduce((acc, v) => acc + predicate(v), 0)
 }
 
+Array.prototype.min = function() {
+    let len = this.length
+    let min = Infinity
+
+    while (len--)
+        min = this[len] < min ? this[len] : min
+
+    return min
+}
+
+Array.prototype.max = function() {
+    let len = this.length
+    let max = -Infinity
+
+    while (len--)
+        max = this[len] > max ? this[len] : max
+
+    return max
+}
+
 CanvasRenderingContext2D.prototype.resetLine = function () {
     this.lineWidth = 1
     this.lineJoin = 'miter'

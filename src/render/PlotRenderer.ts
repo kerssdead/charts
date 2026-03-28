@@ -102,7 +102,7 @@ class PlotRenderer extends Renderer<PlotData> {
 
         const topPadding = !this.base.labelsY
                            ? canvas.height - paddings.bottom
-                           : [...this.base.labelsY].find(kv => kv[1].startsWith('0'))![0]
+                           : this.base.labelsY.keys().next().value as number
 
         let x = 0,
             y = 0,
@@ -637,7 +637,7 @@ class PlotRenderer extends Renderer<PlotData> {
         // add rounded to last
 
         if (this.base.isVertical)
-            xValues = Helper.getRoundedValues(xValues as number[])
+            xValues = Helper.getRoundedValues(xValues.map(val => Number.parseFloat(val as string)))
         else
             yValues = Helper.getRoundedValues(yValues)
 
@@ -666,14 +666,14 @@ class PlotRenderer extends Renderer<PlotData> {
 
         // setting variables for y-axis
 
-        const yMin = Math.min(Math.min(...yValues), 0)
+        const yMin = Math.min(yValues.min(), 0)
         const yUnit = yValues[1] - yValues[0]
 
         const yStepOffset = this.base.isVertical ? 0 : 1
 
         this.#y = {
             min: yMin,
-            max: this.data.yMax ?? Math.max(...yValues),
+            max: this.data.yMax ?? yValues.max(),
             unit: yUnit,
             step: plot.height / (this.#allValuesY.length - yStepOffset),
             minStep: 0
@@ -1113,7 +1113,7 @@ class PlotBase {
         // getting rounded values
 
         if (this.isVertical)
-            uniqueX = Helper.getRoundedValues(uniqueX as number[])
+            uniqueX = Helper.getRoundedValues(uniqueX.map(val => Number.parseFloat(val as string)))
         else
             uniqueY = Helper.getRoundedValues(uniqueY).reverse()
 
@@ -1141,7 +1141,7 @@ class PlotBase {
                 paddings.top + stepY * (i + yOffset),
                 Formatter.format(
                     uniqueY[i],
-                    PlotAxisType.Number
+                    this.isVertical ? PlotAxisType.Text : PlotAxisType.Number
                 )
             )
 

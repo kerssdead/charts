@@ -112,8 +112,8 @@ export function applyAlpha(color: string, opacity: number) {
 }
 
 export function getRoundedValues(all: number[]) {
-    let min = Math.min(...all),
-        max = Math.max(...all)
+    let min = all.min(),
+        max = all.max()
 
     if (min > 0)
         min = 0
