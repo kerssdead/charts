@@ -15,10 +15,6 @@ declare global {
 
     interface Array {
         sumByField: (predicate: (value: any) => number) => number
-
-        min: () => number
-
-        max: () => number
     }
 
     interface Date {

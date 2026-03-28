@@ -112,13 +112,13 @@ export function applyAlpha(color: string, opacity: number) {
 }
 
 export function getRoundedValues(all: number[]) {
-    let min = all.min(),
-        max = all.max()
+    let minValue = min(all),
+        maxValue = max(all)
 
-    if (min > 0)
-        min = 0
+    if (minValue > 0)
+        minValue = 0
 
-    const maxStr = max.toLocaleString(undefined, { maximumFractionDigits: 0 })
+    const maxStr = maxValue.toLocaleString(undefined, { maximumFractionDigits: 0 })
                       .replace(',', '')
                       .replace('.', ''),
         dividersMultiplier = Math.pow(10, Math.floor(maxStr.length / 2 - .5))
@@ -153,7 +153,7 @@ export function getRoundedValues(all: number[]) {
         return values.length > 2 && values.length <= countOfElements
     }
 
-    const amplitude = Math.abs(min) + Math.abs(max)
+    const amplitude = Math.abs(minValue) + Math.abs(maxValue)
 
     let startValue = amplitude / countOfElements
 
@@ -162,7 +162,7 @@ export function getRoundedValues(all: number[]) {
 
     let step = 1
 
-    const isFractional = Math.abs(min) < 10 && Math.abs(max) < 10
+    const isFractional = Math.abs(minValue) < 10 && Math.abs(maxValue) < 10
 
     if (isFractional)
         step = .1
@@ -177,7 +177,7 @@ export function getRoundedValues(all: number[]) {
         endIndex = countOfElements + startIndex
 
     if (hasNegative) {
-        const negativeWeight = Math.abs(min) / amplitude
+        const negativeWeight = Math.abs(minValue) / amplitude
         startIndex = -Math.floor(countOfElements * negativeWeight)
         endIndex = countOfElements + startIndex
 
@@ -186,7 +186,7 @@ export function getRoundedValues(all: number[]) {
             endIndex--
         }
 
-        if (max > 0 && endIndex <= 1) {
+        if (maxValue > 0 && endIndex <= 1) {
             startIndex++
             endIndex++
         }
@@ -202,7 +202,7 @@ export function getRoundedValues(all: number[]) {
             for (let i = startIndex; i < endIndex; i++)
                 result.push(round(value * i))
 
-            if (result[0] > min || result[result.length - 1] <= max)
+            if (result[0] > minValue || result[result.length - 1] <= maxValue)
                 result = []
 
             if (isSatisfyElementsCount(result))
@@ -215,4 +215,24 @@ export function getRoundedValues(all: number[]) {
         if (attempt > amplitude)
             throw Errors.throw(ErrorType.MaxCallsReach)
     }
+}
+
+export function min(array: number[]) {
+    let len = array.length
+    let min = Infinity
+
+    while (len--)
+        min = array[len] < min ? array[len] : min
+
+    return min
+}
+
+export function max(array: number[]) {
+    let len = array.length
+    let max = -Infinity
+
+    while (len--)
+        max = array[len] > max ? array[len] : max
+
+    return max
 }

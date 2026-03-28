@@ -668,14 +668,14 @@ class PlotRenderer extends Renderer<PlotData> {
 
         // setting variables for y-axis
 
-        const yMin = Math.min(yValues.min(), 0)
+        const yMin = Math.min(Helper.min(yValues), 0)
         const yUnit = yValues[1] - yValues[0]
 
         const yStepOffset = this.base.isVertical ? 0 : 1
 
         this.#y = {
             min: yMin,
-            max: this.data.yMax ?? yValues.max(),
+            max: this.data.yMax ?? Helper.max(yValues),
             unit: yUnit,
             step: plot.height / (this.#allValuesY.length - yStepOffset),
             minStep: 0
