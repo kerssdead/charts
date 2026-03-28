@@ -118,9 +118,14 @@ export function getRoundedValues(all: number[]) {
     if (minValue > 0)
         minValue = 0
 
-    const maxStr = maxValue.toLocaleString(undefined, { maximumFractionDigits: 0 })
-                      .replace(',', '')
-                      .replace('.', ''),
+    const decimalSeparator = Intl.NumberFormat()
+                                 .formatToParts(1.1)
+                                 .find(part => part.type === 'decimal')!.value
+
+    const maxStr2 = (+maxValue).toLocaleString(undefined, { maximumFractionDigits: 0 })
+                            .split(decimalSeparator),
+        maxStr = maxStr2[0].replace(',', '')
+                           .replace('.', ''),
         dividersMultiplier = Math.pow(10, Math.floor(maxStr.length / 2 - .5))
 
     const negativeElements = all.filter(v => v < 0).length,
