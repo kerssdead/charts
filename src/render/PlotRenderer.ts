@@ -102,7 +102,9 @@ class PlotRenderer extends Renderer<PlotData> {
 
         const topPadding = !this.base.labelsY
                            ? canvas.height - paddings.bottom
-                           : this.base.labelsY.keys().next().value as number
+                           : this.base.isVertical
+                             ? this.base.labelsY.keys().next().value as number
+                             : [...this.base.labelsY].find(kv => kv[1].startsWith('0'))![0]
 
         let x = 0,
             y = 0,
@@ -1143,7 +1145,7 @@ class PlotBase {
                 paddings.top + stepY * (i + yOffset),
                 Formatter.format(
                     uniqueY[i],
-                    this.isVertical ? PlotAxisType.Text : PlotAxisType.Number
+                    PlotAxisType.Number
                 )
             )
 

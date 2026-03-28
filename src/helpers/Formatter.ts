@@ -18,7 +18,10 @@ abstract class Formatter {
 
         switch (type) {
             case PlotAxisType.Number:
-                result = Formatter.number(+value)
+                if (isNaN(+value))
+                    result = Formatter.text(value)
+                else
+                    result = Formatter.number(+value)
                 break
 
             case PlotAxisType.Date:
