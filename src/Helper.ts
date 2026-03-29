@@ -257,6 +257,15 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
         return v
     }
 
+    const countLeadingZeros = (v: string) => {
+        let count = 0
+        while (v.length > 0 && v.slice(0, 1) == '0') {
+            v = v.slice(1)
+            count++
+        }
+        return v.length == 0 || count == 0 ? 0 : count + 1
+    }
+
     if (!value)
         return 0
 
@@ -265,11 +274,14 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
 
     const split = value.split(decimalSeparator),
         left = simplify(split[0]),
-        right = split.length > 1 ? removeExtraZeros(simplify(split[1])) : 0
+        right = split.length > 1
+                ? removeExtraZeros(simplify(split[1])) / Math.pow(10, countLeadingZeros(split[1]))
+                : 0
 
     const negative = value.slice(0, 1) == '-' ? -1 : 1
 
-    const result = (left + right / Math.pow(10, `${ right }`.length)) * negative
+    const result = (left + right / (right > 1 ? Math.pow(10, `${ right }`.length) : 1))
+                   * negative
 
     const localeString = result.toLocaleString()
 

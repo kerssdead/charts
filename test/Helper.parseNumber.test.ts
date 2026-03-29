@@ -77,4 +77,14 @@ describe('Parsing string to number', () => {
         expect(Helper.parseNumber(123))
             .toStrictEqual(123)
     })
+
+    it('US, fractional', () => {
+        expect(Helper.parseNumber('0.07'))
+            .toStrictEqual(.07)
+    })
+
+    it('EU, fractional', () => {
+        expect(Helper.parseNumber('0,07'))
+            .toStrictEqual(.07)
+    })
 })
