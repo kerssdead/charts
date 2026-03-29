@@ -615,7 +615,7 @@ class PlotRenderer extends Renderer<PlotData> {
         // flat values
 
         let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
-            yValues = this.data.values.flatMap(s => s.values.map(p => p.y as number))
+            yValues = this.data.values.flatMap(s => s.values.map(p => Helper.parseNumber(p.y as string)))
 
         const isDate = this.data.xType == PlotAxisType.Date,
             isText = this.data.xType == PlotAxisType.Text,

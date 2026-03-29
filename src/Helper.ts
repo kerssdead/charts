@@ -123,7 +123,7 @@ export function getRoundedValues(all: number[]) {
                                  .find(part => part.type === 'decimal')!.value
 
     const maxStr2 = (+maxValue).toLocaleString(undefined, { maximumFractionDigits: 0 })
-                            .split(decimalSeparator),
+                               .split(decimalSeparator),
         maxStr = maxStr2[0].replace(',', '')
                            .replace('.', ''),
         dividersMultiplier = Math.pow(10, Math.floor(maxStr.length / 2 - .5))
@@ -240,4 +240,47 @@ export function max(array: number[]) {
         max = array[len] > max ? array[len] : max
 
     return max
+}
+
+export function parseNumber(value: string | null | number, decimalSeparator: string = '.') {
+    const simplify = (v: string) => {
+        return !v
+               ? 0
+               : +(v.replace(',', '')
+                    .replace('.', '')
+                    .replace('-', ''))
+    }
+
+    const removeExtraZeros = (v: number) => {
+        while (v % 10 == 0 && v != 0)
+            v /= 10
+        return v
+    }
+
+    if (!value)
+        return 0
+
+    if (typeof value == 'number')
+        return value
+
+    const split = value.split(decimalSeparator),
+        left = simplify(split[0]),
+        right = split.length > 1 ? removeExtraZeros(simplify(split[1])) : 0
+
+    const negative = value.slice(0, 1) == '-' ? -1 : 1
+
+    const result = (left + right / Math.pow(10, `${ right }`.length)) * negative
+
+    const localeString = result.toLocaleString()
+
+    if (value.startsWith(localeString))
+        return result
+    else if (value.startsWith(localeString.replace(',', '!')
+                                          .replace('.', ',')
+                                          .replace('!', '.')))
+        return result
+    else if (value.startsWith(result.toString()))
+        return result
+
+    return parseNumber(value, ',')
 }

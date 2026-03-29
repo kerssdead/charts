@@ -52,6 +52,11 @@ class Utils {
     static async checkForErrors() {
         await Utils.wait(1000)
 
+        if (this.errors.length > 0) {
+            console.log(await this.page.consoleMessages())
+            console.log(this.errors)
+        }
+
         expect(this.errors).toHaveLength(0)
     }
 
