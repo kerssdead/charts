@@ -147,9 +147,6 @@ class CircularRenderer extends Renderer<CircularData> {
 
                 localAccumulator += currentAngle
 
-                if (this.data.values.length == 1)
-                    accumulator += localAccumulator
-
                 localAngle -= Math.PI / 2
             }
 
@@ -189,11 +186,6 @@ class CircularRenderer extends Renderer<CircularData> {
 
             accumulator += angle
         }
-
-        if (this.data.values.length == 1)
-            points = [
-                new DrawPoint(DrawPointType.SemiCircle, center.x, center.y, radius, 0, Math.PI * 2)
-            ]
 
         sector.points = points
 
