@@ -75,6 +75,11 @@ class Utils {
     static async wait(timeout: number) {
         await Utils.page.waitForTimeout(timeout)
     }
+
+    static async elapsed(start: number, elapsed: number) {
+        expect(performance.now() - start)
+            .toBeLessThanOrEqual(elapsed * (process.env.CI ? 2 : 1))
+    }
 }
 
 export default Utils

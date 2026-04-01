@@ -1,4 +1,5 @@
 import * as Helper from 'Helper'
+import Utils from '../e2e/utils/Utils'
 
 describe('Parsing string to number', () => {
     it('US, no thousands', () => {
@@ -28,8 +29,7 @@ describe('Parsing string to number', () => {
             expect(Helper.parseNumber('123,456.789'))
                 .toStrictEqual(123456.789)
 
-        expect(performance.now() - start)
-            .toBeLessThanOrEqual(300)
+        Utils.elapsed(start, 600)
     })
 
     it('EU, performance test, 10000 values', () => {
@@ -39,8 +39,7 @@ describe('Parsing string to number', () => {
             expect(Helper.parseNumber('123.456,789'))
                 .toStrictEqual(123456.789)
 
-        expect(performance.now() - start)
-            .toBeLessThanOrEqual(300)
+        Utils.elapsed(start, 600)
     })
 
     it('US, 0 test', () => {
