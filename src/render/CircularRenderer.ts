@@ -515,10 +515,13 @@ class CircularRenderer extends Renderer<CircularData> {
         if (isInsideSectorClick) {
             sector.state = AnimationType.Click
 
-            if (this.pinned.includes(sector.id))
+            if (this.pinned.includes(sector.id)) {
                 this.pinned = this.pinned.filter(id => id != sector.id)
-            else
+                sector.state = AnimationType.MouseOver
+                this.animations.end(sector.id, AnimationType.MouseOver)
+            } else {
                 this.pinned.push(sector.id)
+            }
 
             this.clickEvent = undefined
 
