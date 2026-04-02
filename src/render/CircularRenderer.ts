@@ -632,10 +632,11 @@ class CircularRenderer extends Renderer<CircularData> {
         }
 
         this.highlight()
-        if (this.clickEvent)
-            this.clickEvent = undefined
 
         super.renderDropdown()
+
+        if (this.clickEvent)
+            this.clickEvent = undefined
 
         const currentHover = this.data.values.find(v => v.id == this.hover[0]),
             isAnyHover = this.hover.length > 0
