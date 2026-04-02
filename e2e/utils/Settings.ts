@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test'
 import Selectors from './Selectors'
-import { ChartType, PlotAxisType, PlotType } from '../../src/static/Enums'
+import { ChartType, LineType, PlotAxisType, PlotType } from '../../src/static/Enums'
 
 class Settings {
     private static page: Page
@@ -107,6 +107,10 @@ class Settings {
 
     static enableContextMenu(value: boolean = true) {
         return Settings.check(Selectors.contextMenu, value)
+    }
+
+    static lineType(type: LineType) {
+        return Settings.option(Selectors.lineType, type)
     }
 }
 

@@ -46,6 +46,8 @@ class Selectors {
     static xAxisTitle = '#x-axis-label'
 
     static contextMenu = '#context-menu'
+
+    static lineType = '#line-type'
 }
 
 export default Selectors

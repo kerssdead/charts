@@ -176,19 +176,21 @@ class PlotRenderer extends Renderer<PlotData> {
                 }
             }
 
-            switch (series.lineType) {
+            switch (+series.lineType) {
                 case LineType.Dash:
                     ctx.setLineDash([series.width * 3, series.width * 2])
 
                     break
 
                 case LineType.Dotted:
-                    ctx.setLineDash([series.width, series.width])
+                    ctx.setLineDash([1, series.width * 2])
 
                     break
 
                 case LineType.Solid:
                 default:
+                    ctx.setLineDash([])
+
                     break
             }
 
@@ -502,11 +504,11 @@ class PlotRenderer extends Renderer<PlotData> {
                 }
             }
 
-            ctx.setLineDash([])
-
             switch (series.type) {
                 case PlotType.Line:
                     ctx.stroke()
+
+                    ctx.setLineDash([])
 
                     if (this.#hoverX && this.#hoverX.series == series) {
                         ctx.beginPath()
@@ -533,6 +535,8 @@ class PlotRenderer extends Renderer<PlotData> {
                 case PlotType.AttentionLine:
                     ctx.stroke()
 
+                    ctx.setLineDash([])
+
                     TextStyles.regular(ctx)
                     ctx.fillText(series.label,
                         paddings.left + (canvas.width - paddings.left - paddings.right) / 2,
@@ -543,6 +547,8 @@ class PlotRenderer extends Renderer<PlotData> {
                 case PlotType.Column:
                 case PlotType.StackingColumn:
                 case PlotType.Bar:
+                    ctx.setLineDash([])
+
                     if (this.#hoverX)
                         this.highlight(this.#hoverX.series)
 

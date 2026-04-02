@@ -251,6 +251,24 @@
 
                     Enable negative values in plot
                 </label>
+
+                <label>
+                    Line type
+
+                    <select id="line-type" onchange="refresh()">
+                        <option value="0">
+                            Solid
+                        </option>
+
+                        <option value="1">
+                            Dash
+                        </option>
+
+                        <option value="2">
+                            Dotted
+                        </option>
+                    </select>
+                </label>
             </div>
 
             <div>
@@ -417,7 +435,8 @@
             customLabel = document.getElementById('custom-label').value,
             indexedCustomLabel = document.getElementById('indexed-custom-label').checked,
             isCustomLabel = customLabel.trim().length !== 0,
-            enableNegativeValuesInPlot = document.getElementById('negative-values-in-plot').checked
+            enableNegativeValuesInPlot = document.getElementById('negative-values-in-plot').checked,
+            lineType = document.getElementById('line-type').value
 
         function getData(index) {
             return {
@@ -513,7 +532,7 @@
                                 : customLabel
                             : `Series ${i}`,
                         data: getData(i),
-                        lineType: rng.nextInt() % 3
+                        lineType: lineType
                     })
                 }
 
@@ -714,7 +733,8 @@
             templateId: customTooltip,
             contextMenu: contextMenu,
             valuePostfix: postfix,
-            isDarkThemeFunction: () => darkThemeEnabled
+            isDarkThemeFunction: () => darkThemeEnabled,
+            enableDebugMode: true
         }
 
         if (chart === undefined)

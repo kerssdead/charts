@@ -7,16 +7,16 @@ export default class Debug {
 
     static log(...msg: any[]) {
         if (Debug.isEnabled)
-            console.log(...msg)
+            console.log('DEBUG:', ...msg)
     }
 
     static warn(...msg: any[]) {
         if (Debug.isEnabled)
-            console.warn(...msg)
+            console.warn('WARNING:', ...msg)
     }
 
     static error(...msg: any[]) {
         if (Debug.isEnabled)
-            console.error(...msg)
+            console.error('ERROR:', ...msg)
     }
 }
