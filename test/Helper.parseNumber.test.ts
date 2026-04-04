@@ -86,4 +86,24 @@ describe('Parsing string to number', () => {
         expect(Helper.parseNumber('0,07'))
             .toStrictEqual(.07)
     })
+
+    it('US, fractional with trailing zero', () => {
+        expect(Helper.parseNumber('0.10'))
+            .toStrictEqual(0.1)
+    })
+
+    it('EU, fractional with trailing zero', () => {
+        expect(Helper.parseNumber('0,10'))
+            .toStrictEqual(0.1)
+    })
+
+    it('US, fractional with trailing zero 2', () => {
+        expect(Helper.parseNumber('0.20'))
+            .toStrictEqual(0.2)
+    })
+
+    it('EU, fractional with trailing zero 2', () => {
+        expect(Helper.parseNumber('0,20'))
+            .toStrictEqual(0.2)
+    })
 })

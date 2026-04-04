@@ -280,7 +280,7 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
 
     const negative = value.slice(0, 1) == '-' ? -1 : 1
 
-    const result = (left + right / (right > 1 ? Math.pow(10, `${ right }`.length) : 1))
+    const result = (left + right / (right >= 1 ? Math.pow(10, `${ right }`.length) : 1))
                    * negative
 
     const localeString = result.toLocaleString()
