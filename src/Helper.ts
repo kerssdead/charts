@@ -272,11 +272,14 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
     if (typeof value == 'number')
         return value
 
-    const split = value.split(decimalSeparator),
+    let split = value.split(decimalSeparator),
         left = simplify(split[0]),
         right = split.length > 1
                 ? removeExtraZeros(simplify(split[1])) / Math.pow(10, countLeadingZeros(split[1]))
                 : 0
+
+    if (right.toString().length > 9)
+        right = +right.toString().slice(0, 8)
 
     const negative = value.slice(0, 1) == '-' ? -1 : 1
 
@@ -292,6 +295,10 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
                                           .replace('!', '.')))
         return result
     else if (value.startsWith(result.toString()))
+        return result
+    else if (value.startsWith(result.toString().replace(',', '!')
+                                               .replace('.', ',')
+                                               .replace('!', '.')))
         return result
 
     return parseNumber(value, ',')

@@ -106,4 +106,14 @@ describe('Parsing string to number', () => {
         expect(Helper.parseNumber('0,20'))
             .toStrictEqual(0.2)
     })
+
+    it('US, fractional with long number after delimiter', () => {
+        expect(Helper.parseNumber('14428822.674915052135873742887'))
+            .toStrictEqual(14428822.67491505)
+    })
+
+    it('EU, fractional with long number after delimiter', () => {
+        expect(Helper.parseNumber('14428822,674915052135873742887'))
+            .toStrictEqual(14428822.67491505)
+    })
 })
