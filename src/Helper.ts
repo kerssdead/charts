@@ -278,8 +278,11 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
                 ? removeExtraZeros(simplify(split[1])) / Math.pow(10, countLeadingZeros(split[1]))
                 : 0
 
-    if (right.toString().length > 9)
-        right = +right.toString().slice(0, 8)
+    if (split.length > 1 && split[1].length > 9) {
+        const slice = split[1].slice(0, 8)
+
+        right = removeExtraZeros(simplify(slice)) / Math.pow(10, countLeadingZeros(slice))
+    }
 
     const negative = value.slice(0, 1) == '-' ? -1 : 1
 
