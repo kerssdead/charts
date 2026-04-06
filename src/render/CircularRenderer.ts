@@ -193,10 +193,7 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private scale(sector: Sector, value: number, transition: number) {
-        const centerOfSector = {
-            x: this.center.x + this.radius / 2 * Math.cos(sector.direction),
-            y: this.center.y + this.radius / 2 * Math.sin(sector.direction)
-        }
+        const center = this.center
 
         const setArgs = (points: DrawPoint[]) => {
             for (let p of points ?? []) {
@@ -209,12 +206,12 @@ class CircularRenderer extends Renderer<CircularData> {
                 for (let i = 0; i < p.args.length; i += 2) {
                     const x = p.base[i],
                         y = p.base[i + 1],
-                        length = Math.sqrt(Math.pow(x - centerOfSector.x, 2) + Math.pow(y - centerOfSector.y, 2)),
+                        length = Math.sqrt(Math.pow(x - center.x, 2) + Math.pow(y - center.y, 2)),
                         computed = length * value + length * (1 - value) * transition,
                         ratio = computed / length
 
-                    const xx = ratio * x + (1 - ratio) * centerOfSector.x,
-                        yy = ratio * y + (1 - ratio) * centerOfSector.y
+                    const xx = ratio * x + (1 - ratio) * center.x,
+                        yy = ratio * y + (1 - ratio) * center.y
 
                     if (!isNaN(xx) && !isNaN(yy)) {
                         p.args[i] = xx
