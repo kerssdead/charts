@@ -15,7 +15,7 @@ describe('Calculate legend height', () => {
             } as Value
         ]
 
-        expect(Legend.getLegendHeight(items, 500))
+        expect(Legend.getLegendHeight(items, 500, 1000))
             .toBe(44)
     })
 
@@ -38,7 +38,7 @@ describe('Calculate legend height', () => {
             } as Value
         ]
 
-        expect(Legend.getLegendHeight(items, 500))
+        expect(Legend.getLegendHeight(items, 500, 1000))
             .toBe(70)
     })
 })

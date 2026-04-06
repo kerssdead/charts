@@ -38,7 +38,7 @@ class Legend extends Renderable {
 
         const ctx = Canvas.getContext(this.canvas)
 
-        let nextPoint = { x: 20, y: 21 }
+        let nextPoint: Point | null = { x: 20, y: 21 }
 
         TextStyles.regular(ctx)
         ctx.textAlign = 'start'
@@ -48,8 +48,12 @@ class Legend extends Renderable {
 
         this.#hoverCount = 0
 
-        for (const value of this.settings.data.values.filter(v => !v.hideInLegend))
+        for (const value of this.settings.data.values.filter(v => !v.hideInLegend)) {
+            if (nextPoint == null)
+                break
+
             nextPoint = this.#draw(value, nextPoint.x, nextPoint.y)
+        }
 
         ctx.translate(-this.#offset.x, -this.#offset.y)
 
@@ -61,7 +65,7 @@ class Legend extends Renderable {
         this.state = RenderState.Idle
     }
 
-    #draw(value: Value, x: number, y: number): Point {
+    #draw(value: Value, x: number, y: number): Point | null {
         const ctx = Canvas.getContext(this.canvas)
 
         const textWidth = Helper.stringWidth(value.label),
@@ -76,6 +80,9 @@ class Legend extends Renderable {
             rectY = y - circleRadius / 2 - circleRadius,
             rectW = circleRadius + circleRadius + textWidth + 18,
             rectH = 20
+
+        if (rectY > this.canvas.height -  rectH)
+            return null
 
         const isHover = (event: MouseEvent | undefined) => {
             if (!event)
@@ -198,7 +205,7 @@ class Legend extends Renderable {
             case LegendPlace.Bottom:
             default:
                 this.canvas.width = this.settings.width
-                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width)
+                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
 
                 this.node.style.flexDirection = Styles.FlexDirection.Column
 
@@ -206,7 +213,7 @@ class Legend extends Renderable {
 
             case LegendPlace.Top:
                 this.canvas.width = this.settings.width
-                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width)
+                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
 
                 this.node.style.flexDirection = Styles.FlexDirection.ColumnReverse
 
@@ -231,7 +238,7 @@ class Legend extends Renderable {
 
         this.#offset = {
             x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
-            y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width)) / 2
+            y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)) / 2
         }
     }
 
@@ -272,23 +279,31 @@ class Legend extends Renderable {
         return width / 2 - maxWidth / 2
     }
 
-    static getLegendHeight(values: Value[], width: number): number {
+    static getLegendHeight(values: Value[], width: number, containerHeight: number): number {
         let count = 1,
             acc = 20,
             offset = Legend.getOffsetToCenter(values, width)
+
+        const maxHeight = containerHeight / 4
+
+        const getHeight = (c: number) => 24 + c * 20 + (c - 1) * 6
 
         for (const value of values.filter(v => !v.hideInLegend)) {
             const labelWidth = Helper.stringWidth(value.label)
 
             if (acc + labelWidth + 48 >= width - 32 - offset) {
                 acc = 20
+
+                if (getHeight(count + 1) > maxHeight)
+                    return getHeight(count)
+
                 count++
             }
 
             acc += labelWidth + 48
         }
 
-        return 24 + count * 20 + (count - 1) * 6
+        return getHeight(count)
     }
 }
 

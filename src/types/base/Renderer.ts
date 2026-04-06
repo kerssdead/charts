@@ -198,7 +198,7 @@ class Renderer<T extends Data> extends Renderable {
             if (this.settings.legendPlace == undefined
                 || this.settings.legendPlace == LegendPlace.Top
                 || this.settings.legendPlace == LegendPlace.Bottom)
-                this.canvas.height -= Legend.getLegendHeight(this.settings.data.values, this.canvas.width)
+                this.canvas.height -= Legend.getLegendHeight(this.settings.data.values, this.canvas.width, domRect.height)
 
             if (this.settings.legendPlace == LegendPlace.Left
                 || this.settings.legendPlace == LegendPlace.Right)
