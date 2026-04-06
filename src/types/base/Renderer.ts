@@ -21,8 +21,6 @@ class Renderer<T extends Data> extends Renderable {
 
     data: T
 
-    protected isDestroy: boolean = false
-
     protected highlightItems: string[]
 
     constructor(chart: Chart) {

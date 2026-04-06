@@ -32,10 +32,13 @@ class Renderable {
 
     protected ctx: CanvasRenderingContext2D
 
+    protected isDestroy: boolean = false
+
     constructor(chart: Chart) {
         this.node = chart.node
         this.settings = chart.settings
         this.animations = new Animations()
+        this.isDestroy = false
 
         this.canvas = document.createElement(Tag.Canvas)
 
@@ -49,6 +52,8 @@ class Renderable {
 
         this.ctx.fillStyle = Theme.canvasBackground
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+
+        this.isDestroy = !this.canvas.closest('html')
     }
 
     refresh() {
