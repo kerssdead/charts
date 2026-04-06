@@ -716,18 +716,6 @@ class PlotRenderer extends Renderer<PlotData> {
             this.#y.max = max > this.data.yMax ? this.data.yMax : max
             this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
         }
-
-        // getting max width for y label and add offset to left padding
-        // TODO: remove ? rework ?
-
-        // const paddings = this.paddings,
-        //     canvas = this.canvas
-        //
-        // const yMaxWidth = Helper.stringWidth(Formatter.number(this.#y.max))
-        // if (yMaxWidth > this.paddings.left - 40 && !this.data.simple) {
-        //     this.paddings.left += yMaxWidth - this.paddings.left + 40
-        //     this.#x.step = (this.canvas.width - this.paddings.left - this.paddings.right) / this.#allValuesX.length
-        // }
     }
 
     initDropdown() {
