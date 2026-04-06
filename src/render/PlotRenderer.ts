@@ -60,9 +60,12 @@ class PlotRenderer extends Renderer<PlotData> {
 
         // TODO: if empty is rendered, then return
 
-        this.base.render()
+        this.base.clear()
+        this.base.backlines()
 
         this.series()
+
+        this.base.render()
 
         this.animate()
         this.interact()
@@ -950,16 +953,15 @@ class PlotBase {
     }
 
     render() {
-        this.clear()
-
         if (this.data.simple)
             return
 
         if (!this.labelsX || !this.labelsY)
             this.calculateLabels()
 
+        this.cut()
+
         this.lines()
-        this.backlines()
         this.labels()
         this.titles()
 
@@ -974,14 +976,16 @@ class PlotBase {
         ctx.fillRect(0, 0, canvas.width, canvas.height)
     }
 
-    lines() {
+    cut() {
+        if (this.data.simple)
+            return
+
         const canvas = this.renderer.canvas,
             paddings = this.renderer.paddings
 
         const ctx = Canvas.getContext(canvas)
 
         // clear area around this.#plot
-        // todo: needed for #458, but broke now
 
         ctx.fillStyle = Theme.canvasBackground
 
@@ -989,6 +993,13 @@ class PlotBase {
         ctx.fillRect(0, 0, canvas.width, paddings.top)
         ctx.fillRect(canvas.width - paddings.right, 0, canvas.width, canvas.height)
         ctx.fillRect(0, canvas.height - paddings.bottom, canvas.width, canvas.height)
+    }
+
+    lines() {
+        const canvas = this.renderer.canvas,
+            paddings = this.renderer.paddings
+
+        const ctx = Canvas.getContext(canvas)
 
         ctx.setLineDash([])
 
@@ -1010,6 +1021,9 @@ class PlotBase {
     }
 
     backlines() {
+        if (this.data.simple)
+            return
+
         const canvas = this.renderer.canvas,
             paddings = this.renderer.paddings
 
