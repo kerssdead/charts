@@ -970,7 +970,8 @@ class PlotBase {
         const canvas = this.renderer.canvas,
             ctx = Canvas.getContext(canvas)
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.fillStyle = Theme.canvasBackground
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
     }
 
     lines() {
@@ -980,6 +981,7 @@ class PlotBase {
         const ctx = Canvas.getContext(canvas)
 
         // clear area around this.#plot
+        // todo: needed for #458, but broke now
 
         ctx.fillStyle = Theme.canvasBackground
 
