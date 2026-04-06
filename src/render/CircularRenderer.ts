@@ -197,18 +197,15 @@ class CircularRenderer extends Renderer<CircularData> {
 
         const setArgs = (points: DrawPoint[]) => {
             for (let p of points ?? []) {
-                if (p.type == DrawPointType.SemiCircle) {
-                    p.args[2] = p.base[2] * value + p.base[2] * (1 - value) * transition
-
-                    continue
-                }
-
                 for (let i = 0; i < p.args.length; i += 2) {
                     const x = p.base[i],
                         y = p.base[i + 1],
                         length = Math.sqrt(Math.pow(x - center.x, 2) + Math.pow(y - center.y, 2)),
                         computed = length * value + length * (1 - value) * transition,
                         ratio = computed / length
+
+                    if (length == 0)
+                        continue
 
                     const xx = ratio * x + (1 - ratio) * center.x,
                         yy = ratio * y + (1 - ratio) * center.y
@@ -405,6 +402,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
                     break
 
+                // todo: remove ?
                 case DrawPointType.QuadraticCurve:
                     ctx.quadraticCurveTo(point.args[0], point.args[1], point.args[2], point.args[3])
 
@@ -415,6 +413,7 @@ class CircularRenderer extends Renderer<CircularData> {
 
                     break
 
+                // todo: remove ?
                 case DrawPointType.SemiCircle:
                     ctx.arc(point.args[0], point.args[1], point.args[2], point.args[3], point.args[4], point.args[5])
 
