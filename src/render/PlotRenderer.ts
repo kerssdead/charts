@@ -842,6 +842,9 @@ class PlotRenderer extends Renderer<PlotData> {
 
         if (this.settings.title)
             this.paddings.top += Constants.Values.titleOffset
+
+        if (this.base && this.base.labelsY)
+            this.base.fixLeftPadding()
     }
 
 
@@ -1158,7 +1161,7 @@ class PlotBase {
         this.fixLeftPadding()
     }
 
-    private fixLeftPadding() {
+    fixLeftPadding() {
         if (this.data.simple)
             return
 
