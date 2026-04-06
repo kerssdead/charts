@@ -749,6 +749,11 @@ class CircularRenderer extends Renderer<CircularData> {
             this.animate(sector)
 
             this.drawSector(sector)
+        }
+
+        for (const sector of this.data.values) {
+            this.animate(sector)
+
             this.drawLabel(sector)
 
             this.handle(sector)
