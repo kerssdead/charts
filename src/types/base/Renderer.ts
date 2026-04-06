@@ -10,9 +10,11 @@ import TextResources from 'static/TextResources'
 import Chart from 'Chart'
 import Canvas from 'helpers/Canvas'
 import TextStyles from 'helpers/TextStyles'
-import { LegendPlace, RenderState } from 'static/Enums'
+import { AnimationType, LegendPlace, RenderState } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
 import ChartSettings from '../ChartSettings'
+import Theme from '../../Theme'
+import { Animations } from 'static/constants/Index'
 
 class Renderer<T extends Data> extends Renderable {
     dropdown: Dropdown | undefined
@@ -176,8 +178,21 @@ class Renderer<T extends Data> extends Renderable {
         const ctx = Canvas.getContext(this.canvas)
 
         if (this.settings.title) {
-            TextStyles.title(ctx)
-            ctx.fillText(this.settings.title, this.canvas.width / 2, Constants.Values.titleOffset)
+            this.animations.handle(
+                'title',
+                AnimationType.Init,
+                {
+                    duration: this.settings.disableInitAnimation ? 0 : Animations.title,
+                    backward: true,
+                    body: transition => {
+                        TextStyles.title(ctx)
+
+                        ctx.fillStyle = Helper.applyAlpha(Theme.text, 255 - 255 * transition)
+
+                        ctx.fillText(this.settings.title, this.canvas.width / 2, Constants.Values.titleOffset)
+                    }
+                }
+            )
         }
     }
 

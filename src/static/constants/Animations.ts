@@ -8,4 +8,6 @@ export class Animations {
     static tooltip = 120
 
     static button = 200
+
+    static title = 500
 }
