@@ -575,89 +575,6 @@ class CircularRenderer extends Renderer<CircularData> {
         }
     }
 
-    render() {
-        super.render()
-
-        const isAnyCollapsing = this.data.values.filter(s => s.value != s.current && s.current != 0)
-                                    .length > 0
-
-        this.isMousePositionChanged = this.prevMousePos.x != this.moveEvent.clientX
-                                      || this.prevMousePos.y != this.moveEvent.clientY
-
-        if (this.isMousePositionChanged) {
-            const point = this.getMousePosition(this.moveEvent)
-            this.isInsideCircle = this.isWithinRadius({
-                x: point.x - this.center.x,
-                y: point.y - this.center.y
-            })
-        }
-
-        this.prevMousePos = {
-            x: this.moveEvent.clientX,
-            y: this.moveEvent.clientY
-        }
-
-        if (isAnyCollapsing || this.isRecalculating) {
-            this.calculateAngles()
-            for (let sector of this.data.values)
-                sector = this.calculatePoint(sector)
-
-            this.isRecalculating = isAnyCollapsing
-        }
-
-        this.ctx ??= Canvas.getContext(this.canvas)
-
-        if (this.data.values.filter(s => !s.disabled).length == 0) {
-            this.empty()
-
-            return
-        }
-
-        this.hover = []
-
-        for (const sector of this.data.values) {
-            this.animate(sector)
-
-            if (sector.current == 0)
-                continue
-
-            this.drawSector(sector)
-            this.drawLabel(sector)
-
-            if (sector.state != AnimationType.Init)
-                this.handle(sector)
-        }
-
-        this.highlight()
-
-        super.renderDropdown()
-
-        if (this.clickEvent)
-            this.clickEvent = undefined
-
-        const currentHover = this.data.values.find(v => v.id == this.hover[0]),
-            isAnyHover = this.hover.length > 0
-
-        if (isAnyHover || this.contextMenu)
-            this.renderContextMenu(currentHover?.data ?? {})
-        else
-            this.menuEvent = undefined
-
-        this.tooltip.render(
-            isAnyHover && !this.dropdown?.isActive && !this.menuEvent,
-            this.moveEvent,
-            [
-                new TooltipValue(`${ currentHover?.label }: ${ Formatter.format(currentHover?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
-            ],
-            currentHover
-        )
-
-        this.innerTitle()
-
-        if (!this.isDestroy)
-            requestAnimationFrame(this.render.bind(this))
-    }
-
     private isWithinRadius(v: Point) {
         return v.x * v.x + v.y * v.y <= this.radius * this.radius
     }
@@ -755,6 +672,89 @@ class CircularRenderer extends Renderer<CircularData> {
             if (!this.canRenderInnerTitle)
                 console.warn(`Inner title is declared, but can't be rendered`)
         }
+    }
+
+    render() {
+        super.render()
+
+        const isAnyCollapsing = this.data.values.filter(s => s.value != s.current && s.current != 0)
+                                    .length > 0
+
+        this.isMousePositionChanged = this.prevMousePos.x != this.moveEvent.clientX
+                                      || this.prevMousePos.y != this.moveEvent.clientY
+
+        if (this.isMousePositionChanged) {
+            const point = this.getMousePosition(this.moveEvent)
+            this.isInsideCircle = this.isWithinRadius({
+                x: point.x - this.center.x,
+                y: point.y - this.center.y
+            })
+        }
+
+        this.prevMousePos = {
+            x: this.moveEvent.clientX,
+            y: this.moveEvent.clientY
+        }
+
+        if (isAnyCollapsing || this.isRecalculating) {
+            this.calculateAngles()
+            for (let sector of this.data.values)
+                sector = this.calculatePoint(sector)
+
+            this.isRecalculating = isAnyCollapsing
+        }
+
+        this.ctx ??= Canvas.getContext(this.canvas)
+
+        if (this.data.values.filter(s => !s.disabled).length == 0) {
+            this.empty()
+
+            return
+        }
+
+        this.hover = []
+
+        for (const sector of this.data.values) {
+            this.animate(sector)
+
+            if (sector.current == 0)
+                continue
+
+            this.drawSector(sector)
+            this.drawLabel(sector)
+
+            if (sector.state != AnimationType.Init)
+                this.handle(sector)
+        }
+
+        this.highlight()
+
+        super.renderDropdown()
+
+        if (this.clickEvent)
+            this.clickEvent = undefined
+
+        const currentHover = this.data.values.find(v => v.id == this.hover[0]),
+            isAnyHover = this.hover.length > 0
+
+        if (isAnyHover || this.contextMenu)
+            this.renderContextMenu(currentHover?.data ?? {})
+        else
+            this.menuEvent = undefined
+
+        this.tooltip.render(
+            isAnyHover && !this.dropdown?.isActive && !this.menuEvent,
+            this.moveEvent,
+            [
+                new TooltipValue(`${ currentHover?.label }: ${ Formatter.format(currentHover?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
+            ],
+            currentHover
+        )
+
+        this.innerTitle()
+
+        if (!this.isDestroy)
+            requestAnimationFrame(this.render.bind(this))
     }
 
     refresh() {
