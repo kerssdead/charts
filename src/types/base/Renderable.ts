@@ -30,6 +30,8 @@ class Renderable {
 
     protected contextMenu: Dropdown | undefined
 
+    protected ctx: CanvasRenderingContext2D
+
     constructor(chart: Chart) {
         this.node = chart.node
         this.settings = chart.settings
@@ -43,10 +45,10 @@ class Renderable {
     }
 
     render() {
-        const ctx = Canvas.getContext(this.canvas)
+        this.ctx ??= Canvas.getContext(this.canvas)
 
-        ctx.fillStyle = Theme.canvasBackground
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        this.ctx.fillStyle = Theme.canvasBackground
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
     }
 
     refresh() {

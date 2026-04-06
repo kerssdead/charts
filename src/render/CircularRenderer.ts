@@ -49,8 +49,6 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private innerTitleStyle: Function
 
-    private ctx: CanvasRenderingContext2D
-
     constructor(chart: Chart) {
         super(chart)
 
@@ -59,6 +57,8 @@ class CircularRenderer extends Renderer<CircularData> {
         this.prevMousePos = new Point()
 
         this.moveEvent = new MouseEvent(Events.MouseMove)
+
+        this.ctx ??= Canvas.getContext(this.canvas)
     }
 
     private calculateAngles() {
@@ -331,6 +331,9 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private drawLabel(sector: Sector) {
+        if (sector.current == 0)
+            return
+
         const ctx = this.ctx
 
         if (!this.canRenderLabel(sector, ctx))
@@ -375,6 +378,9 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private drawSector(sector: Sector) {
+        if (sector.current == 0)
+            return
+
         const ctx = this.ctx
 
         ctx.beginPath()
@@ -489,6 +495,9 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private handle(sector: Sector) {
+        if (sector.state == AnimationType.Init)
+            return
+
         const anyHighlight = this.highlightItems.length != 0 && this.data.values.filter(s => !s.disabled).length > 1,
             isHighlight = this.highlightItems.includes(sector.id)
 
@@ -604,6 +613,9 @@ class CircularRenderer extends Renderer<CircularData> {
     }
 
     private empty() {
+        if (this.data.values.filter(s => !s.disabled).length != 0)
+            return false
+
         const ctx = this.ctx
 
         ctx.beginPath()
@@ -616,6 +628,8 @@ class CircularRenderer extends Renderer<CircularData> {
         ctx.fillText(TextResources.allDataIsHidden, this.center.x, this.center.y)
 
         requestAnimationFrame(this.render.bind(this))
+
+        return true
     }
 
     private innerTitle() {
@@ -674,12 +688,44 @@ class CircularRenderer extends Renderer<CircularData> {
         }
     }
 
-    render() {
-        super.render()
+    private showTooltip() {
+        const currentHover = this.data.values.find(v => v.id == this.hover[0]),
+            isAnyHover = this.hover.length > 0
 
+        this.tooltip.render(
+            isAnyHover && !this.dropdown?.isActive && !this.menuEvent,
+            this.moveEvent,
+            [
+                new TooltipValue(`${ currentHover?.label }: ${ Formatter.format(currentHover?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
+            ],
+            currentHover
+        )
+    }
+
+    private showContextMenu() {
+        const currentHover = this.data.values.find(v => v.id == this.hover[0]),
+            isAnyHover = this.hover.length > 0
+
+        if (isAnyHover || this.contextMenu)
+            this.renderContextMenu(currentHover?.data ?? {})
+        else
+            this.menuEvent = undefined
+    }
+
+    private recalculate() {
         const isAnyCollapsing = this.data.values.filter(s => s.value != s.current && s.current != 0)
                                     .length > 0
 
+        if (isAnyCollapsing || this.isRecalculating) {
+            this.calculateAngles()
+            for (let sector of this.data.values)
+                sector = this.calculatePoint(sector)
+
+            this.isRecalculating = isAnyCollapsing
+        }
+    }
+
+    private handleMousePosition() {
         this.isMousePositionChanged = this.prevMousePos.x != this.moveEvent.clientX
                                       || this.prevMousePos.y != this.moveEvent.clientY
 
@@ -695,66 +741,55 @@ class CircularRenderer extends Renderer<CircularData> {
             x: this.moveEvent.clientX,
             y: this.moveEvent.clientY
         }
+    }
 
-        if (isAnyCollapsing || this.isRecalculating) {
-            this.calculateAngles()
-            for (let sector of this.data.values)
-                sector = this.calculatePoint(sector)
-
-            this.isRecalculating = isAnyCollapsing
-        }
-
-        this.ctx ??= Canvas.getContext(this.canvas)
-
-        if (this.data.values.filter(s => !s.disabled).length == 0) {
-            this.empty()
-
-            return
-        }
-
+    private sectors() {
         this.hover = []
 
         for (const sector of this.data.values) {
             this.animate(sector)
 
-            if (sector.current == 0)
-                continue
-
             this.drawSector(sector)
             this.drawLabel(sector)
 
-            if (sector.state != AnimationType.Init)
-                this.handle(sector)
+            this.handle(sector)
         }
+    }
+
+    private dropClick() {
+        if (this.clickEvent)
+            this.clickEvent = undefined
+    }
+
+    private nextFrame() {
+        if (!this.isDestroy)
+            requestAnimationFrame(this.render.bind(this))
+    }
+
+    render() {
+        super.render()
+
+        if (this.empty())
+            return
+
+        this.handleMousePosition()
+
+        this.recalculate()
+
+        this.sectors()
 
         this.highlight()
 
         super.renderDropdown()
 
-        if (this.clickEvent)
-            this.clickEvent = undefined
+        this.dropClick()
 
-        const currentHover = this.data.values.find(v => v.id == this.hover[0]),
-            isAnyHover = this.hover.length > 0
-
-        if (isAnyHover || this.contextMenu)
-            this.renderContextMenu(currentHover?.data ?? {})
-        else
-            this.menuEvent = undefined
-
-        this.tooltip.render(
-            isAnyHover && !this.dropdown?.isActive && !this.menuEvent,
-            this.moveEvent,
-            [
-                new TooltipValue(`${ currentHover?.label }: ${ Formatter.format(currentHover?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
-            ],
-            currentHover
-        )
+        this.showContextMenu()
+        this.showTooltip()
 
         this.innerTitle()
 
-        if (!this.isDestroy)
-            requestAnimationFrame(this.render.bind(this))
+        this.nextFrame()
     }
 
     refresh() {
