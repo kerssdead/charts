@@ -283,6 +283,12 @@
 
                     Other
                 </label>
+
+                <label>
+                    <input type="text" id="inner-title" onchange="refresh()"/>
+
+                    Inner Title
+                </label>
             </div>
 
 
@@ -692,6 +698,7 @@
             innerRadius = +document.getElementById('inner-radius').value,
             xType = +document.getElementById('x-axis-type').value,
             postfix = document.getElementById('postfix').value,
+            innerTitle = document.getElementById('inner-title').value,
             contextMenu = !contextMenuEnabled
                 ? null
                 : [
@@ -726,7 +733,8 @@
                 max: gaugeMax,
                 padding: padding,
                 innerRadius: innerRadius,
-                simple: simpleEnabled
+                simple: simpleEnabled,
+                innerTitle: innerTitle
             },
             type: type,
             baseColor: baseColor,
