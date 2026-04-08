@@ -11,6 +11,8 @@ import { ChartType } from '../src/static/Enums'
 test('Plot title should be rendered', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
+    await Settings.enableInitAnimation(false)
+
     await Settings.enableTitle()
     await Settings.enableLegend()
     await Settings.chartType(ChartType.Plot)

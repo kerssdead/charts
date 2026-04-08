@@ -620,6 +620,7 @@ class PlotRenderer extends Renderer<PlotData> {
         )
 
         this.base.calculateLabels()
+        this.setPaddings()
 
         // flat values
 
