@@ -70,6 +70,9 @@ class Utils {
         )
 
         await Utils.goto()
+
+        await Settings.width(100)
+        await Settings.height(100)
     }
 
     static async wait(timeout: number) {
