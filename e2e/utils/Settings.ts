@@ -112,6 +112,10 @@ class Settings {
     static lineType(type: LineType) {
         return Settings.option(Selectors.lineType, type)
     }
+
+    static enableDarkTheme(value: boolean = true) {
+        return Settings.check(Selectors.darkTheme, value)
+    }
 }
 
 export default Settings

@@ -48,6 +48,8 @@ class Selectors {
     static contextMenu = '#context-menu'
 
     static lineType = '#line-type'
+
+    static darkTheme = '#dark-theme'
 }
 
 export default Selectors
