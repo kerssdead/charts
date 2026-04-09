@@ -216,6 +216,9 @@ class GaugeRenderer extends Renderer<GaugeData> {
     prepareSettings() {
         super.prepareSettings()
 
+        this.data.min ??= 0
+        this.data.max ??= 100
+
         for (let item of this.data.values) {
             item.disabled = !item.value
             item.value ??= 0
