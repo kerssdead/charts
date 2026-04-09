@@ -263,7 +263,19 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
             v = v.slice(1)
             count++
         }
-        return v.length == 0 || count == 0 ? 0 : count + 1
+        return v.length == 0 || count == 0 ? 0 : count
+    }
+
+    const getDividerForFractional = (v: string) => {
+        let trimmed = v
+
+        while (trimmed.length > 0 && trimmed[0] == '0')
+            trimmed = trimmed.slice(1)
+
+        while (trimmed.length > 0 && trimmed[trimmed.length - 1] == '0')
+            trimmed = trimmed.slice(0, trimmed.length - 1)
+
+        return Math.pow(10, countLeadingZeros(v) + trimmed.length)
     }
 
     if (!value)
@@ -275,13 +287,13 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
     let split = value.split(decimalSeparator),
         left = simplify(split[0]),
         right = split.length > 1
-                ? removeExtraZeros(simplify(split[1])) / Math.pow(10, countLeadingZeros(split[1]))
+                ? removeExtraZeros(simplify(split[1])) / getDividerForFractional(split[1])
                 : 0
 
     if (split.length > 1 && split[1].length > 9) {
         const slice = split[1].slice(0, 8)
 
-        right = removeExtraZeros(simplify(slice)) / Math.pow(10, countLeadingZeros(slice))
+        right = removeExtraZeros(simplify(slice)) / getDividerForFractional(slice)
     }
 
     const negative = value.slice(0, 1) == '-' ? -1 : 1

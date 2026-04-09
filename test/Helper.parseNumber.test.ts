@@ -126,4 +126,14 @@ describe('Parsing string to number', () => {
         expect(Helper.parseNumber('202136,25625008223359376756160'))
             .toStrictEqual(202136.25625008)
     })
+
+    it('US, fractional with long number with trailing zeros', () => {
+        expect(Helper.parseNumber('144587.045000000000'))
+            .toStrictEqual(144587.045)
+    })
+
+    it('EU, fractional with long number with trailing zeros', () => {
+        expect(Helper.parseNumber('144587,045000000000'))
+            .toStrictEqual(144587.045)
+    })
 })
