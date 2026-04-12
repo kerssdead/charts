@@ -19,6 +19,7 @@ import Formatter from 'helpers/Formatter'
 import { AnimationType, DrawPointType, Events, Icon, PlotAxisType } from 'static/Enums'
 import * as Constants from 'static/constants/Index'
 import DrawPoint from 'types/DrawPoint'
+import Debug from '../Debug'
 
 class CircularRenderer extends Renderer<CircularData> {
     private readonly startAngle: number
@@ -665,7 +666,7 @@ class CircularRenderer extends Renderer<CircularData> {
             }
 
             if (!this.canRenderInnerTitle)
-                console.warn(`Inner title is declared, but can't be rendered`)
+                Debug.warn(`Inner title is declared, but can't be rendered`)
         }
     }
 
@@ -838,7 +839,7 @@ class CircularRenderer extends Renderer<CircularData> {
             item.innerRadius ??= this.data.innerRadius ?? 0
 
             if (item.value < 0)
-                console.warn(`"${ item.label }" has negative value (${ item.value }) and will not be render`)
+                Debug.warn(`"${ item.label }" has negative value (${ item.value }) and will not be render`)
         }
 
         this.data.values = this.data.values.filter(v => v.value >= 0)
