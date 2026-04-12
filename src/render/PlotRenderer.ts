@@ -367,7 +367,7 @@ class PlotRenderer extends Renderer<PlotData> {
                         break
 
                     case PlotType.Bar:
-                        const zeroX = [...this.base.labelsX.entries()].find(v => v[1] == '0.00')![0]
+                        const zeroX = [...this.base.labelsX.entries()].find(v => v[1].startsWith('0'))![0]
                             - this.paddings.left
 
                         x += zeroX
