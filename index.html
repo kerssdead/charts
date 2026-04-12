@@ -269,6 +269,12 @@
                         </option>
                     </select>
                 </label>
+
+                <label>
+                    <input type="checkbox" id="short-labels" onchange="refresh()"/>
+
+                    Short Labels
+                </label>
             </div>
 
             <div>
@@ -679,7 +685,8 @@
             contextMenuEnabled = document.getElementById('context-menu').checked,
             otherEnabled = document.getElementById('other').checked,
             simpleEnabled = document.getElementById('simple').checked,
-            disableInitAnimation = document.getElementById('init-animation').checked
+            disableInitAnimation = document.getElementById('init-animation').checked,
+            shortLabels = document.getElementById('short-labels').checked
 
 
         const title = titleEnabled ? 'Title' : null,
@@ -734,7 +741,8 @@
                 padding: padding,
                 innerRadius: innerRadius,
                 simple: simpleEnabled,
-                innerTitle: innerTitle
+                innerTitle: innerTitle,
+                shortLabels: shortLabels
             },
             type: type,
             baseColor: baseColor,
