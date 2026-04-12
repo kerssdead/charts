@@ -244,12 +244,6 @@ class CircularRenderer extends Renderer<CircularData> {
         const setArgs = (points: DrawPoint[]) => {
             for (let p of points ?? []) {
                 switch (p.type) {
-                    case DrawPointType.SemiCircle:
-                        p.args[0] = p.base[0] + sector.translate.x
-                        p.args[1] = p.base[1] + sector.translate.y
-
-                        break
-
                     case DrawPointType.ArcTo:
                         p.args[0] = p.base[0] + sector.translate.x
                         p.args[1] = p.base[1] + sector.translate.y
@@ -402,20 +396,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
                     break
 
-                // todo: remove ?
-                case DrawPointType.QuadraticCurve:
-                    ctx.quadraticCurveTo(point.args[0], point.args[1], point.args[2], point.args[3])
-
-                    break
-
                 case DrawPointType.ArcTo:
                     ctx.arcTo(point.args[0], point.args[1], point.args[2], point.args[3], point.args[4])
-
-                    break
-
-                // todo: remove ?
-                case DrawPointType.SemiCircle:
-                    ctx.arc(point.args[0], point.args[1], point.args[2], point.args[3], point.args[4], point.args[5])
 
                     break
             }
@@ -611,7 +593,7 @@ class CircularRenderer extends Renderer<CircularData> {
         return sector.isMouseInside = isAngle(point) && this.isInsideCircle
     }
 
-    private empty() {
+    private renderEmpty() {
         if (this.data.values.filter(s => !s.disabled).length != 0)
             return false
 
@@ -631,7 +613,7 @@ class CircularRenderer extends Renderer<CircularData> {
         return true
     }
 
-    private innerTitle() {
+    private renderInnerTitle() {
         if (this.canRenderInnerTitle) {
             const ctx = this.ctx
 
@@ -711,7 +693,7 @@ class CircularRenderer extends Renderer<CircularData> {
             this.menuEvent = undefined
     }
 
-    private recalculate() {
+    private recalculateSectors() {
         const isAnyCollapsing = this.data.values.filter(s => s.value != s.current && s.current != 0)
                                     .length > 0
 
@@ -742,7 +724,7 @@ class CircularRenderer extends Renderer<CircularData> {
         }
     }
 
-    private sectors() {
+    private renderSectors() {
         this.hover = []
 
         for (const sector of this.data.values) {
@@ -760,7 +742,7 @@ class CircularRenderer extends Renderer<CircularData> {
         }
     }
 
-    private dropClick() {
+    private resetClick() {
         if (this.clickEvent)
             this.clickEvent = undefined
     }
@@ -773,25 +755,25 @@ class CircularRenderer extends Renderer<CircularData> {
     render() {
         super.render()
 
-        if (this.empty())
+        if (this.renderEmpty())
             return
 
         this.handleMousePosition()
 
-        this.recalculate()
+        this.recalculateSectors()
 
-        this.sectors()
+        this.renderSectors()
 
         this.highlight()
 
         super.renderDropdown()
 
-        this.dropClick()
+        this.resetClick()
 
         this.showContextMenu()
         this.showTooltip()
 
-        this.innerTitle()
+        this.renderInnerTitle()
 
         this.nextFrame()
     }

@@ -125,7 +125,5 @@ export enum DrawPointType {
 
     QuadraticCurve = 'quadratic-curve',
 
-    ArcTo = 'arc-to',
-
-    SemiCircle = 'semi-circle'
+    ArcTo = 'arc-to'
 }
