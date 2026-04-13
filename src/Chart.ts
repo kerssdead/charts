@@ -18,54 +18,45 @@ class Chart {
 
     settings: ChartSettings
 
-    #renderer: Renderer<Data>
+    private renderer: Renderer<Data>
 
-    #legend: Legend | undefined
+    private legend: Legend | undefined
 
-    #observer: ResizeObserver
+    private observer: ResizeObserver
 
-    #currentType: ChartType
+    private currentType: ChartType
 
-    constructor(context: HTMLElement, settings: ChartSettings) {
-        this.node = context
+    constructor(element: HTMLElement, settings: ChartSettings) {
+        this.node = element
+
+        this.applyStyles()
+        this.attachEvents()
 
         this.applySettings(settings)
-
-        this.#applyStyles()
-
-        document.addEventListener(Events.VisibilityChanged, () => this.#renderer.resetMouse())
-        window.addEventListener(Events.Blur, () => this.#renderer.resetMouse())
-
-        window.addEventListener(Events.Click, event => {
-            if (event.target != this.#renderer.canvas)
-                this.#renderer.closeDropdowns()
-        })
     }
 
     render() {
-        this.#renderer.render()
-        this.#legend?.render()
+        this.renderer.render()
+        this.legend?.render()
 
-        this.#initializeObserver()
-
-        this.#refresh()
+        this.refresh()
     }
 
     destroy() {
-        this.#renderer.destroy()
-        this.#legend?.destroy()
+        this.renderer.destroy()
+        this.legend?.destroy()
 
-        this.#observer.disconnect()
+        this.observer.disconnect()
     }
 
     highlight(value?: Value) {
-        this.#renderer.highlight(value)
+        this.renderer.highlight(value)
     }
 
     reset() {
         Theme.reset()
 
-        this.#initialize(this.settings)
+        this.initialize(this.settings)
     }
 
     applySettings(settings: ChartSettings) {
@@ -73,92 +64,90 @@ class Chart {
 
         this.reset()
 
-        const isNeedRestartRender = this.settings.type != this.#currentType
+        const isNeedRestartRender = this.settings.type != this.currentType
 
-        this.#prepareSettings()
+        this.prepareSettings()
 
-        if (this.settings.enableLegend && this.#legend != undefined)
-            this.#legend.applySettings(settings)
+        if (this.settings.enableLegend && this.legend != undefined)
+            this.legend.applySettings(settings)
 
-        if (this.settings.enableLegend && this.#legend == undefined) {
-            this.#legend = new Legend(this)
+        if (this.settings.enableLegend && this.legend == undefined) {
+            this.legend = new Legend(this)
 
-            this.#legend.render()
+            this.legend.render()
         }
 
-        if (!this.settings.enableLegend && this.#legend != undefined) {
-            this.#legend.destroy()
+        if (!this.settings.enableLegend && this.legend != undefined) {
+            this.legend.destroy()
 
-            this.#legend = undefined
+            this.legend = undefined
         }
 
         if (isNeedRestartRender)
-            this.#renderer.render()
-
-        this.#initializeObserver()
+            this.renderer.render()
     }
 
-    #prepareSettings() {
+    private prepareSettings() {
         this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
 
-        if (this.#renderer == undefined || this.settings.type != this.#currentType) {
-            this.#renderer?.destroy()
+        if (this.renderer == undefined || this.settings.type != this.currentType) {
+            this.renderer?.destroy()
 
             switch (this.settings.type) {
                 case ChartType.Plot:
-                    this.#renderer = new PlotRenderer(this)
-                    this.#currentType = ChartType.Plot
+                    this.renderer = new PlotRenderer(this)
+                    this.currentType = ChartType.Plot
                     break
 
                 case ChartType.Circular:
-                    this.#renderer = new CircularRenderer(this)
-                    this.#currentType = ChartType.Circular
+                    this.renderer = new CircularRenderer(this)
+                    this.currentType = ChartType.Circular
                     break
 
                 case ChartType.Gauge:
-                    this.#renderer = new GaugeRenderer(this)
-                    this.#currentType = ChartType.Gauge
+                    this.renderer = new GaugeRenderer(this)
+                    this.currentType = ChartType.Gauge
                     break
 
                 case ChartType.TreeMap:
-                    this.#renderer = new TreeRenderer(this)
-                    this.#currentType = ChartType.TreeMap
+                    this.renderer = new TreeRenderer(this)
+                    this.currentType = ChartType.TreeMap
                     break
             }
         } else {
-            this.#renderer.applySettings(this.settings)
+            this.renderer.applySettings(this.settings)
         }
 
-        this.#renderer.prepareSettings()
+        this.renderer.prepareSettings()
 
         if (!this.settings.disableInteractions) {
-            this.#renderer.initDropdown()
-            this.#renderer.initAnimations()
+            this.renderer.initDropdown()
+            this.renderer.initAnimations()
         }
 
-        this.#renderer.resize()
+        this.renderer.resize()
     }
 
-    #refresh() {
-        this.#renderer.refresh()
-        this.#legend?.refresh()
+    private refresh() {
+        this.renderer.refresh()
+        this.legend?.refresh()
     }
 
-    #resize() {
-        this.#renderer.resize()
-        this.#legend?.resize()
+    private resize() {
+        this.renderer.resize()
+        this.legend?.resize()
     }
 
-    #initialize(settings: ChartSettings) {
+    private initialize(settings: ChartSettings) {
         Debug.initialize(settings.enableDebugMode)
         Theme.initialize(
-            () => this.#resize(),
+            () => this.resize(),
             settings.isDarkThemeFunction
         )
         Animations.initializeTransitions()
     }
 
-    #applyStyles() {
+    private applyStyles() {
         this.node.style.display = Styles.Display.Flex
         this.node.style.flexDirection = Styles.FlexDirection.Column
         this.node.style.alignItems = Styles.AlignItems.Center
@@ -166,17 +155,32 @@ class Chart {
         this.node.style.height = '100%'
     }
 
-    #initializeObserver() {
-        if (this.#observer != undefined)
+    private initializeObserver() {
+        if (this.observer != undefined)
             return
 
-        this.#observer = new ResizeObserver(() => {
-            if (this.#renderer.canvas)
-                this.#resize()
+        this.observer = new ResizeObserver(() => {
+            if (this.renderer.canvas)
+                this.resize()
             else
                 this.destroy()
         })
-        this.#observer.observe(this.node)
+
+        this.observer.observe(this.node)
+    }
+
+    private attachEvents() {
+        document.addEventListener(Events.VisibilityChanged, () => this.renderer.resetMouse())
+        window.addEventListener(Events.Blur, () => this.renderer.resetMouse())
+
+        window.addEventListener(Events.Click, event => {
+            console.log('click', this.currentType)
+
+            if (event.target != this.renderer.canvas)
+                this.renderer.closeDropdowns()
+        })
+
+        this.initializeObserver()
     }
 }
 
