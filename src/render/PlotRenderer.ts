@@ -720,7 +720,7 @@ class PlotRenderer extends Renderer<PlotData> {
             }
 
             this.#y.max = max > this.data.yMax ? this.data.yMax : max
-            this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
+            // this.#y.unit = (Math.abs(this.#y.min) + Math.abs(this.#y.max)) / (this.#allValuesY.length - 1)
         }
     }
 
@@ -1131,7 +1131,10 @@ class PlotBase {
         this.labelsY = new Map<number, string>()
 
         let uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x))],
-            uniqueY = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.y as number))]
+            uniqueY = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => Helper.parseNumber(v.y as string)))]
+
+        if (this.data.yMax)
+            uniqueY = [...uniqueY.filter(v => v <= this.data.yMax), this.data.yMax]
 
         // getting rounded values
 
