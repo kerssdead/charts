@@ -41,6 +41,7 @@ class Renderable {
         this.isDestroy = false
 
         this.canvas = document.createElement(Tag.Canvas)
+        this.ctx = Canvas.getContext(this.canvas)
 
         this.node.append(this.canvas)
 
@@ -48,8 +49,6 @@ class Renderable {
     }
 
     render() {
-        this.ctx ??= Canvas.getContext(this.canvas)
-
         this.ctx.fillStyle = Theme.canvasBackground
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 

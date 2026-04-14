@@ -15,28 +15,26 @@ import { AnimationType, Events, LegendPlace, RenderState } from 'static/Enums'
 import ChartSettings from './types/ChartSettings'
 
 class Legend extends Renderable {
-    #button: Button
+    private button: Button
 
-    #offset: Point
+    private offset: Point
 
-    #chart: Chart
-
-    #hoverCount: number
+    private chart: Chart
 
     isDestroy: boolean = false
 
     constructor(chart: Chart) {
         super(chart)
 
-        this.#chart = chart
+        this.chart = chart
 
-        this.prepareSettings()
+        this.applySettings()
     }
 
     render() {
         super.render()
 
-        const ctx = Canvas.getContext(this.canvas)
+        const ctx = this.ctx
 
         let nextPoint: Point | null = { x: 20, y: 21 }
 
@@ -44,34 +42,113 @@ class Legend extends Renderable {
         ctx.textAlign = 'start'
         ctx.textBaseline = 'alphabetic'
 
-        ctx.translate(this.#offset.x, this.#offset.y)
-
-        this.#hoverCount = 0
+        ctx.translate(this.offset.x, this.offset.y)
 
         for (const value of this.settings.data.values.filter(v => !v.hideInLegend)) {
             if (nextPoint == null)
                 break
 
-            nextPoint = this.#draw(value, nextPoint.x, nextPoint.y)
+            nextPoint = this.draw(value, nextPoint.x, nextPoint.y)
         }
 
-        ctx.translate(-this.#offset.x, -this.#offset.y)
+        ctx.translate(-this.offset.x, -this.offset.y)
 
         if (!this.isDestroy)
             requestAnimationFrame(this.render.bind(this))
 
-        this.clickEvent = this.#button?.render(this.moveEvent, this.clickEvent)
+        this.clickEvent = this.button?.render(this.moveEvent, this.clickEvent)
 
         this.state = RenderState.Idle
     }
 
-    #draw(value: Value, x: number, y: number): Point | null {
+    destroy() {
+        this.isDestroy = true
+
+        this.canvas.remove()
+    }
+
+    refresh() {
+        this.state = RenderState.Init
+    }
+
+    resize() {
+        this.calculateSizes()
+        this.button?.resize()
+        this.initAnimations()
+    }
+
+    calculateSizes() {
+        switch (this.settings.legendPlace) {
+            case LegendPlace.Bottom:
+            default:
+                this.canvas.width = this.settings.width
+                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
+
+                this.node.style.flexDirection = Styles.FlexDirection.Column
+
+                break
+
+            case LegendPlace.Top:
+                this.canvas.width = this.settings.width
+                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
+
+                this.node.style.flexDirection = Styles.FlexDirection.ColumnReverse
+
+                break
+
+            case LegendPlace.Left:
+                this.canvas.width = 500
+                this.canvas.height = this.settings.height
+
+                this.node.style.flexDirection = Styles.FlexDirection.Row
+
+                break
+
+            case LegendPlace.Right:
+                this.canvas.width = 500
+                this.canvas.height = this.settings.height
+
+                this.node.style.flexDirection = Styles.FlexDirection.RowReverse
+
+                break
+        }
+
+        this.offset = {
+            x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
+            y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)) / 2
+        }
+    }
+
+    applySettings(settings?: ChartSettings) {
+        if (settings)
+            this.settings = settings
+
+        this.resize()
+
+        this.addResetButton()
+    }
+
+    private addResetButton() {
+        if (!this.settings.disableInteractions)
+            this.button = new Button(this.canvas,
+                {
+                    x: -10,
+                    y: 12,
+                    text: TextResources.reset,
+                    action: () => {
+                        for (let value of this.settings.data.values)
+                            value.reset()
+                    }
+                })
+    }
+
+    private draw(value: Value, x: number, y: number): Point | null {
         const ctx = Canvas.getContext(this.canvas)
 
         const textWidth = Helper.stringWidth(value.label),
             circleRadius = 6
 
-        if (x + 48 + textWidth >= this.canvas.width - 40 - this.#offset.x) {
+        if (x + 48 + textWidth >= this.canvas.width - 40 - this.offset.x) {
             x = 20
             y += 26
         }
@@ -88,8 +165,8 @@ class Legend extends Renderable {
             if (!event)
                 return false
 
-            const px = event.offsetX - this.#offset.x,
-                py = event.offsetY - this.#offset.y
+            const px = event.offsetX - this.offset.x,
+                py = event.offsetY - this.offset.y
 
             return px >= rectX && px <= rectX + rectW
                    && py >= rectY && py <= rectY + rectH
@@ -137,11 +214,8 @@ class Legend extends Renderable {
                     }
                 })
 
-            if (!value.disabled) {
-                this.#hoverCount++
-
-                this.#chart.highlight(value)
-            }
+            if (!value.disabled)
+                this.chart.highlight(value)
         } else {
             this.animations.handle(value.id,
                 AnimationType.MouseLeave,
@@ -182,86 +256,6 @@ class Legend extends Renderable {
             x: x,
             y: y
         }
-    }
-
-    destroy() {
-        this.isDestroy = true
-
-        this.canvas.remove()
-    }
-
-    refresh() {
-        this.state = RenderState.Init
-    }
-
-    resize() {
-        this.calculateSizes()
-        this.#button?.resize()
-        this.initAnimations()
-    }
-
-    calculateSizes() {
-        switch (this.settings.legendPlace) {
-            case LegendPlace.Bottom:
-            default:
-                this.canvas.width = this.settings.width
-                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
-
-                this.node.style.flexDirection = Styles.FlexDirection.Column
-
-                break
-
-            case LegendPlace.Top:
-                this.canvas.width = this.settings.width
-                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
-
-                this.node.style.flexDirection = Styles.FlexDirection.ColumnReverse
-
-                break
-
-            case LegendPlace.Left:
-                this.canvas.width = 500
-                this.canvas.height = this.settings.height
-
-                this.node.style.flexDirection = Styles.FlexDirection.Row
-
-                break
-
-            case LegendPlace.Right:
-                this.canvas.width = 500
-                this.canvas.height = this.settings.height
-
-                this.node.style.flexDirection = Styles.FlexDirection.RowReverse
-
-                break
-        }
-
-        this.#offset = {
-            x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
-            y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)) / 2
-        }
-    }
-
-    applySettings(settings: ChartSettings) {
-        this.settings = settings
-
-        this.prepareSettings()
-    }
-
-    prepareSettings() {
-        this.resize()
-
-        if (!this.settings.disableInteractions)
-            this.#button = new Button(this.canvas,
-                {
-                    x: -10,
-                    y: 12,
-                    text: TextResources.reset,
-                    action: () => {
-                        for (let value of this.settings.data.values)
-                            value.reset()
-                    }
-                })
     }
 
     static getOffsetToCenter(values: Value[], width: number): number {

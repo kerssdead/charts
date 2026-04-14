@@ -174,8 +174,6 @@ class Chart {
         window.addEventListener(Events.Blur, () => this.renderer.resetMouse())
 
         window.addEventListener(Events.Click, event => {
-            console.log('click', this.currentType)
-
             if (event.target != this.renderer.canvas)
                 this.renderer.closeDropdowns()
         })
