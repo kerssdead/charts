@@ -65,9 +65,14 @@ class CircularRenderer extends Renderer<CircularData> {
     private calculateAngles() {
         const valuesSum = this.data.values.sumByField(v => v.current)
 
+        const minAngle = Math.PI / 360
+
         let anglesSum = this.startAngle
         this.angles = this.data.values.flatMap(sector => {
-                              const angle = sector.current / valuesSum * 2 * Math.PI
+                              let angle = sector.current / valuesSum * 2 * Math.PI
+
+                              if (angle < minAngle)
+                                  angle = minAngle
 
                               return {
                                   id: sector.id,
@@ -76,6 +81,11 @@ class CircularRenderer extends Renderer<CircularData> {
                               }
                           })
                           .reverse()
+
+        const max = Helper.max(this.angles.flatMap(o => o.value)),
+            maxIndex = this.angles.findIndex(o => o.value === max)
+
+        this.angles[maxIndex].value -= this.angles.sumByField(o => o.value) - Math.PI * 2
     }
 
     private getAngle(sector: Sector) {
