@@ -1130,7 +1130,7 @@ class PlotBase {
         this.labelsX = new Map<number, string>()
         this.labelsY = new Map<number, string>()
 
-        let uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x).filter(v => v))],
+        let uniqueX = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => v.x).filter(v => v != undefined))],
             uniqueY = [...new Set(this.data.values.flatMap(s => s.values).flatMap(v => Helper.parseNumber(v.y as string)))]
 
         if (this.data.yMax)
