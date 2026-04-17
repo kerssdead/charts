@@ -71,7 +71,7 @@ class CircularRenderer extends Renderer<CircularData> {
         this.angles = this.data.values.flatMap(sector => {
                               let angle = sector.current / valuesSum * 2 * Math.PI
 
-                              if (angle < minAngle)
+                              if (angle < minAngle && !sector.disabled)
                                   angle = minAngle
 
                               return {
@@ -82,10 +82,20 @@ class CircularRenderer extends Renderer<CircularData> {
                           })
                           .reverse()
 
+        /*
+            todo: if max value after subtract diff from max value and max angle value will be less than min angle?
+         */
+
         const max = Helper.max(this.angles.flatMap(o => o.value)),
             maxIndex = this.angles.findIndex(o => o.value === max)
 
-        this.angles[maxIndex].value -= this.angles.sumByField(o => o.value) - Math.PI * 2
+        const diff = this.angles.sumByField(o => o.value) - Math.PI * 2
+
+        this.angles[maxIndex].value -= diff
+
+        if (this.angles.length > maxIndex)
+            for (let i = 0; i < maxIndex; i++)
+                this.angles[i].sum -= diff
     }
 
     private getAngle(sector: Sector) {
