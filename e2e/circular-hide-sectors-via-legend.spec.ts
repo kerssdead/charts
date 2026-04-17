@@ -21,7 +21,7 @@ test('Pie chart sectors should not be rendered after disabled in legend', async 
     await Utils.scrollToCanvas()
     await Utils.wait(1000)
 
-    const timeAfterClick = 50
+    const timeAfterClick = Animations.circular
 
     await Utils.wait(timeAfterClick)
     await Utils.page.mouse.click(340, 670)
@@ -43,7 +43,7 @@ test('Pie chart sectors should not be rendered after disabled in legend', async 
     await Utils.page.mouse.click(440, 700)
     await Utils.wait(timeAfterClick)
     await Utils.page.mouse.click(540, 700)
-    await Utils.wait(1000)
+    await Utils.wait(Animations.circular * 11)
 
     await Utils.page.mouse.move(0, 0, { steps: 3 })
     await Utils.wait(Animations.circular)
