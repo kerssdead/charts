@@ -77,19 +77,20 @@ class CircularRenderer extends Renderer<CircularData> {
         for (const sector of this.data.values) {
             let angle = +(sector.current / valuesSum * 2 * Math.PI).toFixed(ANGLE_PRECISION)
 
-            angle -= skip
+            if (!sector.disabled) {
+                angle -= skip
 
-            if (angle <= 0) {
-                angle = MIN_ANGLE
-                skip += angle
+                if (angle <= 0) {
+                    angle = MIN_ANGLE
+                    skip += angle
+                }
+
+                if (this.angles.length == this.data.values.length - 1)
+                    angle += Math.PI * 2 - (anglesSum + angle - this.startAngle)
             }
 
-            if (this.angles.length == this.data.values.length - 1) {
-                const flaw = Math.PI * 2 - (anglesSum + angle - this.startAngle)
-
-                if (flaw > 0)
-                    angle += flaw
-            }
+            if (this.data.values.filter(s => s.current != 0).length == 1)
+                angle = Math.PI * 2
 
             anglesSum += angle
 
