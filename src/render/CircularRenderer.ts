@@ -21,6 +21,10 @@ import * as Constants from 'static/constants/Index'
 import DrawPoint from 'types/DrawPoint'
 import Debug from '../Debug'
 
+const ANGLE_PRECISION = 2
+const MIN_ANGLE = .01
+const MAX_SIZE = Math.floor(Math.PI * 2 * Math.pow(10, ANGLE_PRECISION))
+
 class CircularRenderer extends Renderer<CircularData> {
     private readonly startAngle: number
 
@@ -53,7 +57,7 @@ class CircularRenderer extends Renderer<CircularData> {
     constructor(chart: Chart) {
         super(chart)
 
-        this.startAngle = Math.PI / 4
+        this.startAngle = Number((Math.PI / 4).toFixed(ANGLE_PRECISION))
         this.isMousePositionChanged = false
         this.prevMousePos = new Point()
 
@@ -65,37 +69,36 @@ class CircularRenderer extends Renderer<CircularData> {
     private calculateAngles() {
         const valuesSum = this.data.values.sumByField(v => v.current)
 
-        const minAngle = Math.PI / 360
-
+        let skip = 0
         let anglesSum = this.startAngle
-        this.angles = this.data.values.flatMap(sector => {
-                              let angle = sector.current / valuesSum * 2 * Math.PI
 
-                              if (angle < minAngle && !sector.disabled)
-                                  angle = minAngle
+        this.angles = []
 
-                              return {
-                                  id: sector.id,
-                                  value: angle,
-                                  sum: (anglesSum += angle) - angle
-                              }
-                          })
-                          .reverse()
+        for (const sector of this.data.values) {
+            let angle = +(sector.current / valuesSum * 2 * Math.PI).toFixed(ANGLE_PRECISION)
 
-        /*
-            todo: if max value after subtract diff from max value and max angle value will be less than min angle?
-         */
+            angle -= skip
 
-        const max = Helper.max(this.angles.flatMap(o => o.value)),
-            maxIndex = this.angles.findIndex(o => o.value === max)
+            if (angle <= 0) {
+                angle = MIN_ANGLE
+                skip += angle
+            }
 
-        const diff = this.angles.sumByField(o => o.value) - Math.PI * 2
+            if (this.angles.length == this.data.values.length - 1) {
+                const flaw = Math.PI * 2 - (anglesSum + angle - this.startAngle)
 
-        this.angles[maxIndex].value -= diff
+                if (flaw > 0)
+                    angle += flaw
+            }
 
-        if (this.angles.length > maxIndex)
-            for (let i = 0; i < maxIndex; i++)
-                this.angles[i].sum -= diff
+            anglesSum += angle
+
+            this.angles.push({
+                id: sector.id,
+                value: angle,
+                sum: anglesSum - angle
+            })
+        }
     }
 
     private getAngle(sector: Sector) {
@@ -773,6 +776,15 @@ class CircularRenderer extends Renderer<CircularData> {
             requestAnimationFrame(this.render.bind(this))
     }
 
+    private limitValuesCount() {
+        if (this.data.values.length > MAX_SIZE) {
+            this.data.values.sort((a, b) => a.value < b.value ? 1 : -1)
+            this.data.values = this.data.values.slice(0, MAX_SIZE)
+
+            this.calculateColors(true)
+        }
+    }
+
     render() {
         super.render()
 
@@ -822,6 +834,8 @@ class CircularRenderer extends Renderer<CircularData> {
         super.prepareSettings()
 
         this.calculateSizes()
+
+        this.limitValuesCount()
 
         this.data.values = this.data.values.map(v => new Sector(v))
 
