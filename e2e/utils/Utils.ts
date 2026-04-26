@@ -30,23 +30,9 @@ class Utils {
         return Utils.page.locator(Selectors.chart).scrollIntoViewIfNeeded()
     }
 
-    static async checkScreenshot(clip: Clip | undefined,
-                                 chromium: string,
-                                 firefox: string,
-                                 webkit: string) {
-        const o = {
-            chromium: chromium,
-            firefox: firefox,
-            webkit: webkit
-        }
-
-        const browserName = Utils.browserName ?? 'chromium'
-
-        if (o[browserName] === 'TODO')
-            return
-
+    static async checkScreenshot(base64: string, clip?: Clip | undefined) {
         expect(await Screenshot.get(Utils.page, clip))
-            .toBe(o[browserName])
+            .toBe(base64)
     }
 
     static async checkForErrors() {
