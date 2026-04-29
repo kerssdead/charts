@@ -74,7 +74,7 @@ class GaugeRenderer extends Renderer<GaugeData> {
 
         ctx.strokeStyle = value.color
         ctx.lineCap = 'round'
-        ctx.lineWidth = 40
+        ctx.lineWidth = this.radius / 10
 
         const negativeOffset = this.data.min < 0 ? Math.abs(this.data.min) : 0
 
@@ -106,21 +106,35 @@ class GaugeRenderer extends Renderer<GaugeData> {
                 }
             }
 
-            let point1 = getPoint(50),
-                point2 = getPoint(90),
-                point3 = getPoint(115)
+            const radiusRatio = this.radius / 300
+
+            let point1 = getPoint(25 * radiusRatio)
+            let point2 = getPoint(45 * radiusRatio)
+            let point3 = getPoint(60 * radiusRatio)
 
             const opacity = Math.PI - localAngle > angle ? '66' : 'ff'
 
             const text = Formatter.number(this.data.max - localAngle / Math.PI * (this.data.max - this.data.min))
 
-            if (this.canRenderLabel(point3.x, point3.y, text, ctx)) {
+            let textAlign: 'center' | 'start' | 'end' = 'center'
+
+            const point = Math.round(point3.x)
+            const halfWidth = Math.round(this.canvas.width / 2)
+
+            if (Math.abs(halfWidth - point) > 5)
+                textAlign = point < halfWidth
+                            ? 'end'
+                            : 'start'
+
+            if (this.canRenderLabel(point3.x, point3.y, text, ctx, textAlign)) {
                 ctx.moveTo(point1.x, point1.y)
                 ctx.lineTo(point2.x, point2.y)
                 ctx.strokeStyle = Theme.text + opacity
                 ctx.stroke()
 
                 TextStyles.regular(ctx)
+
+                ctx.textAlign = textAlign
                 ctx.fillStyle = Theme.text + opacity
                 ctx.fillText(text, point3.x, point3.y)
             }
@@ -169,23 +183,30 @@ class GaugeRenderer extends Renderer<GaugeData> {
     }
 
     private calculateSizes() {
-        const longSide = this.canvas.width < this.canvas.height / 2
-                         ? this.canvas.height / 2
-                         : this.canvas.width
+        const shortSide = Math.min(this.canvas.width / 2, this.canvas.height)
 
-        this.radius = longSide / 2 - 200
+        this.radius = shortSide * .8 - 70
 
         this.center = {
             x: this.canvas.width / 2,
-            y: this.canvas.height - this.radius / 5
+            y: this.canvas.height - 50
         }
     }
 
-    private canRenderLabel(x: number, y: number, text: string, ctx: CanvasRenderingContext2D) {
-        const textWidth = Helper.stringWidth(text),
-            imageDataX = x - textWidth / 2,
-            imageDataY = y - 12,
-            imageData = new Uint32Array(ctx.getImageData(imageDataX, imageDataY, textWidth, 28).data.buffer)
+    private canRenderLabel(x: number,
+                           y: number,
+                           text: string,
+                           ctx: CanvasRenderingContext2D,
+                           direction: 'start' | 'center' | 'end') {
+        const textWidth = Helper.stringWidth(text)
+        const xDiff = direction == 'center'
+                      ? textWidth / 2
+                      : direction == 'start'
+                        ? -textWidth
+                        : textWidth
+        const imageDataX = x - xDiff
+        const imageDataY = y - 12
+        const imageData = new Uint32Array(ctx.getImageData(imageDataX, imageDataY, textWidth, 28).data.buffer)
 
         if (imageDataX < 0 || imageDataX + textWidth > this.canvas.width
             || y - 12 < 0 || y + 12 > this.canvas.height)
