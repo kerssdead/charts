@@ -10,21 +10,22 @@ import Animations from 'Animations'
 import Theme from 'Theme'
 import Styles from 'static/constants/Styles'
 import { ChartType, Events } from 'static/Enums'
-import CircularRenderer from 'render/CircularRenderer'
+import PieProcess from 'render/PieProcess'
 import Debug from 'Debug'
+import { DefaultRenderer } from './render/DefaultRenderer'
 
 class Chart {
     node: HTMLElement
 
     settings: ChartSettings
 
-    private renderer: Renderer<Data>
+    private charts: PieProcess[]
+
+    private renderer: DefaultRenderer
 
     private legend: Legend | undefined
 
     private observer: ResizeObserver
-
-    private currentType: ChartType
 
     constructor(element: HTMLElement, settings: ChartSettings) {
         this.node = element
@@ -43,14 +44,16 @@ class Chart {
     }
 
     destroy() {
-        this.renderer.destroy()
+        // todo: add destroy to DefaultRenderer
+        // this.renderer.destroy()
         this.legend?.destroy()
 
         this.observer.disconnect()
     }
 
     highlight(value?: Value) {
-        this.renderer.highlight(value)
+        // todo: highlight values via charts field
+        // this.renderer.highlight(value)
     }
 
     reset() {
@@ -64,7 +67,7 @@ class Chart {
 
         this.reset()
 
-        const isNeedRestartRender = this.settings.type != this.currentType
+        // const isNeedRestartRender = this.settings.type != this.currentType
 
         this.prepareSettings()
 
@@ -83,58 +86,63 @@ class Chart {
             this.legend = undefined
         }
 
-        if (isNeedRestartRender)
+        // if (isNeedRestartRender)
             this.renderer.render()
     }
 
     private prepareSettings() {
         this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
 
-        if (this.renderer == undefined || this.settings.type != this.currentType) {
-            this.renderer?.destroy()
+        // if (this.renderer == undefined || this.settings.type != this.currentType) {
+            // this.renderer?.destroy()
 
-            switch (this.settings.type) {
-                case ChartType.Plot:
-                    this.renderer = new PlotRenderer(this)
-                    this.currentType = ChartType.Plot
-                    break
+            // switch (this.settings.type) {
+            //     case ChartType.Plot:
+            //         this.renderer = new PlotRenderer(this)
+            //         this.currentType = ChartType.Plot
+            //         break
+            //
+            //     case ChartType.Circular:
+            //         this.renderer = new PieProcess(this)
+            //         this.currentType = ChartType.Circular
+            //         break
+            //
+            //     case ChartType.Gauge:
+            //         this.renderer = new GaugeRenderer(this)
+            //         this.currentType = ChartType.Gauge
+            //         break
+            //
+            //     case ChartType.TreeMap:
+            //         this.renderer = new TreeRenderer(this)
+            //         this.currentType = ChartType.TreeMap
+            //         break
+            // }
+        // } else {
+            // todo: add applying new settings without creating new chart
+            // this.renderer.applySettings(this.settings)
+        // }
 
-                case ChartType.Circular:
-                    this.renderer = new CircularRenderer(this)
-                    this.currentType = ChartType.Circular
-                    break
+        // this.renderer.prepareSettings()
 
-                case ChartType.Gauge:
-                    this.renderer = new GaugeRenderer(this)
-                    this.currentType = ChartType.Gauge
-                    break
+        // todo: move to DefaultRenderer
+        // if (!this.settings.disableInteractions) {
+        //     this.renderer.initDropdown()
+        //     this.renderer.initAnimations()
+        // }
 
-                case ChartType.TreeMap:
-                    this.renderer = new TreeRenderer(this)
-                    this.currentType = ChartType.TreeMap
-                    break
-            }
-        } else {
-            this.renderer.applySettings(this.settings)
-        }
-
-        this.renderer.prepareSettings()
-
-        if (!this.settings.disableInteractions) {
-            this.renderer.initDropdown()
-            this.renderer.initAnimations()
-        }
-
-        this.renderer.resize()
+        // todo: implement resize just by using like real canvas with abstract position on 2d space
+        // this.renderer.resize()
     }
 
     private refresh() {
-        this.renderer.refresh()
+        // todo: for what refresh needed in DefaultRenderer() ?
+        // this.renderer.refresh()
         this.legend?.refresh()
     }
 
     private resize() {
-        this.renderer.resize()
+        // todo: if use abstract coords in 2d position then .resize() function in not needed more
+        // this.renderer.resize()
         this.legend?.resize()
     }
 
@@ -160,23 +168,26 @@ class Chart {
             return
 
         this.observer = new ResizeObserver(() => {
-            if (this.renderer.canvas)
-                this.resize()
-            else
-                this.destroy()
+            // todo: if canvas is not exist on page then destroy chart completely
+            // if (this.renderer.canvas)
+            //     this.resize()
+            // else
+            //     this.destroy()
         })
 
         this.observer.observe(this.node)
     }
 
     private attachEvents() {
-        document.addEventListener(Events.VisibilityChanged, () => this.renderer.resetMouse())
-        window.addEventListener(Events.Blur, () => this.renderer.resetMouse())
+        // todo: reset mouse position when alt+tab browser ?
+        // document.addEventListener(Events.VisibilityChanged, () => this.renderer.resetMouse())
+        // window.addEventListener(Events.Blur, () => this.renderer.resetMouse())
 
-        window.addEventListener(Events.Click, event => {
-            if (event.target != this.renderer.canvas)
-                this.renderer.closeDropdowns()
-        })
+        // todo: close dropdowns when mouse is clicked outside canvas
+        // window.addEventListener(Events.Click, event => {
+        //     if (event.target != this.renderer.canvas)
+        //         this.renderer.closeDropdowns()
+        // })
 
         this.initializeObserver()
     }

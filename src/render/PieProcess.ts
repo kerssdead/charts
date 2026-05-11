@@ -25,16 +25,16 @@ const ANGLE_PRECISION = 2
 const MIN_ANGLE = .01
 const MAX_SIZE = Math.floor(Math.PI * 2 * Math.pow(10, ANGLE_PRECISION))
 
-class CircularRenderer extends Renderer<CircularData> {
+class PieProcess {
     private readonly startAngle: number
 
-    private isMousePositionChanged: boolean
+    // private isMousePositionChanged: boolean
 
-    private isInsideCircle: boolean
+    // private isInsideCircle: boolean
 
-    private canRenderInnerTitle: boolean
+    // private canRenderInnerTitle: boolean
 
-    private isRecalculating: boolean
+    // private isRecalculating: boolean
 
     private isDonut: boolean
 
@@ -44,9 +44,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private hover: string[]
 
-    private prevMousePos: Point
-
-    private center: Point
+    // todo: center should be just (0,0)
+    // private center: Point
 
     private angles: CircularAngle[]
 
@@ -54,16 +53,8 @@ class CircularRenderer extends Renderer<CircularData> {
 
     private innerTitleStyle: Function
 
-    constructor(chart: Chart) {
-        super(chart)
-
+    constructor() {
         this.startAngle = Number((Math.PI / 4).toFixed(ANGLE_PRECISION))
-        this.isMousePositionChanged = false
-        this.prevMousePos = new Point()
-
-        this.moveEvent = new MouseEvent(Events.MouseMove)
-
-        this.ctx ??= Canvas.getContext(this.canvas)
     }
 
     private calculateAngles() {

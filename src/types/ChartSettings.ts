@@ -31,11 +31,9 @@ class ChartSettings {
 
     valuePostfix: string | undefined
 
-    type: ChartType
-
     legendPlace: LegendPlace
 
-    data: Data
+    data: Data[]
 
     contextMenu?: DropdownItem[]
 

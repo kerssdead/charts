@@ -127,3 +127,13 @@ export enum DrawPointType {
 
     ArcTo = 'arc-to'
 }
+
+export enum RenderStepType {
+    Move = 'move',
+
+    Line = 'line',
+
+    QuadraticCurve = 'quadratic-curve',
+
+    ArcTo = 'arc-to'
+}
