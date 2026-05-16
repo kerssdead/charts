@@ -54,7 +54,7 @@ class Renderer<T extends Data> extends Renderable {
     }
 
     prepareSettings() {
-        this.data = <T>this.settings.data
+        // this.data = <T>this.settings.data
 
         const domRect = this.node.parentElement!.getBoundingClientRect()
 
@@ -76,10 +76,10 @@ class Renderer<T extends Data> extends Renderable {
         this.canvas.width = this.settings.width
         this.canvas.height = this.settings.height
 
-        for (let item of this.settings.data.values) {
-            item.id = Helper.guid()
-            item.label ??= TextResources.noLabel
-        }
+        // for (let item of this.settings.data.values) {
+        //     item.id = Helper.guid()
+        //     item.label ??= TextResources.noLabel
+        // }
 
         this.calculateColors()
 
@@ -94,15 +94,15 @@ class Renderer<T extends Data> extends Renderable {
 
         let index = 0
 
-        for (let item of this.settings.data.values) {
-            if (item.color == undefined || force) {
-                let amount = Math.round(index / this.settings.data.values.length  * adjustAmount)
-
-                item.color = Helper.adjustColor(baseColor, amount)
-            }
-
-            index++
-        }
+        // for (let item of this.settings.data.values) {
+        //     if (item.color == undefined || force) {
+        //         let amount = Math.round(index / this.settings.data.values.length  * adjustAmount)
+        //
+        //         item.color = Helper.adjustColor(baseColor, amount)
+        //     }
+        //
+        //     index++
+        // }
     }
 
     initDropdown() {
@@ -208,10 +208,10 @@ class Renderer<T extends Data> extends Renderable {
         this.canvas.height = this.settings.height
 
         if (this.settings.enableLegend) {
-            if (this.settings.legendPlace == undefined
-                || this.settings.legendPlace == LegendPlace.Top
-                || this.settings.legendPlace == LegendPlace.Bottom)
-                this.canvas.height -= Legend.getLegendHeight(this.settings.data.values, this.canvas.width, domRect.height)
+            // if (this.settings.legendPlace == undefined
+            //     || this.settings.legendPlace == LegendPlace.Top
+            //     || this.settings.legendPlace == LegendPlace.Bottom)
+            //     this.canvas.height -= Legend.getLegendHeight(this.settings.data.values, this.canvas.width, domRect.height)
 
             if (this.settings.legendPlace == LegendPlace.Left
                 || this.settings.legendPlace == LegendPlace.Right)

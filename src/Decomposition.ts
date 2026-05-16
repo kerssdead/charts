@@ -126,7 +126,7 @@ class Decomposition {
 
         if (cloneSettings.title)
             cloneSettings.title = cloneSettings.title + ' (Other)'
-        cloneSettings.data.values = values
+        // cloneSettings.data.values = values
         cloneSettings.minWidth = undefined
         cloneSettings.minHeight = undefined
 

@@ -19,4 +19,22 @@ export default class Debug {
         if (Debug.isEnabled)
             console.error('ERROR:', ...msg)
     }
+
+    static text(ctx: CanvasRenderingContext2D, ...msg: any[]) {
+        if (Debug.isEnabled) {
+            ctx.save()
+
+            ctx.strokeStyle = 'black'
+
+            let y = 0
+
+            for (const line in msg) {
+                ctx.fillText(msg.toString(), 0, y)
+
+                y += 20
+            }
+
+            ctx.restore()
+        }
+    }
 }

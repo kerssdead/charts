@@ -36,7 +36,7 @@ class Tooltip {
 
     constructor(canvas: HTMLCanvasElement, settings: ChartSettings) {
         this.canvas = canvas
-        this.data = settings.data
+        // this.data = settings.data
         this.#enabled = settings.enableTooltip
         this.#isCustom = !!settings.templateId
 

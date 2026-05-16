@@ -44,12 +44,12 @@ class Legend extends Renderable {
 
         ctx.translate(this.offset.x, this.offset.y)
 
-        for (const value of this.settings.data.values.filter(v => !v.hideInLegend)) {
-            if (nextPoint == null)
-                break
-
-            nextPoint = this.draw(value, nextPoint.x, nextPoint.y)
-        }
+        // for (const value of this.settings.data.values.filter(v => !v.hideInLegend)) {
+        //     if (nextPoint == null)
+        //         break
+        //
+        //     nextPoint = this.draw(value, nextPoint.x, nextPoint.y)
+        // }
 
         ctx.translate(-this.offset.x, -this.offset.y)
 
@@ -82,7 +82,7 @@ class Legend extends Renderable {
             case LegendPlace.Bottom:
             default:
                 this.canvas.width = this.settings.width
-                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
+                // this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
 
                 this.node.style.flexDirection = Styles.FlexDirection.Column
 
@@ -90,7 +90,7 @@ class Legend extends Renderable {
 
             case LegendPlace.Top:
                 this.canvas.width = this.settings.width
-                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
+                // this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
 
                 this.node.style.flexDirection = Styles.FlexDirection.ColumnReverse
 
@@ -113,10 +113,10 @@ class Legend extends Renderable {
                 break
         }
 
-        this.offset = {
-            x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
-            y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)) / 2
-        }
+        // this.offset = {
+        //     x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
+        //     y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)) / 2
+        // }
     }
 
     applySettings(settings?: ChartSettings) {
@@ -136,8 +136,8 @@ class Legend extends Renderable {
                     y: 12,
                     text: TextResources.reset,
                     action: () => {
-                        for (let value of this.settings.data.values)
-                            value.reset()
+                        // for (let value of this.settings.data.values)
+                        //     value.reset()
                     }
                 })
     }

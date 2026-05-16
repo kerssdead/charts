@@ -1,393 +1,393 @@
-import TreeData from 'types/data/TreeData'
-import Renderer from 'types/base/Renderer'
-import Sector from 'types/Sector'
-import * as Helper from 'Helper'
-import DropdownItem from 'types/DropdownItem'
-import Dropdown from 'Dropdown'
-import Chart from 'Chart'
-import TextStyles from 'helpers/TextStyles'
-import TooltipValue from 'types/TooltipValue'
-import Export from 'Export'
-import Decomposition from 'Decomposition'
-import Modal from 'Modal'
-import TextResources from 'static/TextResources'
-import Canvas from 'helpers/Canvas'
-import TreeCell from 'types/TreeCell'
-import Formatter from 'helpers/Formatter'
-import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
-import * as Constants from 'static/constants/Index'
-
-class TreeRenderer extends Renderer<TreeData> {
-    constructor(chart: Chart) {
-        super(chart)
-
-        this.settings.enableLegend = false
-    }
-
-    render() {
-        super.render()
-
-        if (this.data.values.filter(v => v.value > 0).length == 0) {
-            this.#drawEmpty()
-            requestAnimationFrame(this.render.bind(this))
-            return
-        }
-
-        const titleOffset = this.settings.title ? Constants.Values.titleOffset : 0
-
-        const maxWidth = this.canvas.width - this.data.padding * 2,
-            maxHeight = this.canvas.height - this.data.padding * 2 - titleOffset
-
-        let sum = this.data.values.sumByField(cur => cur.value),
-            totalSquare = maxWidth * maxHeight
-
-        let x = this.data.padding,
-            y = this.data.padding + titleOffset
-
-        let minX = this.data.padding,
-            minY = this.data.padding + titleOffset
-
-        let tooltipCell: TreeCell | undefined = undefined
-        let contextMenuData = undefined
-
-        const ctx = Canvas.getContext(this.canvas)
-
-        let isVertical = true
-        for (let i = 0; i < this.data.values.length; i++) {
-            const item = this.data.values[i]
-
-            const remainWidth = maxWidth - (x - this.data.padding),
-                remainHeight = maxHeight - (y - this.data.padding - titleOffset)
-
-            let cells: TreeCell[] = [
-                {
-                    color: item.color,
-                    label: item.label,
-                    s: item.value / sum * totalSquare,
-                    value: item.value,
-                    id: item.id,
-                    x: x,
-                    y: y
-                } as TreeCell
-            ]
-
-            if (i + 1 <= this.data.values.length - 1) {
-                const next = this.data.values[i + 1]
-
-                cells.push({
-                    color: next.color,
-                    label: next.label,
-                    s: next.value / sum * totalSquare,
-                    value: next.value,
-                    id: next.id,
-                    x: x,
-                    y: y
-                } as TreeCell)
-
-                i++
-            }
-
-            const isSingle = cells.length == 1,
-                isLast = i == this.data.values.length - 1
-
-            if (isVertical) {
-                for (let j = 1; j <= remainWidth + i * i; j++) {
-                    const w = remainWidth - j,
-                        h1 = cells[0].s / w,
-                        h2 = isSingle ? 0 : cells[1].s / w
-
-                    if (h1 + h2 >= remainHeight) {
-                        cells[0].w = Math.floor(w)
-                        cells[0].h = Math.floor(h1)
-
-                        if (!isSingle) {
-                            cells[1].w = Math.floor(w)
-                            cells[1].h = remainHeight - cells[0].h
-
-                            cells[1].y += cells[0].h
-                        }
-
-                        break
-                    }
-                }
-            } else {
-                for (let j = 1; j <= remainHeight + i * i; j++) {
-                    const h = remainHeight - j,
-                        w1 = cells[0].s / h,
-                        w2 = isSingle ? 0 : cells[1].s / h
-
-                    if (w1 + w2 >= remainWidth) {
-                        cells[0].h = Math.floor(h)
-                        cells[0].w = Math.floor(w1)
-
-                        if (!isSingle) {
-                            cells[1].h = Math.floor(h)
-                            cells[1].w = remainWidth - cells[0].w
-
-                            cells[1].x += cells[0].w
-                        }
-
-                        break
-                    }
-                }
-            }
-
-            for (const cell of cells) {
-                if (isLast) {
-                    if (isVertical) {
-                        cell.w = remainWidth
-                        if (isSingle)
-                            cell.h = remainHeight
-                    } else {
-                        cell.h = remainHeight
-                        if (isSingle)
-                            cell.w = remainWidth
-                    }
-                }
-
-                ctx.beginPath()
-
-                ctx.fillStyle = cell.color
-
-                const cellInit = this.state != RenderState.Init
-                                 && !this.animations.contains(cell.id, AnimationType.Init)
-
-                const cellIndex = i + cells.indexOf(cell) + (isLast && isSingle ? 1 : 0),
-                    duration = 260
-
-                const getPrev = () => {
-                    let acc = 0
-                    for (let i = 0; i < cellIndex; i++)
-                        acc += duration - duration * (i / this.data.values.length) / Math.E
-
-                    return acc
-                }
-
-                const initAnimationDuration = duration - duration * cellIndex / (this.data.values.length + 1)
-
-                if (!cellInit) {
-                    this.animations.handle(cell.id,
-                        AnimationType.Init,
-                        {
-                            duration: getPrev(),
-                            continuous: true,
-                            body: transition => {
-                                if (transition * getPrev() - getPrev() + initAnimationDuration < 0)
-                                    return ctx.fillStyle += '00'
-
-                                transition = (transition * getPrev() - getPrev() + initAnimationDuration) / initAnimationDuration
-
-                                const center = {
-                                    x: cell.x + cell.w / 2,
-                                    y: cell.y + cell.h / 2
-                                }
-
-                                const minSize = .7,
-                                    rest = 1 - minSize
-
-                                ctx.translate(center.x - center.x * (minSize + transition * rest),
-                                    center.y - center.y * (minSize + transition * rest))
-                                ctx.scale((minSize + transition * rest), (minSize + transition * rest))
-
-                                let opacity = Math.round(255 * transition).toString(16)
-
-                                if (opacity.length < 2)
-                                    opacity = 0 + opacity
-
-                                ctx.fillStyle = cell.color + opacity
-                            }
-                        })
-                } else {
-                    const translate = (transition: number, event: AnimationType) => {
-                        const center = {
-                            x: cell.x + cell.w / 2,
-                            y: cell.y + cell.h / 2
-                        }
-
-                        const margin = 12,
-                            minSize = cell.w > cell.h
-                                      ? 1 - margin / cell.w
-                                      : 1 - margin / cell.h,
-                            rest = 1 - minSize
-
-                        ctx.translate(center.x - center.x * (minSize + transition * rest),
-                            center.y - center.y * (minSize + transition * rest))
-                        ctx.scale(minSize + transition * rest, minSize + transition * rest)
-
-                        this.animations.reload(cell.id, event)
-                    }
-
-                    if (this.#isInCell(cell)
-                        && !tooltipCell) {
-                        tooltipCell = cell
-                        contextMenuData = cell.data
-
-                        this.animations.handle(cell.id,
-                            AnimationType.MouseOver,
-                            {
-                                duration: Constants.Animations.tree,
-                                backward: true,
-                                body: transition => {
-                                    translate(transition, AnimationType.MouseLeave)
-                                }
-                            })
-                    } else {
-                        this.animations.handle(cell.id,
-                            AnimationType.MouseLeave,
-                            {
-                                timer: Constants.Dates.minDate,
-                                duration: Constants.Animations.tree,
-                                body: transition => {
-                                    translate(transition, AnimationType.MouseOver)
-                                }
-                            })
-                    }
-                }
-
-                const gap = 4
-
-                ctx.roundRect(x + gap, y + gap, cell.w - gap, cell.h - gap, gap * 2)
-                ctx.fill()
-
-                if (cell.label
-                    && Helper.stringWidth(cell.label) < cell.w - gap
-                    && cell.h - gap > 16
-                    && !this.animations.contains(cell.id, AnimationType.Init)) {
-                    ctx.beginPath()
-                    TextStyles.large(ctx)
-                    ctx.fillStyle = !Helper.isColorVisible(cell.color, '#ffffff')
-                                    ? '#000000'
-                                    : '#ffffff'
-                    ctx.fillText(cell.label,
-                        x + 2 + cell.w / 2,
-                        y + 2 + cell.h / 2)
-                }
-
-                ctx.resetTransform()
-
-                if (isVertical)
-                    y += cell.h
-                else
-                    x += cell.w
-
-                totalSquare -= cell.w * cell.h
-                sum -= cell.value
-            }
-
-            if (isVertical) {
-                x += cells[0].w
-                y = minY
-            } else {
-                y += cells[0].h
-                x = minX
-            }
-
-            minX = x
-            minY = y
-
-            isVertical = !isVertical
-        }
-
-        this.tooltip.render(
-            !!tooltipCell && !this.dropdown?.isActive,
-            this.moveEvent,
-            [
-                new TooltipValue(`${ tooltipCell?.label }: ${ Formatter.format(tooltipCell?.value, PlotAxisType.Number, this.settings.valuePostfix) }`)
-            ],
-            this.data.values.find(v => v.id == tooltipCell?.id)
-        )
-
-        if (!this.isDestroy)
-            requestAnimationFrame(this.render.bind(this))
-
-        this.state = RenderState.Idle
-
-        super.renderDropdown()
-
-        if (tooltipCell || this.contextMenu)
-            this.renderContextMenu(contextMenuData)
-        else
-            this.menuEvent = undefined
-    }
-
-    #isInCell(cell: TreeCell) {
-        if (!this.moveEvent || !cell)
-            return false
-
-        const mouse = this.getMousePosition(this.moveEvent)
-
-        return !(this.dropdown?.isActive ?? false)
-               && cell.x <= mouse.x && mouse.x <= cell.x + cell.w
-               && cell.y <= mouse.y && mouse.y <= cell.y + cell.h
-    }
-
-    #drawEmpty() {
-        const ctx = Canvas.getContext(this.canvas)
-
-        TextStyles.regular(ctx)
-        ctx.fillText(TextResources.treeMapIsEmpty,
-            this.canvas.width / 2,
-            this.canvas.height / 2)
-    }
-
-    refresh() {
-        super.refresh()
-    }
-
-    resize() {
-        super.resize()
-
-        this.initAnimations()
-        this.animations.clear()
-    }
-
-    prepareSettings() {
-        super.prepareSettings()
-
-        this.data.values = this.data.values.map(v => new Sector(v))
-
-        this.data.values = this.data.values.filter(v => v.value > 0)
-
-        this.data.values.sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
-
-        this.calculateColors(true)
-
-        for (let item of this.data.values) {
-            item.disabled = !item.value
-            item.value ??= 0
-        }
-    }
-
-    initDropdown() {
-        super.initDropdown()
-
-        this.dropdown = new Dropdown(this.canvas,
-            {
-                x: -10,
-                y: 10,
-                icon: Icon.ThreeLines,
-                items: [
-                    {
-                        text: TextResources.exportCSV,
-                        action: () => {
-                            Export.asCsv(Decomposition.toTable(TreeData.getRows(this.data)), this.settings.title)
-                        }
-                    },
-                    {
-                        isDivider: true
-                    } as DropdownItem,
-                    {
-                        text: TextResources.decomposeToTable,
-                        action: () => {
-                            new Modal(Decomposition.toTable(TreeData.getRows(this.data)),
-                                undefined,
-                                this.settings.title ?? TextResources.dataAsTable)
-                                .open()
-                        }
-                    }
-                ]
-            })
-    }
-}
-
-export default TreeRenderer
+// import TreeData from 'types/data/TreeData'
+// import Renderer from 'types/base/Renderer'
+// import Sector from 'types/Sector'
+// import * as Helper from 'Helper'
+// import DropdownItem from 'types/DropdownItem'
+// import Dropdown from 'Dropdown'
+// import Chart from 'Chart'
+// import TextStyles from 'helpers/TextStyles'
+// import TooltipValue from 'types/TooltipValue'
+// import Export from 'Export'
+// import Decomposition from 'Decomposition'
+// import Modal from 'Modal'
+// import TextResources from 'static/TextResources'
+// import Canvas from 'helpers/Canvas'
+// import TreeCell from 'types/TreeCell'
+// import Formatter from 'helpers/Formatter'
+// import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
+// import * as Constants from 'static/constants/Index'
+//
+// class TreeRenderer extends Renderer<TreeData> {
+//     constructor(chart: Chart) {
+//         super(chart)
+//
+//         this.settings.enableLegend = false
+//     }
+//
+//     render() {
+//         super.render()
+//
+//         if (this.data.values.filter(v => v.value > 0).length == 0) {
+//             this.#drawEmpty()
+//             requestAnimationFrame(this.render.bind(this))
+//             return
+//         }
+//
+//         const titleOffset = this.settings.title ? Constants.Values.titleOffset : 0
+//
+//         const maxWidth = this.canvas.width - this.data.padding * 2,
+//             maxHeight = this.canvas.height - this.data.padding * 2 - titleOffset
+//
+//         let sum = this.data.values.sumByField(cur => cur.value),
+//             totalSquare = maxWidth * maxHeight
+//
+//         let x = this.data.padding,
+//             y = this.data.padding + titleOffset
+//
+//         let minX = this.data.padding,
+//             minY = this.data.padding + titleOffset
+//
+//         let tooltipCell: TreeCell | undefined = undefined
+//         let contextMenuData = undefined
+//
+//         const ctx = Canvas.getContext(this.canvas)
+//
+//         let isVertical = true
+//         for (let i = 0; i < this.data.values.length; i++) {
+//             const item = this.data.values[i]
+//
+//             const remainWidth = maxWidth - (x - this.data.padding),
+//                 remainHeight = maxHeight - (y - this.data.padding - titleOffset)
+//
+//             let cells: TreeCell[] = [
+//                 {
+//                     color: item.color,
+//                     label: item.label,
+//                     s: item.value / sum * totalSquare,
+//                     value: item.value,
+//                     id: item.id,
+//                     x: x,
+//                     y: y
+//                 } as TreeCell
+//             ]
+//
+//             if (i + 1 <= this.data.values.length - 1) {
+//                 const next = this.data.values[i + 1]
+//
+//                 cells.push({
+//                     color: next.color,
+//                     label: next.label,
+//                     s: next.value / sum * totalSquare,
+//                     value: next.value,
+//                     id: next.id,
+//                     x: x,
+//                     y: y
+//                 } as TreeCell)
+//
+//                 i++
+//             }
+//
+//             const isSingle = cells.length == 1,
+//                 isLast = i == this.data.values.length - 1
+//
+//             if (isVertical) {
+//                 for (let j = 1; j <= remainWidth + i * i; j++) {
+//                     const w = remainWidth - j,
+//                         h1 = cells[0].s / w,
+//                         h2 = isSingle ? 0 : cells[1].s / w
+//
+//                     if (h1 + h2 >= remainHeight) {
+//                         cells[0].w = Math.floor(w)
+//                         cells[0].h = Math.floor(h1)
+//
+//                         if (!isSingle) {
+//                             cells[1].w = Math.floor(w)
+//                             cells[1].h = remainHeight - cells[0].h
+//
+//                             cells[1].y += cells[0].h
+//                         }
+//
+//                         break
+//                     }
+//                 }
+//             } else {
+//                 for (let j = 1; j <= remainHeight + i * i; j++) {
+//                     const h = remainHeight - j,
+//                         w1 = cells[0].s / h,
+//                         w2 = isSingle ? 0 : cells[1].s / h
+//
+//                     if (w1 + w2 >= remainWidth) {
+//                         cells[0].h = Math.floor(h)
+//                         cells[0].w = Math.floor(w1)
+//
+//                         if (!isSingle) {
+//                             cells[1].h = Math.floor(h)
+//                             cells[1].w = remainWidth - cells[0].w
+//
+//                             cells[1].x += cells[0].w
+//                         }
+//
+//                         break
+//                     }
+//                 }
+//             }
+//
+//             for (const cell of cells) {
+//                 if (isLast) {
+//                     if (isVertical) {
+//                         cell.w = remainWidth
+//                         if (isSingle)
+//                             cell.h = remainHeight
+//                     } else {
+//                         cell.h = remainHeight
+//                         if (isSingle)
+//                             cell.w = remainWidth
+//                     }
+//                 }
+//
+//                 ctx.beginPath()
+//
+//                 ctx.fillStyle = cell.color
+//
+//                 const cellInit = this.state != RenderState.Init
+//                                  && !this.animations.contains(cell.id, AnimationType.Init)
+//
+//                 const cellIndex = i + cells.indexOf(cell) + (isLast && isSingle ? 1 : 0),
+//                     duration = 260
+//
+//                 const getPrev = () => {
+//                     let acc = 0
+//                     for (let i = 0; i < cellIndex; i++)
+//                         acc += duration - duration * (i / this.data.values.length) / Math.E
+//
+//                     return acc
+//                 }
+//
+//                 const initAnimationDuration = duration - duration * cellIndex / (this.data.values.length + 1)
+//
+//                 if (!cellInit) {
+//                     this.animations.handle(cell.id,
+//                         AnimationType.Init,
+//                         {
+//                             duration: getPrev(),
+//                             continuous: true,
+//                             body: transition => {
+//                                 if (transition * getPrev() - getPrev() + initAnimationDuration < 0)
+//                                     return ctx.fillStyle += '00'
+//
+//                                 transition = (transition * getPrev() - getPrev() + initAnimationDuration) / initAnimationDuration
+//
+//                                 const center = {
+//                                     x: cell.x + cell.w / 2,
+//                                     y: cell.y + cell.h / 2
+//                                 }
+//
+//                                 const minSize = .7,
+//                                     rest = 1 - minSize
+//
+//                                 ctx.translate(center.x - center.x * (minSize + transition * rest),
+//                                     center.y - center.y * (minSize + transition * rest))
+//                                 ctx.scale((minSize + transition * rest), (minSize + transition * rest))
+//
+//                                 let opacity = Math.round(255 * transition).toString(16)
+//
+//                                 if (opacity.length < 2)
+//                                     opacity = 0 + opacity
+//
+//                                 ctx.fillStyle = cell.color + opacity
+//                             }
+//                         })
+//                 } else {
+//                     const translate = (transition: number, event: AnimationType) => {
+//                         const center = {
+//                             x: cell.x + cell.w / 2,
+//                             y: cell.y + cell.h / 2
+//                         }
+//
+//                         const margin = 12,
+//                             minSize = cell.w > cell.h
+//                                       ? 1 - margin / cell.w
+//                                       : 1 - margin / cell.h,
+//                             rest = 1 - minSize
+//
+//                         ctx.translate(center.x - center.x * (minSize + transition * rest),
+//                             center.y - center.y * (minSize + transition * rest))
+//                         ctx.scale(minSize + transition * rest, minSize + transition * rest)
+//
+//                         this.animations.reload(cell.id, event)
+//                     }
+//
+//                     if (this.#isInCell(cell)
+//                         && !tooltipCell) {
+//                         tooltipCell = cell
+//                         contextMenuData = cell.data
+//
+//                         this.animations.handle(cell.id,
+//                             AnimationType.MouseOver,
+//                             {
+//                                 duration: Constants.Animations.tree,
+//                                 backward: true,
+//                                 body: transition => {
+//                                     translate(transition, AnimationType.MouseLeave)
+//                                 }
+//                             })
+//                     } else {
+//                         this.animations.handle(cell.id,
+//                             AnimationType.MouseLeave,
+//                             {
+//                                 timer: Constants.Dates.minDate,
+//                                 duration: Constants.Animations.tree,
+//                                 body: transition => {
+//                                     translate(transition, AnimationType.MouseOver)
+//                                 }
+//                             })
+//                     }
+//                 }
+//
+//                 const gap = 4
+//
+//                 ctx.roundRect(x + gap, y + gap, cell.w - gap, cell.h - gap, gap * 2)
+//                 ctx.fill()
+//
+//                 if (cell.label
+//                     && Helper.stringWidth(cell.label) < cell.w - gap
+//                     && cell.h - gap > 16
+//                     && !this.animations.contains(cell.id, AnimationType.Init)) {
+//                     ctx.beginPath()
+//                     TextStyles.large(ctx)
+//                     ctx.fillStyle = !Helper.isColorVisible(cell.color, '#ffffff')
+//                                     ? '#000000'
+//                                     : '#ffffff'
+//                     ctx.fillText(cell.label,
+//                         x + 2 + cell.w / 2,
+//                         y + 2 + cell.h / 2)
+//                 }
+//
+//                 ctx.resetTransform()
+//
+//                 if (isVertical)
+//                     y += cell.h
+//                 else
+//                     x += cell.w
+//
+//                 totalSquare -= cell.w * cell.h
+//                 sum -= cell.value
+//             }
+//
+//             if (isVertical) {
+//                 x += cells[0].w
+//                 y = minY
+//             } else {
+//                 y += cells[0].h
+//                 x = minX
+//             }
+//
+//             minX = x
+//             minY = y
+//
+//             isVertical = !isVertical
+//         }
+//
+//         this.tooltip.render(
+//             !!tooltipCell && !this.dropdown?.isActive,
+//             this.moveEvent,
+//             [
+//                 new TooltipValue(`${ tooltipCell?.label }: ${ Formatter.format(tooltipCell?.value, PlotAxisType.Number, this.settings.valuePostfix) }`)
+//             ],
+//             this.data.values.find(v => v.id == tooltipCell?.id)
+//         )
+//
+//         if (!this.isDestroy)
+//             requestAnimationFrame(this.render.bind(this))
+//
+//         this.state = RenderState.Idle
+//
+//         super.renderDropdown()
+//
+//         if (tooltipCell || this.contextMenu)
+//             this.renderContextMenu(contextMenuData)
+//         else
+//             this.menuEvent = undefined
+//     }
+//
+//     #isInCell(cell: TreeCell) {
+//         if (!this.moveEvent || !cell)
+//             return false
+//
+//         const mouse = this.getMousePosition(this.moveEvent)
+//
+//         return !(this.dropdown?.isActive ?? false)
+//                && cell.x <= mouse.x && mouse.x <= cell.x + cell.w
+//                && cell.y <= mouse.y && mouse.y <= cell.y + cell.h
+//     }
+//
+//     #drawEmpty() {
+//         const ctx = Canvas.getContext(this.canvas)
+//
+//         TextStyles.regular(ctx)
+//         ctx.fillText(TextResources.treeMapIsEmpty,
+//             this.canvas.width / 2,
+//             this.canvas.height / 2)
+//     }
+//
+//     refresh() {
+//         super.refresh()
+//     }
+//
+//     resize() {
+//         super.resize()
+//
+//         this.initAnimations()
+//         this.animations.clear()
+//     }
+//
+//     prepareSettings() {
+//         super.prepareSettings()
+//
+//         this.data.values = this.data.values.map(v => new Sector(v))
+//
+//         this.data.values = this.data.values.filter(v => v.value > 0)
+//
+//         this.data.values.sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
+//
+//         this.calculateColors(true)
+//
+//         for (let item of this.data.values) {
+//             item.disabled = !item.value
+//             item.value ??= 0
+//         }
+//     }
+//
+//     initDropdown() {
+//         super.initDropdown()
+//
+//         this.dropdown = new Dropdown(this.canvas,
+//             {
+//                 x: -10,
+//                 y: 10,
+//                 icon: Icon.ThreeLines,
+//                 items: [
+//                     {
+//                         text: TextResources.exportCSV,
+//                         action: () => {
+//                             Export.asCsv(Decomposition.toTable(TreeData.getRows(this.data)), this.settings.title)
+//                         }
+//                     },
+//                     {
+//                         isDivider: true
+//                     } as DropdownItem,
+//                     {
+//                         text: TextResources.decomposeToTable,
+//                         action: () => {
+//                             new Modal(Decomposition.toTable(TreeData.getRows(this.data)),
+//                                 undefined,
+//                                 this.settings.title ?? TextResources.dataAsTable)
+//                                 .open()
+//                         }
+//                     }
+//                 ]
+//             })
+//     }
+// }
+//
+// export default TreeRenderer

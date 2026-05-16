@@ -3,14 +3,14 @@ import Renderer from 'types/base/Renderer'
 import Data from 'types/interfaces/Data'
 import Legend from 'Legend'
 import Value from 'types/base/Value'
-import PlotRenderer from 'render/PlotRenderer'
-import GaugeRenderer from 'render/GaugeRenderer'
-import TreeRenderer from 'render/TreeRenderer'
+// import PlotRenderer from 'render/PlotRenderer'
+// import GaugeRenderer from 'render/GaugeRenderer'
+// import TreeRenderer from 'render/TreeRenderer'
 import Animations from 'Animations'
 import Theme from 'Theme'
 import Styles from 'static/constants/Styles'
-import { ChartType, Events } from 'static/Enums'
-import PieProcess from 'render/PieProcess'
+import { ChartType, Events, Tag } from 'static/Enums'
+// import PieProcess from 'render/PieProcess'
 import Debug from 'Debug'
 import { DefaultRenderer } from './render/DefaultRenderer'
 
@@ -19,7 +19,7 @@ class Chart {
 
     settings: ChartSettings
 
-    private charts: PieProcess[]
+    // private charts: PieProcess[]
 
     private renderer: DefaultRenderer
 
@@ -29,6 +29,16 @@ class Chart {
 
     constructor(element: HTMLElement, settings: ChartSettings) {
         this.node = element
+
+        const canvas = document.createElement(Tag.Canvas)
+        let domRect = this.node.getBoundingClientRect()
+
+        canvas.width = domRect.width
+        canvas.height = domRect.height
+
+        this.renderer = new DefaultRenderer(canvas)
+
+        this.node.appendChild(canvas)
 
         this.applyStyles()
         this.attachEvents()
@@ -71,20 +81,20 @@ class Chart {
 
         this.prepareSettings()
 
-        if (this.settings.enableLegend && this.legend != undefined)
-            this.legend.applySettings(settings)
+        // if (this.settings.enableLegend && this.legend != undefined)
+        //     this.legend.applySettings(settings)
 
-        if (this.settings.enableLegend && this.legend == undefined) {
-            this.legend = new Legend(this)
+        // if (this.settings.enableLegend && this.legend == undefined) {
+        //     this.legend = new Legend(this)
+        //
+        //     this.legend.render()
+        // }
 
-            this.legend.render()
-        }
-
-        if (!this.settings.enableLegend && this.legend != undefined) {
-            this.legend.destroy()
-
-            this.legend = undefined
-        }
+        // if (!this.settings.enableLegend && this.legend != undefined) {
+        //     this.legend.destroy()
+        //
+        //     this.legend = undefined
+        // }
 
         // if (isNeedRestartRender)
             this.renderer.render()

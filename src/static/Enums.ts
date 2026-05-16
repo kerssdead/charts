@@ -47,7 +47,11 @@ export enum Events {
 
     Change = 'change',
 
-    ContextMenu = 'contextmenu'
+    ContextMenu = 'contextmenu',
+
+    MouseDown = 'mousedown',
+
+    MouseUp = 'mouseup'
 }
 
 export enum LegendPlace {
@@ -135,5 +139,11 @@ export enum RenderStepType {
 
     QuadraticCurve = 'quadratic-curve',
 
-    ArcTo = 'arc-to'
+    ArcTo = 'arc-to',
+
+    Rect = 'rect',
+
+    RectFill = 'rect-fill',
+
+    Text = 'text'
 }

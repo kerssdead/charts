@@ -1,272 +1,272 @@
-import Renderer from 'types/base/Renderer'
-import GaugeData from 'types/data/GaugeData'
-import * as Helper from 'Helper'
-import Sector from 'types/Sector'
-import Dropdown from 'Dropdown'
-import Point from 'types/Point'
-import Chart from 'Chart'
-import Theme from 'Theme'
-import TextStyles from 'helpers/TextStyles'
-import TooltipValue from 'types/TooltipValue'
-import Export from 'Export'
-import Formatter from 'helpers/Formatter'
-import Canvas from 'helpers/Canvas'
-import TextResources from 'static/TextResources'
-import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
-import Debug from 'Debug'
-
-class GaugeRenderer extends Renderer<GaugeData> {
-    private radius: number
-
-    private center: Point
-
-    constructor(chart: Chart) {
-        super(chart)
-
-        this.settings.enableLegend = false
-    }
-
-    render() {
-        super.render()
-
-        this.draw()
-
-        const value = this.data.values[0]
-        this.tooltip.render(
-            this.isInsideSector(this.moveEvent, value) && !this.dropdown?.isActive,
-            this.moveEvent,
-            [
-                new TooltipValue(`${ value?.label }: ${ Formatter.format(value?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
-            ],
-            value
-        )
-
-        if (!this.isDestroy)
-            requestAnimationFrame(this.render.bind(this))
-
-        this.state = RenderState.Idle
-
-        super.renderDropdown()
-    }
-
-    private draw() {
-        if (this.radius <= 0) {
-            Debug.error('Radius can\'t be negative.')
-            return
-        }
-
-        const ctx = Canvas.getContext(this.canvas)
-
-        const value = this.data.values[0] ?? { id: Helper.guid() }
-
-        if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init))
-            this.animations.handle(value.id,
-                AnimationType.Init,
-                {
-                    duration: 450,
-                    continuous: true,
-                    body: transition => {
-                        value.current = value.value * transition
-                    }
-                })
-
-        ctx.beginPath()
-
-        ctx.strokeStyle = value.color
-        ctx.lineCap = 'round'
-        ctx.lineWidth = this.radius / 10
-
-        const negativeOffset = this.data.min < 0 ? Math.abs(this.data.min) : 0
-
-        const piece = (value.current + negativeOffset) / (this.data.max - this.data.min),
-            angle = (isNaN(piece) ? 1 : piece) * Math.PI
-
-        if (value.value) {
-            ctx.arc(this.center.x, this.center.y, this.radius, Math.PI, angle - Math.PI)
-            ctx.stroke()
-        }
-
-        ctx.beginPath()
-
-        ctx.lineWidth = 1
-        ctx.lineCap = 'square'
-
-        let localAccumulator = 0,
-            localAngle = Math.PI
-
-        while (localAngle >= 0) {
-            let currentAngle = localAngle - Math.PI / 10 > 0
-                               ? Math.PI / 10
-                               : localAngle
-
-            const getPoint = (offset: number) => {
-                return {
-                    x: this.center.x + (this.radius + offset) * Math.cos(Math.PI + localAccumulator),
-                    y: this.center.y + (this.radius + offset) * Math.sin(Math.PI + localAccumulator)
-                }
-            }
-
-            const radiusRatio = this.radius / 300
-
-            let point1 = getPoint(25 * radiusRatio)
-            let point2 = getPoint(45 * radiusRatio)
-            let point3 = getPoint(60 * radiusRatio)
-
-            const opacity = Math.PI - localAngle > angle ? '66' : 'ff'
-
-            const text = Formatter.number(this.data.max - localAngle / Math.PI * (this.data.max - this.data.min))
-
-            let textAlign: 'center' | 'start' | 'end' = 'center'
-
-            const point = Math.round(point3.x)
-            const halfWidth = Math.round(this.canvas.width / 2)
-
-            if (Math.abs(halfWidth - point) > 5)
-                textAlign = point < halfWidth
-                            ? 'end'
-                            : 'start'
-
-            if (this.canRenderLabel(point3.x, point3.y, text, ctx, textAlign)) {
-                ctx.moveTo(point1.x, point1.y)
-                ctx.lineTo(point2.x, point2.y)
-                ctx.strokeStyle = Theme.text + opacity
-                ctx.stroke()
-
-                TextStyles.regular(ctx)
-
-                ctx.textAlign = textAlign
-                ctx.fillStyle = Theme.text + opacity
-                ctx.fillText(text, point3.x, point3.y)
-            }
-
-            localAccumulator += currentAngle
-
-            localAngle -= Math.PI / 10
-        }
-    }
-
-    private isInsideSector(event: MouseEvent, value: Sector): boolean {
-        if (!event)
-            return false
-
-        const isAngle = (point: Point) => {
-            let a = Math.atan2(point.y - this.center.y, point.x - this.center.x)
-            if (a < 0)
-                a += Math.PI * 2
-
-
-            const negativeOffset = this.data.min < 0 ? Math.abs(this.data.min) : 0
-
-            const piece = (value.current + negativeOffset) / (this.data.max - this.data.min),
-                angle = (isNaN(piece) ? 1 : piece) * Math.PI
-
-            return a > Math.PI && Math.PI + angle >= a
-        }
-
-        const isWithinRadius = (v: Point) => {
-            const outerRadius = this.radius + 20,
-                innerRadius = this.radius - 20
-
-            return v.x * v.x + v.y * v.y <= outerRadius * outerRadius
-                   && v.x * v.x + v.y * v.y >= innerRadius * innerRadius
-        }
-
-        const point = this.getMousePosition(event),
-            inner = {
-                x: point.x - this.center.x,
-                y: point.y - this.center.y
-            }
-
-        return !(this.dropdown?.isActive ?? false)
-               && isAngle(point)
-               && isWithinRadius(inner)
-    }
-
-    private calculateSizes() {
-        const shortSide = Math.min(this.canvas.width / 2, this.canvas.height)
-
-        this.radius = shortSide * .8 - 70
-
-        this.center = {
-            x: this.canvas.width / 2,
-            y: this.canvas.height - 50
-        }
-    }
-
-    private canRenderLabel(x: number,
-                           y: number,
-                           text: string,
-                           ctx: CanvasRenderingContext2D,
-                           direction: 'start' | 'center' | 'end') {
-        const textWidth = Helper.stringWidth(text)
-        const xDiff = direction == 'center'
-                      ? textWidth / 2
-                      : direction == 'start'
-                        ? -textWidth
-                        : textWidth
-        const imageDataX = x - xDiff
-        const imageDataY = y - 12
-        const imageData = new Uint32Array(ctx.getImageData(imageDataX, imageDataY, textWidth, 28).data.buffer)
-
-        if (imageDataX < 0 || imageDataX + textWidth > this.canvas.width
-            || y - 12 < 0 || y + 12 > this.canvas.height)
-            return false
-
-        for (let i = 0; i < imageData.length; i++)
-            if (Canvas.isPixelBusy(imageData[i]))
-                return false
-
-        return true
-    }
-
-    refresh() {
-        super.refresh()
-    }
-
-    resize() {
-        super.resize()
-
-        const value = this.data.values[0] ?? { id: Helper.guid() }
-        if (!value.current)
-            value.current = value.value
-
-        this.initAnimations()
-        this.calculateSizes()
-    }
-
-    prepareSettings() {
-        super.prepareSettings()
-
-        this.data.min ??= 0
-        this.data.max ??= 100
-
-        for (let item of this.data.values) {
-            item.disabled = !item.value
-            item.value ??= 0
-        }
-
-        if (this.data.values.length > 0 && this.data.values[0].value > this.data.max)
-            this.data.values[0].value = this.data.max
-    }
-
-    initDropdown() {
-        super.initDropdown()
-
-        this.dropdown = new Dropdown(this.canvas,
-            {
-                x: -10,
-                y: 10,
-                icon: Icon.ThreeLines,
-                items: [
-                    {
-                        text: TextResources.exportPNG,
-                        action: () => {
-                            Export.asPng(this.canvas, this.settings.title)
-                        }
-                    }
-                ]
-            })
-    }
-}
-
-export default GaugeRenderer
+// import Renderer from 'types/base/Renderer'
+// import GaugeData from 'types/data/GaugeData'
+// import * as Helper from 'Helper'
+// import Sector from 'types/Sector'
+// import Dropdown from 'Dropdown'
+// import Point from 'types/Point'
+// import Chart from 'Chart'
+// import Theme from 'Theme'
+// import TextStyles from 'helpers/TextStyles'
+// import TooltipValue from 'types/TooltipValue'
+// import Export from 'Export'
+// import Formatter from 'helpers/Formatter'
+// import Canvas from 'helpers/Canvas'
+// import TextResources from 'static/TextResources'
+// import { AnimationType, Icon, PlotAxisType, RenderState } from 'static/Enums'
+// import Debug from 'Debug'
+//
+// class GaugeRenderer extends Renderer<GaugeData> {
+//     private radius: number
+//
+//     private center: Point
+//
+//     constructor(chart: Chart) {
+//         super(chart)
+//
+//         this.settings.enableLegend = false
+//     }
+//
+//     render() {
+//         super.render()
+//
+//         this.draw()
+//
+//         const value = this.data.values[0]
+//         this.tooltip.render(
+//             this.isInsideSector(this.moveEvent, value) && !this.dropdown?.isActive,
+//             this.moveEvent,
+//             [
+//                 new TooltipValue(`${ value?.label }: ${ Formatter.format(value?.current, PlotAxisType.Number, this.settings.valuePostfix) }`)
+//             ],
+//             value
+//         )
+//
+//         if (!this.isDestroy)
+//             requestAnimationFrame(this.render.bind(this))
+//
+//         this.state = RenderState.Idle
+//
+//         super.renderDropdown()
+//     }
+//
+//     private draw() {
+//         if (this.radius <= 0) {
+//             Debug.error('Radius can\'t be negative.')
+//             return
+//         }
+//
+//         const ctx = Canvas.getContext(this.canvas)
+//
+//         const value = this.data.values[0] ?? { id: Helper.guid() }
+//
+//         if (this.state == RenderState.Init || this.animations.contains(value.id, AnimationType.Init))
+//             this.animations.handle(value.id,
+//                 AnimationType.Init,
+//                 {
+//                     duration: 450,
+//                     continuous: true,
+//                     body: transition => {
+//                         value.current = value.value * transition
+//                     }
+//                 })
+//
+//         ctx.beginPath()
+//
+//         ctx.strokeStyle = value.color
+//         ctx.lineCap = 'round'
+//         ctx.lineWidth = this.radius / 10
+//
+//         const negativeOffset = this.data.min < 0 ? Math.abs(this.data.min) : 0
+//
+//         const piece = (value.current + negativeOffset) / (this.data.max - this.data.min),
+//             angle = (isNaN(piece) ? 1 : piece) * Math.PI
+//
+//         if (value.value) {
+//             ctx.arc(this.center.x, this.center.y, this.radius, Math.PI, angle - Math.PI)
+//             ctx.stroke()
+//         }
+//
+//         ctx.beginPath()
+//
+//         ctx.lineWidth = 1
+//         ctx.lineCap = 'square'
+//
+//         let localAccumulator = 0,
+//             localAngle = Math.PI
+//
+//         while (localAngle >= 0) {
+//             let currentAngle = localAngle - Math.PI / 10 > 0
+//                                ? Math.PI / 10
+//                                : localAngle
+//
+//             const getPoint = (offset: number) => {
+//                 return {
+//                     x: this.center.x + (this.radius + offset) * Math.cos(Math.PI + localAccumulator),
+//                     y: this.center.y + (this.radius + offset) * Math.sin(Math.PI + localAccumulator)
+//                 }
+//             }
+//
+//             const radiusRatio = this.radius / 300
+//
+//             let point1 = getPoint(25 * radiusRatio)
+//             let point2 = getPoint(45 * radiusRatio)
+//             let point3 = getPoint(60 * radiusRatio)
+//
+//             const opacity = Math.PI - localAngle > angle ? '66' : 'ff'
+//
+//             const text = Formatter.number(this.data.max - localAngle / Math.PI * (this.data.max - this.data.min))
+//
+//             let textAlign: 'center' | 'start' | 'end' = 'center'
+//
+//             const point = Math.round(point3.x)
+//             const halfWidth = Math.round(this.canvas.width / 2)
+//
+//             if (Math.abs(halfWidth - point) > 5)
+//                 textAlign = point < halfWidth
+//                             ? 'end'
+//                             : 'start'
+//
+//             if (this.canRenderLabel(point3.x, point3.y, text, ctx, textAlign)) {
+//                 ctx.moveTo(point1.x, point1.y)
+//                 ctx.lineTo(point2.x, point2.y)
+//                 ctx.strokeStyle = Theme.text + opacity
+//                 ctx.stroke()
+//
+//                 TextStyles.regular(ctx)
+//
+//                 ctx.textAlign = textAlign
+//                 ctx.fillStyle = Theme.text + opacity
+//                 ctx.fillText(text, point3.x, point3.y)
+//             }
+//
+//             localAccumulator += currentAngle
+//
+//             localAngle -= Math.PI / 10
+//         }
+//     }
+//
+//     private isInsideSector(event: MouseEvent, value: Sector): boolean {
+//         if (!event)
+//             return false
+//
+//         const isAngle = (point: Point) => {
+//             let a = Math.atan2(point.y - this.center.y, point.x - this.center.x)
+//             if (a < 0)
+//                 a += Math.PI * 2
+//
+//
+//             const negativeOffset = this.data.min < 0 ? Math.abs(this.data.min) : 0
+//
+//             const piece = (value.current + negativeOffset) / (this.data.max - this.data.min),
+//                 angle = (isNaN(piece) ? 1 : piece) * Math.PI
+//
+//             return a > Math.PI && Math.PI + angle >= a
+//         }
+//
+//         const isWithinRadius = (v: Point) => {
+//             const outerRadius = this.radius + 20,
+//                 innerRadius = this.radius - 20
+//
+//             return v.x * v.x + v.y * v.y <= outerRadius * outerRadius
+//                    && v.x * v.x + v.y * v.y >= innerRadius * innerRadius
+//         }
+//
+//         const point = this.getMousePosition(event),
+//             inner = {
+//                 x: point.x - this.center.x,
+//                 y: point.y - this.center.y
+//             }
+//
+//         return !(this.dropdown?.isActive ?? false)
+//                && isAngle(point)
+//                && isWithinRadius(inner)
+//     }
+//
+//     private calculateSizes() {
+//         const shortSide = Math.min(this.canvas.width / 2, this.canvas.height)
+//
+//         this.radius = shortSide * .8 - 70
+//
+//         this.center = {
+//             x: this.canvas.width / 2,
+//             y: this.canvas.height - 50
+//         }
+//     }
+//
+//     private canRenderLabel(x: number,
+//                            y: number,
+//                            text: string,
+//                            ctx: CanvasRenderingContext2D,
+//                            direction: 'start' | 'center' | 'end') {
+//         const textWidth = Helper.stringWidth(text)
+//         const xDiff = direction == 'center'
+//                       ? textWidth / 2
+//                       : direction == 'start'
+//                         ? -textWidth
+//                         : textWidth
+//         const imageDataX = x - xDiff
+//         const imageDataY = y - 12
+//         const imageData = new Uint32Array(ctx.getImageData(imageDataX, imageDataY, textWidth, 28).data.buffer)
+//
+//         if (imageDataX < 0 || imageDataX + textWidth > this.canvas.width
+//             || y - 12 < 0 || y + 12 > this.canvas.height)
+//             return false
+//
+//         for (let i = 0; i < imageData.length; i++)
+//             if (Canvas.isPixelBusy(imageData[i]))
+//                 return false
+//
+//         return true
+//     }
+//
+//     refresh() {
+//         super.refresh()
+//     }
+//
+//     resize() {
+//         super.resize()
+//
+//         const value = this.data.values[0] ?? { id: Helper.guid() }
+//         if (!value.current)
+//             value.current = value.value
+//
+//         this.initAnimations()
+//         this.calculateSizes()
+//     }
+//
+//     prepareSettings() {
+//         super.prepareSettings()
+//
+//         this.data.min ??= 0
+//         this.data.max ??= 100
+//
+//         for (let item of this.data.values) {
+//             item.disabled = !item.value
+//             item.value ??= 0
+//         }
+//
+//         if (this.data.values.length > 0 && this.data.values[0].value > this.data.max)
+//             this.data.values[0].value = this.data.max
+//     }
+//
+//     initDropdown() {
+//         super.initDropdown()
+//
+//         this.dropdown = new Dropdown(this.canvas,
+//             {
+//                 x: -10,
+//                 y: 10,
+//                 icon: Icon.ThreeLines,
+//                 items: [
+//                     {
+//                         text: TextResources.exportPNG,
+//                         action: () => {
+//                             Export.asPng(this.canvas, this.settings.title)
+//                         }
+//                     }
+//                 ]
+//             })
+//     }
+// }
+//
+// export default GaugeRenderer
