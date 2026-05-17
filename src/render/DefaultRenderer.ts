@@ -116,39 +116,29 @@ export class DefaultRenderer {
 
         const factor = .05
 
-        let x = event.offsetX / this.canvas.width - this.canvas.width / 2
-        let y = event.offsetY / this.canvas.height - this.canvas.height / 2
+        let x = event.offsetX / this.canvas.width - .5 // this.canvas.width / 2
+        let y = event.offsetY / this.canvas.height - .5 // this.canvas.height / 2
 
-        let xValue = x // this.canvas.width * x
-        let yValue = y //  this.canvas.height * y
+        let xValue = this.canvas.width * x
+        let yValue = this.canvas.height * y
 
         let direction = 1
 
         // in
         if (event.deltaY > 0) {
-            // if (currentValue < 1.8) {
-            //     DefaultRenderer.canvasZoom.set(key, currentValue - factor)
-            // }
+            if (currentValue > .2)
+                DefaultRenderer.canvasZoom.set(key, currentValue - factor)
 
-            // direction = 1
+            direction = -2
         }
 
         // out
         if (event.deltaY < 0) {
-            // if (currentValue > .2) {
-            //     DefaultRenderer.canvasZoom.set(key, currentValue + factor)
-            // }
+            if (currentValue < 1.8)
+                DefaultRenderer.canvasZoom.set(key, currentValue + factor)
 
-            // direction = -1
+            direction = 1
         }
-
-        console.log(`${Math.round(xValue * factor) * direction};\n${Math.round(yValue * factor) * direction}`)
-
-        Debug.text(
-            this.queue.ctx,
-            Math.round(xValue * factor) * direction,
-            Math.round(yValue * factor) * direction
-        )
 
         DefaultRenderer.canvasWindow.set(
             key,
