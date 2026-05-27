@@ -62,7 +62,14 @@ export class DefaultRenderer {
             RenderStep.Move(1000, 1000),
             RenderStep.Line(2000, 4000),
             RenderStep.Move(500, 4500),
-            RenderStep.Line(4500, 500)
+            RenderStep.Line(4500, 500),
+
+            RenderStep.Move(2500, 0),
+            RenderStep.Line(5000, 0),
+            RenderStep.Line(5000, 5000),
+            RenderStep.Line(0, 5000),
+            RenderStep.Line(0, 0),
+            RenderStep.Line(2500, 0),
         ]
     }
 
@@ -73,8 +80,8 @@ export class DefaultRenderer {
         const zoom = DefaultRenderer.canvasZoom.get('key') ?? 1
 
         return steps.map(step => {
-            step.position.x = Math.round((Math.round(step.position.x / this.maxSize.width * box.width) - window.x) * zoom)
-            step.position.y = Math.round((Math.round(step.position.y / this.maxSize.height * box.height) - window.y) * zoom)
+            step.position.x = Math.round((Math.round(step.position.x / this.maxSize.width * box.width) + window.x) * zoom)
+            step.position.y = Math.round((Math.round(step.position.y / this.maxSize.height * box.height) + window.y) * zoom)
 
             return step
         })
@@ -96,8 +103,8 @@ export class DefaultRenderer {
         DefaultRenderer.canvasWindow.set(
             key,
             {
-                x: DefaultRenderer.moveStartWindow.x + DefaultRenderer.moveStartPosition.x - event.offsetX,
-                y: DefaultRenderer.moveStartWindow.y + DefaultRenderer.moveStartPosition.y - event.offsetY
+                x: DefaultRenderer.moveStartWindow.x + event.offsetX - DefaultRenderer.moveStartPosition.x,
+                y: DefaultRenderer.moveStartWindow.y + event.offsetY - DefaultRenderer.moveStartPosition.y
             })
     }
 
@@ -114,37 +121,73 @@ export class DefaultRenderer {
         const currentValue = DefaultRenderer.canvasZoom.get(key) ?? 1
         const window = DefaultRenderer.canvasWindow.get(key) ?? { x: 0, y: 0 }
 
-        const factor = .05
+        const factor = .01
 
-        let x = event.offsetX / this.canvas.width - .5 // this.canvas.width / 2
-        let y = event.offsetY / this.canvas.height - .5 // this.canvas.height / 2
+        /*
+            ......|......
+            ..<0..|..>0..
+            ......|......
+         */
+        let x = event.offsetX / this.canvas.width - .5
+        /*
+            ............
+            .....<0.....
+            ............
+            ────────────
+            ............
+            .....>0.....
+            ............
+         */
+        let y = event.offsetY / this.canvas.height - .5
 
         let xValue = this.canvas.width * x
         let yValue = this.canvas.height * y
 
-        let direction = 1
+        let isMaxValue = false
 
         // in
         if (event.deltaY > 0) {
-            if (currentValue > .2)
+            if (currentValue > .2) {
                 DefaultRenderer.canvasZoom.set(key, currentValue - factor)
+            } else {
+                isMaxValue = true
+            }
 
-            direction = -2
+            // if (x > 0) {
+            //     xValue *= 3
+            // }
+            //
+            // if (y > 0) {
+            //     yValue *= 3
+            // }
         }
 
         // out
         if (event.deltaY < 0) {
-            if (currentValue < 1.8)
+            if (currentValue < 1.8) {
                 DefaultRenderer.canvasZoom.set(key, currentValue + factor)
+            } else {
+                isMaxValue = true
+            }
 
-            direction = 1
+            // if (x > 0) {
+            //     xValue /= 2
+            // }
+            //
+            // if (y > 0) {
+            //     yValue /= 3
+            // }
+        }
+
+        if (isMaxValue) {
+            return
         }
 
         DefaultRenderer.canvasWindow.set(
             key,
             {
-                x: window.x + Math.round(xValue * factor) * direction,
-                y: window.y + Math.round(yValue * factor) * direction
+                x: window.x - Math.round(xValue * factor), // * xDirection,
+                y: window.y - Math.round(yValue * factor)  // * yDirection
             }
         )
     }
