@@ -36,9 +36,9 @@ class Chart {
         canvas.width = domRect.width
         canvas.height = domRect.height
 
-        this.renderer = new DefaultRenderer(canvas)
-
         this.node.appendChild(canvas)
+
+        this.renderer = new DefaultRenderer(canvas)
 
         this.applyStyles()
         this.attachEvents()

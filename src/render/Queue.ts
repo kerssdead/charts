@@ -1,13 +1,13 @@
-import RenderStep from 'types/RenderStep'
-import { RenderStepType } from 'static/Enums'
-import Debug from 'Debug'
+import QueueItemsBuilder from '../builders/QueueItemsBuilder'
+import RenderItem from '../types/RenderItem'
 
 export default class Queue {
-    queue: RenderStep[]
+    queue: RenderItem[]
 
     ctx: CanvasRenderingContext2D
 
     constructor(ctx: CanvasRenderingContext2D) {
+        this.queue = []
         this.ctx = ctx
     }
 
@@ -19,45 +19,8 @@ export default class Queue {
 
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 
-        this.ctx.fillStyle = 'blue'
-        this.ctx.strokeStyle = 'lightblue'
-        this.ctx.lineWidth = 10
-
         for (const step of this.getSorted()) {
-            switch (step.operation) {
-                case RenderStepType.Move:
-                    this.ctx.moveTo(step.position.x, step.position.y)
-                    break
-
-                case RenderStepType.Line:
-                    this.ctx.lineTo(step.position.x, step.position.y)
-                    this.ctx.stroke()
-                    break
-
-                case RenderStepType.QuadraticCurve:
-                    this.ctx.quadraticCurveTo(step.args[0], step.args[1], step.position.x, step.position.y)
-                    break
-
-                case RenderStepType.ArcTo:
-                    this.ctx.arcTo(step.position.x, step.position.y, step.args[0], step.args[1], step.args[2])
-                    break
-
-                case RenderStepType.Rect:
-                    this.ctx.rect(step.position.x, step.position.y, step.args[0], step.args[1])
-                    break
-
-                case RenderStepType.RectFill:
-                    this.ctx.fillRect(step.position.x, step.position.y, step.args[0], step.args[1])
-                    break
-
-                case RenderStepType.Text:
-                    this.ctx.fillText(step.args[0], step.position.x, step.position.y)
-                    break
-
-                default:
-                    Debug.error(`Step can't be rendered:\n\tOperation:\t${step.operation}\n\tLayer:\t${step.layer}`)
-                    break
-            }
+            step.render(this.ctx)
         }
     }
 
@@ -83,10 +46,19 @@ export default class Queue {
     }
 
     private getSorted() {
-        return this.queue.sort((a, b) => a.layer - b.layer)
+        // return this.queue.sort((a, b) => a.layer - b.layer)
+        return this.queue
     }
 
     // private dequeue(step: RenderStep) {
     //     // todo: not implemented
     // }
+
+    add(action: (builder: QueueItemsBuilder) => void) {
+        const builder = new QueueItemsBuilder()
+
+        action(builder)
+
+        this.queue = this.queue.concat(builder.dispose())
+    }
 }

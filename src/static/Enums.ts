@@ -51,7 +51,9 @@ export enum Events {
 
     MouseDown = 'mousedown',
 
-    MouseUp = 'mouseup'
+    MouseUp = 'mouseup',
+
+    Wheel = 'wheel'
 }
 
 export enum LegendPlace {
@@ -146,4 +148,14 @@ export enum RenderStepType {
     RectFill = 'rect-fill',
 
     Text = 'text'
+}
+
+export enum RenderGroupDirection {
+    Row,
+
+    Column,
+
+    RowReversed,
+
+    ColumnReversed
 }

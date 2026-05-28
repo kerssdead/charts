@@ -1,6 +1,7 @@
 import { RenderStepType } from 'static/Enums'
 import Point from './Point'
 
+// todo: remove
 export default class RenderStep {
     layer: number
 
@@ -11,6 +12,9 @@ export default class RenderStep {
     operation: RenderStepType
 
     position: Point
+
+    // todo: item { items:[], direction?, margin?, action, style, gap }
+    // todo: use fluent syntax
 
     static Move(x: number, y: number): RenderStep {
         return {
