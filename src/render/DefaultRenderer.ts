@@ -1,11 +1,11 @@
 import Queue from 'render/Queue'
 import Canvas from 'helpers/Canvas'
 import Point from 'types/Point'
-import { Events } from 'static/Enums'
+import { Events, RenderGroupDirection } from 'static/Enums'
 import Debug from '../Debug'
 import CanvasWindow from '../types/CanvasWindow'
-import { COORDS_MAX_X, COORDS_MAX_Y, ZOOM_DEFAULT_STEP } from 'static/constants/Index'
-import RenderItem from '../types/RenderItem'
+import { ZOOM_DEFAULT_STEP } from 'static/constants/Index'
+import Margin from '../types/Margin'
 
 // todo: "Renderer" is better name for this class
 export class DefaultRenderer {
@@ -35,9 +35,44 @@ export class DefaultRenderer {
                  .color('green')
 
             items.rect()
-                .position(100,100)
-                .size(200, 200)
-                .fill()
+                 .position(100, 100)
+                 .size(200, 200)
+                 .fill()
+
+            items.group()
+                 .gap(200)
+                 .margin(Margin.all(300))
+                 .direction(RenderGroupDirection.Column)
+                 .items(groupItems => {
+                     groupItems.rect()
+                               .fill()
+                               .color('#ff000088')
+
+                     groupItems.rect()
+                               .fill()
+                               .color('#00ff0088')
+
+                     groupItems.rect()
+                               .fill()
+                               .color('#0000ff88')
+                 })
+            items.group()
+                 .gap(200)
+                 .margin(Margin.all(150))
+                 .direction(RenderGroupDirection.RowReversed)
+                 .items(groupItems => {
+                     groupItems.rect()
+                               .fill()
+                               .color('#ff000088')
+
+                     groupItems.rect()
+                               .fill()
+                               .color('#00ff0088')
+
+                     groupItems.rect()
+                               .fill()
+                               .color('#0000ff88')
+                 })
         })
 
         this.canvas.addEventListener(Events.MouseDown, ev => this.onMouseDown(ev))
@@ -48,21 +83,9 @@ export class DefaultRenderer {
     }
 
     render(): void {
-        this.queue.queue = this.adjustPosition(this.queue.queue)
-        this.queue.render()
+        this.queue.render(this.window)
 
         requestAnimationFrame(this.render.bind(this))
-    }
-
-    private adjustPosition(steps: RenderItem[]): RenderItem[] {
-        return steps.map(step => {
-            step.adjust(
-                (x: number) => Math.round(x / COORDS_MAX_X * this.window.width + this.window.x),
-                (y: number) => Math.round(y / COORDS_MAX_Y * this.window.height + this.window.y)
-            )
-
-            return step
-        })
     }
 
     private onMouseDown(event: MouseEvent) {

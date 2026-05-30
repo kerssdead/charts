@@ -1,5 +1,6 @@
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
 import RenderItem from '../types/RenderItem'
+import CanvasWindow from '../types/CanvasWindow'
 
 export default class Queue {
     queue: RenderItem[]
@@ -11,7 +12,7 @@ export default class Queue {
         this.ctx = ctx
     }
 
-    render() {
+    render(window: CanvasWindow) {
         if (!this.isShouldRender())
             return
 
@@ -20,7 +21,7 @@ export default class Queue {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 
         for (const step of this.getSorted()) {
-            step.render(this.ctx)
+            step.render(this.ctx, window)
         }
     }
 

@@ -2,6 +2,7 @@ import QueueItemBuilder from './QueueItemBuilder'
 import RenderItem from '../types/RenderItem'
 import QueueLineItemBuilder from './QueueLineItemBuilder'
 import QueueRectangleItemBuilder from './QueueRectangleItemBuilder'
+import QueueGroupItemBuilder from './QueueGroupItemBuilder'
 
 export default class QueueItemsBuilder {
     private items: RenderItem[] = []
@@ -28,6 +29,16 @@ export default class QueueItemsBuilder {
         this.add()
 
         let builder = new QueueRectangleItemBuilder()
+
+        this.current = builder
+
+        return builder
+    }
+
+    group(): QueueGroupItemBuilder {
+        this.add()
+
+        let builder = new QueueGroupItemBuilder()
 
         this.current = builder
 

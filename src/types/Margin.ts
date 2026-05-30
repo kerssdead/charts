@@ -1,11 +1,11 @@
 export default class Margin {
-    top: number
+    top: number = 0
 
-    right: number
+    right: number = 0
 
-    bottom: number
+    bottom: number = 0
 
-    left: number
+    left: number = 0
 
     static x(value: number) {
         let m = new Margin()
@@ -64,6 +64,17 @@ export default class Margin {
         m.right = right
         m.bottom = bottom
         m.left = left
+
+        return m
+    }
+
+    static all(value: number) {
+        let m = new Margin()
+
+        m.top = value
+        m.right = value
+        m.bottom = value
+        m.left = value
 
         return m
     }
