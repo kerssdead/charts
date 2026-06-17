@@ -424,7 +424,14 @@ class PlotRenderer extends Renderer<PlotData> {
                         break
 
                     case PlotType.StackingColumn:
-                        y = canvas.height - paddings.bottom - <number>value.y / this.#y.unit * this.#y.step
+                        let shrinkYValue = Number(value.y)
+                        const maxYLabelValue = Number([...this.base.labelsY][0][1])
+
+                        if (this.data.yMax && shrinkYValue > maxYLabelValue) {
+                            shrinkYValue = maxYLabelValue
+                        }
+
+                        y = canvas.height - paddings.bottom - shrinkYValue / this.#y.unit * this.#y.step
 
                         columnWidth = this.#x.step * (series.width ? series.width / 100 : .5)
 
@@ -443,7 +450,7 @@ class PlotRenderer extends Renderer<PlotData> {
                                                            .indexOf(series)
 
                                         x = paddings.left + xIndex * this.#x.step
-                                        y = canvas.height - paddings.bottom - <number>value.y / this.#y.unit * this.#y.step
+                                        y = canvas.height - paddings.bottom - shrinkYValue / this.#y.unit * this.#y.step
 
                                         if (columnsIndex == 0)
                                             stackingAccumulator[xIndex] = 0
@@ -631,6 +638,11 @@ class PlotRenderer extends Renderer<PlotData> {
 
         let xValues = this.data.values.flatMap(s => s.values.map(p => p.x)),
             yValues = this.data.values.flatMap(s => s.values.map(p => Helper.parseNumber(p.y as string)))
+
+        if (this.data.yMax) {
+            yValues.push(this.data.yMax)
+            yValues = yValues.filter(value => value <= this.data.yMax)
+        }
 
         const isDate = this.data.xType == PlotAxisType.Date,
             isText = this.data.xType == PlotAxisType.Text,
