@@ -9,7 +9,7 @@ export default class CanvasWindow {
 
     height: number
 
-    private zoomValue: number = 1
+    zoomValue: number = 1
 
     private isNeedNormalize = false
 

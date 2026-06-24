@@ -25,4 +25,10 @@ export default class QueueItemBaseBuilder {
 
         return this
     }
+
+    layer(layer: number) : QueueItemBaseBuilder {
+        this.current.layer = layer
+
+        return this
+    }
 }

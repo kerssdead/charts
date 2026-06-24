@@ -47,8 +47,7 @@ export default class Queue {
     }
 
     private getSorted() {
-        // return this.queue.sort((a, b) => a.layer - b.layer)
-        return this.queue
+        return this.queue.sort((a, b) => a.layer - b.layer)
     }
 
     // private dequeue(step: RenderStep) {

@@ -10,8 +10,8 @@ export default class QueueGroupItemBuilder extends QueueItemBaseBuilder {
         this.current.isGroup = true
     }
 
-    gap(px: number): QueueGroupItemBuilder {
-        this.current.groupGap = px
+    gap(unit: number): QueueGroupItemBuilder {
+        this.current.groupGap = unit
 
         return this
     }

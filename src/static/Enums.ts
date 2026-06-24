@@ -141,12 +141,14 @@ export enum RenderStepType {
 
     QuadraticCurve = 'quadratic-curve',
 
+    // todo: rename to "Arc"
     ArcTo = 'arc-to',
 
     Rect = 'rect',
 
     RectFill = 'rect-fill',
 
+    // todo: implement
     Text = 'text'
 }
 

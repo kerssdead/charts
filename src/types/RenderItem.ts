@@ -9,6 +9,8 @@ export default class RenderItem {
 
     color: string
 
+    layer: number = 0
+
     // todo: move line parameters to separate object
     // Line
 
@@ -45,6 +47,25 @@ export default class RenderItem {
 
     // todo: meh solution
     rectHeight1: number = 1
+
+    // todo: move arc parameters to separate object
+    // Arc
+
+    arcX: number = 0
+
+    arcY: number = 0
+
+    arcX1: number = 0
+
+    arcY1: number = 0
+
+    arcRadius: number = 10
+
+    arcRadius1: number = 10
+
+    arcStartAngle: number = 0
+
+    arcEndAngle: number = Math.PI * 2
 
     // todo: move group parameters to separate object
     // Group
@@ -101,6 +122,24 @@ export default class RenderItem {
             } else {
                 ctx.rect(x, y, width, height)
             }
+
+            if (this.isFill) {
+                ctx.fill()
+            }
+
+            ctx.stroke()
+
+            return
+        }
+
+        if (this.type == RenderStepType.ArcTo) {
+            ctx.arc(
+                this.arcX1,
+                this.arcY1,
+                this.arcRadius1,
+                this.arcStartAngle,
+                this.arcEndAngle
+            )
 
             if (this.isFill) {
                 ctx.fill()
@@ -213,6 +252,12 @@ export default class RenderItem {
             this.rectY1 = y(this.rectY)
             this.rectWidth1 = this.rectWidth / COORDS_MAX_X * window.width
             this.rectHeight1 = this.rectHeight / COORDS_MAX_Y * window.height
+        }
+
+        if (this.type == RenderStepType.ArcTo) {
+            this.arcX1 = x(this.arcX)
+            this.arcY1 = y(this.arcY)
+            this.arcRadius1 = this.arcRadius / window.zoomValue
         }
     }
 }
