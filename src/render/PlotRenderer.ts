@@ -644,6 +644,15 @@ class PlotRenderer extends Renderer<PlotData> {
             yValues = yValues.filter(value => value <= this.data.yMax)
         }
 
+        if ([new Set(yValues)].length == 1) {
+            const value = yValues[0]
+
+            if (value == 0)
+                yValues.push(-1, 1)
+            else
+                yValues.push(value - value / 2, value + value / 2)
+        }
+
         const isDate = this.data.xType == PlotAxisType.Date,
             isText = this.data.xType == PlotAxisType.Text,
             isNumber = !isDate && !isText
@@ -1147,6 +1156,15 @@ class PlotBase {
 
         if (this.data.yMax)
             uniqueY = [...uniqueY.filter(v => v <= this.data.yMax), this.data.yMax]
+
+        if (uniqueY.length == 1) {
+            const value = uniqueY[0]
+
+            if (value == 0)
+                uniqueY.push(-1, 1)
+            else
+                uniqueY.push(value - value / 2, value + value / 2)
+        }
 
         // getting rounded values
 

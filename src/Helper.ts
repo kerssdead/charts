@@ -138,6 +138,8 @@ export function getRoundedValues(all: number[]) {
         countOfElements++
     if (hasNegative)
         countOfElements++
+    if (countOfElements % 2 == 0 && Math.abs(minValue) == Math.abs(maxValue))
+        countOfElements++
     if (countOfElements > Plot.maxLabelsCount)
         countOfElements = Plot.maxLabelsCount
 

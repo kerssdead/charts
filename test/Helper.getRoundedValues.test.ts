@@ -41,6 +41,11 @@ describe('Calculating rounded values', () => {
             .toStrictEqual([0, 2.5, 5, 7.5, 10])
     })
 
+    it('Should be 3 (w/ negative) in and 5 values with 1.1 diff', () => {
+        expect(Helper.getRoundedValues([-1, 0, 1]))
+            .toStrictEqual([-1.2, -0.6, 0, 0.6, 1.2])
+    })
+
     it('Should be 5 in (w/o zero value) and 5 values with 4.4 diff', () => {
         expect(Helper.getRoundedValues([-1.2, 4.5, 6.66, 2.5, -8.76]))
             .toStrictEqual([-8.8, -4.4, 0, 4.4, 8.8])
