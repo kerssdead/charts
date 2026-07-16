@@ -55,19 +55,6 @@ export class DefaultRenderer {
                      groupItems.rect()
                                .fill()
                                .color('#0000ff88')
-
-                     groupItems.group()
-                               .gap(200)
-                               .direction(RenderGroupDirection.Row)
-                               .items(groupGroupItems => {
-                                   groupGroupItems.rect()
-                                                  .fill()
-                                                  .color('#ff00ff88')
-
-                                   groupGroupItems.rect()
-                                                  .fill()
-                                                  .color('#00ffff88')
-                               })
                  })
             // items.group()
             //      .gap(200)
@@ -86,14 +73,19 @@ export class DefaultRenderer {
             //                    .fill()
             //                    .color('#0000ff88')
             //      })
-            //
-            // items.arc()
-            //      .position(2000, 2000)
-            //      .radius(500)
-            //      .fill()
-            //      .color('magenta')
-            //     .layer(-1)
-            //
+
+            items.line()
+                 .stop(0, 0)
+                 .stop(5000, 0)
+                 .color('red')
+
+            items.arc()
+                 .position(0, 0)
+                 .radius(5000)
+                 .fill()
+                 .color('magenta')
+                .layer(-1)
+
             // items.line()
             //      .stop(500, -3000)
             //      .stop(4500, 6000)

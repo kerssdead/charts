@@ -257,7 +257,8 @@ export default class RenderItem {
         if (this.type == RenderStepType.ArcTo) {
             this.arcX1 = x(this.arcX)
             this.arcY1 = y(this.arcY)
-            this.arcRadius1 = this.arcRadius / window.zoomValue
+
+            this.arcRadius1 = this.arcRadius * (window.width / COORDS_MAX_X)
         }
     }
 }
