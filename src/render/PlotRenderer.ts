@@ -707,15 +707,21 @@ class PlotRenderer extends Renderer<PlotData> {
         // setting variables for y-axis
 
         const yMin = Math.min(Helper.min(yValues), 0)
+        const yMax = this.data.yMax ?? Helper.max(yValues)
         const yUnit = yValues[1] - yValues[0]
 
+        const yIsFractional = Math.abs(yMin) < 10 && Math.abs(yMax) < 10
+
         const yStepOffset = this.base.isVertical ? 0 : 1
+        const yStep = yIsFractional
+                      ? plot.height / Number([...this.base.labelsY][0][1])
+                      : plot.height / (yValues.length - yStepOffset)
 
         this.#y = {
             min: yMin,
-            max: this.data.yMax ?? Helper.max(yValues),
+            max: yMax,
             unit: yUnit,
-            step: plot.height / (this.#allValuesY.length - yStepOffset),
+            step: yStep,
             minStep: 0
         }
 
