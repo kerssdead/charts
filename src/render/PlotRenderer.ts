@@ -708,9 +708,9 @@ class PlotRenderer extends Renderer<PlotData> {
 
         const yMin = Math.min(Helper.min(yValues), 0)
         const yMax = this.data.yMax ?? Helper.max(yValues)
-        const yUnit = yValues[1] - yValues[0]
+        const yUnit = 1
 
-        const yIsFractional = Math.abs(yMin) < 10 && Math.abs(yMax) < 10
+        const yIsFractional = [...this.base.labelsY].filter(value => value[1].includes('.')).length > 0
 
         const yStepOffset = this.base.isVertical ? 0 : 1
         const yStep = yIsFractional
