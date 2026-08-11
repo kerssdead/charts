@@ -143,8 +143,18 @@ export function getRoundedValues(all: number[]) {
     if (countOfElements > Plot.maxLabelsCount)
         countOfElements = Plot.maxLabelsCount
 
+    const isSmallValue = (maxValue - minValue) / all.length <= 10
+
+    const satCount = isSmallValue
+                     ? 1
+                     : 4
+
+    const div = isSmallValue
+                ? [5, 4, 3, 2.5, 2]
+                : [10, 7.5, 5, 2.5, 2]
+
     const isSatisfyDividing = (value: number) => {
-        const divides = [10, 7.5, 5, 2.5, 2]
+        const divides = div
 
         let satisfied = 0
 
@@ -153,7 +163,7 @@ export function getRoundedValues(all: number[]) {
         for (const d of divides)
             satisfied += value % (d * dividersMultiplier) == 0 ? 1 : 0
 
-        return satisfied >= 4
+        return satisfied >= satCount
     }
 
     const isSatisfyElementsCount = (values: number[]) => {
@@ -169,7 +179,7 @@ export function getRoundedValues(all: number[]) {
 
     let step = 1
 
-    const isFractional = Math.abs(minValue) < 10 && Math.abs(maxValue) < 10
+    let isFractional = Math.abs(minValue) < 10 && Math.abs(maxValue) < 10
 
     if (isFractional)
         step = .1
