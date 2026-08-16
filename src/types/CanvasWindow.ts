@@ -20,6 +20,7 @@ export default class CanvasWindow {
         this.height = bounds.height
     }
 
+    // TODO: remove default parameters?
     in(step: number = ZOOM_DEFAULT_STEP, xRatio: number = 1, yRatio: number = 1) {
         if (this.zoomValue > ZOOM_MAX) {
             return
@@ -28,6 +29,7 @@ export default class CanvasWindow {
         this.zoom(step, xRatio, yRatio)
     }
 
+    // TODO: remove default parameters?
     out(step: number = -ZOOM_DEFAULT_STEP, xRatio: number = -1, yRatio: number = -1) {
         if (this.zoomValue < ZOOM_MIN) {
             return
@@ -47,7 +49,8 @@ export default class CanvasWindow {
         this.width -= widthDiff
         this.height -= heightDiff
 
-        this.move(widthDiff * xRatio, heightDiff * yRatio)
+        this.move(widthDiff / 2 + widthDiff * xRatio,
+            heightDiff / 2 + heightDiff * yRatio)
 
         this.normalize()
     }
