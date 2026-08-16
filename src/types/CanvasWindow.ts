@@ -1,4 +1,4 @@
-import { ZOOM_DEFAULT_STEP, ZOOM_MAX, ZOOM_MIN } from 'static/constants/Index'
+import { ZOOM_MAX, ZOOM_MIN } from 'static/constants/Index'
 
 export default class CanvasWindow {
     x: number = 0
@@ -20,8 +20,7 @@ export default class CanvasWindow {
         this.height = bounds.height
     }
 
-    // TODO: remove default parameters?
-    in(step: number = ZOOM_DEFAULT_STEP, xRatio: number = 1, yRatio: number = 1) {
+    in(step: number, xRatio: number, yRatio: number) {
         if (this.zoomValue > ZOOM_MAX) {
             return
         }
@@ -29,8 +28,7 @@ export default class CanvasWindow {
         this.zoom(step, xRatio, yRatio)
     }
 
-    // TODO: remove default parameters?
-    out(step: number = -ZOOM_DEFAULT_STEP, xRatio: number = -1, yRatio: number = -1) {
+    out(step: number, xRatio: number, yRatio: number) {
         if (this.zoomValue < ZOOM_MIN) {
             return
         }

@@ -1,35 +1,37 @@
 import QueueItemBaseBuilder from './QueueItemBaseBuilder'
 import { RenderStepType } from '../static/Enums'
+import RenderItemRectangle from '../types/RenderItemRectangle'
 
 export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
     constructor() {
         super()
 
         this.current.type = RenderStepType.Rect
+        this.current.rect = new RenderItemRectangle()
     }
 
     position(x: number, y: number): QueueRectangleItemBuilder {
-        this.current.rectX = x
-        this.current.rectY = y
+        this.current.rect.x = x
+        this.current.rect.y = y
 
         return this
     }
 
     size(width: number, height: number): QueueRectangleItemBuilder {
-        this.current.rectWidth = width
-        this.current.rectHeight = height
+        this.current.rect.width = width
+        this.current.rect.height = height
 
         return this
     }
 
     fill(): QueueRectangleItemBuilder {
-        this.current.isFill = true
+        this.current.rect.isFill = true
 
         return this
     }
 
     round(): QueueRectangleItemBuilder {
-        this.current.isRounded = true
+        this.current.rect.isRounded = true
 
         return this
     }
