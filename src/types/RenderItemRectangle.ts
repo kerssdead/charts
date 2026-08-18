@@ -36,6 +36,8 @@ export default class RenderItemRectangle
 
     isRounded: boolean = false
 
+    isAnimate: boolean = false
+
     x: number = 0
 
     // todo: meh solution

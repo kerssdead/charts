@@ -35,4 +35,10 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
 
         return this
     }
+
+    animate(): QueueRectangleItemBuilder {
+        this.current.rect.isAnimate = true
+
+        return this
+    }
 }
