@@ -108,6 +108,7 @@ export class DefaultRenderer {
     }
 
     render(): void {
+        // todo: exclude render not in CanvasWindow
         this.queue.render(this.window)
 
         const ctx = Canvas.getContext(this.canvas)
@@ -117,12 +118,9 @@ export class DefaultRenderer {
             ctx.fillStyle = 'red'
             ctx.strokeStyle = 'orange'
 
-            const x = RenderItem.adjustX(this.window, this.currentMousePoint.x)
-            const y = RenderItem.adjustY(this.window, this.currentMousePoint.y)
-
             ctx.rect(
-                x,
-                y,
+                100,
+                100,
                 10,
                 10
             )
@@ -193,7 +191,7 @@ export class DefaultRenderer {
     private onMouseMove2(event: MouseEvent) {
         this.currentMousePoint = {
             x: event.offsetX - this.window.x,
-            y: event.offsetY + this.window.y,
+            y: event.offsetY - this.window.y,
         }
     }
 }

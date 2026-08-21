@@ -58,4 +58,14 @@ export default class RenderItem {
     static adjustY(window: CanvasWindow, y: number) {
         return Math.round(y / COORDS_MAX_Y * window.height + window.y)
     }
+
+    // todo: meh name
+    static reAdjustX(window: CanvasWindow, x: number) {
+        return Math.round((x - window.x) / window.width)
+    }
+
+    // todo: meh name
+    static reAdjustY(window: CanvasWindow, y: number) {
+        return Math.round((y - window.y) / window.height)
+    }
 }
