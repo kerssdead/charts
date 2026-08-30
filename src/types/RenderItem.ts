@@ -13,6 +13,8 @@ export default class RenderItem {
 
     color: string
 
+    activeColor: string
+
     layer: number = 0
 
     line: RenderItemLine
@@ -34,8 +36,8 @@ export default class RenderItem {
 
         ctx.lineWidth = DEFAULT_LINE_WIDTH
 
-        ctx.fillStyle = this.color
-        ctx.strokeStyle = this.color
+        ctx.fillStyle = this.activeColor
+        ctx.strokeStyle = this.activeColor
 
         for (const item of this.items()) {
             item?.render(ctx, window)
@@ -44,9 +46,9 @@ export default class RenderItem {
         }
     }
 
-    animate(point: Point) {
+    animate(timer: DOMHighResTimeStamp, point: Point) {
         for (const item of this.items()) {
-            item?.animate(point)
+            item?.animate(timer, point, this)
             if (item)
                 return
         }

@@ -30,7 +30,7 @@ export default class RenderItemArc implements RenderItemBase {
         ctx.stroke()
     }
 
-    animate(point: Point) {
+    animate(timer: DOMHighResTimeStamp, point: Point, item: RenderItem) {
         Errors.throw(ErrorType.NotImplemented)
     }
 

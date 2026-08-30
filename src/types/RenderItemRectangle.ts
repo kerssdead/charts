@@ -3,6 +3,7 @@ import RenderItemBase from './interfaces/RenderItemBase'
 import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
 import RenderItem from './RenderItem'
 import Point from './Point'
+import { adjustColor } from '../Helper'
 
 export default class RenderItemRectangle
     implements RenderItemBase {
@@ -33,13 +34,24 @@ export default class RenderItemRectangle
         ctx.stroke()
     }
 
-    animate(point: Point) {
-        this.isFill = !this.isInBox(point)
-
-        // const timer
-        // const value = .5
-        // const isBackward = false
-        // this.opacity(timer, value, isBackward)
+    animate(timer: DOMHighResTimeStamp, point: Point, item: RenderItem) {
+        if (this.isInBox(point)) {
+            item.activeColor = adjustColor(
+                item.color,
+                Math.round(this.opacity(performance.now(), 1) * -100)
+            )
+        } else if (this.startTimer) {
+            if (!this.mouseLeave) {
+                this.startTimer = null
+            }
+            this.mouseLeave = true
+            item.activeColor = adjustColor(
+                item.color,
+                Math.round(this.opacity(performance.now(), 1, true) * -100)
+            )
+        } else {
+            // item.activeColor = item.color
+        }
     }
 
     private isInBox(point: Point) {
@@ -47,6 +59,29 @@ export default class RenderItemRectangle
         const halfHeight = this.height1 / 2
         return this.x1 - halfWidth <= point.x && point.x <= this.x1 + halfWidth
                && this.y1 - halfHeight <= point.y && point.y <= this.y1 + halfHeight;
+    }
+
+    private opacity(timer: DOMHighResTimeStamp, value: number, isBackward: boolean = false) {
+        this.startTimer ??= performance.now()
+
+        const diff = timer - this.startTimer
+        const duration = 450
+
+        if (diff > duration) {
+            if (isBackward) {
+                this.startTimer = null
+                this.mouseLeave = false
+                return 1- value
+            }
+
+            return value
+        }
+
+        if (isBackward) {
+            return (1 - (diff / duration)) * value
+        }
+
+        return diff / duration * value
     }
 
     isFill: boolean = false
@@ -74,4 +109,8 @@ export default class RenderItemRectangle
 
     // todo: meh solution
     height1: number = 1
+
+    private startTimer: DOMHighResTimeStamp | null
+
+    private mouseLeave: boolean
 }

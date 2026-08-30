@@ -112,7 +112,7 @@ export class DefaultRenderer {
     render(): void {
         this.timer ??= performance.now()
 
-        this.queue.animate(this.currentMousePoint)
+        this.queue.animate(this.timer, this.currentMousePoint)
 
         // todo: exclude render not in CanvasWindow
         this.queue.render(this.window)

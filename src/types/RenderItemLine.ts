@@ -36,7 +36,7 @@ export default class RenderItemLine
         ctx.stroke()
     }
 
-    animate(point: Point) {
+    animate(timer: DOMHighResTimeStamp, point: Point) {
         Errors.throw(ErrorType.NotImplemented)
     }
 }

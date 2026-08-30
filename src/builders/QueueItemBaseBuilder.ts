@@ -22,6 +22,7 @@ export default class QueueItemBaseBuilder {
 
     color(color: string): QueueItemBaseBuilder {
         this.current.color = color
+        this.current.activeColor = color
 
         return this
     }
