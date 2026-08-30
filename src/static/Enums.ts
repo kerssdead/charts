@@ -33,7 +33,9 @@ export enum ErrorType {
 
     ElementNotExist = 'Element does not exist',
 
-    MaxCallsReach = 'Max calls reach'
+    MaxCallsReach = 'Max calls reach',
+
+    NotImplemented = 'Not Implemented'
 }
 
 export enum Events {

@@ -2,6 +2,8 @@ import Point from './Point'
 import RenderItemBase from './interfaces/RenderItemBase'
 import CanvasWindow from './CanvasWindow'
 import RenderItem from './RenderItem'
+import { ErrorType } from '../static/Enums'
+import Errors from '../helpers/Errors'
 
 export default class RenderItemLine
     implements RenderItemBase {
@@ -32,5 +34,9 @@ export default class RenderItemLine
         }
 
         ctx.stroke()
+    }
+
+    animate(point: Point) {
+        Errors.throw(ErrorType.NotImplemented)
     }
 }

@@ -1,7 +1,10 @@
-import CanvasWindow from './CanvasWindow';
+import CanvasWindow from './CanvasWindow'
 import RenderItemBase from './interfaces/RenderItemBase'
 import RenderItem from './RenderItem'
 import { COORDS_MAX_X } from 'static/constants/Index'
+import Point from './Point'
+import Errors from '../helpers/Errors'
+import { ErrorType } from '../static/Enums'
 
 export default class RenderItemArc implements RenderItemBase {
     adjust(window: CanvasWindow): void {
@@ -25,6 +28,10 @@ export default class RenderItemArc implements RenderItemBase {
         }
 
         ctx.stroke()
+    }
+
+    animate(point: Point) {
+        Errors.throw(ErrorType.NotImplemented)
     }
 
     isFill: boolean = false

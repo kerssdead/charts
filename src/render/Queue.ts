@@ -1,6 +1,7 @@
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
 import RenderItem from '../types/RenderItem'
 import CanvasWindow from '../types/CanvasWindow'
+import Point from '../types/Point'
 
 export default class Queue {
     queue: RenderItem[]
@@ -22,6 +23,18 @@ export default class Queue {
 
         for (const step of this.getSorted()) {
             step.render(this.ctx, window)
+        }
+    }
+
+    animate(point: Point | null) {
+        if (!point) {
+            return
+        }
+
+        // todo: return if current mouse point is changed from previous frame
+
+        for (const item of this.queue) {
+            item.animate(point)
         }
     }
 

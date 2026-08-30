@@ -2,6 +2,7 @@ import CanvasWindow from './CanvasWindow'
 import RenderItemBase from './interfaces/RenderItemBase'
 import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
 import RenderItem from './RenderItem'
+import Point from './Point'
 
 export default class RenderItemRectangle
     implements RenderItemBase {
@@ -30,6 +31,22 @@ export default class RenderItemRectangle
         }
 
         ctx.stroke()
+    }
+
+    animate(point: Point) {
+        this.isFill = !this.isInBox(point)
+
+        // const timer
+        // const value = .5
+        // const isBackward = false
+        // this.opacity(timer, value, isBackward)
+    }
+
+    private isInBox(point: Point) {
+        const halfWidth = this.width1 / 2
+        const halfHeight = this.height1 / 2
+        return this.x1 - halfWidth <= point.x && point.x <= this.x1 + halfWidth
+               && this.y1 - halfHeight <= point.y && point.y <= this.y1 + halfHeight;
     }
 
     isFill: boolean = false

@@ -4,6 +4,7 @@ import Margin from './Margin'
 import RenderItemBase from './interfaces/RenderItemBase'
 import CanvasWindow from './CanvasWindow'
 import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
+import Point from './Point'
 
 export default class RenderItemGroup
     implements RenderItemBase {
@@ -78,6 +79,12 @@ export default class RenderItemGroup
 
         if (isReverse) {
             this.items.reverse()
+        }
+    }
+
+    animate(point: Point) {
+        for (const item of this.items) {
+            item.animate(point)
         }
     }
 

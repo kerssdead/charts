@@ -6,6 +6,7 @@ import RenderItemRectangle from './RenderItemRectangle'
 import RenderItemArc from './RenderItemArc'
 import RenderItemGroup from './RenderItemGroup'
 import RenderItemBase from './interfaces/RenderItemBase'
+import Point from './Point'
 
 export default class RenderItem {
     type: RenderStepType
@@ -43,6 +44,14 @@ export default class RenderItem {
         }
     }
 
+    animate(point: Point) {
+        for (const item of this.items()) {
+            item?.animate(point)
+            if (item)
+                return
+        }
+    }
+
     private adjust(window: CanvasWindow): void {
         for (const item of this.items()) {
             item?.adjust(window)
@@ -57,15 +66,5 @@ export default class RenderItem {
 
     static adjustY(window: CanvasWindow, y: number) {
         return Math.round(y / COORDS_MAX_Y * window.height + window.y)
-    }
-
-    // todo: meh name
-    static reAdjustX(window: CanvasWindow, x: number) {
-        return Math.round((x - window.x) / window.width)
-    }
-
-    // todo: meh name
-    static reAdjustY(window: CanvasWindow, y: number) {
-        return Math.round((y - window.y) / window.height)
     }
 }

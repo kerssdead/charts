@@ -4,7 +4,7 @@ import Point from 'types/Point'
 import { Events, RenderGroupDirection } from 'static/Enums'
 import Debug from '../Debug'
 import CanvasWindow from '../types/CanvasWindow'
-import { ZOOM_DEFAULT_STEP } from 'static/constants/Index'
+import { COORDS_MAX_X, COORDS_MAX_Y, ZOOM_DEFAULT_STEP } from 'static/constants/Index'
 import Margin from '../types/Margin'
 import RenderItem from '../types/RenderItem'
 
@@ -19,6 +19,8 @@ export class DefaultRenderer {
     private moveStartWindow: Point | null
 
     private currentMousePoint: Point | null
+
+    private timer: DOMHighResTimeStamp | null
 
     private readonly canvas: HTMLCanvasElement
 
@@ -108,25 +110,24 @@ export class DefaultRenderer {
     }
 
     render(): void {
+        this.timer ??= performance.now()
+
+        this.queue.animate(this.currentMousePoint)
+
         // todo: exclude render not in CanvasWindow
         this.queue.render(this.window)
 
-        const ctx = Canvas.getContext(this.canvas)
-
         if (this.currentMousePoint) {
-            ctx.beginPath()
-            ctx.fillStyle = 'red'
-            ctx.strokeStyle = 'orange'
+            const ctx = Canvas.getContext(this.canvas)
 
-            ctx.rect(
-                100,
-                100,
+            ctx.beginPath()
+            ctx.fillStyle = 'magenta'
+            ctx.fillRect(
+                this.currentMousePoint.x,
+                this.currentMousePoint.y,
                 10,
                 10
             )
-
-            ctx.fill()
-            ctx.stroke()
         }
 
         // todo: if canvas is need to re-render
@@ -189,9 +190,14 @@ export class DefaultRenderer {
      */
     // todo: meh name
     private onMouseMove2(event: MouseEvent) {
-        this.currentMousePoint = {
+        const onCanvas = {
             x: event.offsetX - this.window.x,
-            y: event.offsetY - this.window.y,
+            y: event.offsetY - this.window.y
+        }
+
+        this.currentMousePoint = {
+            x: RenderItem.adjustX(this.window, onCanvas.x / this.window.width * COORDS_MAX_X),
+            y: RenderItem.adjustY(this.window, onCanvas.y / this.window.height * COORDS_MAX_Y),
         }
     }
 }
