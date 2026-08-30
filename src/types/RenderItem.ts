@@ -46,9 +46,9 @@ export default class RenderItem {
         }
     }
 
-    animate(timer: DOMHighResTimeStamp, point: Point) {
+    animate(point: Point) {
         for (const item of this.items()) {
-            item?.animate(timer, point, this)
+            item?.animate(point, this)
             if (item)
                 return
         }

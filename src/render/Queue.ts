@@ -26,7 +26,7 @@ export default class Queue {
         }
     }
 
-    animate(timer: DOMHighResTimeStamp, point: Point | null) {
+    animate(point: Point | null) {
         if (!point) {
             return
         }
@@ -34,7 +34,7 @@ export default class Queue {
         // todo: return if current mouse point is changed from previous frame
 
         for (const item of this.queue) {
-            const animateObject = item.animate(timer, point)
+            item.animate(point)
         }
     }
 

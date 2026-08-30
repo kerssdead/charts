@@ -34,8 +34,9 @@ export default class RenderItemRectangle
         ctx.stroke()
     }
 
-    animate(timer: DOMHighResTimeStamp, point: Point, item: RenderItem) {
+    animate(point: Point, item: RenderItem) {
         if (this.isInBox(point)) {
+            // todo: add timing function
             item.activeColor = adjustColor(
                 item.color,
                 Math.round(this.opacity(performance.now(), 1) * -100)
@@ -45,12 +46,11 @@ export default class RenderItemRectangle
                 this.startTimer = null
             }
             this.mouseLeave = true
+            // todo: add timing function
             item.activeColor = adjustColor(
                 item.color,
                 Math.round(this.opacity(performance.now(), 1, true) * -100)
             )
-        } else {
-            // item.activeColor = item.color
         }
     }
 

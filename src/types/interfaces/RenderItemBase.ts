@@ -7,5 +7,5 @@ export default interface RenderItemBase {
 
     render(ctx: CanvasRenderingContext2D, window?: CanvasWindow) : void
 
-    animate(timer: DOMHighResTimeStamp, point: Point, item: RenderItem) : void
+    animate(point: Point, item: RenderItem) : void
 }
