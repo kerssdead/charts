@@ -36,6 +36,11 @@ export default class RenderItemRectangle
 
     animate(point: Point, item: RenderItem) {
         if (this.isInBox(point)) {
+            if (this.mouseLeave) {
+                this.startTimer = null
+                this.mouseLeave = false
+            }
+
             // todo: add timing function
             item.activeColor = adjustColor(
                 item.color,
@@ -46,6 +51,7 @@ export default class RenderItemRectangle
                 this.startTimer = null
             }
             this.mouseLeave = true
+
             // todo: add timing function
             item.activeColor = adjustColor(
                 item.color,
