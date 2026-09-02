@@ -10,6 +10,8 @@ import RenderItem from '../types/RenderItem'
 
 // todo: "Renderer" is better name for this class
 export class DefaultRenderer {
+    static timer: DOMHighResTimeStamp = 0
+
     private queue: Queue
 
     private window: CanvasWindow
@@ -19,8 +21,6 @@ export class DefaultRenderer {
     private moveStartWindow: Point | null
 
     private currentMousePoint: Point | null
-
-    private timer: DOMHighResTimeStamp | null
 
     private readonly canvas: HTMLCanvasElement
 
@@ -110,7 +110,7 @@ export class DefaultRenderer {
     }
 
     render(): void {
-        this.timer ??= performance.now()
+        DefaultRenderer.timer = performance.now()
 
         this.queue.animate(this.currentMousePoint)
 

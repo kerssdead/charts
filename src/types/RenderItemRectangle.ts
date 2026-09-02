@@ -4,6 +4,8 @@ import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
 import RenderItem from './RenderItem'
 import Point from './Point'
 import { adjustColor } from '../Helper'
+import { DefaultRenderer } from '../render/DefaultRenderer'
+import Animations from '../Animations'
 
 export default class RenderItemRectangle
     implements RenderItemBase {
@@ -15,8 +17,8 @@ export default class RenderItemRectangle
     }
 
     render(ctx: CanvasRenderingContext2D): void {
-        const width = this.width1
-        const height = this.height1
+        const width = this.width1 * this.activeScale
+        const height = this.height1 * this.activeScale
 
         const x = this.x1 - width / 2
         const y = this.y1 - height / 2
@@ -37,26 +39,30 @@ export default class RenderItemRectangle
     animate(point: Point, item: RenderItem) {
         if (this.isInBox(point)) {
             if (this.mouseLeave) {
-                this.startTimer = null
                 this.mouseLeave = false
             }
 
-            // todo: add timing function
             item.activeColor = adjustColor(
                 item.color,
-                Math.round(this.opacity(performance.now(), 1) * -100)
+                Math.round(this.opacity(1) * -100)
             )
+            this.activeScale = this.scale(0.98)
         } else if (this.startTimer) {
-            if (!this.mouseLeave) {
+            if (!this.mouseLeave && DefaultRenderer.timer - this.startTimer > 450) {
                 this.startTimer = null
             }
             this.mouseLeave = true
 
-            // todo: add timing function
             item.activeColor = adjustColor(
                 item.color,
-                Math.round(this.opacity(performance.now(), 1, true) * -100)
+                Math.round(this.opacity(1, true) * -100)
             )
+            this.activeScale = this.scale(0.98, true)
+
+            if (this.startTimer && DefaultRenderer.timer - this.startTimer > 450) {
+                this.mouseLeave = false
+                this.startTimer = null
+            }
         }
     }
 
@@ -67,27 +73,60 @@ export default class RenderItemRectangle
                && this.y1 - halfHeight <= point.y && point.y <= this.y1 + halfHeight;
     }
 
-    private opacity(timer: DOMHighResTimeStamp, value: number, isBackward: boolean = false) {
-        this.startTimer ??= performance.now()
+    private opacity(value: number, isBackward: boolean = false) {
+        this.startTimer ??= DefaultRenderer.timer
 
-        const diff = timer - this.startTimer
+        const diff = DefaultRenderer.timer - this.startTimer
         const duration = 450
+
+        let transition = Animations.getTransition(diff > duration ? 1 : diff / duration)
+
+        if (isBackward) {
+            transition = Math.abs(1 - transition)
+        }
 
         if (diff > duration) {
             if (isBackward) {
-                this.startTimer = null
-                this.mouseLeave = false
-                return 1- value
+                return 1 - value
             }
 
             return value
         }
 
         if (isBackward) {
-            return (1 - (diff / duration)) * value
+            return (1 - (diff / duration)) * value * transition
         }
 
-        return diff / duration * value
+        return diff / duration * value * transition
+    }
+
+    private scale(value: number, isBackward: boolean = false) {
+        this.startTimer ??= DefaultRenderer.timer
+
+        value -= 1
+
+        const diff = DefaultRenderer.timer - this.startTimer
+        const duration = 450
+
+        let transition = Animations.getTransition(diff > duration ? 1 : diff / duration)
+
+        if (isBackward) {
+            transition = Math.abs(1 - transition)
+        }
+
+        if (diff > duration) {
+            if (isBackward) {
+                return 1
+            }
+
+            return 1 + value
+        }
+
+        if (isBackward) {
+            return 1 + (1 - (diff / duration)) * value * transition
+        }
+
+        return 1 + diff / duration * value * transition
     }
 
     isFill: boolean = false
@@ -115,6 +154,8 @@ export default class RenderItemRectangle
 
     // todo: meh solution
     height1: number = 1
+
+    activeScale: number = 1
 
     private startTimer: DOMHighResTimeStamp | null
 
