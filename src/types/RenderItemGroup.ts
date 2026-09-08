@@ -8,6 +8,16 @@ import Point from './Point'
 
 export default class RenderItemGroup
     implements RenderItemBase {
+    animate(item: RenderItem, isBackward: boolean, point: Point): void {
+        for (const item of this.items) {
+            item.animate(point)
+        }
+    }
+
+    isMouseOver(point: Point): boolean {
+        return true
+    }
+
     adjust(window: CanvasWindow): void {
         return
     }
@@ -79,12 +89,6 @@ export default class RenderItemGroup
 
         if (isReverse) {
             this.items.reverse()
-        }
-    }
-
-    animate(point: Point, _item: RenderItem) {
-        for (const item of this.items) {
-            item.animate(point)
         }
     }
 

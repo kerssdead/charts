@@ -36,47 +36,25 @@ export default class RenderItemRectangle
         ctx.stroke()
     }
 
-    animate(point: Point, item: RenderItem) {
-        if (this.isInBox(point)) {
-            if (this.mouseLeave) {
-                this.mouseLeave = false
-            }
-
-            item.activeColor = adjustColor(
-                item.color,
-                Math.round(this.opacity(1) * -100)
-            )
-            this.activeScale = this.scale(0.98)
-        } else if (this.startTimer) {
-            if (!this.mouseLeave && DefaultRenderer.timer - this.startTimer > 450) {
-                this.startTimer = null
-            }
-            this.mouseLeave = true
-
-            item.activeColor = adjustColor(
-                item.color,
-                Math.round(this.opacity(1, true) * -100)
-            )
-            this.activeScale = this.scale(0.98, true)
-
-            if (this.startTimer && DefaultRenderer.timer - this.startTimer > 450) {
-                this.mouseLeave = false
-                this.startTimer = null
-            }
-        }
+    animate(item: RenderItem, isBackward: boolean = false) {
+        item.activeColor = adjustColor(
+            item.color,
+            Math.round(this.opacity(item, 1, isBackward) * -100)
+        )
+        this.activeScale = this.scale(item, 0.98, isBackward)
     }
 
-    private isInBox(point: Point) {
+    isMouseOver(point: Point) {
         const halfWidth = this.width1 / 2
         const halfHeight = this.height1 / 2
         return this.x1 - halfWidth <= point.x && point.x <= this.x1 + halfWidth
                && this.y1 - halfHeight <= point.y && point.y <= this.y1 + halfHeight;
     }
 
-    private opacity(value: number, isBackward: boolean = false) {
-        this.startTimer ??= DefaultRenderer.timer
+    private opacity(item: RenderItem, value: number, isBackward: boolean = false) {
+        item.startTimer ??= DefaultRenderer.timer
 
-        const diff = DefaultRenderer.timer - this.startTimer
+        const diff = DefaultRenderer.timer - item.startTimer
         const duration = 450
 
         let transition = Animations.getTransition(diff > duration ? 1 : diff / duration)
@@ -100,12 +78,12 @@ export default class RenderItemRectangle
         return diff / duration * value * transition
     }
 
-    private scale(value: number, isBackward: boolean = false) {
-        this.startTimer ??= DefaultRenderer.timer
+    private scale(item: RenderItem, value: number, isBackward: boolean = false) {
+        item.startTimer ??= DefaultRenderer.timer
 
         value -= 1
 
-        const diff = DefaultRenderer.timer - this.startTimer
+        const diff = DefaultRenderer.timer - item.startTimer
         const duration = 450
 
         let transition = Animations.getTransition(diff > duration ? 1 : diff / duration)
@@ -133,8 +111,6 @@ export default class RenderItemRectangle
 
     isRounded: boolean = false
 
-    isAnimate: boolean = false
-
     x: number = 0
 
     // todo: meh solution
@@ -156,8 +132,4 @@ export default class RenderItemRectangle
     height1: number = 1
 
     activeScale: number = 1
-
-    private startTimer: DOMHighResTimeStamp | null
-
-    private mouseLeave: boolean
 }

@@ -52,16 +52,19 @@ export class DefaultRenderer {
                      groupItems.rect()
                                .fill()
                                .color('#ff000088')
+                               .interact()
 
                      groupItems.rect()
                                .fill()
                                .color('#00ff0088')
 
                      groupItems.rect()
-                               .animate()
                                .fill()
                                .color('#0000ff88')
+                               .interact()
                  })
+                .interact()
+
             // items.group()
             //      .gap(200)
             //      .margin(Margin.all(150))
@@ -116,19 +119,6 @@ export class DefaultRenderer {
 
         // todo: exclude render not in CanvasWindow
         this.queue.render(this.window)
-
-        if (this.currentMousePoint) {
-            const ctx = Canvas.getContext(this.canvas)
-
-            ctx.beginPath()
-            ctx.fillStyle = 'magenta'
-            ctx.fillRect(
-                this.currentMousePoint.x,
-                this.currentMousePoint.y,
-                10,
-                10
-            )
-        }
 
         // todo: if canvas is need to re-render
         requestAnimationFrame(this.render.bind(this))

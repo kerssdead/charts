@@ -17,6 +17,8 @@ export default class QueueItemBaseBuilder {
     }
 
     interact(): QueueItemBaseBuilder {
+        this.current.isAnimate = true
+
         return this
     }
 

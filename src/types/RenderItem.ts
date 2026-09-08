@@ -7,8 +7,12 @@ import RenderItemArc from './RenderItemArc'
 import RenderItemGroup from './RenderItemGroup'
 import RenderItemBase from './interfaces/RenderItemBase'
 import Point from './Point'
+import { adjustColor } from '../Helper'
+import { DefaultRenderer } from '../render/DefaultRenderer'
 
 export default class RenderItem {
+    isAnimate: boolean = false
+
     type: RenderStepType
 
     color: string
@@ -24,6 +28,12 @@ export default class RenderItem {
     arc: RenderItemArc
 
     group: RenderItemGroup
+
+    // todo: group to RenderItemAnimationItem ?
+    startTimer: DOMHighResTimeStamp | null
+
+    // todo: group to RenderItemAnimationItem ?
+    mouseLeave: boolean
 
     private items(): RenderItemBase[] {
         return [this.line, this.rect, this.arc, this.group]
@@ -47,10 +57,15 @@ export default class RenderItem {
     }
 
     animate(point: Point) {
+        if (!this.isAnimate) {
+            return
+        }
+
         for (const item of this.items()) {
-            item?.animate(point, this)
-            if (item)
+            if (item) {
+                this.continueAnimate(point, item)
                 return
+            }
         }
     }
 
@@ -59,6 +74,28 @@ export default class RenderItem {
             item?.adjust(window)
             if (item)
                 return
+        }
+    }
+
+    private continueAnimate(point: Point, item: RenderItemBase) {
+        if (item.isMouseOver(point)) {
+            if (this.mouseLeave) {
+                this.mouseLeave = false
+            }
+
+            item.animate(this, false, point)
+        } else if (this.startTimer) {
+            if (!this.mouseLeave && DefaultRenderer.timer - this.startTimer > 450) {
+                this.startTimer = null
+            }
+            this.mouseLeave = true
+
+            item.animate(this, true, point)
+
+            if (this.startTimer && DefaultRenderer.timer - this.startTimer > 450) {
+                this.mouseLeave = false
+                this.startTimer = null
+            }
         }
     }
 

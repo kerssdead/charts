@@ -7,5 +7,7 @@ export default interface RenderItemBase {
 
     render(ctx: CanvasRenderingContext2D, window?: CanvasWindow) : void
 
-    animate(point: Point, item: RenderItem) : void
+    animate(item: RenderItem, isBackward: boolean, point: Point) : void
+
+    isMouseOver(point: Point) : boolean
 }

@@ -30,8 +30,13 @@ export default class RenderItemArc implements RenderItemBase {
         ctx.stroke()
     }
 
-    animate(point: Point, item: RenderItem) {
-        Errors.throw(ErrorType.NotImplemented)
+    // todo: implement
+    animate(item: RenderItem, isBackward: boolean): void {
+    }
+
+    // todo: implement
+    isMouseOver(point: Point): boolean {
+        return false
     }
 
     isFill: boolean = false
