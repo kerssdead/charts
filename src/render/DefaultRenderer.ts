@@ -8,6 +8,10 @@ import { COORDS_MAX_X, COORDS_MAX_Y, ZOOM_DEFAULT_STEP } from 'static/constants/
 import Margin from '../types/Margin'
 import RenderItem from '../types/RenderItem'
 
+// todo: add tooltips
+// todo: add init animation
+// todo: add legend ?
+
 // todo: "Renderer" is better name for this class
 export class DefaultRenderer {
     static timer: DOMHighResTimeStamp = 0
