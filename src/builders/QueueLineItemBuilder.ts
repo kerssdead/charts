@@ -21,4 +21,10 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder {
 
         return this
     }
+
+    dash(segments: number[]) {
+        this.current.line.dash = segments
+
+        return this
+    }
 }

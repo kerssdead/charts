@@ -148,9 +148,9 @@ export enum RenderStepType {
 
     Rect = 'rect',
 
+    // todo: remove ?
     RectFill = 'rect-fill',
 
-    // todo: implement
     Text = 'text'
 }
 
@@ -162,4 +162,28 @@ export enum RenderGroupDirection {
     RowReversed,
 
     ColumnReversed
+}
+
+export enum TextAlignment {
+    Left = 'start',
+
+    Center = 'center',
+
+    Right = 'end'
+}
+
+export enum HorizontalAlignment {
+    Left = 'left',
+
+    Center = 'center',
+
+    Right = 'right'
+}
+
+export enum VerticalAlignment {
+    Top = 'top',
+
+    Center = 'center',
+
+    Bottom = 'bottom'
 }

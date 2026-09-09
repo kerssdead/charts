@@ -4,6 +4,7 @@ import QueueLineItemBuilder from './QueueLineItemBuilder'
 import QueueRectangleItemBuilder from './QueueRectangleItemBuilder'
 import QueueGroupItemBuilder from './QueueGroupItemBuilder'
 import QueueArcItemBuilder from './QueueArcItemBuilder'
+import QueueTextItemBuilder from './QueueTextItemBuilder'
 
 export default class QueueItemsBuilder {
     private items: RenderItem[] = []
@@ -40,6 +41,16 @@ export default class QueueItemsBuilder {
         this.add()
 
         let builder = new QueueArcItemBuilder()
+
+        this.current = builder
+
+        return builder
+    }
+
+    text(text: string): QueueTextItemBuilder {
+        this.add()
+
+        let builder = new QueueTextItemBuilder(text)
 
         this.current = builder
 

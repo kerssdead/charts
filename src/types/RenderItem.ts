@@ -9,6 +9,7 @@ import RenderItemBase from './interfaces/RenderItemBase'
 import Point from './Point'
 import { adjustColor } from '../Helper'
 import { DefaultRenderer } from '../render/DefaultRenderer'
+import RenderItemText from './RenderItemText'
 
 export default class RenderItem {
     isAnimate: boolean = false
@@ -27,6 +28,8 @@ export default class RenderItem {
 
     arc: RenderItemArc
 
+    text: RenderItemText
+
     group: RenderItemGroup
 
     // todo: group to RenderItemAnimationItem ?
@@ -36,7 +39,8 @@ export default class RenderItem {
     mouseLeave: boolean
 
     private items(): RenderItemBase[] {
-        return [this.line, this.rect, this.arc, this.group]
+        // todo: add text
+        return [this.line, this.rect, this.arc, this.text, this.group]
     }
 
     render(ctx: CanvasRenderingContext2D, window: CanvasWindow) {
@@ -45,6 +49,7 @@ export default class RenderItem {
         ctx.beginPath()
 
         ctx.lineWidth = DEFAULT_LINE_WIDTH
+        ctx.setLineDash([])
 
         ctx.fillStyle = this.activeColor
         ctx.strokeStyle = this.activeColor

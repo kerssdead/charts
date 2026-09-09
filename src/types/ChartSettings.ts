@@ -2,7 +2,7 @@ import Data from 'types/interfaces/Data'
 import DropdownItem from 'types/DropdownItem'
 import { ChartType, LegendPlace } from 'static/Enums'
 
-class ChartSettings {
+export default class ChartSettings {
     enableLegend: boolean
 
     enableTooltip: boolean
@@ -33,11 +33,11 @@ class ChartSettings {
 
     legendPlace: LegendPlace
 
-    data: Data[]
+    data: Data
+
+    type: ChartType = ChartType.Plot
 
     contextMenu?: DropdownItem[]
 
     isDarkThemeFunction: Function | undefined
 }
-
-export default ChartSettings

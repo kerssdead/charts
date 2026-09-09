@@ -12,6 +12,8 @@ export default class RenderItemLine
 
     width: number = 1
 
+    dash: number[] = []
+
     adjust(window: CanvasWindow): void {
         this.stops1 = []
 
@@ -22,6 +24,7 @@ export default class RenderItemLine
 
     render(ctx: CanvasRenderingContext2D): void {
         ctx.lineWidth = this.width
+        ctx.setLineDash(this.dash)
 
         if (this.stops1) {
             ctx.moveTo(this.stops1[0].x, this.stops1[0].y)

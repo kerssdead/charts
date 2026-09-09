@@ -39,6 +39,7 @@ class Chart {
         this.node.appendChild(canvas)
 
         this.renderer = new DefaultRenderer(canvas)
+        this.renderer.add(settings.type, settings.data)
 
         this.applyStyles()
         this.attachEvents()

@@ -1,12 +1,14 @@
 import Queue from 'render/Queue'
 import Canvas from 'helpers/Canvas'
 import Point from 'types/Point'
-import { Events, RenderGroupDirection } from 'static/Enums'
+import { ChartType, Events } from 'static/Enums'
 import Debug from '../Debug'
 import CanvasWindow from '../types/CanvasWindow'
 import { COORDS_MAX_X, COORDS_MAX_Y, ZOOM_DEFAULT_STEP } from 'static/constants/Index'
-import Margin from '../types/Margin'
 import RenderItem from '../types/RenderItem'
+import PlotProcess from './PlotProcess'
+import Data from '../types/interfaces/Data'
+import PlotData from '../types/data/PlotData'
 
 // todo: add tooltips
 // todo: add init animation
@@ -36,77 +38,6 @@ export class DefaultRenderer {
 
         this.window = new CanvasWindow(canvas)
 
-        this.queue.add(items => {
-            // items.line()
-            //      .stop(500, 500)
-            //      .stop(4500, 4500)
-            //      .width(10)
-            //      .color('green')
-            //
-            // items.rect()
-            //      .position(100, 100)
-            //      .size(200, 200)
-            //      .fill()
-
-            items.group()
-                 .gap(200)
-                 .margin(Margin.all(300))
-                 .direction(RenderGroupDirection.Column)
-                 .items(groupItems => {
-                     groupItems.rect()
-                               .fill()
-                               .color('#ff000088')
-                               .interact()
-
-                     groupItems.rect()
-                               .fill()
-                               .color('#00ff0088')
-
-                     groupItems.rect()
-                               .fill()
-                               .color('#0000ff88')
-                               .interact()
-                 })
-                .interact()
-
-            // items.group()
-            //      .gap(200)
-            //      .margin(Margin.all(150))
-            //      .direction(RenderGroupDirection.RowReversed)
-            //      .items(groupItems => {
-            //          groupItems.rect()
-            //                    .fill()
-            //                    .color('#ff000088')
-            //
-            //          groupItems.rect()
-            //                    .fill()
-            //                    .color('#00ff0088')
-            //
-            //          groupItems.rect()
-            //                    .fill()
-            //                    .color('#0000ff88')
-            //      })
-
-            // items.line()
-            //      .stop(0, 0)
-            //      .stop(5000, 0)
-            //      .color('red')
-
-            // items.arc()
-            //      .position(0, 0)
-            //      .radius(5000)
-            //      .fill()
-            //      .color('magenta')
-            //     .layer(-1)
-
-            // items.line()
-            //      .stop(500, -3000)
-            //      .stop(4500, 6000)
-            //      .width(10)
-            //      .color('orange')
-            //      .layer(-1)
-        })
-
         this.canvas.addEventListener(Events.MouseDown, ev => this.onMouseDown(ev))
         document.addEventListener(Events.MouseMove, ev => this.onMouseMove(ev))
         document.addEventListener(Events.MouseUp, _ => this.onMouseUp())
@@ -126,6 +57,20 @@ export class DefaultRenderer {
 
         // todo: if canvas is need to re-render
         requestAnimationFrame(this.render.bind(this))
+    }
+
+    add(type: ChartType, ...data: Data[]) {
+        for (const item of data) {
+            switch (type) {
+                case ChartType.Plot:
+                    let process = new PlotProcess(item as PlotData)
+
+                    this.queue.add(process.getBase())
+                    this.queue.add(process.getData())
+
+                    break;
+            }
+        }
     }
 
     /**

@@ -6,6 +6,8 @@ import Point from './Point'
 import { adjustColor } from '../Helper'
 import { DefaultRenderer } from '../render/DefaultRenderer'
 import Animations from '../Animations'
+import { Alignment } from './Alignment'
+import { HorizontalAlignment, VerticalAlignment } from '../static/Enums'
 
 export default class RenderItemRectangle
     implements RenderItemBase {
@@ -20,11 +22,33 @@ export default class RenderItemRectangle
         const width = this.width1 * this.activeScale
         const height = this.height1 * this.activeScale
 
-        const x = this.x1 - width / 2
-        const y = this.y1 - height / 2
+        let x = this.x1
+        let y = this.y1
 
-        if (this.isRounded) {
-            ctx.roundRect(x, y, width, height)
+        switch (this.align.x) {
+            case HorizontalAlignment.Left:
+                break
+            case HorizontalAlignment.Center:
+                x -= width / 2
+                break
+            case HorizontalAlignment.Right:
+                x -= width
+                break
+        }
+
+        switch (this.align.y) {
+            case VerticalAlignment.Top:
+                break
+            case VerticalAlignment.Center:
+                y -= height / 2
+                break
+            case VerticalAlignment.Bottom:
+                y -= height
+                break
+        }
+
+        if (this.roundedCorners) {
+            ctx.roundRect(x, y, width, height, this.roundedCorners)
         } else {
             ctx.rect(x, y, width, height)
         }
@@ -109,7 +133,7 @@ export default class RenderItemRectangle
 
     isFill: boolean = false
 
-    isRounded: boolean = false
+    roundedCorners: number[] = []
 
     x: number = 0
 
@@ -132,4 +156,6 @@ export default class RenderItemRectangle
     height1: number = 1
 
     activeScale: number = 1
+
+    align: Alignment = Alignment.default
 }

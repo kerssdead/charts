@@ -1,5 +1,5 @@
 import QueueItemBaseBuilder from './QueueItemBaseBuilder'
-import { RenderStepType } from '../static/Enums'
+import { HorizontalAlignment, RenderStepType, VerticalAlignment } from '../static/Enums'
 import RenderItemRectangle from '../types/RenderItemRectangle'
 
 export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
@@ -30,8 +30,17 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
         return this
     }
 
-    round(): QueueRectangleItemBuilder {
-        this.current.rect.isRounded = true
+    round(corners?: number[] | null): QueueRectangleItemBuilder {
+        this.current.rect.roundedCorners = corners ?? [16, 16, 16, 16]
+
+        return this
+    }
+
+    align(x: HorizontalAlignment | null, y: VerticalAlignment | null) {
+        this.current.rect.align = {
+            x: x ?? HorizontalAlignment.Center,
+            y: y ?? VerticalAlignment.Center
+        }
 
         return this
     }
