@@ -67,10 +67,12 @@ export default class Queue {
     //     // todo: not implemented
     // }
 
-    add(action: (builder: QueueItemsBuilder) => void) {
+    add(...actions: ((builder: QueueItemsBuilder) => void)[]) {
         const builder = new QueueItemsBuilder()
 
-        action(builder)
+        for (const a of actions) {
+            a(builder)
+        }
 
         this.queue = this.queue.concat(builder.dispose())
     }

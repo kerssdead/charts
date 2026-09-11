@@ -75,7 +75,7 @@ export class DefaultRenderer {
 
                     this.queue.add(process.getTitles(this.settings.title))
                     this.queue.add(process.getBase())
-                    this.queue.add(process.getData())
+                    this.queue.add(...process.getData())
 
                     break;
             }
