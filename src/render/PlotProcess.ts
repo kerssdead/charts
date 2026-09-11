@@ -1,16 +1,18 @@
 import PlotData from '../types/data/PlotData'
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
 import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
-import { ErrorType, HorizontalAlignment, PlotType, TextAlignment, VerticalAlignment } from '../static/Enums'
+import { HorizontalAlignment, PlotType, TextAlignment, VerticalAlignment } from '../static/Enums'
 import { getRoundedValues } from '../Helper'
 import Margin from '../types/Margin'
 import PlotSeries from '../types/PlotSeries'
-import Errors from '../helpers/Errors'
+import Debug from '../Debug'
 
 export default class PlotProcess {
     private data: PlotData
 
     private margin: Margin
+
+    private readonly isBothTypes: boolean
 
     private readonly values: number[] = []
 
@@ -36,6 +38,8 @@ export default class PlotProcess {
             bottom: 200,
             left: 200
         }
+
+        this.isBothTypes = this.data.values.filter(s => s.type == PlotType.Bar).length != this.data.values.length
     }
 
     getBase() {
@@ -45,57 +49,123 @@ export default class PlotProcess {
         const intermediateCount = 4
 
         return (items: QueueItemsBuilder) => {
-            items.line()
-                 .stop(x1, COORDS_MAX_Y - this.margin.bottom)
-                 .stop(x2, COORDS_MAX_Y - this.margin.bottom)
-                 .color('black')
-                 .layer(20)
+            this.getBaseLabels(items)
+            this.getBaseLines(items)
+        }
+    }
 
-            const step = this.available.y / intermediateCount
+    private getBaseLabels(items: QueueItemsBuilder) {
+        const columnMargin = 30
+        const x1 = this.margin.left
+        const x2 = COORDS_MAX_X - this.margin.right
 
-            for (let i = 0; i < intermediateCount; i++) {
-                const y = this.margin.top + step * i
+        const intermediateCount = 4
 
-                items.line()
-                     .stop(x1, y)
-                     .stop(x2, y)
-                     .dash([1, 20])
-                     .color('gray')
-                     .layer(0)
-            }
+        let i = 0
 
-            let y = COORDS_MAX_Y - this.margin.bottom
+        if (this.isBothTypes) {
+            this.margin.top += 100
+
+            i = 0
+            const step = this.available.x / (this.values.length - 1)
+
+            // Top labels
             for (const label of this.values) {
+                const x = this.margin.left + i * step
+
                 // todo: test long values visibility/offset
                 items.text(label.toString())
-                     .position(x1, y)
-                     .align(TextAlignment.Right)
+                     .position(x, this.margin.top - 50)
+                     .align(TextAlignment.Center)
                      .color('black')
 
-                y -= step
+                i++
             }
 
-            if (this.data.values.length > 0) {
-                const columnMargin = 30
-                const count = Math.max(...this.data.values.map(s => s.values.length))
-                const stepX = (this.available.x - columnMargin) / count - columnMargin
+            // Right labels
+            // const columnMargin = 30
+            const count = Math.max(...this.data.values.map(s => s.values.length))
+            // todo: remove columnMargin from here ?
+            const stepX = (this.available.y - columnMargin) / count - columnMargin
 
-                const y = COORDS_MAX_Y - this.margin.bottom
+            const x = COORDS_MAX_X - this.margin.right
 
-                let i = 0
+            i = 0
 
-                for (const value of this.data.values[0].values) {
-                    const x = this.margin.left + i * stepX + (i + 1) * columnMargin
+            for (const value of this.data.values[0].values) {
+                const y = COORDS_MAX_Y - this.margin.bottom - i * stepX - (i + 1) * columnMargin
 
-                    items.text(value.x.toString())
-                         .position(x + stepX / 2, y + this.margin.left / 2)
-                         .align(TextAlignment.Left)
-                         .size(12)
-                         .color('black')
+                items.text(value.x.toString())
+                     .position(x, y - stepX / 2)
+                     .align(TextAlignment.Left)
+                     .size(12)
+                     .color('black')
 
-                    i++
-                }
+                i++
             }
+        }
+
+        let step = this.available.y / intermediateCount
+
+        // Left labels
+        let y = COORDS_MAX_Y - this.margin.bottom
+        for (const label of this.values) {
+            // todo: test long values visibility/offset
+            items.text(label.toString())
+                 .position(x1, y)
+                 .align(TextAlignment.Right)
+                 .color('black')
+
+            y -= step
+        }
+
+        if (this.data.values.length > 0) {
+            // Bottom labels
+            const count = Math.max(...this.data.values.map(s => s.values.length))
+            const stepX = (this.available.x - columnMargin) / count - columnMargin
+
+            const y = COORDS_MAX_Y - this.margin.bottom
+
+            i = 0
+
+            for (const value of this.data.values[0].values) {
+                const x = this.margin.left + i * stepX + (i + 1) * columnMargin
+
+                items.text(value.x.toString())
+                     .position(x + stepX / 2, y + this.margin.left / 2)
+                     .align(TextAlignment.Left)
+                     .size(12)
+                     .color('black')
+
+                i++
+            }
+        }
+    }
+
+    private getBaseLines(items: QueueItemsBuilder) {
+        const x1 = this.margin.left
+        const x2 = COORDS_MAX_X - this.margin.right
+
+        const intermediateCount = 4
+
+        let step = this.available.y / intermediateCount
+
+        // Horizontal lines
+        items.line()
+             .stop(x1, COORDS_MAX_Y - this.margin.bottom)
+             .stop(x2, COORDS_MAX_Y - this.margin.bottom)
+             .color('black')
+             .layer(20)
+
+        for (let i = 0; i < intermediateCount; i++) {
+            const y = this.margin.top + step * i
+
+            items.line()
+                 .stop(x1, y)
+                 .stop(x2, y)
+                 .dash([1, 20])
+                 .color('gray')
+                 .layer(0)
         }
     }
 
@@ -145,22 +215,28 @@ export default class PlotProcess {
         let result = []
 
         for (const series of this.data.values) {
-            if (series.type == PlotType.Column) {
-                result.push(this.getColumns(series))
-            }
+            switch (series.type) {
+                case PlotType.Column:
+                    result.push(this.getColumns(series))
+                    break
 
-            if (series.type == PlotType.Line) {
-                result.push(this.getLines(series))
-            }
+                case PlotType.Line:
+                    result.push(this.getLines(series))
+                    break
 
-            if (series.type == PlotType.Bar) {
-                result.push(this.getBars(series))
+                case PlotType.Bar:
+                    result.push(this.getBars(series))
+                    break
+
+                default:
+                    Debug.error(`This (${series.type}) plot type is not implemented`)
             }
         }
 
         return result
     }
 
+    // todo: use group ?
     private getColumns(series: PlotSeries) {
         const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
         // todo: better name?
@@ -224,6 +300,7 @@ export default class PlotProcess {
     }
 
     // todo: if there is columns/lines with bars add second base lines
+    // todo: use group ?
     private getBars(series: PlotSeries) {
         return (items: QueueItemsBuilder) => {
             const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
