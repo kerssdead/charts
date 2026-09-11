@@ -43,11 +43,6 @@ export default class PlotProcess {
     }
 
     getBase() {
-        const x1 = this.margin.left
-        const x2 = COORDS_MAX_X - this.margin.right
-
-        const intermediateCount = 4
-
         return (items: QueueItemsBuilder) => {
             this.getBaseLabels(items)
             this.getBaseLines(items)
@@ -57,7 +52,6 @@ export default class PlotProcess {
     private getBaseLabels(items: QueueItemsBuilder) {
         const columnMargin = 30
         const x1 = this.margin.left
-        const x2 = COORDS_MAX_X - this.margin.right
 
         const intermediateCount = 4
 
@@ -177,7 +171,9 @@ export default class PlotProcess {
                      .position(COORDS_MAX_X / 2, 150)
                      .size(20)
 
-                this.margin.top = 320
+                if (this.margin.bottom < 320) {
+                    this.margin.top = 320
+                }
             }
 
             if (this.data.xTitle) {
@@ -192,7 +188,9 @@ export default class PlotProcess {
                      .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.margin.bottom / 2)
                      .size(14)
 
-                this.margin.bottom = 300
+                if (this.margin.bottom < 300) {
+                    this.margin.bottom = 300
+                }
             }
         }
     }
@@ -264,7 +262,7 @@ export default class PlotProcess {
                      .fill()
                      .round([16, 16, 0, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                     .color(series.color ?? 'orange')
+                     .color(series.color ?? '#ffa50077')
 
                 i++
             }
@@ -295,7 +293,7 @@ export default class PlotProcess {
                 i++
             }
 
-            line.color(series.color ?? 'green')
+            line.color(series.color ?? '#00ff0077')
         }
     }
 
@@ -324,7 +322,7 @@ export default class PlotProcess {
                      .round([0, 16, 16, 0])
                      .align(HorizontalAlignment.Left, null)
                      .fill()
-                     .color(series.color ?? 'blue')
+                     .color(series.color ?? '#0000ff77')
 
                 i++
             }
