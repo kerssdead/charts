@@ -69,10 +69,40 @@ export default class RenderItemRectangle
     }
 
     isMouseOver(point: Point) {
-        const halfWidth = this.width1 / 2
-        const halfHeight = this.height1 / 2
-        return this.x1 - halfWidth <= point.x && point.x <= this.x1 + halfWidth
-               && this.y1 - halfHeight <= point.y && point.y <= this.y1 + halfHeight;
+        let isHorizontal = false
+        let isVertical = false
+
+        switch (this.align.x) {
+            case HorizontalAlignment.Center:
+                const halfWidth = this.width1 / 2
+                isHorizontal = this.x1 - halfWidth <= point.x && point.x <= this.x1 + halfWidth
+                break
+
+            case HorizontalAlignment.Left:
+                isHorizontal = this.x1 <= point.x && point.x <= this.x1 + this.width1
+                break
+
+            case HorizontalAlignment.Right:
+                isHorizontal = this.x1 - this.width1 <= point.x && point.x <= this.x1
+                break
+        }
+
+        switch (this.align.y) {
+            case VerticalAlignment.Center:
+                const halfHeight = this.height1 / 2
+                isVertical = this.y1 - halfHeight <= point.y && point.y <= this.y1 + halfHeight
+                break
+
+            case VerticalAlignment.Top:
+                isVertical = this.y1 <= point.y && point.y <= this.y1 + this.height1
+                break
+
+            case VerticalAlignment.Bottom:
+                isVertical = this.y1 - this.height1 <= point.y && point.y <= this.y1
+                break
+        }
+
+        return isHorizontal && isVertical
     }
 
     private opacity(item: RenderItem, value: number, isBackward: boolean = false) {

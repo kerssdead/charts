@@ -12,7 +12,7 @@ export default class PlotProcess {
 
     private margin: Margin
 
-    private readonly isBothTypes: boolean
+    private isBothTypes: boolean
 
     private readonly values: number[] = []
 
@@ -39,10 +39,25 @@ export default class PlotProcess {
             left: 200
         }
 
-        this.isBothTypes = this.data.values.filter(s => s.type == PlotType.Bar).length != this.data.values.length
+        // todo: remove, only for test
+        this.data.values = [
+            JSON.parse(JSON.stringify(this.data.values[0])),
+            JSON.parse(JSON.stringify(this.data.values[0])),
+            JSON.parse(JSON.stringify(this.data.values[0]))
+        ]
+
+        // todo: remove, only for test
+        this.data.values[0].type = PlotType.Column
+        // todo: remove, only for test
+        this.data.values[1].type = PlotType.Line
+        // todo: remove, only for test
+        this.data.values[2].type = PlotType.Bar
     }
 
     getBase() {
+        const barSeriesCount = this.data.values.filter(s => s.type == PlotType.Bar).length
+        this.isBothTypes = barSeriesCount > 0 && barSeriesCount != this.data.values.length
+
         return (items: QueueItemsBuilder) => {
             this.getBaseLabels(items)
             this.getBaseLines(items)
@@ -50,7 +65,6 @@ export default class PlotProcess {
     }
 
     private getBaseLabels(items: QueueItemsBuilder) {
-        const columnMargin = 30
         const x1 = this.margin.left
 
         const intermediateCount = 4
@@ -61,15 +75,15 @@ export default class PlotProcess {
             this.margin.top += 100
 
             i = 0
-            const step = this.available.x / (this.values.length - 1)
+            const step = (this.available.x - this.columnMargin * 2) / (this.values.length - 1)
 
             // Top labels
             for (const label of this.values) {
-                const x = this.margin.left + i * step
+                const x = this.margin.left + this.columnMargin + i * step
 
                 // todo: test long values visibility/offset
                 items.text(label.toString())
-                     .position(x, this.margin.top - 50)
+                     .position(x, this.margin.top - this.columnMargin * 2)
                      .align(TextAlignment.Center)
                      .color('black')
 
@@ -77,20 +91,19 @@ export default class PlotProcess {
             }
 
             // Right labels
-            // const columnMargin = 30
             const count = Math.max(...this.data.values.map(s => s.values.length))
             // todo: remove columnMargin from here ?
-            const stepX = (this.available.y - columnMargin) / count - columnMargin
+            const stepY = (this.available.y - this.columnMargin) / count - this.columnMargin
 
-            const x = COORDS_MAX_X - this.margin.right
+            const x = COORDS_MAX_X - this.margin.right + this.columnMargin * 2
 
             i = 0
 
             for (const value of this.data.values[0].values) {
-                const y = COORDS_MAX_Y - this.margin.bottom - i * stepX - (i + 1) * columnMargin
+                const y = COORDS_MAX_Y - this.margin.bottom - i * stepY - (i + 1) * this.columnMargin
 
                 items.text(value.x.toString())
-                     .position(x, y - stepX / 2)
+                     .position(x, y - stepY / 2)
                      .align(TextAlignment.Left)
                      .size(12)
                      .color('black')
@@ -116,14 +129,14 @@ export default class PlotProcess {
         if (this.data.values.length > 0) {
             // Bottom labels
             const count = Math.max(...this.data.values.map(s => s.values.length))
-            const stepX = (this.available.x - columnMargin) / count - columnMargin
+            const stepX = (this.available.x - this.columnMargin) / count - this.columnMargin
 
             const y = COORDS_MAX_Y - this.margin.bottom
 
             i = 0
 
             for (const value of this.data.values[0].values) {
-                const x = this.margin.left + i * stepX + (i + 1) * columnMargin
+                const x = this.margin.left + i * stepX + (i + 1) * this.columnMargin
 
                 items.text(value.x.toString())
                      .position(x + stepX / 2, y + this.margin.left / 2)
@@ -196,20 +209,6 @@ export default class PlotProcess {
     }
 
     getData() {
-        // todo: remove, only for test
-        this.data.values = [
-            JSON.parse(JSON.stringify(this.data.values[0])),
-            JSON.parse(JSON.stringify(this.data.values[0])),
-            JSON.parse(JSON.stringify(this.data.values[0]))
-        ]
-
-        // todo: remove, only for test
-        this.data.values[0].type = PlotType.Column
-        // todo: remove, only for test
-        this.data.values[1].type = PlotType.Line
-        // todo: remove, only for test
-        this.data.values[2].type = PlotType.Bar
-
         let result = []
 
         for (const series of this.data.values) {
@@ -262,7 +261,8 @@ export default class PlotProcess {
                      .fill()
                      .round([16, 16, 0, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                     .color(series.color ?? '#ffa50077')
+                     .color(series.color ?? '#ffa500')
+                     .interact()
 
                 i++
             }
@@ -293,7 +293,8 @@ export default class PlotProcess {
                 i++
             }
 
-            line.color(series.color ?? '#00ff0077')
+            line.color(series.color ?? '#00ff00')
+                .interact()
         }
     }
 
@@ -322,7 +323,8 @@ export default class PlotProcess {
                      .round([0, 16, 16, 0])
                      .align(HorizontalAlignment.Left, null)
                      .fill()
-                     .color(series.color ?? '#0000ff77')
+                     .color(series.color ?? '#0000ff')
+                     .interact()
 
                 i++
             }
