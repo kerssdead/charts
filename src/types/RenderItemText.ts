@@ -21,6 +21,8 @@ export default class RenderItemText
 
     fontSize: number = 14
 
+    rotate: number = 0
+
     alignment: TextAlignment = TextAlignment.Center
 
     private get font(): string {
@@ -36,7 +38,18 @@ export default class RenderItemText
         ctx.font = this.font
         ctx.textAlign = this.alignment
 
-        ctx.fillText(this.value, this.x1, this.y1)
+        if (this.rotate != 0) {
+            ctx.save()
+
+            ctx.translate(this.x1, this.y1)
+            ctx.rotate(this.rotate * Math.PI / 180)
+
+            ctx.fillText(this.value, 0, 0)
+
+            ctx.restore()
+        } else {
+            ctx.fillText(this.value, this.x1, this.y1)
+        }
     }
 
     animate(item: RenderItem, isBackward: boolean, point: Point): void {

@@ -9,6 +9,7 @@ import RenderItem from '../types/RenderItem'
 import PlotProcess from './PlotProcess'
 import Data from '../types/interfaces/Data'
 import PlotData from '../types/data/PlotData'
+import ChartSettings from '../types/ChartSettings'
 
 // todo: add tooltips
 // todo: add init animation
@@ -30,19 +31,26 @@ export class DefaultRenderer {
 
     private readonly canvas: HTMLCanvasElement
 
-    constructor(canvas: HTMLCanvasElement) {
-        Debug.initialize(true)
+    private readonly settings: ChartSettings
+
+    constructor(canvas: HTMLCanvasElement,
+                settings: ChartSettings) {
+        Debug.initialize(settings.enableDebugMode)
 
         this.canvas = canvas
         this.queue = new Queue(Canvas.getContext(this.canvas))
 
         this.window = new CanvasWindow(canvas)
 
-        this.canvas.addEventListener(Events.MouseDown, ev => this.onMouseDown(ev))
-        document.addEventListener(Events.MouseMove, ev => this.onMouseMove(ev))
-        document.addEventListener(Events.MouseUp, _ => this.onMouseUp())
+        this.settings = settings
 
-        this.canvas.addEventListener(Events.Wheel, ev => this.onWheel(ev))
+        if (settings.enableMove) {
+            this.canvas.addEventListener(Events.MouseDown, ev => this.onMouseDown(ev))
+            document.addEventListener(Events.MouseMove, ev => this.onMouseMove(ev))
+            document.addEventListener(Events.MouseUp, _ => this.onMouseUp())
+
+            this.canvas.addEventListener(Events.Wheel, ev => this.onWheel(ev))
+        }
 
         this.canvas.addEventListener(Events.MouseMove, ev => this.onMouseMove2(ev))
     }
@@ -66,6 +74,7 @@ export class DefaultRenderer {
                     let process = new PlotProcess(item as PlotData)
 
                     this.queue.add(process.getBase())
+                    this.queue.add(process.getTitles())
                     this.queue.add(process.getData())
 
                     break;

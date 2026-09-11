@@ -9,6 +9,8 @@ export default class ChartSettings {
 
     enableOther: boolean
 
+    enableMove: boolean
+
     disableInitAnimation: boolean
 
     disableInteractions: boolean

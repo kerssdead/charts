@@ -11,6 +11,9 @@ export default class PlotProcess {
 
     private values: number[] = []
 
+    // todo: move margin outside
+    private readonly columnMargin = 30
+
     private get available() {
         return {
             x: COORDS_MAX_X - 2 * this.padding,
@@ -85,17 +88,36 @@ export default class PlotProcess {
         }
     }
 
+    getTitles() {
+        return (items: QueueItemsBuilder) => {
+            if (this.data.xTitle) {
+                items.text(this.data.xTitle)
+                     .position(this.padding / 2, COORDS_MAX_Y / 2)
+                     .size(14)
+                     .rotate(270)
+            }
+
+            if (this.data.yTitle) {
+                items.text(this.data.yTitle)
+                     .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.padding / 2)
+                     .size(14)
+            }
+        }
+    }
+
     getData() {
+        return this.getColumns()
+    }
+
+    private getColumns() {
         const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
         // todo: better name?
         const scale = this.available.y / range
 
         const y = COORDS_MAX_Y - this.padding
 
-        const columnMargin = 30
-
         const count = Math.max(...this.data.values.map(s => s.values.length))
-        const step = (this.available.x - columnMargin) / count - columnMargin
+        const step = (this.available.x - this.columnMargin) / count - this.columnMargin
         const seriesCount = this.data.values.length
         const widthInStep = step / seriesCount
 
@@ -107,7 +129,7 @@ export default class PlotProcess {
                 let i = 0;
 
                 for (const value of series.values) {
-                    const x = this.padding + i * step + seriesIndex * widthInStep + (i + 1) * columnMargin
+                    const x = this.padding + i * step + seriesIndex * widthInStep + (i + 1) * this.columnMargin
                     const height = value.y as number * scale
 
                     items.rect()

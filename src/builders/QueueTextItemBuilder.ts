@@ -31,4 +31,10 @@ export default class QueueTextItemBuilder
 
         return this
     }
+
+    rotate(angle: number) {
+        this.current.text.rotate = angle
+
+        return this
+    }
 }

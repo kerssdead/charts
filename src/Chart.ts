@@ -1,6 +1,6 @@
 import ChartSettings from 'types/ChartSettings'
-import Renderer from 'types/base/Renderer'
-import Data from 'types/interfaces/Data'
+// import Renderer from 'types/base/Renderer'
+// import Data from 'types/interfaces/Data'
 import Legend from 'Legend'
 import Value from 'types/base/Value'
 // import PlotRenderer from 'render/PlotRenderer'
@@ -38,7 +38,12 @@ class Chart {
 
         this.node.appendChild(canvas)
 
-        this.renderer = new DefaultRenderer(canvas)
+        // todo: remove after debug
+        settings.enableDebugMode = true
+        // todo: remove after debug
+        settings.enableMove = true
+
+        this.renderer = new DefaultRenderer(canvas, settings)
         this.renderer.add(settings.type, settings.data)
 
         this.applyStyles()
