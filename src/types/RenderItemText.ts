@@ -41,6 +41,9 @@ export default class RenderItemText
         if (this.rotate != 0) {
             ctx.save()
 
+            // todo: adjust formula for various this.rotate
+            this.x1 = this.x1 - this.fontSize / 2
+
             ctx.translate(this.x1, this.y1)
             ctx.rotate(this.rotate * Math.PI / 180)
 

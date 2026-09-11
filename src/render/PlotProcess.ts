@@ -3,11 +3,12 @@ import QueueItemsBuilder from '../builders/QueueItemsBuilder'
 import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '../static/Enums'
 import { getRoundedValues } from '../Helper'
+import Margin from '../types/Margin'
 
 export default class PlotProcess {
     private data: PlotData
 
-    private padding: number = 200
+    private margin: Margin
 
     private values: number[] = []
 
@@ -16,8 +17,8 @@ export default class PlotProcess {
 
     private get available() {
         return {
-            x: COORDS_MAX_X - 2 * this.padding,
-            y: COORDS_MAX_Y - 2 * this.padding
+            x: COORDS_MAX_X - this.margin.left - this.margin.right,
+            y: COORDS_MAX_Y - this.margin.top - this.margin.bottom
         }
     }
 
@@ -26,25 +27,32 @@ export default class PlotProcess {
 
         const flatValues = this.data.values.flatMap(s => s.values.map(p => p.y as number))
         this.values = getRoundedValues(flatValues)
+
+        this.margin = {
+            top: 200,
+            right: 200,
+            bottom: 200,
+            left: 200
+        }
     }
 
     getBase() {
-        const x1 = this.padding
-        const x2 = COORDS_MAX_X - this.padding
+        const x1 = this.margin.left
+        const x2 = COORDS_MAX_X - this.margin.right
 
         const intermediateCount = 4
 
         return (items: QueueItemsBuilder) => {
             items.line()
-                 .stop(x1, COORDS_MAX_Y - this.padding)
-                 .stop(x2, COORDS_MAX_Y - this.padding)
+                 .stop(x1, COORDS_MAX_Y - this.margin.bottom)
+                 .stop(x2, COORDS_MAX_Y - this.margin.bottom)
                  .color('black')
                  .layer(20)
 
             const step = this.available.y / intermediateCount
 
             for (let i = 0; i < intermediateCount; i++) {
-                const y = this.padding + step * i
+                const y = this.margin.top + step * i
 
                 items.line()
                      .stop(x1, y)
@@ -54,7 +62,7 @@ export default class PlotProcess {
                      .layer(0)
             }
 
-            let y = COORDS_MAX_Y - this.padding
+            let y = COORDS_MAX_Y - this.margin.bottom
             for (const label of this.values) {
                 items.text(label.toString())
                      .position(x1, y)
@@ -69,15 +77,15 @@ export default class PlotProcess {
                 const count = Math.max(...this.data.values.map(s => s.values.length))
                 const stepX = (this.available.x - columnMargin) / count - columnMargin
 
-                const y = COORDS_MAX_Y - this.padding
+                const y = COORDS_MAX_Y - this.margin.bottom
 
                 let i = 0
 
                 for (const value of this.data.values[0].values) {
-                    const x = this.padding + i * stepX + (i + 1) * columnMargin
+                    const x = this.margin.left + i * stepX + (i + 1) * columnMargin
 
                     items.text(value.x.toString())
-                         .position(x + stepX / 2, y + this.padding / 2)
+                         .position(x + stepX / 2, y + this.margin.left / 2)
                          .align(TextAlignment.Left)
                          .size(12)
                          .color('black')
@@ -88,19 +96,30 @@ export default class PlotProcess {
         }
     }
 
-    getTitles() {
+    // todo: remove title from arg
+    getTitles(title: string | null) {
         return (items: QueueItemsBuilder) => {
+            if (title) {
+                items.text(title)
+                     .position(COORDS_MAX_X / 2, 150)
+                     .size(20)
+
+                this.margin.top = 320
+            }
+
             if (this.data.xTitle) {
                 items.text(this.data.xTitle)
-                     .position(this.padding / 2, COORDS_MAX_Y / 2)
+                     .position(this.margin.left / 2, COORDS_MAX_Y / 2)
                      .size(14)
                      .rotate(270)
             }
 
             if (this.data.yTitle) {
                 items.text(this.data.yTitle)
-                     .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.padding / 2)
+                     .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.margin.bottom / 2)
                      .size(14)
+
+                this.margin.bottom = 300
             }
         }
     }
@@ -114,7 +133,7 @@ export default class PlotProcess {
         // todo: better name?
         const scale = this.available.y / range
 
-        const y = COORDS_MAX_Y - this.padding
+        const y = COORDS_MAX_Y - this.margin.bottom
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
         const step = (this.available.x - this.columnMargin) / count - this.columnMargin
@@ -129,7 +148,7 @@ export default class PlotProcess {
                 let i = 0;
 
                 for (const value of series.values) {
-                    const x = this.padding + i * step + seriesIndex * widthInStep + (i + 1) * this.columnMargin
+                    const x = this.margin.left + i * step + seriesIndex * widthInStep + (i + 1) * this.columnMargin
                     const height = value.y as number * scale
 
                     items.rect()

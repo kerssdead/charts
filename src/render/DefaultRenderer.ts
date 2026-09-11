@@ -73,8 +73,8 @@ export class DefaultRenderer {
                 case ChartType.Plot:
                     let process = new PlotProcess(item as PlotData)
 
+                    this.queue.add(process.getTitles(this.settings.title))
                     this.queue.add(process.getBase())
-                    this.queue.add(process.getTitles())
                     this.queue.add(process.getData())
 
                     break;
