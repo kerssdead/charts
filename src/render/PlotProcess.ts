@@ -38,20 +38,6 @@ export default class PlotProcess {
             bottom: 200,
             left: 200
         }
-
-        // todo: remove, only for test
-        this.data.values = [
-            JSON.parse(JSON.stringify(this.data.values[0])),
-            JSON.parse(JSON.stringify(this.data.values[0])),
-            JSON.parse(JSON.stringify(this.data.values[0]))
-        ]
-
-        // todo: remove, only for test
-        this.data.values[0].type = PlotType.Column
-        // todo: remove, only for test
-        this.data.values[1].type = PlotType.Line
-        // todo: remove, only for test
-        this.data.values[2].type = PlotType.Bar
     }
 
     getBase() {

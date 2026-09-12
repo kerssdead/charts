@@ -63,10 +63,6 @@ export default class Queue {
         return this.queue.sort((a, b) => a.layer - b.layer)
     }
 
-    // private dequeue(step: RenderStep) {
-    //     // todo: not implemented
-    // }
-
     add(...actions: ((builder: QueueItemsBuilder) => void)[]) {
         const builder = new QueueItemsBuilder()
 

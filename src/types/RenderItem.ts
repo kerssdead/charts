@@ -7,7 +7,6 @@ import RenderItemArc from './RenderItemArc'
 import RenderItemGroup from './RenderItemGroup'
 import RenderItemBase from './interfaces/RenderItemBase'
 import Point from './Point'
-import { adjustColor } from '../Helper'
 import { DefaultRenderer } from '../render/DefaultRenderer'
 import RenderItemText from './RenderItemText'
 
