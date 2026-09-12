@@ -165,6 +165,18 @@
 
                     <input type="number" id="base-value" onchange="refresh()" value="1000"/>
                 </label>
+
+                <label>
+                    <input type="checkbox" id="debug-mode" onchange="refresh()"/>
+
+                    Debug mode
+                </label>
+
+                <label>
+                    <input type="checkbox" id="move" onchange="refresh()"/>
+
+                    Move
+                </label>
             </div>
 
             <div>
@@ -686,7 +698,9 @@
             otherEnabled = document.getElementById('other').checked,
             simpleEnabled = document.getElementById('simple').checked,
             disableInitAnimation = document.getElementById('init-animation').checked,
-            shortLabels = document.getElementById('short-labels').checked
+            shortLabels = document.getElementById('short-labels').checked,
+            debugModeEnabled = document.getElementById('debug-mode').checked,
+            moveEnabled = document.getElementById('move').checked
 
 
         const title = titleEnabled ? 'Title' : null,
@@ -750,7 +764,8 @@
             contextMenu: contextMenu,
             valuePostfix: postfix,
             isDarkThemeFunction: () => darkThemeEnabled,
-            enableDebugMode: true
+            enableDebugMode: debugModeEnabled,
+            enableMove: moveEnabled
         }
 
         if (chart === undefined)

@@ -37,11 +37,6 @@ class Chart {
     }
 
     ctor(settings: ChartSettings) {
-        // todo: remove after debug
-        settings.enableDebugMode = true
-        // todo: remove after debug
-        settings.enableMove = true
-
         this.renderer = new DefaultRenderer(this.canvas, settings)
         this.renderer.add(settings.type, settings.data)
 
@@ -55,6 +50,7 @@ class Chart {
         this.refresh()
     }
 
+    // todo: restore
     destroy() {
         // todo: add destroy to DefaultRenderer
         // this.renderer.destroy()
@@ -104,6 +100,7 @@ class Chart {
     }
 
     private prepareSettings() {
+        // todo: check
         this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
 
         // if (this.renderer == undefined || this.settings.type != this.currentType) {
