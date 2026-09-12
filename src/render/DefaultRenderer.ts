@@ -40,7 +40,7 @@ export class DefaultRenderer {
         this.canvas = canvas
         this.queue = new Queue(Canvas.getContext(this.canvas))
 
-        this.window = new CanvasWindow(canvas)
+        this.calculateWindow()
 
         this.settings = settings
 
@@ -147,5 +147,12 @@ export class DefaultRenderer {
             x: RenderItem.adjustX(this.window, onCanvas.x / this.window.width * COORDS_MAX_X),
             y: RenderItem.adjustY(this.window, onCanvas.y / this.window.height * COORDS_MAX_Y),
         }
+    }
+
+    /**
+     * Recalculate DOM size
+     */
+    calculateWindow() {
+        this.window = new CanvasWindow(this.canvas)
     }
 }

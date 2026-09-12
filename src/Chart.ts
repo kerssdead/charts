@@ -25,10 +25,8 @@ class Chart {
         this.node = element
 
         this.canvas = document.createElement(Tag.Canvas)
-        let domRect = this.node.getBoundingClientRect()
 
-        this.canvas.width = domRect.width
-        this.canvas.height = domRect.height
+        this.resize()
 
         this.node.appendChild(this.canvas)
 
@@ -65,6 +63,7 @@ class Chart {
         this.observer.disconnect()
     }
 
+    // todo: remove ?
     highlight(value?: Value) {
         // todo: highlight values via charts field
         // this.renderer.highlight(value)
@@ -155,9 +154,20 @@ class Chart {
     }
 
     private resize() {
+        let domRect = this.node.getBoundingClientRect()
+
+        this.canvas.width = domRect.width
+        this.canvas.height = domRect.height
+
+        this.renderer?.calculateWindow()
+
+        // todo:   vvv   old code   vvv
+
         // todo: if use abstract coords in 2d position then .resize() function in not needed more
         // this.renderer.resize()
         this.legend?.resize()
+
+        // todo:   ^^^   old code   ^^^
     }
 
     private initialize(settings: ChartSettings) {
@@ -181,12 +191,11 @@ class Chart {
         if (this.observer != undefined)
             return
 
+        const chart = this
+
         this.observer = new ResizeObserver(() => {
             // todo: if canvas is not exist on page then destroy chart completely
-            // if (this.renderer.canvas)
-            //     this.resize()
-            // else
-            //     this.destroy()
+            chart.resize()
         })
 
         this.observer.observe(this.node)
