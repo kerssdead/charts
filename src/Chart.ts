@@ -1,16 +1,10 @@
 import ChartSettings from 'types/ChartSettings'
-// import Renderer from 'types/base/Renderer'
-// import Data from 'types/interfaces/Data'
 import Legend from 'Legend'
 import Value from 'types/base/Value'
-// import PlotRenderer from 'render/PlotRenderer'
-// import GaugeRenderer from 'render/GaugeRenderer'
-// import TreeRenderer from 'render/TreeRenderer'
 import Animations from 'Animations'
 import Theme from 'Theme'
 import Styles from 'static/constants/Styles'
-import { ChartType, Events, Tag } from 'static/Enums'
-// import PieProcess from 'render/PieProcess'
+import { Tag } from 'static/Enums'
 import Debug from 'Debug'
 import { DefaultRenderer } from './render/DefaultRenderer'
 
@@ -19,35 +13,39 @@ class Chart {
 
     settings: ChartSettings
 
-    // private charts: PieProcess[]
-
     private renderer: DefaultRenderer
 
     private legend: Legend | undefined
 
     private observer: ResizeObserver
 
+    private canvas: HTMLCanvasElement
+
     constructor(element: HTMLElement, settings: ChartSettings) {
         this.node = element
 
-        const canvas = document.createElement(Tag.Canvas)
+        this.canvas = document.createElement(Tag.Canvas)
         let domRect = this.node.getBoundingClientRect()
 
-        canvas.width = domRect.width
-        canvas.height = domRect.height
+        this.canvas.width = domRect.width
+        this.canvas.height = domRect.height
 
-        this.node.appendChild(canvas)
+        this.node.appendChild(this.canvas)
 
+        this.applyStyles()
+        this.attachEvents()
+
+        this.ctor(settings)
+    }
+
+    ctor(settings: ChartSettings) {
         // todo: remove after debug
         settings.enableDebugMode = true
         // todo: remove after debug
         settings.enableMove = true
 
-        this.renderer = new DefaultRenderer(canvas, settings)
+        this.renderer = new DefaultRenderer(this.canvas, settings)
         this.renderer.add(settings.type, settings.data)
-
-        this.applyStyles()
-        this.attachEvents()
 
         this.applySettings(settings)
     }

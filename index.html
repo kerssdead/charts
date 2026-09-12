@@ -756,7 +756,7 @@
         if (chart === undefined)
             chart = OCharts.chart(document.getElementById('chart'), settings)
         else
-            chart.applySettings(settings)
+            chart.ctor(settings)
 
         saveState()
     }
