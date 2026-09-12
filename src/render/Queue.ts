@@ -24,6 +24,8 @@ export default class Queue {
         for (const step of this.getSorted()) {
             step.render(this.ctx, window)
         }
+
+        this.queue = this.queue.filter(item => !item.isTemp)
     }
 
     animate(point: Point | null) {

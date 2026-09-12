@@ -13,6 +13,8 @@ import RenderItemText from './RenderItemText'
 export default class RenderItem {
     isAnimate: boolean = false
 
+    isTemp: boolean = false
+
     type: RenderStepType
 
     color: string
