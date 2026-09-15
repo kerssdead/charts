@@ -1,8 +1,8 @@
 import PlotData from '../types/data/PlotData'
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
-import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
-import { HorizontalAlignment, PlotType, TextAlignment, VerticalAlignment } from '../static/Enums'
-import { getRoundedValues } from '../Helper'
+import {COORDS_MAX_X, COORDS_MAX_Y} from 'static/constants/Index'
+import {HorizontalAlignment, PlotType, TextAlignment, VerticalAlignment} from '../static/Enums'
+import {getRoundedValues} from '../Helper'
 import Margin from '../types/Margin'
 import PlotSeries from '../types/PlotSeries'
 import Debug from '../Debug'
@@ -14,7 +14,9 @@ export default class PlotProcess {
 
     private isBothTypes: boolean
 
-    private readonly values: number[] = []
+    private stacks: Map<string, number>
+
+    private values: number[] = []
 
     // todo: move margin outside
     private readonly columnMargin = 30
@@ -29,8 +31,9 @@ export default class PlotProcess {
     constructor(data: PlotData) {
         this.data = data
 
-        const flatValues = this.data.values.flatMap(s => s.values.map(p => p.y as number))
-        this.values = getRoundedValues(flatValues)
+        this.stacks = new Map<string, number>()
+
+        this.calculateLabels()
 
         this.margin = {
             top: 200,
@@ -162,6 +165,29 @@ export default class PlotProcess {
         }
     }
 
+    private calculateLabels() {
+        if (this.data.values.filter(s => s.type == PlotType.StackingColumn).length > 0) {
+            let allValues: Map<string, number> = new Map()
+
+            for (const series of this.data.values) {
+                for (const value of series.values) {
+                    const key = value.x.toString()
+                    const v = allValues.get(key) ?? 0
+
+                    allValues.set(key, v + (value.y as number))
+                }
+            }
+
+            this.values = getRoundedValues(Array.from(allValues.values()))
+        } else {
+            let flatValues = this.data.values.flatMap(s => s.values.map(p => p.y as number))
+            while (flatValues.length < 5) {
+                flatValues.push(flatValues[0])
+            }
+            this.values = getRoundedValues(flatValues)
+        }
+    }
+
     // todo: remove title from arg
     getTitles(title: string | null) {
         return (items: QueueItemsBuilder) => {
@@ -198,6 +224,7 @@ export default class PlotProcess {
         let result = []
 
         for (const series of this.data.values) {
+            // todo: simplify switch construction to make adding new types and reading code easier
             switch (series.type) {
                 case PlotType.Column:
                     result.push(this.getColumns(series))
@@ -211,6 +238,14 @@ export default class PlotProcess {
                     result.push(this.getBars(series))
                     break
 
+                case PlotType.StackingColumn:
+                    result.push(this.getStackedColumns(series))
+                    break
+
+                case PlotType.AttentionLine:
+                    result.push(this.getAttentionLine(series))
+                    break
+
                 default:
                     Debug.error(`This (${series.type}) plot type is not implemented`)
             }
@@ -222,7 +257,6 @@ export default class PlotProcess {
     // todo: use group ?
     private getColumns(series: PlotSeries) {
         const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
-        // todo: better name?
         const scale = this.available.y / range
 
         const y = COORDS_MAX_Y - this.margin.bottom
@@ -233,7 +267,7 @@ export default class PlotProcess {
         const widthInStep = step / seriesCount
 
         return (items: QueueItemsBuilder) => {
-            let seriesIndex = 0
+            let seriesIndex = this.data.values.indexOf(series)
 
             let i = 0
 
@@ -257,7 +291,6 @@ export default class PlotProcess {
 
     private getLines(series: PlotSeries) {
         const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
-        // todo: better name?
         const scale = this.available.y / range
 
         const y = COORDS_MAX_Y - this.margin.bottom
@@ -266,8 +299,7 @@ export default class PlotProcess {
         const step = (this.available.x - this.columnMargin) / count - this.columnMargin
 
         return (items: QueueItemsBuilder) => {
-
-            let line     = items.line()
+            let line = items.line()
             let i = 0
 
             for (const value of series.values) {
@@ -297,23 +329,85 @@ export default class PlotProcess {
             const seriesCount = this.data.values.filter(s => s.type == PlotType.Bar).length
             const heightInStep = step / seriesCount
 
+            const seriesIndex = this.data.values.indexOf(series)
+
             let i = 0
 
             for (const value of series.values) {
-                const y = COORDS_MAX_Y - this.margin.bottom - i * step - step / 2 - (i + 1) * this.columnMargin
+                const y = COORDS_MAX_Y - this.margin.bottom - seriesIndex * heightInStep - i * step - (i + 1) * this.columnMargin
 
                 items.rect()
                      .position(this.margin.left, y)
                      .size(value.y as number * scale,
                          heightInStep)
                      .round([0, 16, 16, 0])
-                     .align(HorizontalAlignment.Left, null)
+                     .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .fill()
                      .color(series.color ?? '#0000ff')
                      .interact()
 
                 i++
             }
+        }
+    }
+
+    private getStackedColumns(series: PlotSeries) {
+        const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
+        const scale = this.available.y / range
+
+        const baseY = COORDS_MAX_Y - this.margin.bottom
+
+        const count = Math.max(...this.data.values.map(s => s.values.length))
+        const step = (this.available.x - this.columnMargin) / count - this.columnMargin
+
+        return (items: QueueItemsBuilder) => {
+            let seriesIndex = 0
+
+            let i = 0
+
+            for (const value of series.values) {
+                const key = value.x.toString()
+
+                const stackValue = this.stacks.get(key)
+                const stack = stackValue == undefined ? 0 : stackValue
+                const y = baseY + stack
+
+                const x = this.margin.left + i * step + seriesIndex * step + (i + 1) * this.columnMargin
+                const height = value.y as number * scale
+
+                this.stacks.set(key, stack - height)
+
+                items.rect()
+                    .position(x, y)
+                    .size(step, height)
+                    .fill()
+                    .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                    .color(series.color ?? '#a6f022')
+                    .interact()
+
+                i++
+            }
+        }
+    }
+
+    private getAttentionLine(series: PlotSeries) {
+        const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
+        const scale = this.available.y / range
+
+        const y = COORDS_MAX_Y - this.margin.bottom - (series.values[0].y as number) * scale
+
+        const x1 = this.margin.left
+        const x2 = COORDS_MAX_X -  this.margin.right
+
+        const color = series.color ?? '#aa5533'
+
+        return (items: QueueItemsBuilder) => {
+            items.line()
+                 .stop(x1, y)
+                 .stop(x2, y)
+                 .width(series.width)
+                 .color(color)
+                 .interact()
         }
     }
 }

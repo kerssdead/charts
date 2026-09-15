@@ -163,7 +163,7 @@ export default class RenderItemRectangle
 
     isFill: boolean = false
 
-    roundedCorners: number[] = []
+    roundedCorners: number[] | null
 
     x: number = 0
 
