@@ -28,8 +28,8 @@ export default class Debug {
 
             let y = 0
 
-            for (const line in msg) {
-                ctx.fillText(msg.toString(), 0, y)
+            for (const m in msg) {
+                ctx.fillText(m.toString(), 0, y)
 
                 y += 20
             }

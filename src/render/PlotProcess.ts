@@ -7,6 +7,8 @@ import Margin from '../types/Margin'
 import PlotSeries from '../types/PlotSeries'
 import Debug from '../Debug'
 
+// todo: fix rendering negative and positive values at the same time
+
 export default class PlotProcess {
     private data: PlotData
 
@@ -220,38 +222,27 @@ export default class PlotProcess {
         }
     }
 
+    private readonly handlers
+        = new Map<PlotType, (series: PlotSeries) => (items: QueueItemsBuilder) => void>([
+        [PlotType.Column, this.getColumns.bind(this)],
+        [PlotType.Line, this.getLines.bind(this)],
+        [PlotType.Bar, this.getBars.bind(this)],
+        [PlotType.StackingColumn, this.getStackedColumns.bind(this)],
+        [PlotType.AttentionLine, this.getAttentionLine.bind(this)]
+    ])
+
     getData() {
-        let result = []
+        return this.data.values.flatMap(series => {
+            const func = this.handlers.get(series.type)
 
-        for (const series of this.data.values) {
-            // todo: simplify switch construction to make adding new types and reading code easier
-            switch (series.type) {
-                case PlotType.Column:
-                    result.push(this.getColumns(series))
-                    break
-
-                case PlotType.Line:
-                    result.push(this.getLines(series))
-                    break
-
-                case PlotType.Bar:
-                    result.push(this.getBars(series))
-                    break
-
-                case PlotType.StackingColumn:
-                    result.push(this.getStackedColumns(series))
-                    break
-
-                case PlotType.AttentionLine:
-                    result.push(this.getAttentionLine(series))
-                    break
-
-                default:
-                    Debug.error(`This (${series.type}) plot type is not implemented`)
+            if (func) {
+                return [func(series)]
             }
-        }
 
-        return result
+            Debug.error(`This (${series.type}) plot type is not implemented`)
+
+            return []
+        })
     }
 
     // todo: use group ?

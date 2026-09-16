@@ -12,6 +12,7 @@ import PlotData from '../types/data/PlotData'
 import ChartSettings from '../types/ChartSettings'
 
 // todo: add tooltips
+// todo: add context menus
 // todo: add init animation
 // todo: add legend ?
 
