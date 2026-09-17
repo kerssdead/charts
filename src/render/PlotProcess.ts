@@ -1,13 +1,14 @@
 import PlotData from '../types/data/PlotData'
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
-import {COORDS_MAX_X, COORDS_MAX_Y} from 'static/constants/Index'
-import {HorizontalAlignment, PlotType, TextAlignment, VerticalAlignment} from '../static/Enums'
-import {getRoundedValues} from '../Helper'
+import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
+import { HorizontalAlignment, PlotType, TextAlignment, VerticalAlignment } from '../static/Enums'
+import { getRoundedValues } from '../Helper'
 import Margin from '../types/Margin'
 import PlotSeries from '../types/PlotSeries'
 import Debug from '../Debug'
 
 // todo: fix rendering negative and positive values at the same time
+// todo: fix rendering multiple series when some of them is not have all x-axis points
 
 export default class PlotProcess {
     private data: PlotData
@@ -28,6 +29,17 @@ export default class PlotProcess {
             x: COORDS_MAX_X - this.margin.left - this.margin.right,
             y: COORDS_MAX_Y - this.margin.top - this.margin.bottom
         }
+    }
+
+    private get scale() {
+        return {
+            x: this.available.x / this.range,
+            y: this.available.y / this.range
+        }
+    }
+
+    private get range() {
+        return Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
     }
 
     constructor(data: PlotData) {
@@ -239,7 +251,7 @@ export default class PlotProcess {
                 return [func(series)]
             }
 
-            Debug.error(`This (${series.type}) plot type is not implemented`)
+            Debug.error(`This (${ series.type }) plot type is not implemented`)
 
             return []
         })
@@ -247,9 +259,6 @@ export default class PlotProcess {
 
     // todo: use group ?
     private getColumns(series: PlotSeries) {
-        const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
-        const scale = this.available.y / range
-
         const y = COORDS_MAX_Y - this.margin.bottom
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
@@ -257,14 +266,16 @@ export default class PlotProcess {
         const seriesCount = this.data.values.filter(s => s.type == PlotType.Column).length
         const widthInStep = step / seriesCount
 
-        return (items: QueueItemsBuilder) => {
-            let seriesIndex = this.data.values.indexOf(series)
+        const seriesIndex = this.data.values
+                                .filter(s => s.type == PlotType.Column)
+                                .indexOf(series)
 
+        return (items: QueueItemsBuilder) => {
             let i = 0
 
             for (const value of series.values) {
                 const x = this.margin.left + i * step + seriesIndex * widthInStep + (i + 1) * this.columnMargin
-                const height = value.y as number * scale
+                const height = value.y as number * this.scale.y
 
                 items.rect()
                      .position(x, y)
@@ -281,9 +292,6 @@ export default class PlotProcess {
     }
 
     private getLines(series: PlotSeries) {
-        const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
-        const scale = this.available.y / range
-
         const y = COORDS_MAX_Y - this.margin.bottom
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
@@ -295,7 +303,7 @@ export default class PlotProcess {
 
             for (const value of series.values) {
                 const x = this.margin.left + i * step + step / 2 + (i + 1) * this.columnMargin
-                const height = value.y as number * scale
+                const height = value.y as number * this.scale.y
 
                 line.stop(x, y - height)
 
@@ -311,16 +319,14 @@ export default class PlotProcess {
     // todo: use group ?
     private getBars(series: PlotSeries) {
         return (items: QueueItemsBuilder) => {
-            const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
-            // todo: better name?
-            const scale = this.available.x / range
-
             const count = Math.max(...this.data.values.map(s => s.values.length))
             const step = (this.available.y - this.columnMargin) / count - this.columnMargin
             const seriesCount = this.data.values.filter(s => s.type == PlotType.Bar).length
             const heightInStep = step / seriesCount
 
-            const seriesIndex = this.data.values.indexOf(series)
+            const seriesIndex = this.data.values
+                                    .filter(s => s.type == PlotType.StackingColumn)
+                                    .indexOf(series)
 
             let i = 0
 
@@ -329,7 +335,7 @@ export default class PlotProcess {
 
                 items.rect()
                      .position(this.margin.left, y)
-                     .size(value.y as number * scale,
+                     .size(value.y as number * this.scale.x,
                          heightInStep)
                      .round([0, 16, 16, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
@@ -343,17 +349,14 @@ export default class PlotProcess {
     }
 
     private getStackedColumns(series: PlotSeries) {
-        const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
-        const scale = this.available.y / range
-
         const baseY = COORDS_MAX_Y - this.margin.bottom
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
         const step = (this.available.x - this.columnMargin) / count - this.columnMargin
 
-        return (items: QueueItemsBuilder) => {
-            let seriesIndex = 0
+        const isLast = this.data.values.indexOf(series) == this.data.values.length - 1
 
+        return (items: QueueItemsBuilder) => {
             let i = 0
 
             for (const value of series.values) {
@@ -363,18 +366,21 @@ export default class PlotProcess {
                 const stack = stackValue == undefined ? 0 : stackValue
                 const y = baseY + stack
 
-                const x = this.margin.left + i * step + seriesIndex * step + (i + 1) * this.columnMargin
-                const height = value.y as number * scale
+                const x = this.margin.left
+                          + i * step
+                          + (i + 1) * this.columnMargin
+                const height = value.y as number * this.scale.y
 
                 this.stacks.set(key, stack - height)
 
                 items.rect()
-                    .position(x, y)
-                    .size(step, height)
-                    .fill()
-                    .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                    .color(series.color ?? '#a6f022')
-                    .interact()
+                     .position(x, y)
+                     .size(step, height)
+                     .fill()
+                     .round(isLast ? [16, 16, 0, 0] : null)
+                     .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                     .color(series.color ?? '#a6f022')
+                     .interact()
 
                 i++
             }
@@ -382,13 +388,11 @@ export default class PlotProcess {
     }
 
     private getAttentionLine(series: PlotSeries) {
-        const range = Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
-        const scale = this.available.y / range
-
-        const y = COORDS_MAX_Y - this.margin.bottom - (series.values[0].y as number) * scale
+        const y = COORDS_MAX_Y - this.margin.bottom
+                  - (series.values[0].y as number) * this.scale.y
 
         const x1 = this.margin.left
-        const x2 = COORDS_MAX_X -  this.margin.right
+        const x2 = COORDS_MAX_X - this.margin.right
 
         const color = series.color ?? '#aa5533'
 
