@@ -27,6 +27,10 @@ export default class RenderItem {
 
     activeColor: string
 
+    stroke: string
+
+    activeStroke: string
+
     tooltipTemplate: string
 
     layer: number = 0
@@ -61,7 +65,7 @@ export default class RenderItem {
         ctx.setLineDash([])
 
         ctx.fillStyle = this.activeColor
-        ctx.strokeStyle = this.activeColor
+        ctx.strokeStyle = this.activeStroke ?? this.activeColor
 
         for (const item of this.items()) {
             item?.render(ctx, window)

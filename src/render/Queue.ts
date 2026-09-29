@@ -2,8 +2,10 @@ import QueueItemsBuilder from 'builders/QueueItemsBuilder'
 import RenderItem from 'types/RenderItem'
 import CanvasWindow from 'types/CanvasWindow'
 import Point from 'types/Point'
+import Theme from 'Theme'
 import { Layer } from 'static/constants/Index'
-import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '../static/Enums'
+import { HorizontalAlignment, TextAlignment, VerticalAlignment } from 'static/Enums'
+import { stringWidth } from 'Helper'
 
 export default class Queue {
     queue: RenderItem[]
@@ -50,6 +52,7 @@ export default class Queue {
         // todo: return if current mouse point is changed from previous frame
 
         const offset = 50
+        const padding = 50
 
         const pos = {
             x: RenderItem.reAdjustX(window, point.x) + offset,
@@ -60,22 +63,49 @@ export default class Queue {
             item.tooltip(point)
 
             if (item.showTooltip) {
+                let alignOffset = {
+                    x: 0,
+                    y: 0
+                }
+
+                let allRows = item.tooltipTemplate.split('\n')
+
+                let width = Math.max(...allRows.map(row => stringWidth(row)))
+                let height = (allRows.length + 1) * 14
+
+                if (point.x + width + offset + padding > window.width) {
+                    alignOffset.x = -RenderItem.reAdjustX(window, width) - padding * 2
+                }
+
+                if (point.y + height + offset + padding > window.height) {
+                    alignOffset.y = -RenderItem.reAdjustY(window, height) - padding * 2
+                }
+
                 this.add((items: QueueItemsBuilder) => {
                     items.rect()
-                         .position(pos.x, pos.y)
-                         .size(200, 300)
+                         .position(pos.x + alignOffset.x, pos.y + alignOffset.y)
+                         .size(RenderItem.reAdjustX(window, width) + padding,
+                             RenderItem.reAdjustY(window, height))
                          .fill()
                          .round([4, 4, 4, 4])
                          .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-                         .color('magenta')
+                         .color(Theme.background)
+                         .stroke(Theme.dropdownBorder)
                          .layer(Layer.Tooltip)
                          .temp()
 
-                        items.text(item.tooltipTemplate)
-                             .position(pos.x, pos.y)
+                    let rowIndex = 0
+                    for (const row of allRows) {
+                        items.text(row)
+                             .position(pos.x + padding * 1.25 + alignOffset.x,
+                                 pos.y + padding * 1.75 + RenderItem.reAdjustY(window, rowIndex * 16) + alignOffset.y)
                              .align(TextAlignment.Left)
-                             .color('black')
+                             .color(Theme.text)
+                             .layer(Layer.Tooltip)
                              .temp()
+
+                        rowIndex++
+                    }
                 })
             }
         }

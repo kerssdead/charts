@@ -35,6 +35,13 @@ export default class QueueItemBaseBuilder {
         return this
     }
 
+    stroke(color: string): QueueItemBaseBuilder {
+        this.current.stroke = color
+        this.current.activeStroke = color
+
+        return this
+    }
+
     layer(layer: number) : QueueItemBaseBuilder {
         this.current.layer = layer
 
