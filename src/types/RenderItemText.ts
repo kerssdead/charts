@@ -59,6 +59,11 @@ export default class RenderItemText
         // todo
     }
 
+    // todo: implement
+    tooltip(item: RenderItem, point: Point) {
+        return false
+    }
+
     isMouseOver(point: Point): boolean {
         // todo
         return false

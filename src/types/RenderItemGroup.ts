@@ -14,6 +14,14 @@ export default class RenderItemGroup
         }
     }
 
+    tooltip(item: RenderItem, point: Point): boolean {
+        for (const item of this.items) {
+            item.tooltip(point)
+        }
+
+        return false
+    }
+
     isMouseOver(point: Point): boolean {
         return true
     }

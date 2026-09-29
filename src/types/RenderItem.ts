@@ -15,11 +15,19 @@ export default class RenderItem {
 
     isTemp: boolean = false
 
+    showTooltip: boolean = false
+
+    get hasTooltip() {
+        return this.tooltipTemplate && this.tooltipTemplate.length > 0
+    }
+
     type: RenderStepType
 
     color: string
 
     activeColor: string
+
+    tooltipTemplate: string
 
     layer: number = 0
 
@@ -75,6 +83,19 @@ export default class RenderItem {
         }
     }
 
+    tooltip(point: Point) {
+        if (!this.hasTooltip) {
+            return
+        }
+
+        for (const item of this.items()) {
+            if (item) {
+                this.continueTooltip(point, item)
+                return
+            }
+        }
+    }
+
     private adjust(window: CanvasWindow): void {
         for (const item of this.items()) {
             item?.adjust(window)
@@ -105,11 +126,31 @@ export default class RenderItem {
         }
     }
 
+    private continueTooltip(point: Point, item: RenderItemBase) {
+        if (item.isMouseOver(point)) {
+            this.showTooltip = item.tooltip(this, point)
+        } else if (this.startTimer) {
+            this.mouseLeave = true
+
+            this.showTooltip = item.tooltip(this, point)
+        } else {
+            this.showTooltip = false
+        }
+    }
+
     static adjustX(window: CanvasWindow, x: number) {
         return Math.round(x / COORDS_MAX_X * window.width + window.x)
     }
 
     static adjustY(window: CanvasWindow, y: number) {
         return Math.round(y / COORDS_MAX_Y * window.height + window.y)
+    }
+
+    static reAdjustX(window: CanvasWindow, x: number): number {
+        return ((x - window.x) * COORDS_MAX_X) / window.width
+    }
+
+    static reAdjustY(window: CanvasWindow, y: number): number {
+        return ((y - window.y) * COORDS_MAX_Y) / window.height
     }
 }

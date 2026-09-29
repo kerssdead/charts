@@ -35,6 +35,11 @@ export default class RenderItemArc implements RenderItemBase {
     }
 
     // todo: implement
+    tooltip(item: RenderItem, point: Point) {
+        return false
+    }
+
+    // todo: implement
     isMouseOver(point: Point): boolean {
         return false
     }

@@ -284,6 +284,7 @@ export default class PlotProcess {
                      .round([16, 16, 0, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .color(series.color ?? '#ffa500')
+                     .tooltip(`${x}, ${y}`)
                      .interact()
 
                 i++

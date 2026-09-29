@@ -22,6 +22,12 @@ export default class QueueItemBaseBuilder {
         return this
     }
 
+    tooltip(template: string): QueueItemBaseBuilder {
+        this.current.tooltipTemplate = template
+
+        return this
+    }
+
     color(color: string): QueueItemBaseBuilder {
         this.current.color = color
         this.current.activeColor = color
@@ -31,6 +37,12 @@ export default class QueueItemBaseBuilder {
 
     layer(layer: number) : QueueItemBaseBuilder {
         this.current.layer = layer
+
+        return this
+    }
+
+    temp(isTemp: boolean = true) : QueueItemBaseBuilder {
+        this.current.isTemp = isTemp
 
         return this
     }

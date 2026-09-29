@@ -68,6 +68,11 @@ export default class RenderItemRectangle
         this.activeScale = this.scale(item, 0.98, isBackward)
     }
 
+    // todo: implement
+    tooltip(item: RenderItem, point: Point) {
+        return true
+    }
+
     isMouseOver(point: Point) {
         let isHorizontal = false
         let isVertical = false

@@ -1,7 +1,9 @@
-import QueueItemsBuilder from '../builders/QueueItemsBuilder'
-import RenderItem from '../types/RenderItem'
-import CanvasWindow from '../types/CanvasWindow'
-import Point from '../types/Point'
+import QueueItemsBuilder from 'builders/QueueItemsBuilder'
+import RenderItem from 'types/RenderItem'
+import CanvasWindow from 'types/CanvasWindow'
+import Point from 'types/Point'
+import { Layer } from 'static/constants/Index'
+import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '../static/Enums'
 
 export default class Queue {
     queue: RenderItem[]
@@ -37,6 +39,45 @@ export default class Queue {
 
         for (const item of this.queue) {
             item.animate(point)
+        }
+    }
+
+    tooltip(window: CanvasWindow, point: Point | null) {
+        if (!point) {
+            return
+        }
+
+        // todo: return if current mouse point is changed from previous frame
+
+        const offset = 50
+
+        const pos = {
+            x: RenderItem.reAdjustX(window, point.x) + offset,
+            y: RenderItem.reAdjustY(window, point.y) + offset
+        }
+
+        for (const item of this.queue) {
+            item.tooltip(point)
+
+            if (item.showTooltip) {
+                this.add((items: QueueItemsBuilder) => {
+                    items.rect()
+                         .position(pos.x, pos.y)
+                         .size(200, 300)
+                         .fill()
+                         .round([4, 4, 4, 4])
+                         .align(HorizontalAlignment.Left, VerticalAlignment.Top)
+                         .color('magenta')
+                         .layer(Layer.Tooltip)
+                         .temp()
+
+                        items.text(item.tooltipTemplate)
+                             .position(pos.x, pos.y)
+                             .align(TextAlignment.Left)
+                             .color('black')
+                             .temp()
+                })
+            }
         }
     }
 

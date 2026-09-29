@@ -61,6 +61,8 @@ export class DefaultRenderer {
 
         this.queue.animate(this.currentMousePoint)
 
+        this.queue.tooltip(this.window, this.currentMousePoint)
+
         // todo: exclude render not in CanvasWindow
         this.queue.render(this.window)
 
