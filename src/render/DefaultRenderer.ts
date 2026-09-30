@@ -34,6 +34,16 @@ export class DefaultRenderer {
 
     private readonly settings: ChartSettings
 
+    /**
+     * Width of single char in absolute coordinates
+     */
+    private get charPrecision() {
+        const maxWidthPerSymbol = 1.0140625
+        const maxCountOfSymbols = this.window.width / maxWidthPerSymbol * this.window.zoomValue
+
+        return RenderItem.reAdjustX(this.window, COORDS_MAX_X / maxCountOfSymbols)
+    }
+
     constructor(canvas: HTMLCanvasElement,
                 settings: ChartSettings) {
         Debug.initialize(settings.enableDebugMode)
@@ -74,7 +84,7 @@ export class DefaultRenderer {
         for (const item of data) {
             switch (type) {
                 case ChartType.Plot:
-                    let process = new PlotProcess(item as PlotData)
+                    let process = new PlotProcess(item as PlotData, this.charPrecision)
 
                     this.queue.add(process.getTitles(this.settings.title))
                     this.queue.add(process.getBase())

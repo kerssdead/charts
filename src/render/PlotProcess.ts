@@ -1,11 +1,12 @@
 import PlotData from '../types/data/PlotData'
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
 import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
-import { HorizontalAlignment, PlotType, TextAlignment, VerticalAlignment } from '../static/Enums'
-import { getRoundedValues } from '../Helper'
+import { HorizontalAlignment, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from '../static/Enums'
+import { getRoundedValues, stringWidth } from '../Helper'
 import Margin from '../types/Margin'
 import PlotSeries from '../types/PlotSeries'
 import Debug from '../Debug'
+import Point from '../types/Point'
 
 // todo: fix rendering negative and positive values at the same time
 // todo: fix rendering multiple series when some of them is not have all x-axis points
@@ -21,8 +22,12 @@ export default class PlotProcess {
 
     private values: number[] = []
 
+    private zero: Point
+
     // todo: move margin outside
     private readonly columnMargin = 30
+
+    private readonly charPrecision: number
 
     private get available() {
         return {
@@ -42,22 +47,51 @@ export default class PlotProcess {
         return Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
     }
 
-    constructor(data: PlotData) {
+    constructor(data: PlotData, charPrecision: number) {
         this.data = data
+        this.charPrecision = charPrecision
 
         this.stacks = new Map<string, number>()
+        this.zero = {
+            x: -1,
+            y: -1
+        }
 
         this.calculateLabels()
+
+        const maxLengthLeft = Math.max(...this.values.map(str => str.toString().length)) + 1
 
         this.margin = {
             top: 200,
             right: 200,
             bottom: 200,
-            left: 200
+            // todo: fix: not change on recalculate sizes
+            left: 200 + maxLengthLeft * this.charPrecision
+        }
+
+        if (this.data.simple) {
+            this.margin = {
+                top: 50,
+                right: 50,
+                bottom: 50,
+                left: 50
+            }
+        }
+    }
+
+    private getZero() {
+        return {
+            x: this.zero.x,
+            y: this.zero.y == -1
+            ? COORDS_MAX_Y - this.margin.bottom
+             : this.zero.y,
         }
     }
 
     getBase() {
+        if (this.data.simple)
+            return QueueItemsBuilder.empty
+
         const barSeriesCount = this.data.values.filter(s => s.type == PlotType.Bar).length
         this.isBothTypes = barSeriesCount > 0 && barSeriesCount != this.data.values.length
 
@@ -126,6 +160,10 @@ export default class PlotProcess {
                  .align(TextAlignment.Right)
                  .color('black')
 
+            if (label == 0) {
+                this.zero.y = y
+            }
+
             y -= step
         }
 
@@ -134,7 +172,7 @@ export default class PlotProcess {
             const count = Math.max(...this.data.values.map(s => s.values.length))
             const stepX = (this.available.x - this.columnMargin) / count - this.columnMargin
 
-            const y = COORDS_MAX_Y - this.margin.bottom
+            const y = COORDS_MAX_Y - this.margin.bottom / 2
 
             i = 0
 
@@ -142,7 +180,7 @@ export default class PlotProcess {
                 const x = this.margin.left + i * stepX + (i + 1) * this.columnMargin
 
                 items.text(value.x.toString())
-                     .position(x + stepX / 2, y + this.margin.left / 2)
+                     .position(x + stepX / 2, y)
                      .align(TextAlignment.Left)
                      .size(12)
                      .color('black')
@@ -204,6 +242,9 @@ export default class PlotProcess {
 
     // todo: remove title from arg
     getTitles(title: string | null) {
+        if (this.data.simple)
+            return QueueItemsBuilder.empty
+
         return (items: QueueItemsBuilder) => {
             if (title) {
                 items.text(title)
@@ -217,7 +258,9 @@ export default class PlotProcess {
 
             if (this.data.xTitle) {
                 items.text(this.data.xTitle)
-                     .position(this.margin.left / 2, COORDS_MAX_Y / 2)
+                    // todo: "this.charPrecision * 4" very bad solution
+                     .position(this.charPrecision * 4, COORDS_MAX_Y / 2)
+                     .baseline(TextBaseline.Top)
                      .size(14)
                      .rotate(270)
             }
@@ -259,7 +302,7 @@ export default class PlotProcess {
 
     // todo: use group ?
     private getColumns(series: PlotSeries) {
-        const y = COORDS_MAX_Y - this.margin.bottom
+        const y = this.getZero().y
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
         const step = (this.available.x - this.columnMargin) / count - this.columnMargin
@@ -293,7 +336,7 @@ export default class PlotProcess {
     }
 
     private getLines(series: PlotSeries) {
-        const y = COORDS_MAX_Y - this.margin.bottom
+        const y = this.getZero().y
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
         const step = (this.available.x - this.columnMargin) / count - this.columnMargin
@@ -311,7 +354,9 @@ export default class PlotProcess {
                 i++
             }
 
-            line.color(series.color ?? '#00ff00')
+            line.width(series.width)
+                .dash(JSON.parse(series.dash ?? '[]'))
+                .color(series.color ?? '#00ff00')
                 .interact()
         }
     }
@@ -332,7 +377,7 @@ export default class PlotProcess {
             let i = 0
 
             for (const value of series.values) {
-                const y = COORDS_MAX_Y - this.margin.bottom - seriesIndex * heightInStep - i * step - (i + 1) * this.columnMargin
+                const y = this.getZero().y - seriesIndex * heightInStep - i * step - (i + 1) * this.columnMargin
 
                 items.rect()
                      .position(this.margin.left, y)
@@ -350,7 +395,7 @@ export default class PlotProcess {
     }
 
     private getStackedColumns(series: PlotSeries) {
-        const baseY = COORDS_MAX_Y - this.margin.bottom
+        const baseY = this.getZero().y
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
         const step = (this.available.x - this.columnMargin) / count - this.columnMargin
@@ -378,7 +423,7 @@ export default class PlotProcess {
                      .position(x, y)
                      .size(step, height)
                      .fill()
-                     .round(isLast ? [16, 16, 0, 0] : null)
+                     .round(isLast ? [16, 16, 0, 0] : [0, 0, 0, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .color(series.color ?? '#a6f022')
                      .interact()
@@ -389,7 +434,7 @@ export default class PlotProcess {
     }
 
     private getAttentionLine(series: PlotSeries) {
-        const y = COORDS_MAX_Y - this.margin.bottom
+        const y = this.getZero().y
                   - (series.values[0].y as number) * this.scale.y
 
         const x1 = this.margin.left

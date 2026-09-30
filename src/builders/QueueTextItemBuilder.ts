@@ -1,5 +1,5 @@
 import QueueItemBaseBuilder from './QueueItemBaseBuilder'
-import { RenderStepType, TextAlignment } from '../static/Enums'
+import { RenderStepType, TextAlignment, TextBaseline } from '../static/Enums'
 import RenderItemLine from '../types/RenderItemLine'
 import RenderItemText from '../types/RenderItemText'
 
@@ -28,6 +28,12 @@ export default class QueueTextItemBuilder
 
     align(value: TextAlignment) {
         this.current.text.alignment = value
+
+        return this
+    }
+
+    baseline(value: TextBaseline) {
+        this.current.text.baseline = value
 
         return this
     }

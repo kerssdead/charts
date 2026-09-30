@@ -3,7 +3,7 @@ import RenderItemBase from './interfaces/RenderItemBase'
 import Point from './Point'
 import RenderItem from './RenderItem'
 import { stringWidth } from '../Helper'
-import { TextAlignment } from '../static/Enums'
+import { TextAlignment, TextBaseline } from '../static/Enums'
 
 export default class RenderItemText
     implements RenderItemBase {
@@ -25,6 +25,8 @@ export default class RenderItemText
 
     alignment: TextAlignment = TextAlignment.Center
 
+    baseline: TextBaseline = TextBaseline.Alphabetic
+
     private get font(): string {
         return `${this.fontSize}px Arial`
     }
@@ -37,6 +39,7 @@ export default class RenderItemText
     render(ctx: CanvasRenderingContext2D, window?: CanvasWindow): void {
         ctx.font = this.font
         ctx.textAlign = this.alignment
+        ctx.textBaseline = this.baseline as CanvasTextBaseline
 
         if (this.rotate != 0) {
             ctx.save()

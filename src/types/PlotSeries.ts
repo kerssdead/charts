@@ -10,7 +10,7 @@ class PlotSeries extends Value {
 
     width: number
 
-    lineType: LineType = LineType.Solid
+    dash: string
 
     constructor(obj: object) {
         super()

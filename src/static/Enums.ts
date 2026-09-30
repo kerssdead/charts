@@ -68,6 +68,7 @@ export enum LegendPlace {
     Right
 }
 
+// todo: remove if not use
 export enum LineType {
     Solid,
 
@@ -170,6 +171,16 @@ export enum TextAlignment {
     Center = 'center',
 
     Right = 'end'
+}
+
+export enum TextBaseline {
+    Alphabetic = 'alphabetic',
+
+    Top = 'top',
+
+    Middle = 'middle',
+
+    Bottom = 'bottom'
 }
 
 export enum HorizontalAlignment {

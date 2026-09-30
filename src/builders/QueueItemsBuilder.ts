@@ -67,6 +67,10 @@ export default class QueueItemsBuilder {
         return builder
     }
 
+    static get empty() {
+        return (items: QueueItemsBuilder) => { }
+    }
+
     private add() {
         if (this.current == null) {
             return

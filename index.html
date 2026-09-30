@@ -36,7 +36,7 @@
 
         <div class="settings">
             <div>
-                <label>
+                <label class="warn" title="pie, gauge, tree not implemented">
                     Chart Type
 
                     <select id="chart-type" onchange="refresh()">
@@ -58,7 +58,7 @@
                     </select>
                 </label>
 
-                <label>
+                <label class="fine">
                     Values
 
                     <select id="values-type" onchange="refresh()">
@@ -76,103 +76,103 @@
                     </select>
                 </label>
 
-                <label>
+                <label class="fine">
                     Values Count
 
                     <input type="number" min="0" id="values-count" onchange="refresh()" value="1"/>
                 </label>
 
-                <label>
+                <label class="fine">
                     Width
 
                     <input type="range" id="width" value="100" oninput="setWidth()"/>
                 </label>
 
-                <label>
+                <label class="fine">
                     Height
 
                     <input type="range" id="height" height="100" oninput="setHeight()"/>
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="checkbox" id="tooltip" onchange="refresh()"/>
 
                     Tooltip
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="checkbox" id="custom-tooltip" onchange="refresh()"/>
 
                     Custom Tooltip
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="checkbox" id="legend" onchange="refresh()"/>
 
                     Legend
                 </label>
 
-                <label>
+                <label class="fine">
                     <input type="checkbox" id="title" onchange="refresh()"/>
 
                     Title
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="checkbox" id="context-menu" onchange="refresh()"/>
 
                     Context Menu
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="checkbox" id="dark-theme" onchange="refresh()"/>
 
                     Dark Theme
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="checkbox" id="init-animation" onchange="refresh()"/>
 
                     Disable init animation
                 </label>
 
-                <label>
+                <label class="danger">
                     Base Color
 
                     <input type="color" id="base-color" onchange="refresh()" value="#32a852"/>
                 </label>
 
-                <label>
+                <label class="danger">
                     Custom Label
 
                     <input type="text" id="custom-label" onchange="refresh()" value=""/>
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="checkbox" id="indexed-custom-label" onchange="refresh()"/>
 
                     Indexed custom label
                 </label>
 
-                <label>
+                <label class="danger">
                     Postfix
 
                     <input type="text" id="postfix" onchange="refresh()"/>
                 </label>
 
-                <label>
+                <label class="fine">
                     Base Value
 
                     <input type="number" id="base-value" onchange="refresh()" value="1000"/>
                 </label>
 
-                <label>
+                <label class="fine">
                     <input type="checkbox" id="debug-mode" onchange="refresh()"/>
 
                     Debug mode
                 </label>
 
-                <label>
+                <label class="fine">
                     <input type="checkbox" id="move" onchange="refresh()"/>
 
                     Move
@@ -180,7 +180,7 @@
             </div>
 
             <div>
-                <label>
+                <label class="fine">
                     Plot Type
 
                     <select id="plot-type" onchange="refresh()">
@@ -206,37 +206,37 @@
                     </select>
                 </label>
 
-                <label>
+                <label class="fine">
                     <input type="checkbox" id="x-axis-label" onchange="refresh()"/>
 
                     X-axis Label
                 </label>
 
-                <label>
+                <label class="fine">
                     <input type="checkbox" id="y-axis-label" onchange="refresh()"/>
 
                     Y-axis Label
                 </label>
 
-                <label>
+                <label class="fine">
                     Points count
 
                     <input type="number" min="0" id="points-count" onchange="refresh()" value="40"/>
                 </label>
 
-                <label>
+                <label class="fine">
                     Series Width
 
                     <input type="number" id="series-width" onchange="refresh()" value="4"/>
                 </label>
 
-                <label>
+                <label class="fine">
                     <input type="checkbox" id="simple" onchange="refresh()"/>
 
                     Simple
                 </label>
 
-                <label>
+                <label class="warn" title="date should be fixed">
                     X-axis type
 
                     <select id="x-axis-type" onchange="refresh()">
@@ -244,7 +244,7 @@
                             Number
                         </option>
 
-                        <option value="1">
+                        <option value="1" disabled>
                             Date
                         </option>
 
@@ -258,31 +258,31 @@
                     </select>
                 </label>
 
-                <label>
+                <label class="fine">
                     <input type="checkbox" id="negative-values-in-plot" onchange="refresh()"/>
 
                     Enable negative values in plot
                 </label>
 
-                <label>
+                <label class="fine">
                     Line type
 
                     <select id="line-type" onchange="refresh()">
-                        <option value="0">
+                        <option value="[]">
                             Solid
                         </option>
 
-                        <option value="1">
+                        <option value="[15,5]">
                             Dash
                         </option>
 
-                        <option value="2">
+                        <option value="[5,5]">
                             Dotted
                         </option>
                     </select>
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="checkbox" id="short-labels" onchange="refresh()"/>
 
                     Short Labels
@@ -290,19 +290,19 @@
             </div>
 
             <div>
-                <label>
+                <label class="danger">
                     Inner Radius
 
                     <input type="range" id="inner-radius" oninput="refresh()"/>
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="checkbox" id="other" onchange="refresh()"/>
 
                     Other
                 </label>
 
-                <label>
+                <label class="danger">
                     <input type="text" id="inner-title" onchange="refresh()"/>
 
                     Inner Title
@@ -311,13 +311,13 @@
 
 
             <div>
-                <label>
+                <label class="danger">
                     Min
 
                     <input type="number" id="gauge-min" onchange="refresh()" value="0"/>
                 </label>
 
-                <label>
+                <label class="danger">
                     Max
 
                     <input type="number" id="gauge-max" onchange="refresh()" value="100"/>
@@ -325,7 +325,7 @@
             </div>
 
             <div>
-                <label>
+                <label class="danger">
                     Padding
 
                     <input type="range" id="tree-padding" oninput="refresh()"/>
@@ -451,6 +451,10 @@
         })
     }
 
+    function getColor() {
+        return `#${Math.floor(rng.nextFloat() * 16777215).toString(16).padStart(6, '0')}`
+    }
+
     function getValues(type, count, valuesType, pointsCount, plotType) {
         let values = [],
             sameValue = 0
@@ -556,7 +560,8 @@
                                 : customLabel
                             : `Series ${i}`,
                         data: getData(i),
-                        lineType: lineType
+                        dash: lineType,
+                        color: getColor()
                     })
                 }
 
@@ -596,7 +601,8 @@
                                 ? customLabel + ` ${i}`
                                 : customLabel
                             : `Sector ${i}`,
-                        data: getData(i)
+                        data: getData(i),
+                        color: getColor()
                     })
                 }
 
@@ -632,7 +638,8 @@
                     label: isCustomLabel
                         ? customLabel
                         : `Label`,
-                    data: getData(0)
+                    data: getData(0),
+                    color: getColor()
                 })
 
                 break
@@ -671,7 +678,8 @@
                                 ? customLabel + ` ${i}`
                                 : customLabel
                             : `Cell ${i}`,
-                        data: getData(i)
+                        data: getData(i),
+                        color: getColor()
                     })
                 }
 
