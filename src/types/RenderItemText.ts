@@ -2,8 +2,7 @@ import CanvasWindow from './CanvasWindow';
 import RenderItemBase from './interfaces/RenderItemBase'
 import Point from './Point'
 import RenderItem from './RenderItem'
-import { stringWidth } from '../Helper'
-import { TextAlignment, TextBaseline } from '../static/Enums'
+import {TextAlignment, TextBaseline} from '../static/Enums'
 
 export default class RenderItemText
     implements RenderItemBase {
@@ -44,8 +43,10 @@ export default class RenderItemText
         if (this.rotate != 0) {
             ctx.save()
 
-            // todo: adjust formula for various this.rotate
-            this.x1 = this.x1 - this.fontSize / 2
+            if (this.baseline == TextBaseline.Alphabetic) {
+                // todo: adjust formula for various this.rotate
+                this.x1 = this.x1 - this.fontSize / 2
+            }
 
             ctx.translate(this.x1, this.y1)
             ctx.rotate(this.rotate * Math.PI / 180)
