@@ -21,6 +21,7 @@ export default class RenderItem {
         return this.tooltipTemplate && this.tooltipTemplate.length > 0
     }
 
+    // todo: remove ?
     type: RenderStepType
 
     color: string
@@ -52,7 +53,6 @@ export default class RenderItem {
     mouseLeave: boolean
 
     private items(): RenderItemBase[] {
-        // todo: add text
         return [this.line, this.rect, this.arc, this.text, this.group]
     }
 

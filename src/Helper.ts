@@ -1,8 +1,8 @@
 import Color from 'types/Color'
 import Theme from 'Theme'
 import Errors from 'helpers/Errors'
-import { ErrorType } from 'static/Enums'
-import { Plot } from 'static/constants/Index'
+import {ErrorType} from 'static/Enums'
+import {Plot} from 'static/constants/Index'
 
 export function adjustColor(color: string, amount: number) {
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).slice(-2))
@@ -112,114 +112,45 @@ export function applyAlpha(color: string, opacity: number) {
 }
 
 export function getRoundedValues(all: number[]) {
-    let minValue = min(all),
-        maxValue = max(all)
-
-    if (minValue > 0)
-        minValue = 0
-
-    const decimalSeparator = Intl.NumberFormat()
-                                 .formatToParts(1.1)
-                                 .find(part => part.type === 'decimal')!.value
-
-    const maxStr2 = (+maxValue).toLocaleString(undefined, { maximumFractionDigits: 0 })
-                               .split(decimalSeparator),
-        maxStr = maxStr2[0].replace(',', '')
-                           .replace('.', ''),
-        dividersMultiplier = Math.pow(10, Math.floor(maxStr.length / 2 - .5))
-
-    const negativeElements = all.filter(v => v < 0).length,
-        hasNegative = negativeElements > 0
-
-    let countOfElements = all.length
-    if (!all.includes(0))
-        countOfElements++
-    if (countOfElements % 2 == 0)
-        countOfElements++
-    if (hasNegative)
-        countOfElements++
-    if (countOfElements > Plot.maxLabelsCount)
-        countOfElements = Plot.maxLabelsCount
-
-    const isSatisfyDividing = (value: number) => {
-        const divides = [10, 7.5, 5, 2.5, 2]
-
-        let satisfied = 0
-
-        value = Math.abs(value)
-
-        for (const d of divides)
-            satisfied += value % (d * dividersMultiplier) == 0 ? 1 : 0
-
-        return satisfied >= 4
+    if (!Array.isArray(all) || all.length === 0) {
+        return []
     }
 
-    const isSatisfyElementsCount = (values: number[]) => {
-        return values.length > 2 && values.length <= countOfElements
+    const maxVal = Math.max(0, ...all)
+
+    if (maxVal === 0) {
+        return []
     }
 
-    const amplitude = Math.abs(minValue) + Math.abs(maxValue)
+    const targetTicks = 5
+    const intervals = targetTicks - 1
 
-    let startValue = amplitude / countOfElements
+    const rawStep = maxVal / intervals
 
-    let attempt = 0,
-        value = 0
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
+    const normalizedStep = rawStep / magnitude
 
-    let step = 1
-
-    const isFractional = Math.abs(minValue) < 10 && Math.abs(maxValue) < 10
-
-    if (isFractional)
-        step = .1
-    else
-        value = Math.round(startValue)
-
-    const round = (value: number) => {
-        return Math.round((value + Number.EPSILON) * 100) / 100
+    let prettyNormalizedStep
+    if (normalizedStep <= 1) {
+        prettyNormalizedStep = 1
+    } else if (normalizedStep <= 2) {
+        prettyNormalizedStep = 2
+    } else if (normalizedStep <= 2.5) {
+        prettyNormalizedStep = 2.5
+    } else if (normalizedStep <= 5) {
+        prettyNormalizedStep = 5
+    } else {
+        prettyNormalizedStep = 10
     }
 
-    let startIndex = 0,
-        endIndex = countOfElements + startIndex
+    const step = prettyNormalizedStep * magnitude
 
-    if (hasNegative) {
-        const negativeWeight = Math.abs(minValue) / amplitude
-        startIndex = -Math.floor(countOfElements * negativeWeight)
-        endIndex = countOfElements + startIndex
-
-        if (startIndex == 0) {
-            startIndex--
-            endIndex--
-        }
-
-        if (maxValue > 0 && endIndex <= 1) {
-            startIndex++
-            endIndex++
-        }
+    const ticks = []
+    for (let i = 0; i < targetTicks; i++) {
+        ticks.push(Number((i * step).toFixed(12)))
     }
 
-    while (true) {
-        if (!isFinite(value))
-            return []
-
-        if (isSatisfyDividing(value) || isFractional) {
-            let result = []
-
-            for (let i = startIndex; i < endIndex; i++)
-                result.push(round(value * i))
-
-            if (result[0] > minValue || result[result.length - 1] <= maxValue)
-                result = []
-
-            if (isSatisfyElementsCount(result))
-                return result
-        }
-
-        value = round(value + step)
-        attempt = round(attempt + step)
-
-        if (attempt > amplitude)
-            throw Errors.throw(ErrorType.MaxCallsReach)
-    }
+    return ticks
 }
 
 export function min(array: number[]) {
@@ -245,10 +176,10 @@ export function max(array: number[]) {
 export function parseNumber(value: string | null | number, decimalSeparator: string = '.') {
     const simplify = (v: string) => {
         return !v
-               ? 0
-               : +(v.replace(',', '')
-                    .replace('.', '')
-                    .replace('-', ''))
+            ? 0
+            : +(v.replace(',', '')
+                .replace('.', '')
+                .replace('-', ''))
     }
 
     const removeExtraZeros = (v: number) => {
@@ -287,8 +218,8 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
     let split = value.split(decimalSeparator),
         left = simplify(split[0]),
         right = split.length > 1
-                ? removeExtraZeros(simplify(split[1])) / getDividerForFractional(split[1])
-                : 0
+            ? removeExtraZeros(simplify(split[1])) / getDividerForFractional(split[1])
+            : 0
 
     if (split.length > 1 && split[1].length > 9) {
         const slice = split[1].slice(0, 8)
@@ -298,22 +229,22 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
 
     const negative = value.slice(0, 1) == '-' ? -1 : 1
 
-    const result = (left + right / (right >= 1 ? Math.pow(10, `${ right }`.length) : 1))
-                   * negative
+    const result = (left + right / (right >= 1 ? Math.pow(10, `${right}`.length) : 1))
+        * negative
 
     const localeString = result.toLocaleString()
 
     if (value.startsWith(localeString))
         return result
     else if (value.startsWith(localeString.replace(',', '!')
-                                          .replace('.', ',')
-                                          .replace('!', '.')))
+        .replace('.', ',')
+        .replace('!', '.')))
         return result
     else if (value.startsWith(result.toString()))
         return result
     else if (value.startsWith(result.toString().replace(',', '!')
-                                               .replace('.', ',')
-                                               .replace('!', '.')))
+        .replace('.', ',')
+        .replace('!', '.')))
         return result
 
     return parseNumber(value, ',')

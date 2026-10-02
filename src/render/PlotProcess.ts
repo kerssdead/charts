@@ -63,10 +63,10 @@ export default class PlotProcess {
 
         this.margin = {
             top: 200,
-            right: 200,
+            right: 100,
             bottom: 200,
             // todo: fix: not change on recalculate sizes
-            left: 200 + maxLengthLeft * this.charPrecision
+            left: 150 + maxLengthLeft * this.charPrecision
         }
 
         if (this.data.simple) {
@@ -172,7 +172,7 @@ export default class PlotProcess {
             const count = Math.max(...this.data.values.map(s => s.values.length))
             const stepX = (this.available.x - this.columnMargin) / count - this.columnMargin
 
-            const y = COORDS_MAX_Y - this.margin.bottom / 2
+            const y = COORDS_MAX_Y - this.margin.bottom
 
             i = 0
 
@@ -182,6 +182,7 @@ export default class PlotProcess {
                 items.text(value.x.toString())
                      .position(x + stepX / 2, y)
                      .align(TextAlignment.Left)
+                     .baseline(TextBaseline.Top)
                      .size(12)
                      .color('black')
 

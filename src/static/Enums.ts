@@ -21,7 +21,7 @@ export enum Attribute {
 export enum ChartType {
     Plot,
 
-    Circular,
+    Pie,
 
     Gauge,
 
@@ -152,7 +152,9 @@ export enum RenderStepType {
     // todo: remove ?
     RectFill = 'rect-fill',
 
-    Text = 'text'
+    Text = 'text',
+
+    Sector = 'sector'
 }
 
 export enum RenderGroupDirection {

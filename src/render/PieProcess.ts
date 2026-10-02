@@ -941,3 +941,68 @@
 // }
 //
 // export default CircularRenderer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import {PieData} from "types/data/PieData";
+import QueueItemsBuilder from "../builders/QueueItemsBuilder";
+import Sector from "../types/Sector";
+import {COORDS_MAX_X, COORDS_MAX_Y} from "static/constants/Index";
+import Theme from "../Theme";
+
+export class PieProcess {
+    private data: PieData
+
+    private charPrecision: number
+
+    constructor(data: PieData, charPrecision: number) {
+        this.data = data
+        this.charPrecision = charPrecision
+    }
+
+    getData() {
+        return this.data.values.flatMap(sector => {
+            return [this.getSector(sector)]
+        })
+    }
+
+    private getSector(sector: Sector) {
+        return (items: QueueItemsBuilder) => {
+            // items.sector()
+            //     .position(COORDS_MAX_X / 2, COORDS_MAX_Y / 2)
+            //     .angle(45)
+            //     .color('red')
+
+            items.arc()
+                .position(COORDS_MAX_X / 2, COORDS_MAX_Y / 2)
+                .startAngle(0)
+                .endAngle(Math.PI / 3)
+                .radius(400)
+                .fill()
+                .color('#4fbf4f')
+                .stroke('black')
+        }
+    }
+}

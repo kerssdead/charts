@@ -1,15 +1,17 @@
 import Queue from 'render/Queue'
 import Canvas from 'helpers/Canvas'
 import Point from 'types/Point'
-import { ChartType, Events } from 'static/Enums'
+import {ChartType, Events} from 'static/Enums'
 import Debug from '../Debug'
 import CanvasWindow from '../types/CanvasWindow'
-import { COORDS_MAX_X, COORDS_MAX_Y, ZOOM_DEFAULT_STEP } from 'static/constants/Index'
+import {COORDS_MAX_X, COORDS_MAX_Y, ZOOM_DEFAULT_STEP} from 'static/constants/Index'
 import RenderItem from '../types/RenderItem'
 import PlotProcess from './PlotProcess'
 import Data from '../types/interfaces/Data'
 import PlotData from '../types/data/PlotData'
 import ChartSettings from '../types/ChartSettings'
+import {PieProcess} from "./PieProcess";
+import {PieData} from "../types/data/PieData";
 
 // todo: add tooltips
 // todo: add context menus
@@ -84,13 +86,20 @@ export class DefaultRenderer {
         for (const item of data) {
             switch (type) {
                 case ChartType.Plot:
-                    let process = new PlotProcess(item as PlotData, this.charPrecision)
+                    let plotProcess = new PlotProcess(item as PlotData, this.charPrecision)
 
-                    this.queue.add(process.getTitles(this.settings.title))
-                    this.queue.add(process.getBase())
-                    this.queue.add(...process.getData())
+                    this.queue.add(plotProcess.getTitles(this.settings.title))
+                    this.queue.add(plotProcess.getBase())
+                    this.queue.add(...plotProcess.getData())
 
-                    break;
+                    break
+
+                case ChartType.Pie:
+                    let pieProcess = new PieProcess(item as PieData, this.charPrecision)
+
+                    this.queue.add(...pieProcess.getData())
+
+                    break
             }
         }
     }
