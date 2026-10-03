@@ -6,6 +6,8 @@ import QueueGroupItemBuilder from './QueueGroupItemBuilder'
 import QueueArcItemBuilder from './QueueArcItemBuilder'
 import QueueTextItemBuilder from './QueueTextItemBuilder'
 
+type BuilderConstructor<T extends QueueItemBuilder> = new (...args: any[]) => T
+
 export default class QueueItemsBuilder {
     private items: RenderItem[] = []
 
@@ -17,54 +19,34 @@ export default class QueueItemsBuilder {
         return this.items
     }
 
-    line(): QueueLineItemBuilder {
+    private getBuilder<T extends QueueItemBuilder>(BuilderClass: BuilderConstructor<T>, ...args: any[]): T {
         this.add()
 
-        let builder = new QueueLineItemBuilder()
+        const builder = new BuilderClass(...args)
 
         this.current = builder
 
         return builder
+    }
+
+    line(): QueueLineItemBuilder {
+        return this.getBuilder(QueueLineItemBuilder)
     }
 
     rect(): QueueRectangleItemBuilder {
-        this.add()
-
-        let builder = new QueueRectangleItemBuilder()
-
-        this.current = builder
-
-        return builder
+        return this.getBuilder(QueueRectangleItemBuilder)
     }
 
     arc(): QueueArcItemBuilder {
-        this.add()
-
-        let builder = new QueueArcItemBuilder()
-
-        this.current = builder
-
-        return builder
+        return this.getBuilder(QueueArcItemBuilder)
     }
 
     text(text: string): QueueTextItemBuilder {
-        this.add()
-
-        let builder = new QueueTextItemBuilder(text)
-
-        this.current = builder
-
-        return builder
+        return this.getBuilder(QueueTextItemBuilder, text)
     }
 
     group(): QueueGroupItemBuilder {
-        this.add()
-
-        let builder = new QueueGroupItemBuilder()
-
-        this.current = builder
-
-        return builder
+        return this.getBuilder(QueueGroupItemBuilder)
     }
 
     static get empty() {

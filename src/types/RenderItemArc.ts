@@ -26,10 +26,6 @@ export default class RenderItemArc implements RenderItemBase {
         ctx.lineTo(this.x1, this.y1)
         ctx.closePath()
 
-        // ctx.lineWidth = 10
-        ctx.lineJoin = 'round'
-        ctx.lineCap = 'round'
-
         if (this.isFill) {
             ctx.fill()
         }

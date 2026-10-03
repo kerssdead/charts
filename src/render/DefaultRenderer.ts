@@ -12,6 +12,10 @@ import PlotData from '../types/data/PlotData'
 import ChartSettings from '../types/ChartSettings'
 import {PieProcess} from "./PieProcess";
 import {PieData} from "../types/data/PieData";
+import TreeProcess from "./TreeProcess";
+import TreeData from "../types/data/TreeData";
+import GaugeProcess from "./GaugeProcess";
+import GaugeData from "../types/data/GaugeData";
 
 // todo: add tooltips
 // todo: add context menus
@@ -98,6 +102,20 @@ export class DefaultRenderer {
                     let pieProcess = new PieProcess(item as PieData, this.charPrecision)
 
                     this.queue.add(...pieProcess.getData())
+
+                    break
+
+                case ChartType.TreeMap:
+                    let treeProcess = new TreeProcess(item as TreeData)
+
+                    this.queue.add(...treeProcess.getData())
+
+                    break
+
+                case ChartType.Gauge:
+                    let gaugeProcess = new GaugeProcess(item as GaugeData)
+
+                    this.queue.add(...gaugeProcess.getData())
 
                     break
             }

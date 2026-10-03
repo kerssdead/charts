@@ -110,6 +110,7 @@ export default class RenderItemRectangle
         return isHorizontal && isVertical
     }
 
+    // todo: do via ctx.store() -> ctx.restore()
     private opacity(item: RenderItem, value: number, isBackward: boolean = false) {
         item.startTimer ??= DefaultRenderer.timer
 
@@ -137,6 +138,7 @@ export default class RenderItemRectangle
         return diff / duration * value * transition
     }
 
+    // todo: do via ctx.store() -> ctx.restore()
     private scale(item: RenderItem, value: number, isBackward: boolean = false) {
         item.startTimer ??= DefaultRenderer.timer
 

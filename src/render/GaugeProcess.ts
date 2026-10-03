@@ -270,3 +270,44 @@
 // }
 //
 // export default GaugeRenderer
+
+
+
+
+
+
+
+
+import GaugeData from "types/data/GaugeData"
+import QueueItemsBuilder from "builders/QueueItemsBuilder"
+import Sector from "types/Sector"
+import {COORDS_MAX_X, COORDS_MAX_Y} from "static/constants/Index"
+
+export default class GaugeProcess {
+    data: GaugeData
+
+    constructor(data: GaugeData) {
+        this.data = data
+    }
+
+    getData() {
+        return this.data.values.flatMap(this.getValue)
+    }
+
+    private getValue(sector: Sector) {
+        const max = 1000
+
+        const value = sector.value / max
+        const angle = Math.PI * value
+
+        return (items: QueueItemsBuilder) => {
+            items.arc()
+                .position(COORDS_MAX_X / 2, COORDS_MAX_Y)
+                .startAngle(Math.PI)
+                .endAngle(Math.PI + angle)
+                .radius(COORDS_MAX_X / 4)
+                .fill()
+                .color(sector.color)
+        }
+    }
+}

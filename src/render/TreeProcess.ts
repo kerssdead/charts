@@ -391,3 +391,66 @@
 // }
 //
 // export default TreeRenderer
+
+
+import TreeData from "../types/data/TreeData";
+import Value from "../types/base/Value";
+import QueueItemsBuilder from "../builders/QueueItemsBuilder";
+import {COORDS_MAX_X, COORDS_MAX_Y} from "static/constants/Index";
+import Point from "../types/Point";
+import {HorizontalAlignment, VerticalAlignment} from "../static/Enums";
+
+export default class TreeProcess {
+    private data: TreeData
+
+    private position: Point
+
+    private unit: number
+
+    constructor(data: TreeData) {
+        this.data = data
+
+        this.data.values.sort((a, b) => b.value - a.value)
+
+        this.position = {x: 0, y: 0}
+        this.unit = 1
+    }
+
+    getData() {
+        const sum = this.data.values.sumByField(v => v.value)
+        const availableSpace = COORDS_MAX_X * COORDS_MAX_Y
+
+        this.unit = availableSpace / sum
+
+        return this.data.values.flatMap((block, index) => {
+            return [this.getBlock(block, index)]
+        })
+    }
+
+    private getBlock(block: Value, index: number) {
+        const x = this.position.x
+        const y = this.position.y
+
+        const isVertical = (index % 2 === 0)
+
+        const area = block.value * this.unit
+
+        const w = isVertical ? area / (COORDS_MAX_Y - y) : (COORDS_MAX_X - x)
+        const h = isVertical ? (COORDS_MAX_Y - y) : area / (COORDS_MAX_X - x)
+
+        if (isVertical) {
+            this.position.x += w
+        } else {
+            this.position.y += h
+        }
+
+        return (items: QueueItemsBuilder) => {
+            items.rect()
+                .position(x, y)
+                .size(w, h)
+                .align(HorizontalAlignment.Left, VerticalAlignment.Top)
+                .fill()
+                .color(block.color)
+        }
+    }
+}
