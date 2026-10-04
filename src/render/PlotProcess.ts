@@ -1,15 +1,20 @@
 import PlotData from '../types/data/PlotData'
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
-import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
-import { HorizontalAlignment, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from '../static/Enums'
-import { getRoundedValues, stringWidth } from '../Helper'
+import {COORDS_MAX_X, COORDS_MAX_Y} from 'static/constants/Index'
+import {HorizontalAlignment, PlotType, TextAlignment, TextBaseline, VerticalAlignment} from '../static/Enums'
+import {getRoundedValues, stringWidth} from '../Helper'
 import Margin from '../types/Margin'
 import PlotSeries from '../types/PlotSeries'
 import Debug from '../Debug'
 import Point from '../types/Point'
+import Theme from "../Theme";
 
 // todo: fix rendering negative and positive values at the same time
-// todo: fix rendering multiple series when some of them is not have all x-axis points
+// todo: check rendering multiple series when some of them is not have all x-axis points
+// todo: if series.length > 1 then on mouse over series item highlight all values from this series
+// todo: add init animation
+// todo: fix tooltips
+// todo: add context menu
 
 export default class PlotProcess {
     private data: PlotData
@@ -83,8 +88,8 @@ export default class PlotProcess {
         return {
             x: this.zero.x,
             y: this.zero.y == -1
-            ? COORDS_MAX_Y - this.margin.bottom
-             : this.zero.y,
+                ? COORDS_MAX_Y - this.margin.bottom
+                : this.zero.y,
         }
     }
 
@@ -120,9 +125,9 @@ export default class PlotProcess {
 
                 // todo: test long values visibility/offset
                 items.text(label.toString())
-                     .position(x, this.margin.top - this.columnMargin * 2)
-                     .align(TextAlignment.Center)
-                     .color('black')
+                    .position(x, this.margin.top - this.columnMargin * 2)
+                    .align(TextAlignment.Center)
+                    .color('black')
 
                 i++
             }
@@ -140,10 +145,10 @@ export default class PlotProcess {
                 const y = COORDS_MAX_Y - this.margin.bottom - i * stepY - (i + 1) * this.columnMargin
 
                 items.text(value.x.toString())
-                     .position(x, y - stepY / 2)
-                     .align(TextAlignment.Left)
-                     .size(12)
-                     .color('black')
+                    .position(x, y - stepY / 2)
+                    .align(TextAlignment.Left)
+                    .size(12)
+                    .color('black')
 
                 i++
             }
@@ -156,9 +161,9 @@ export default class PlotProcess {
         for (const label of this.values) {
             // todo: test long values visibility/offset
             items.text(label.toString())
-                 .position(x1, y)
-                 .align(TextAlignment.Right)
-                 .color('black')
+                .position(x1, y)
+                .align(TextAlignment.Right)
+                .color('black')
 
             if (label == 0) {
                 this.zero.y = y
@@ -180,11 +185,11 @@ export default class PlotProcess {
                 const x = this.margin.left + i * stepX + (i + 1) * this.columnMargin
 
                 items.text(value.x.toString())
-                     .position(x + stepX / 2, y)
-                     .align(TextAlignment.Left)
-                     .baseline(TextBaseline.Top)
-                     .size(12)
-                     .color('black')
+                    .position(x + stepX / 2, y)
+                    .align(TextAlignment.Left)
+                    .baseline(TextBaseline.Top)
+                    .size(12)
+                    .color('black')
 
                 i++
             }
@@ -201,20 +206,20 @@ export default class PlotProcess {
 
         // Horizontal lines
         items.line()
-             .stop(x1, COORDS_MAX_Y - this.margin.bottom)
-             .stop(x2, COORDS_MAX_Y - this.margin.bottom)
-             .color('black')
-             .layer(20)
+            .stop(x1, COORDS_MAX_Y - this.margin.bottom)
+            .stop(x2, COORDS_MAX_Y - this.margin.bottom)
+            .color('black')
+            .layer(20)
 
         for (let i = 0; i < intermediateCount; i++) {
             const y = this.margin.top + step * i
 
             items.line()
-                 .stop(x1, y)
-                 .stop(x2, y)
-                 .dash([1, 20])
-                 .color('gray')
-                 .layer(0)
+                .stop(x1, y)
+                .stop(x2, y)
+                .dash([1, 20])
+                .color('gray')
+                .layer(0)
         }
     }
 
@@ -247,11 +252,14 @@ export default class PlotProcess {
             return QueueItemsBuilder.empty
 
         return (items: QueueItemsBuilder) => {
+            // todo: this title should be rendered on another layer/canvas/space
             if (title) {
                 items.text(title)
-                     .position(COORDS_MAX_X / 2, 150)
-                     .size(20)
+                    .position(COORDS_MAX_X / 2, 150)
+                    .size(20)
+                    .color(Theme.text)
 
+                // todo: bad
                 if (this.margin.bottom < 320) {
                     this.margin.top = 320
                 }
@@ -260,16 +268,18 @@ export default class PlotProcess {
             if (this.data.xTitle) {
                 items.text(this.data.xTitle)
                     // todo: "this.charPrecision * 4" very bad solution
-                     .position(this.charPrecision * 4, COORDS_MAX_Y / 2)
-                     .baseline(TextBaseline.Top)
-                     .size(14)
-                     .rotate(270)
+                    .position(this.charPrecision * 4, COORDS_MAX_Y / 2)
+                    .baseline(TextBaseline.Top)
+                    .size(14)
+                    .rotate(270)
+                    .color(Theme.text)
             }
 
             if (this.data.yTitle) {
                 items.text(this.data.yTitle)
-                     .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.margin.bottom / 2)
-                     .size(14)
+                    .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.margin.bottom / 2)
+                    .size(14)
+                    .color(Theme.text)
 
                 if (this.margin.bottom < 300) {
                     this.margin.bottom = 300
@@ -295,7 +305,7 @@ export default class PlotProcess {
                 return [func(series)]
             }
 
-            Debug.error(`This (${ series.type }) plot type is not implemented`)
+            Debug.error(`This (${series.type}) plot type is not implemented`)
 
             return []
         })
@@ -311,8 +321,8 @@ export default class PlotProcess {
         const widthInStep = step / seriesCount
 
         const seriesIndex = this.data.values
-                                .filter(s => s.type == PlotType.Column)
-                                .indexOf(series)
+            .filter(s => s.type == PlotType.Column)
+            .indexOf(series)
 
         return (items: QueueItemsBuilder) => {
             let i = 0
@@ -322,14 +332,14 @@ export default class PlotProcess {
                 const height = value.y as number * this.scale.y
 
                 items.rect()
-                     .position(x, y)
-                     .size(widthInStep, height)
-                     .fill()
-                     .round([16, 16, 0, 0])
-                     .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                     .color(series.color ?? '#ffa500')
-                     .tooltip(`${value.label}\n${value.y}`)
-                     .interact()
+                    .position(x, y)
+                    .size(widthInStep, height)
+                    .fill()
+                    .round([16, 16, 0, 0])
+                    .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                    .color(series.color ?? '#ffa500')
+                    .tooltip(`${value.label}\n${value.y}`)
+                    .interact()
 
                 i++
             }
@@ -372,8 +382,8 @@ export default class PlotProcess {
             const heightInStep = step / seriesCount
 
             const seriesIndex = this.data.values
-                                    .filter(s => s.type == PlotType.StackingColumn)
-                                    .indexOf(series)
+                .filter(s => s.type == PlotType.StackingColumn)
+                .indexOf(series)
 
             let i = 0
 
@@ -381,14 +391,14 @@ export default class PlotProcess {
                 const y = this.getZero().y - seriesIndex * heightInStep - i * step - (i + 1) * this.columnMargin
 
                 items.rect()
-                     .position(this.margin.left, y)
-                     .size(value.y as number * this.scale.x,
-                         heightInStep)
-                     .round([0, 16, 16, 0])
-                     .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                     .fill()
-                     .color(series.color ?? '#0000ff')
-                     .interact()
+                    .position(this.margin.left, y)
+                    .size(value.y as number * this.scale.x,
+                        heightInStep)
+                    .round([0, 16, 16, 0])
+                    .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                    .fill()
+                    .color(series.color ?? '#0000ff')
+                    .interact()
 
                 i++
             }
@@ -414,20 +424,20 @@ export default class PlotProcess {
                 const y = baseY + stack
 
                 const x = this.margin.left
-                          + i * step
-                          + (i + 1) * this.columnMargin
+                    + i * step
+                    + (i + 1) * this.columnMargin
                 const height = value.y as number * this.scale.y
 
                 this.stacks.set(key, stack - height)
 
                 items.rect()
-                     .position(x, y)
-                     .size(step, height)
-                     .fill()
-                     .round(isLast ? [16, 16, 0, 0] : [0, 0, 0, 0])
-                     .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                     .color(series.color ?? '#a6f022')
-                     .interact()
+                    .position(x, y)
+                    .size(step, height)
+                    .fill()
+                    .round(isLast ? [16, 16, 0, 0] : [0, 0, 0, 0])
+                    .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                    .color(series.color ?? '#a6f022')
+                    .interact()
 
                 i++
             }
@@ -436,7 +446,7 @@ export default class PlotProcess {
 
     private getAttentionLine(series: PlotSeries) {
         const y = this.getZero().y
-                  - (series.values[0].y as number) * this.scale.y
+            - (series.values[0].y as number) * this.scale.y
 
         const x1 = this.margin.left
         const x2 = COORDS_MAX_X - this.margin.right
@@ -445,11 +455,11 @@ export default class PlotProcess {
 
         return (items: QueueItemsBuilder) => {
             items.line()
-                 .stop(x1, y)
-                 .stop(x2, y)
-                 .width(series.width)
-                 .color(color)
-                 .interact()
+                .stop(x1, y)
+                .stop(x2, y)
+                .width(series.width)
+                .color(color)
+                .interact()
         }
     }
 }

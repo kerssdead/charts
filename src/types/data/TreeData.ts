@@ -15,6 +15,8 @@ class TreeData implements Data {
 
     padding: number
 
+    gap: number
+
     // static getRows(data: TreeData): TableData {
     //     const key = 'Value'
     //

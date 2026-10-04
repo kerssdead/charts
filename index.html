@@ -258,7 +258,7 @@
                     </select>
                 </label>
 
-                <label class="fine">
+                <label class="danger">
                     <input type="checkbox" id="negative-values-in-plot" onchange="refresh()"/>
 
                     Enable negative values in plot
@@ -311,13 +311,13 @@
 
 
             <div>
-                <label class="danger">
+                <label class="fine">
                     Min
 
                     <input type="number" id="gauge-min" onchange="refresh()" value="0"/>
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     Max
 
                     <input type="number" id="gauge-max" onchange="refresh()" value="100"/>
@@ -325,10 +325,16 @@
             </div>
 
             <div>
-                <label class="danger">
+                <label class="fine">
                     Padding
 
                     <input type="range" id="tree-padding" oninput="refresh()"/>
+                </label>
+
+                <label class="fine">
+                    Gap
+
+                    <input type="range" id="tree-gap" oninput="refresh()"/>
                 </label>
             </div>
         </div>
@@ -723,6 +729,7 @@
             gaugeMin = +document.getElementById('gauge-min').value,
             gaugeMax = +document.getElementById('gauge-max').value,
             padding = +document.getElementById('tree-padding').value,
+            gap = +document.getElementById('tree-gap').value,
             customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
             innerRadius = +document.getElementById('inner-radius').value,
             xType = +document.getElementById('x-axis-type').value,
@@ -761,6 +768,7 @@
                 min: gaugeMin,
                 max: gaugeMax,
                 padding: padding,
+                gap: gap,
                 innerRadius: innerRadius,
                 simple: simpleEnabled,
                 innerTitle: innerTitle,

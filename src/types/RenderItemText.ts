@@ -35,6 +35,7 @@ export default class RenderItemText
         this.y1 = RenderItem.adjustY(window, this.y) + this.fontSize * 0.3
     }
 
+    // todo: remove "window" arg ?
     render(ctx: CanvasRenderingContext2D, window?: CanvasWindow): void {
         ctx.font = this.font
         ctx.textAlign = this.alignment
