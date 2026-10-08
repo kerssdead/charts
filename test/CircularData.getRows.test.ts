@@ -1,4 +1,4 @@
-import CircularData from '../src/types/data/PieData'
+import PieData from '../src/types/data/PieData'
 
 describe('Getting circular rows for decomposition', () => {
     it('Should has 3 rows', () => {
@@ -17,9 +17,9 @@ describe('Getting circular rows for decomposition', () => {
                     label: 'Sector 3'
                 }
             ]
-        } as CircularData
+        } as PieData
 
-        expect(CircularData.getRows(data).values.length)
+        expect(PieData.getRows(data).values.length)
             .toBe(3)
     })
 })

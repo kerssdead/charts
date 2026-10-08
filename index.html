@@ -36,7 +36,7 @@
 
         <div class="settings">
             <div>
-                <label class="warn" title="pie, gauge, tree not implemented">
+                <label class="fine">
                     Chart Type
 
                     <select id="chart-type" onchange="refresh()">
@@ -282,10 +282,16 @@
                     </select>
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     <input type="checkbox" id="short-labels" onchange="refresh()"/>
 
                     Short Labels
+                </label>
+
+                <label class="fine">
+                    Y-axis max
+
+                    <input type="number" min="0" id="y-max" onchange="refresh()" value=""/>
                 </label>
             </div>
 
@@ -735,6 +741,7 @@
             xType = +document.getElementById('x-axis-type').value,
             postfix = document.getElementById('postfix').value,
             innerTitle = document.getElementById('inner-title').value,
+            yMax = document.getElementById('y-max').value,
             contextMenu = !contextMenuEnabled
                 ? null
                 : [
@@ -772,7 +779,8 @@
                 innerRadius: innerRadius,
                 simple: simpleEnabled,
                 innerTitle: innerTitle,
-                shortLabels: shortLabels
+                shortLabels: shortLabels,
+                yMax: yMax
             },
             type: type,
             baseColor: baseColor,

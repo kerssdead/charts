@@ -2,17 +2,18 @@ import PlotData from '../types/data/PlotData'
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
 import {COORDS_MAX_X, COORDS_MAX_Y} from 'static/constants/Index'
 import {HorizontalAlignment, PlotType, TextAlignment, TextBaseline, VerticalAlignment} from '../static/Enums'
-import {getRoundedValues, stringWidth} from '../Helper'
+import { getRoundedValues, short } from '../Helper'
 import Margin from '../types/Margin'
 import PlotSeries from '../types/PlotSeries'
 import Debug from '../Debug'
 import Point from '../types/Point'
 import Theme from "../Theme";
 
+const GAP = 30
+
 // todo: check rendering multiple series when some of them is not have all x-axis points
 // todo: if series.length > 1 then on mouse over series item highlight all values from this series
 // todo: add init animation
-// todo: fix tooltips
 // todo: add context menu
 
 export default class PlotProcess {
@@ -27,9 +28,6 @@ export default class PlotProcess {
     private values: number[] = []
 
     private zero: Point
-
-    // todo: move margin outside
-    private readonly columnMargin = 30
 
     private readonly charPrecision: number
 
@@ -53,6 +51,7 @@ export default class PlotProcess {
 
     constructor(data: PlotData, charPrecision: number) {
         this.data = data
+        this.data.yMax = this.data.yMax as number == 0 ? undefined : this.data.yMax as number
         this.charPrecision = charPrecision
 
         this.stacks = new Map<string, number>()
@@ -63,7 +62,7 @@ export default class PlotProcess {
 
         this.calculateLabels()
 
-        const maxLengthLeft = Math.max(...this.values.map(str => str.toString().length)) + 1
+        const maxLengthLeft = Math.max(...this.values.map(str => short(str, this.data.shortLabels).length)) + 1
 
         this.margin = {
             top: 200,
@@ -116,15 +115,15 @@ export default class PlotProcess {
             this.margin.top += 100
 
             i = 0
-            const step = (this.available.x - this.columnMargin * 2) / (this.values.length - 1)
+            const step = (this.available.x - GAP * 2) / (this.values.length - 1)
 
             // Top labels
             for (const label of this.values) {
-                const x = this.margin.left + this.columnMargin + i * step
+                const x = this.margin.left + GAP + i * step
 
                 // todo: test long values visibility/offset
-                items.text(label.toString())
-                    .position(x, this.margin.top - this.columnMargin * 2)
+                items.text(short(label, this.data.shortLabels))
+                    .position(x, this.margin.top - GAP * 2)
                     .align(TextAlignment.Center)
                     .color('black')
 
@@ -134,14 +133,14 @@ export default class PlotProcess {
             // Right labels
             const count = Math.max(...this.data.values.map(s => s.values.length))
             // todo: remove columnMargin from here ?
-            const stepY = (this.available.y - this.columnMargin) / count - this.columnMargin
+            const stepY = (this.available.y - GAP) / count - GAP
 
-            const x = COORDS_MAX_X - this.margin.right + this.columnMargin * 2
+            const x = COORDS_MAX_X - this.margin.right + GAP * 2
 
             i = 0
 
             for (const value of this.data.values[0].values) {
-                const y = COORDS_MAX_Y - this.margin.bottom - i * stepY - (i + 1) * this.columnMargin
+                const y = COORDS_MAX_Y - this.margin.bottom - i * stepY - (i + 1) * GAP
 
                 items.text(value.x.toString())
                     .position(x, y - stepY / 2)
@@ -159,7 +158,7 @@ export default class PlotProcess {
         let y = COORDS_MAX_Y - this.margin.bottom
         for (const label of this.values) {
             // todo: test long values visibility/offset
-            items.text(label.toString())
+            items.text(short(label, this.data.shortLabels))
                 .position(x1, y)
                 .align(TextAlignment.Right)
                 .color('black')
@@ -174,14 +173,14 @@ export default class PlotProcess {
         if (this.data.values.length > 0) {
             // Bottom labels
             const count = Math.max(...this.data.values.map(s => s.values.length))
-            const stepX = (this.available.x - this.columnMargin) / count - this.columnMargin
+            const stepX = (this.available.x - GAP) / count - GAP
 
             const y = COORDS_MAX_Y - this.margin.bottom
 
             i = 0
 
             for (const value of this.data.values[0].values) {
-                const x = this.margin.left + i * stepX + (i + 1) * this.columnMargin
+                const x = this.margin.left + i * stepX + (i + 1) * GAP
 
                 items.text(value.x.toString())
                     .position(x + stepX / 2, y)
@@ -235,13 +234,13 @@ export default class PlotProcess {
                 }
             }
 
-            this.values = getRoundedValues(Array.from(allValues.values()))
+            this.values = getRoundedValues(Array.from(allValues.values()), 5, this.data.yMax)
         } else {
             let flatValues = this.data.values.flatMap(s => s.values.map(p => p.y as number))
             while (flatValues.length < 5) {
                 flatValues.push(flatValues[0])
             }
-            this.values = getRoundedValues(flatValues)
+            this.values = getRoundedValues(flatValues, 5, this.data.yMax)
         }
     }
 
@@ -310,12 +309,11 @@ export default class PlotProcess {
         })
     }
 
-    // todo: use group ?
     private getColumns(series: PlotSeries) {
         const y = this.getZero().y
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
-        const step = (this.available.x - this.columnMargin) / count - this.columnMargin
+        const step = (this.available.x - GAP) / count - GAP
         const seriesCount = this.data.values.filter(s => s.type == PlotType.Column).length
         const widthInStep = step / seriesCount
 
@@ -327,7 +325,7 @@ export default class PlotProcess {
             let i = 0
 
             for (const value of series.values) {
-                const x = this.margin.left + i * step + seriesIndex * widthInStep + (i + 1) * this.columnMargin
+                const x = this.margin.left + i * step + seriesIndex * widthInStep + (i + 1) * GAP
                 const height = value.y as number * this.scale.y
 
                 items.rect()
@@ -349,14 +347,14 @@ export default class PlotProcess {
         const y = this.getZero().y
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
-        const step = (this.available.x - this.columnMargin) / count - this.columnMargin
+        const step = (this.available.x - GAP) / count - GAP
 
         return (items: QueueItemsBuilder) => {
             let line = items.line()
             let i = 0
 
             for (const value of series.values) {
-                const x = this.margin.left + i * step + step / 2 + (i + 1) * this.columnMargin
+                const x = this.margin.left + i * step + step / 2 + (i + 1) * GAP
                 const height = value.y as number * this.scale.y
 
                 line.stop(x, y - height)
@@ -372,11 +370,10 @@ export default class PlotProcess {
     }
 
     // todo: if there is columns/lines with bars add second base lines
-    // todo: use group ?
     private getBars(series: PlotSeries) {
         return (items: QueueItemsBuilder) => {
             const count = Math.max(...this.data.values.map(s => s.values.length))
-            const step = (this.available.y - this.columnMargin) / count - this.columnMargin
+            const step = (this.available.y - GAP) / count - GAP
             const seriesCount = this.data.values.filter(s => s.type == PlotType.Bar).length
             const heightInStep = step / seriesCount
 
@@ -387,7 +384,10 @@ export default class PlotProcess {
             let i = 0
 
             for (const value of series.values) {
-                const y = this.getZero().y - seriesIndex * heightInStep - i * step - (i + 1) * this.columnMargin
+                const y = this.getZero().y
+                          - seriesIndex * heightInStep
+                          - (i + 1) * step
+                          - (i + 1) * GAP
 
                 items.rect()
                     .position(this.margin.left, y)
@@ -408,7 +408,7 @@ export default class PlotProcess {
         const baseY = this.getZero().y
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
-        const step = (this.available.x - this.columnMargin) / count - this.columnMargin
+        const step = (this.available.x - GAP) / count - GAP
 
         const isLast = this.data.values.indexOf(series) == this.data.values.length - 1
 
@@ -424,7 +424,7 @@ export default class PlotProcess {
 
                 const x = this.margin.left
                     + i * step
-                    + (i + 1) * this.columnMargin
+                    + (i + 1) * GAP
                 const height = value.y as number * this.scale.y
 
                 this.stacks.set(key, stack - height)

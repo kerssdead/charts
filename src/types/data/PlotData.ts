@@ -17,7 +17,7 @@ export default class PlotData implements Data {
 
     simple: boolean
 
-    yMax: number
+    yMax: number | undefined
 
     xTitle: string
 

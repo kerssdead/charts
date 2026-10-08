@@ -1,4 +1,4 @@
-import {PieData} from "types/data/PieData";
+import PieData from "types/data/PieData";
 import QueueItemsBuilder from "builders/QueueItemsBuilder";
 import Sector from "types/Sector";
 import {COORDS_MAX_X, COORDS_MAX_Y} from "static/constants/Index";
@@ -10,7 +10,7 @@ import {COORDS_MAX_X, COORDS_MAX_Y} from "static/constants/Index";
 // todo: add inner radius
 // todo: add context menu
 
-export class PieProcess {
+export default class PieProcess {
     private data: PieData
 
     private charPrecision: number

@@ -111,13 +111,17 @@ export function applyAlpha(color: string, opacity: number) {
     )
 }
 
-export function getRoundedValues(all: number[], targetTicks: number = 5) {
+export function getRoundedValues(
+    all: number[],
+    targetTicks: number = 5,
+    max: number | undefined
+) {
     if (!Array.isArray(all) || all.length === 0) {
         return []
     }
 
     const minVal = Math.min(0, ...all)
-    const maxVal = Math.max(0, ...all)
+    const maxVal = max == undefined ? Math.max(0, ...all) : Math.min(max, Math.max(0, ...all))
 
     if (minVal === 0 && maxVal === 0) {
         return []
@@ -131,16 +135,20 @@ export function getRoundedValues(all: number[], targetTicks: number = 5) {
     const normalizedStep = rawStep / magnitude
 
     let prettyNormalizedStep
-    if (normalizedStep <= 1) {
-        prettyNormalizedStep = 1
-    } else if (normalizedStep <= 2) {
-        prettyNormalizedStep = 2
-    } else if (normalizedStep <= 2.5) {
-        prettyNormalizedStep = 2.5
-    } else if (normalizedStep <= 5) {
-        prettyNormalizedStep = 5
+    if (max != undefined) {
+        prettyNormalizedStep = normalizedStep
     } else {
-        prettyNormalizedStep = 10
+        if (normalizedStep <= 1) {
+            prettyNormalizedStep = 1
+        } else if (normalizedStep <= 2) {
+            prettyNormalizedStep = 2
+        } else if (normalizedStep <= 2.5) {
+            prettyNormalizedStep = 2.5
+        } else if (normalizedStep <= 5) {
+            prettyNormalizedStep = 5
+        } else {
+            prettyNormalizedStep = 10
+        }
     }
 
     let step = prettyNormalizedStep * magnitude
@@ -149,8 +157,12 @@ export function getRoundedValues(all: number[], targetTicks: number = 5) {
     let posIntervals = 0
 
     while (true) {
-        negIntervals = minVal < 0 ? Math.ceil(Math.abs(minVal) / step) : 0
-        posIntervals = maxVal > 0 ? Math.ceil(maxVal / step) : 0
+        negIntervals = minVal < 0 ? (max != undefined ? Math.round(Math.abs(minVal) / step) : Math.ceil(Math.abs(minVal) / step)) : 0
+        posIntervals = maxVal > 0 ? (max != undefined ? Math.round(maxVal / step) : Math.ceil(maxVal / step)) : 0
+
+        if (maxVal > 0 && posIntervals === 0) {
+            posIntervals = 1
+        }
 
         if (negIntervals + posIntervals <= intervals) {
             const remaining = intervals - (negIntervals + posIntervals)
@@ -286,4 +298,18 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
         return result
 
     return parseNumber(value, ',')
+}
+
+export function short(value: any, isShort: boolean) {
+    if (!isShort) {
+        return value.toString()
+    }
+
+    const parsed = parseNumber(value)
+
+    return new Intl.NumberFormat(undefined, {
+        notation: 'compact',
+        compactDisplay: 'short',
+        maximumFractionDigits: 1
+    }).format(parsed)
 }

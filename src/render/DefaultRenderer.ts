@@ -10,8 +10,8 @@ import PlotProcess from './PlotProcess'
 import Data from '../types/interfaces/Data'
 import PlotData from '../types/data/PlotData'
 import ChartSettings from '../types/ChartSettings'
-import {PieProcess} from "./PieProcess";
-import {PieData} from "../types/data/PieData";
+import PieProcess from "./PieProcess";
+import PieData from "../types/data/PieData";
 import TreeProcess from "./TreeProcess";
 import TreeData from "../types/data/TreeData";
 import GaugeProcess from "./GaugeProcess";

@@ -133,7 +133,7 @@ export default class RenderItem {
     private continueTooltip(point: Point, item: RenderItemBase) {
         if (item.isMouseOver(point)) {
             this.showTooltip = item.tooltip(this, point)
-        } else if (this.startTimer) {
+        } else if (this.startTimer && !this.mouseLeave) {
             this.mouseLeave = true
 
             this.showTooltip = item.tooltip(this, point)

@@ -9,7 +9,7 @@ import Map = types.Map;
 import {ChartType, ErrorType} from "../../static/Enums";
 import Errors from "../../helpers/Errors";
 
-export class PieData implements Data {
+export default class PieData implements Data {
     values: Sector[]
 
     innerRadius: number
@@ -17,27 +17,25 @@ export class PieData implements Data {
     innerTitle: string
 
     static getRows(data: PieData): TableData {
-        Errors.throw(ErrorType.NotImplemented)
+        const key = 'Value'
 
-        // const key = 'Value'
-        //
-        // let values: TableValue[] = []
-        //
+        let values: TableValue[] = []
+
         // for (const value of data.values)
         //     values.push({
         //         name: value.label,
         //         values: new Map([[key, value.value]])
         //     })
-        //
-        // return {
-        //     headers: [
-        //         {
-        //             value: key,
-        //             display: key
-        //         }
-        //     ],
-        //     values: values
-        // }
+
+        return {
+            headers: [
+                {
+                    value: key,
+                    display: key
+                }
+            ],
+            values: values
+        }
     }
 
     type: ChartType
