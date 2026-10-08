@@ -111,21 +111,21 @@ export function applyAlpha(color: string, opacity: number) {
     )
 }
 
-export function getRoundedValues(all: number[]) {
+export function getRoundedValues(all: number[], targetTicks: number = 5) {
     if (!Array.isArray(all) || all.length === 0) {
         return []
     }
 
+    const minVal = Math.min(0, ...all)
     const maxVal = Math.max(0, ...all)
 
-    if (maxVal === 0) {
+    if (minVal === 0 && maxVal === 0) {
         return []
     }
 
-    const targetTicks = 5
     const intervals = targetTicks - 1
 
-    const rawStep = maxVal / intervals
+    const rawStep = (maxVal - minVal) / intervals
 
     const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
     const normalizedStep = rawStep / magnitude
@@ -143,11 +143,49 @@ export function getRoundedValues(all: number[]) {
         prettyNormalizedStep = 10
     }
 
-    const step = prettyNormalizedStep * magnitude
+    let step = prettyNormalizedStep * magnitude
 
+    let negIntervals = 0
+    let posIntervals = 0
+
+    while (true) {
+        negIntervals = minVal < 0 ? Math.ceil(Math.abs(minVal) / step) : 0
+        posIntervals = maxVal > 0 ? Math.ceil(maxVal / step) : 0
+
+        if (negIntervals + posIntervals <= intervals) {
+            const remaining = intervals - (negIntervals + posIntervals)
+            if (remaining > 0) {
+                if (minVal === 0) {
+                    posIntervals += remaining
+                } else if (maxVal === 0) {
+                    negIntervals += remaining
+                } else {
+                    for (let i = 0; i < remaining; i++) {
+                        const negDeficit = negIntervals * step - Math.abs(minVal)
+                        const posDeficit = posIntervals * step - maxVal
+                        if (negDeficit < posDeficit) {
+                            negIntervals++
+                        } else {
+                            posIntervals++
+                        }
+                    }
+                }
+            }
+            break
+        }
+
+        step *= 1.25
+    }
+
+    const startTick = -negIntervals * step
     const ticks = []
+
     for (let i = 0; i < targetTicks; i++) {
-        ticks.push(Number((i * step).toFixed(12)))
+        const val = startTick + i * step
+        let fixedVal = Number(val.toFixed(12))
+        if (fixedVal === 0)
+            fixedVal = 0
+        ticks.push(fixedVal)
     }
 
     return ticks

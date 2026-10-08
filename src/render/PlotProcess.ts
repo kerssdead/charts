@@ -9,7 +9,6 @@ import Debug from '../Debug'
 import Point from '../types/Point'
 import Theme from "../Theme";
 
-// todo: fix rendering negative and positive values at the same time
 // todo: check rendering multiple series when some of them is not have all x-axis points
 // todo: if series.length > 1 then on mouse over series item highlight all values from this series
 // todo: add init animation
