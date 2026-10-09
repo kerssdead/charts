@@ -3,69 +3,56 @@ import RenderItemBase from './interfaces/RenderItemBase'
 import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
 import RenderItem from './RenderItem'
 import Point from './Point'
-import { adjustColor } from '../Helper'
 import { DefaultRenderer } from '../render/DefaultRenderer'
 import Animations from '../Animations'
 import { Alignment } from './Alignment'
 import { HorizontalAlignment, VerticalAlignment } from '../static/Enums'
+import RectangleDimensions from './RectangleDimensions'
+
+const ANIMATION_DURATION = 450
+const SCALE_DELTA = 0.01
+const ALPHA_DELTA = 0.5
+
+const H_FACTOR = {
+    [HorizontalAlignment.Left]: 0,
+    [HorizontalAlignment.Center]: 0.5,
+    [HorizontalAlignment.Right]: 1
+}
+const V_FACTOR = {
+    [VerticalAlignment.Top]: 0,
+    [VerticalAlignment.Center]: 0.5,
+    [VerticalAlignment.Bottom]: 1
+}
 
 export default class RenderItemRectangle
     implements RenderItemBase {
+    isFill: boolean
+
+    radii: number[]
+
+    absolute: RectangleDimensions = new RectangleDimensions()
+
+    canvas: RectangleDimensions = new RectangleDimensions()
+
+    align: Alignment = Alignment.default
+
     adjust(window: CanvasWindow): void {
-        this.x1 = RenderItem.adjustX(window, this.x)
-        this.y1 = RenderItem.adjustY(window, this.y)
-        this.width1 = this.width / COORDS_MAX_X * window.width
-        this.height1 = this.height / COORDS_MAX_Y * window.height
+        this.canvas.x = RenderItem.adjustX(window, this.absolute.x)
+        this.canvas.y = RenderItem.adjustY(window, this.absolute.y)
+        this.canvas.width = this.absolute.width / COORDS_MAX_X * window.width
+        this.canvas.height = this.absolute.height / COORDS_MAX_Y * window.height
     }
 
     render(ctx: CanvasRenderingContext2D): void {
-        const width = this.width1 * this.activeScale
-        const height = this.height1 * this.activeScale
+        const { left, top, width, height } = this.bounds(1)
 
-        let x = this.x1
-        let y = this.y1
-
-        switch (this.align.x) {
-            case HorizontalAlignment.Left:
-                break
-            case HorizontalAlignment.Center:
-                x -= width / 2
-                break
-            case HorizontalAlignment.Right:
-                x -= width
-                break
-        }
-
-        switch (this.align.y) {
-            case VerticalAlignment.Top:
-                break
-            case VerticalAlignment.Center:
-                y -= height / 2
-                break
-            case VerticalAlignment.Bottom:
-                y -= height
-                break
-        }
-
-        if (this.roundedCorners) {
-            ctx.roundRect(x, y, width, height, this.roundedCorners)
-        } else {
-            ctx.rect(x, y, width, height)
-        }
+        ctx.roundRect(left, top, width, height, this.radii || 0)
 
         if (this.isFill) {
             ctx.fill()
         }
 
         ctx.stroke()
-    }
-
-    animate(item: RenderItem, isBackward: boolean = false) {
-        item.activeColor = adjustColor(
-            item.color,
-            Math.round(this.opacity(item, 1, isBackward) * -100)
-        )
-        this.activeScale = this.scale(item, 0.98, isBackward)
     }
 
     // todo: implement
@@ -79,126 +66,39 @@ export default class RenderItemRectangle
     }
 
     isMouseOver(point: Point) {
-        let isHorizontal = false
-        let isVertical = false
+        const { left, top, width, height } = this.bounds()
 
-        switch (this.align.x) {
-            case HorizontalAlignment.Center:
-                const halfWidth = this.width1 / 2
-                isHorizontal = this.x1 - halfWidth <= point.x && point.x <= this.x1 + halfWidth
-                break
-
-            case HorizontalAlignment.Left:
-                isHorizontal = this.x1 <= point.x && point.x <= this.x1 + this.width1
-                break
-
-            case HorizontalAlignment.Right:
-                isHorizontal = this.x1 - this.width1 <= point.x && point.x <= this.x1
-                break
-        }
-
-        switch (this.align.y) {
-            case VerticalAlignment.Center:
-                const halfHeight = this.height1 / 2
-                isVertical = this.y1 - halfHeight <= point.y && point.y <= this.y1 + halfHeight
-                break
-
-            case VerticalAlignment.Top:
-                isVertical = this.y1 <= point.y && point.y <= this.y1 + this.height1
-                break
-
-            case VerticalAlignment.Bottom:
-                isVertical = this.y1 - this.height1 <= point.y && point.y <= this.y1
-                break
-        }
-
-        return isHorizontal && isVertical
+        return left <= point.x && point.x <= left + width
+               && top <= point.y && point.y <= top + height
     }
 
-    // todo: do via ctx.store() -> ctx.restore()
-    private opacity(item: RenderItem, value: number, isBackward: boolean = false) {
+    animate(item: RenderItem, isBackward = false) {
+        const k = this.factor(item, isBackward)
+
+        item.animation.scale = 1 - SCALE_DELTA * k
+        item.animation.alpha = 1 - ALPHA_DELTA * k
+    }
+
+    private factor(item: RenderItem, isBackward: boolean) {
         item.startTimer ??= DefaultRenderer.timer
 
-        const diff = DefaultRenderer.timer - item.startTimer
-        const duration = 450
+        const progress = Math.min((DefaultRenderer.timer - item.startTimer) / ANIMATION_DURATION, 1)
+        const transition = Animations.getTransition(progress)
 
-        let transition = Animations.getTransition(diff > duration ? 1 : diff / duration)
-
-        if (isBackward) {
-            transition = Math.abs(1 - transition)
-        }
-
-        if (diff > duration) {
-            if (isBackward) {
-                return 1 - value
-            }
-
-            return value
-        }
-
-        if (isBackward) {
-            return (1 - (diff / duration)) * value * transition
-        }
-
-        return diff / duration * value * transition
+        return isBackward
+               ? (1 - progress) * (1 - transition)
+               : progress * transition
     }
 
-    // todo: do via ctx.store() -> ctx.restore()
-    private scale(item: RenderItem, value: number, isBackward: boolean = false) {
-        item.startTimer ??= DefaultRenderer.timer
+    private bounds(scale = 1) {
+        const width = this.canvas.width * scale
+        const height = this.canvas.height * scale
 
-        value -= 1
-
-        const diff = DefaultRenderer.timer - item.startTimer
-        const duration = 450
-
-        let transition = Animations.getTransition(diff > duration ? 1 : diff / duration)
-
-        if (isBackward) {
-            transition = Math.abs(1 - transition)
+        return {
+            left: this.canvas.x - width * H_FACTOR[this.align.x],
+            top: this.canvas.y - height * V_FACTOR[this.align.y],
+            width,
+            height,
         }
-
-        if (diff > duration) {
-            if (isBackward) {
-                return 1
-            }
-
-            return 1 + value
-        }
-
-        if (isBackward) {
-            return 1 + (1 - (diff / duration)) * value * transition
-        }
-
-        return 1 + diff / duration * value * transition
     }
-
-    isFill: boolean = false
-
-    roundedCorners: number[] | null
-
-    x: number = 0
-
-    // todo: meh solution
-    // todo: instead of use x1, y1, width1, height1, etc. just use ctx.store() and ctx.restore()
-    x1: number = 0
-
-    y: number = 0
-
-    // todo: meh solution
-    y1: number = 0
-
-    width: number = 1
-
-    // todo: meh solution
-    width1: number = 1
-
-    height: number = 1
-
-    // todo: meh solution
-    height1: number = 1
-
-    activeScale: number = 1
-
-    align: Alignment = Alignment.default
 }

@@ -325,7 +325,10 @@ export default class PlotProcess {
             let i = 0
 
             for (const value of series.values) {
-                const x = this.margin.left + i * step + seriesIndex * widthInStep + (i + 1) * GAP
+                const x = this.margin.left
+                          + (i + .5) * step
+                          + seriesIndex * widthInStep
+                          + (i + 1) * GAP
                 const height = value.y as number * this.scale.y
 
                 items.rect()
@@ -333,7 +336,7 @@ export default class PlotProcess {
                     .size(widthInStep, height)
                     .fill()
                     .round([16, 16, 0, 0])
-                    .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                    .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                     .color(series.color ?? '#ffa500')
                     .tooltip(`${value.label}\n${value.y}`)
                     .interact()

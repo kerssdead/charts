@@ -9,6 +9,7 @@ import RenderItemBase from './interfaces/RenderItemBase'
 import Point from './Point'
 import { DefaultRenderer } from '../render/DefaultRenderer'
 import RenderItemText from './RenderItemText'
+import AnimationData from '../AnimationData'
 
 export default class RenderItem {
     isAnimate: boolean = false
@@ -27,6 +28,8 @@ export default class RenderItem {
     type: RenderStepType
 
     color: string
+
+    animation: AnimationData = AnimationData.default
 
     activeColor: string
 

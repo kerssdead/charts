@@ -21,12 +21,17 @@ export default class Queue {
         if (!this.isShouldRender())
             return
 
-        this.ctx.beginPath()
-
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 
         for (const step of this.getSorted()) {
+            this.ctx.save()
+            this.ctx.beginPath()
+
+            this.ctx.globalAlpha = step.animation.alpha
+
             step.render(this.ctx, window)
+
+            this.ctx.restore()
         }
 
         this.queue = this.queue.filter(item => !item.isTemp)
@@ -37,8 +42,6 @@ export default class Queue {
             return
         }
 
-        // todo: return if current mouse point is changed from previous frame
-
         for (const item of this.queue) {
             item.animate(point)
         }
@@ -48,8 +51,6 @@ export default class Queue {
         if (!point || isContextMenuOpen) {
             return
         }
-
-        // todo: return if current mouse point is changed from previous frame
 
         const offset = 50
         const padding = 50

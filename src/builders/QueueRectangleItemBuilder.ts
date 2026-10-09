@@ -11,15 +11,15 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
     }
 
     position(x: number, y: number): QueueRectangleItemBuilder {
-        this.current.rect.x = x
-        this.current.rect.y = y
+        this.current.rect.absolute.x = x
+        this.current.rect.absolute.y = y
 
         return this
     }
 
     size(width: number, height: number): QueueRectangleItemBuilder {
-        this.current.rect.width = width
-        this.current.rect.height = height
+        this.current.rect.absolute.width = width
+        this.current.rect.absolute.height = height
 
         return this
     }
@@ -30,8 +30,8 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
         return this
     }
 
-    round(corners?: number[] | null): QueueRectangleItemBuilder {
-        this.current.rect.roundedCorners = corners ?? [16, 16, 16, 16]
+    round(radii?: number[] | null): QueueRectangleItemBuilder {
+        this.current.rect.radii = radii ?? [16, 16, 16, 16]
 
         return this
     }

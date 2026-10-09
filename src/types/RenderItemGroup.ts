@@ -67,32 +67,32 @@ export default class RenderItemGroup
             switch (this.direction) {
                 case RenderGroupDirection.Row:
                 case RenderGroupDirection.RowReversed:
-                    item.rect.x
+                    item.rect.absolute.x
                         = margin.left
                           + this.gap * index
                           + itemSize * index
                           + itemSize / 2
-                    item.rect.y
+                    item.rect.absolute.y
                         = COORDS_MAX_Y / 2
-                    item.rect.width
+                    item.rect.absolute.width
                         = itemSize
-                    item.rect.height
+                    item.rect.absolute.height
                         = COORDS_MAX_Y - margin.top - margin.bottom
 
                     break
 
                 case RenderGroupDirection.Column:
                 case RenderGroupDirection.ColumnReversed:
-                    item.rect.x
+                    item.rect.absolute.x
                         = COORDS_MAX_X / 2
-                    item.rect.y
+                    item.rect.absolute.y
                         = margin.top
                           + this.gap * index
                           + itemSize * index
                           + itemSize / 2
-                    item.rect.width
+                    item.rect.absolute.width
                         = COORDS_MAX_X - margin.left - margin.right
-                    item.rect.height
+                    item.rect.absolute.height
                         = itemSize
 
                     break
