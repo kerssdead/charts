@@ -43,6 +43,11 @@ export default class RenderItemArc implements RenderItemBase {
     }
 
     // todo: implement
+    contextMenu(item: RenderItem, point: Point): boolean {
+        return false
+    }
+
+    // todo: implement
     isMouseOver(point: Point): boolean {
         return false
     }

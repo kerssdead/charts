@@ -73,6 +73,11 @@ export default class RenderItemRectangle
         return true
     }
 
+    // todo: implement
+    contextMenu(item: RenderItem, point: Point): boolean {
+        return true
+    }
+
     isMouseOver(point: Point) {
         let isHorizontal = false
         let isVertical = false
@@ -175,6 +180,7 @@ export default class RenderItemRectangle
     x: number = 0
 
     // todo: meh solution
+    // todo: instead of use x1, y1, width1, height1, etc. just use ctx.store() and ctx.restore()
     x1: number = 0
 
     y: number = 0

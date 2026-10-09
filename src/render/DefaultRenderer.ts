@@ -36,6 +36,10 @@ export class DefaultRenderer {
 
     private currentMousePoint: Point | null
 
+    private contextMenuPoint: Point | null
+
+    private isOpenContext: boolean = false
+
     private readonly canvas: HTMLCanvasElement
 
     private readonly settings: ChartSettings
@@ -70,6 +74,8 @@ export class DefaultRenderer {
         }
 
         this.canvas.addEventListener(Events.MouseMove, ev => this.onMouseMove2(ev))
+        this.canvas.addEventListener(Events.ContextMenu, ev => this.onContextMenu(ev))
+        this.canvas.addEventListener(Events.Click, ev => this.onContextMenuClick(ev))
     }
 
     render(): void {
@@ -77,7 +83,8 @@ export class DefaultRenderer {
 
         this.queue.animate(this.currentMousePoint)
 
-        this.queue.tooltip(this.window, this.currentMousePoint)
+        this.queue.tooltip(this.window, this.currentMousePoint, this.isOpenContext)
+        this.queue.contextMenu(this.window, this.contextMenuPoint, this.isOpenContext)
 
         // todo: exclude render not in CanvasWindow
         this.queue.render(this.window)
@@ -173,20 +180,41 @@ export class DefaultRenderer {
         }
     }
 
-    /**
-     * Uses for intercept mouse moving on canvas
-     */
-    // todo: meh name
-    private onMouseMove2(event: MouseEvent) {
+    private getMousePoint(event: MouseEvent): Point {
         const onCanvas = {
             x: event.offsetX - this.window.x,
             y: event.offsetY - this.window.y
         }
 
-        this.currentMousePoint = {
+        return {
             x: RenderItem.adjustX(this.window, onCanvas.x / this.window.width * COORDS_MAX_X),
             y: RenderItem.adjustY(this.window, onCanvas.y / this.window.height * COORDS_MAX_Y),
         }
+    }
+
+    /**
+     * Uses for intercept mouse moving on canvas
+     */
+    // todo: meh name
+    private onMouseMove2(event: MouseEvent) {
+        this.currentMousePoint = this.getMousePoint(event)
+    }
+
+    /**
+     * Uses for intercept opening context menu
+     */
+    // todo: meh name
+    private onContextMenu(event: MouseEvent) {
+        event.preventDefault()
+        event.stopPropagation()
+
+        this.isOpenContext = true
+        this.contextMenuPoint = this.getMousePoint(event)
+    }
+
+    private onContextMenuClick(event: MouseEvent) {
+        this.isOpenContext = false
+        this.contextMenuPoint = null
     }
 
     /**

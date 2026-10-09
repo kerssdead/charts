@@ -22,6 +22,14 @@ export default class RenderItemGroup
         return false
     }
 
+    contextMenu(item: RenderItem, point: Point): boolean {
+        for (const item of this.items) {
+            item.contextMenu(point)
+        }
+
+        return false
+    }
+
     isMouseOver(point: Point): boolean {
         return true
     }

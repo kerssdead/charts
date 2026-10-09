@@ -44,8 +44,8 @@ export default class Queue {
         }
     }
 
-    tooltip(window: CanvasWindow, point: Point | null) {
-        if (!point) {
+    tooltip(window: CanvasWindow, point: Point | null, isContextMenuOpen: boolean) {
+        if (!point || isContextMenuOpen) {
             return
         }
 
@@ -92,6 +92,71 @@ export default class Queue {
                          .color(Theme.background)
                          .stroke(Theme.dropdownBorder)
                          .layer(Layer.Tooltip)
+                         .temp()
+
+                    let rowIndex = 0
+                    for (const row of allRows) {
+                        items.text(row)
+                             .position(pos.x + padding * 1.25 + alignOffset.x,
+                                 pos.y + padding * 1.75 + RenderItem.reAdjustY(window, rowIndex * 16) + alignOffset.y)
+                             .align(TextAlignment.Left)
+                             .color(Theme.text)
+                             .layer(Layer.Tooltip)
+                             .temp()
+
+                        rowIndex++
+                    }
+                })
+            }
+        }
+    }
+
+    contextMenu(window: CanvasWindow, point: Point | null, isOpen: boolean) {
+        const isNullPoint = point == null
+
+        if (!isOpen || isNullPoint) {
+            return
+        }
+
+        const offset = 40
+        const padding = 50
+
+        const pos = {
+            x: RenderItem.reAdjustX(window, point.x) + offset,
+            y: RenderItem.reAdjustY(window, point.y) + offset
+        }
+
+        for (const item of this.queue) {
+            item.contextMenu(point)
+
+            if (item.showContextMenu) {
+                let alignOffset = {
+                    x: 0,
+                    y: 0
+                }
+
+                let allRows = item.tooltipTemplate.split('\n')
+
+                let width = Math.max(...allRows.map(row => stringWidth(row)))
+                let height = (allRows.length + 1) * 14
+
+                if (point.x + width + offset + padding > window.width) {
+                    alignOffset.x = -RenderItem.reAdjustX(window, width) - padding * 2
+                }
+
+                if (point.y + height + offset + padding > window.height) {
+                    alignOffset.y = -RenderItem.reAdjustY(window, height) - padding * 2
+                }
+
+                this.add((items: QueueItemsBuilder) => {
+                    items.rect()
+                         .position(pos.x, pos.y)
+                         .size(300, 200)
+                         .fill()
+                         .round([4, 4, 4, 4])
+                         .align(HorizontalAlignment.Left, VerticalAlignment.Top)
+                         .color(Theme.background)
+                         .stroke(Theme.dropdownBorder)
                          .temp()
 
                     let rowIndex = 0

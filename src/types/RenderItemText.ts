@@ -69,6 +69,11 @@ export default class RenderItemText
         return false
     }
 
+    // todo: implement
+    contextMenu(item: RenderItem, point: Point): boolean {
+        return false
+    }
+
     isMouseOver(point: Point): boolean {
         // todo
         return false

@@ -17,6 +17,8 @@ export default class RenderItem {
 
     showTooltip: boolean = false
 
+    showContextMenu: boolean = false
+
     get hasTooltip() {
         return this.tooltipTemplate && this.tooltipTemplate.length > 0
     }
@@ -100,6 +102,19 @@ export default class RenderItem {
         }
     }
 
+    contextMenu(point: Point) {
+        // if (!this.hasContextMenu) {
+        //     return
+        // }
+
+        for (const item of this.items()) {
+            if (item) {
+                this.continueContextMenu(point, item)
+                return
+            }
+        }
+    }
+
     private adjust(window: CanvasWindow): void {
         for (const item of this.items()) {
             item?.adjust(window)
@@ -130,6 +145,7 @@ export default class RenderItem {
         }
     }
 
+    // todo: remove "item" argument ?
     private continueTooltip(point: Point, item: RenderItemBase) {
         if (item.isMouseOver(point)) {
             this.showTooltip = item.tooltip(this, point)
@@ -139,6 +155,19 @@ export default class RenderItem {
             this.showTooltip = item.tooltip(this, point)
         } else {
             this.showTooltip = false
+        }
+    }
+
+    // todo: remove "item" argument ?
+    private continueContextMenu(point: Point, item: RenderItemBase) {
+        if (item.isMouseOver(point)) {
+            this.showContextMenu = item.contextMenu(this, point)
+        } else if (this.startTimer && !this.mouseLeave) {
+            this.mouseLeave = true
+
+            this.showContextMenu = item.contextMenu(this, point)
+        } else {
+            this.showContextMenu = false
         }
     }
 
