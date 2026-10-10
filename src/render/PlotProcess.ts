@@ -310,60 +310,46 @@ export default class PlotProcess {
     }
 
     private getColumns(series: PlotSeries) {
-        const y = this.getZero().y
+        const baseY = this.getZero().y
+        const color = series.color ?? '#ffa500'
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
         const step = (this.available.x - GAP) / count - GAP
-        const seriesCount = this.data.values.filter(s => s.type == PlotType.Column).length
-        const widthInStep = step / seriesCount
 
-        const seriesIndex = this.data.values
-            .filter(s => s.type == PlotType.Column)
-            .indexOf(series)
+        const columnSeries = this.data.values.filter(s => s.type == PlotType.Column)
+        const widthInStep = step / columnSeries.length
+        const offset = columnSeries.indexOf(series) * widthInStep
 
         return (items: QueueItemsBuilder) => {
-            let i = 0
-
-            for (const value of series.values) {
-                const x = this.margin.left
-                          + (i + .5) * step
-                          + seriesIndex * widthInStep
-                          + (i + 1) * GAP
-                const height = value.y as number * this.scale.y
-
+            series.values.forEach((value, i) => {
                 items.rect()
-                    .position(x, y)
-                    .size(widthInStep, height)
-                    .fill()
-                    .round([16, 16, 0, 0])
-                    .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
-                    .color(series.color ?? '#ffa500')
-                    .tooltip(`${value.label}\n${value.y}`)
-                    .interact()
-
-                i++
-            }
+                     .position(this.margin.left + (i + 0.5) * step + offset + (i + 1) * GAP, baseY)
+                     .size(widthInStep, Number(value.y) * this.scale.y)
+                     .fill()
+                     .round([16, 16, 0, 0])
+                     .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
+                     .color(color)
+                     .tooltip(`${value.label}\n${value.y}`)
+                     .interact()
+            })
         }
     }
 
     private getLines(series: PlotSeries) {
-        const y = this.getZero().y
+        const baseY = this.getZero().y
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
         const step = (this.available.x - GAP) / count - GAP
 
         return (items: QueueItemsBuilder) => {
-            let line = items.line()
-            let i = 0
+            const line = items.line()
 
-            for (const value of series.values) {
-                const x = this.margin.left + i * step + step / 2 + (i + 1) * GAP
-                const height = value.y as number * this.scale.y
-
-                line.stop(x, y - height)
-
-                i++
-            }
+            series.values.forEach((value, i) => {
+                line.stop(
+                    this.margin.left + (i + 0.5) * step + (i + 1) * GAP,
+                    baseY - Number(value.y) * this.scale.y
+                )
+            })
 
             line.width(series.width)
                 .dash(JSON.parse(series.dash ?? '[]'))
@@ -381,74 +367,66 @@ export default class PlotProcess {
             const heightInStep = step / seriesCount
 
             const seriesIndex = this.data.values
-                .filter(s => s.type == PlotType.StackingColumn)
-                .indexOf(series)
+                                    .filter(s => s.type == PlotType.Bar)
+                                    .indexOf(series)
 
-            let i = 0
+            const baseY = this.getZero().y - seriesIndex * heightInStep
+            const color = series.color ?? '#0000ff'
 
-            for (const value of series.values) {
-                const y = this.getZero().y
-                          - seriesIndex * heightInStep
-                          - (i + 1) * step
-                          - (i + 1) * GAP
+            series.values.forEach((value, i) => {
+                const x =this.margin.left
+                const y = baseY - (i + 1) * (step + GAP)
 
                 items.rect()
-                    .position(this.margin.left, y)
-                    .size(value.y as number * this.scale.x,
-                        heightInStep)
-                    .round([0, 16, 16, 0])
-                    .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                    .fill()
-                    .color(series.color ?? '#0000ff')
-                    .interact()
-
-                i++
-            }
+                     .position(x, y)
+                     .size(Number(value.y) * this.scale.x, heightInStep)
+                     .round([0, 16, 16, 0])
+                     .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                     .fill()
+                     .color(color)
+                     .interact()
+            })
         }
     }
 
     private getStackedColumns(series: PlotSeries) {
         const baseY = this.getZero().y
+        const color = series.color ?? '#a6f022'
 
         const count = Math.max(...this.data.values.map(s => s.values.length))
         const step = (this.available.x - GAP) / count - GAP
 
-        const isLast = this.data.values.indexOf(series) == this.data.values.length - 1
+        const isLast = series === this.data.values[this.data.values.length - 1]
+        const round = isLast ? [16, 16, 0, 0] : [0, 0, 0, 0]
 
         return (items: QueueItemsBuilder) => {
-            let i = 0
-
-            for (const value of series.values) {
+            series.values.forEach((value, i) => {
                 const key = value.x.toString()
-
-                const stackValue = this.stacks.get(key)
-                const stack = stackValue == undefined ? 0 : stackValue
-                const y = baseY + stack
-
-                const x = this.margin.left
-                    + i * step
-                    + (i + 1) * GAP
-                const height = value.y as number * this.scale.y
+                const stack = this.stacks.get(key) ?? 0
+                const height = Number(value.y) * this.scale.y
 
                 this.stacks.set(key, stack - height)
 
-                items.rect()
-                    .position(x, y)
-                    .size(step, height)
-                    .fill()
-                    .round(isLast ? [16, 16, 0, 0] : [0, 0, 0, 0])
-                    .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                    .color(series.color ?? '#a6f022')
-                    .interact()
+                const x = this.margin.left
+                          + i * step
+                          + (i + 1) * GAP
+                const y = baseY + stack
 
-                i++
-            }
+                items.rect()
+                     .position(x, y)
+                     .size(step, height)
+                     .fill()
+                     .round(round)
+                     .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                     .color(color)
+                     .interact()
+            })
         }
     }
 
     private getAttentionLine(series: PlotSeries) {
         const y = this.getZero().y
-            - (series.values[0].y as number) * this.scale.y
+            - Number(series.values[0].y) * this.scale.y
 
         const x1 = this.margin.left
         const x2 = COORDS_MAX_X - this.margin.right
