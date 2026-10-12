@@ -125,6 +125,7 @@ export default class Queue {
 
         const offset = 40
         const padding = 50
+        const buttonHeight = 128
 
         const pos = {
             x: RenderItem.reAdjustX(window, point.x) + offset,
@@ -142,52 +143,56 @@ export default class Queue {
 
                 let allItems = item.contextMenuItems
 
-                let width = Math.max(...allItems.map(button => stringWidth(button.text)))
-                let height = (allItems.length + 1) * 14
+                let width = Math.max(...allItems.map(button => stringWidth(button.text))) * 6
+                let height = (allItems.length + 1) * buttonHeight
 
-                if (point.x + width + offset + padding > window.width) {
-                    alignOffset.x = -RenderItem.reAdjustX(window, width) - padding * 2
-                }
+                // todo: fix horizontal overflow
+                // if (point.x + width + offset + padding > window.width) {
+                //     alignOffset.x = -RenderItem.reAdjustX(window, width) - padding * 2
+                // }
 
-                if (point.y + height + offset + padding > window.height) {
-                    alignOffset.y = -RenderItem.reAdjustY(window, height) - padding * 2
-                }
+                // todo: fix vertical overflow
+                // if (point.y + height + offset + padding > window.height) {
+                //     alignOffset.y = -RenderItem.reAdjustY(window, height) - padding * 2
+                // }
 
                 this.add((items: QueueItemsBuilder) => {
                     items.rect()
                          .position(pos.x, pos.y)
-                         .size(300, 200)
+                         .size(width, height)
                          .fill()
                          .round([4, 4, 4, 4])
                          .align(HorizontalAlignment.Left, VerticalAlignment.Top)
                          .color(Theme.background)
                          .stroke(Theme.dropdownBorder)
+                         .layer(Layer.ContextMenu - 20)
                          .temp()
 
                     let rowIndex = 0
                     for (const button of allItems) {
                         const x = pos.x
-                                  + padding * 1.25 + alignOffset.x
+                                  + padding + alignOffset.x
                         const y = pos.y
-                                  + padding * 1.75
-                                  + RenderItem.reAdjustY(window, rowIndex * 16)
+                                  + padding
+                                  + RenderItem.reAdjustY(window, rowIndex * 24)
                                   + alignOffset.y
 
                         items.rect()
-                             .position(x, y)
-                             .size(280, 180)
+                             .position(x - padding / 4, y)
+                             .size(width - padding * 2 + padding / 4, buttonHeight)
                              .round([4, 4, 4, 4])
                              .fill()
+                             .align(HorizontalAlignment.Left, VerticalAlignment.Top)
                              .color(Theme.dropdownItemHoverColor)
-                             .layer(Layer.Tooltip - 1)
+                             .layer(Layer.ContextMenu - 10)
                              .contextMenuButton()
                              .onClick(button.action)
 
                         items.text(button.text)
-                             .position(x, y)
+                             .position(x + padding, y + padding)
                              .align(TextAlignment.Left)
                              .color(Theme.text)
-                             .layer(Layer.Tooltip)
+                             .layer(Layer.ContextMenu)
                              .temp()
 
                         rowIndex++
