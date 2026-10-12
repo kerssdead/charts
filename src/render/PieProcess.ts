@@ -71,7 +71,6 @@ export default class PieProcess {
             items.text(sector.label)
                 // todo: position is broken
                 .position(textPosition.x, textPosition.y)
-                .color('black')
         }
     }
 }

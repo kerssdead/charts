@@ -21,13 +21,18 @@ export default class Queue {
         if (!this.isShouldRender())
             return
 
-        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        this.ctx.fillStyle = Theme.canvasBackground
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 
         for (const step of this.getSorted()) {
             this.ctx.save()
             this.ctx.beginPath()
 
             this.ctx.globalAlpha = step.animation.alpha
+
+            if (step.text && !step.color) {
+                this.ctx.fillStyle = Theme.text
+            }
 
             step.render(this.ctx, window)
 

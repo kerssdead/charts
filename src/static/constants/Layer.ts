@@ -1,4 +1,6 @@
 export class Layer {
+    static Base = 200
+
     static Data = 500
 
     static Tooltip = 800

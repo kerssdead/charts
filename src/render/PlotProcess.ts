@@ -125,7 +125,6 @@ export default class PlotProcess {
                 items.text(short(label, this.data.shortLabels))
                      .position(x, this.margin.top - GAP * 2)
                      .align(TextAlignment.Center)
-                     .color('black')
 
                 i++
             }
@@ -146,7 +145,6 @@ export default class PlotProcess {
                      .position(x, y - stepY / 2)
                      .align(TextAlignment.Left)
                      .size(12)
-                     .color('black')
 
                 i++
             }
@@ -161,7 +159,6 @@ export default class PlotProcess {
             items.text(short(label, this.data.shortLabels))
                  .position(x1, y)
                  .align(TextAlignment.Right)
-                 .color('black')
 
             if (label == 0) {
                 this.zero.y = y
@@ -187,7 +184,6 @@ export default class PlotProcess {
                      .align(TextAlignment.Left)
                      .baseline(TextBaseline.Top)
                      .size(12)
-                     .color('black')
 
                 i++
             }
@@ -206,8 +202,8 @@ export default class PlotProcess {
         items.line()
              .stop(x1, COORDS_MAX_Y - this.margin.bottom)
              .stop(x2, COORDS_MAX_Y - this.margin.bottom)
-             .color('black')
-             .layer(20)
+             .stroke(Theme.line)
+             .layer(Layer.Data + 50)
 
         for (let i = 0; i < intermediateCount; i++) {
             const y = this.margin.top + step * i
@@ -216,8 +212,8 @@ export default class PlotProcess {
                  .stop(x1, y)
                  .stop(x2, y)
                  .dash([1, 20])
-                 .color('gray')
-                 .layer(0)
+                 .stroke(Theme.lineAxis)
+                 .layer(Layer.Base)
         }
     }
 
@@ -255,7 +251,6 @@ export default class PlotProcess {
                 items.text(title)
                      .position(COORDS_MAX_X / 2, 150)
                      .size(20)
-                     .color(Theme.text)
 
                 // todo: bad
                 if (this.margin.bottom < 320) {
@@ -270,14 +265,12 @@ export default class PlotProcess {
                      .baseline(TextBaseline.Top)
                      .size(14)
                      .rotate(270)
-                     .color(Theme.text)
             }
 
             if (this.data.yTitle) {
                 items.text(this.data.yTitle)
                      .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.margin.bottom / 2)
                      .size(14)
-                     .color(Theme.text)
 
                 if (this.margin.bottom < 300) {
                     this.margin.bottom = 300
