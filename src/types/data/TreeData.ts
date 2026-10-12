@@ -17,6 +17,7 @@ class TreeData implements Data {
 
     gap: number
 
+    // todo: fix decomposition to table
     static getRows(data: TreeData): TableData {
         const key = 'Value'
 

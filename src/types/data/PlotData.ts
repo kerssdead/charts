@@ -27,6 +27,7 @@ export default class PlotData implements Data {
 
     values: PlotSeries[]
 
+    // todo: fix decomposition to table
     static getRows(data: PlotData): TableData {
         let headers: TableHeaderValue[] = []
 
