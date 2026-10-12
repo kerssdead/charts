@@ -8,7 +8,6 @@ import {COORDS_MAX_X, COORDS_MAX_Y} from "static/constants/Index"
 // todo: add init animation
 // todo: add positioning
 // todo: add rendering several lines at the same time
-// todo: add context menu
 
 export default class GaugeProcess {
     private data: GaugeData

@@ -10,11 +10,16 @@ import Point from './Point'
 import { DefaultRenderer } from '../render/DefaultRenderer'
 import RenderItemText from './RenderItemText'
 import AnimationData from '../AnimationData'
+import ButtonOptions from './ButtonOptions'
 
 export default class RenderItem {
     isAnimate: boolean = false
 
     isTemp: boolean = false
+
+    isDebug: boolean = false
+
+    isContextMenu: boolean = false
 
     showTooltip: boolean = false
 
@@ -22,6 +27,10 @@ export default class RenderItem {
 
     get hasTooltip() {
         return this.tooltipTemplate && this.tooltipTemplate.length > 0
+    }
+
+    get hasContextMenu() {
+        return this.contextMenuItems.length > 0
     }
 
     // todo: remove ?
@@ -39,7 +48,11 @@ export default class RenderItem {
 
     tooltipTemplate: string
 
+    contextMenuItems: ButtonOptions[] = []
+
     layer: number = 0
+
+    onClick: () => void
 
     line: RenderItemLine
 
@@ -116,6 +129,16 @@ export default class RenderItem {
                 return
             }
         }
+    }
+
+    in(point: Point) {
+        for (const item of this.items()) {
+            if (item) {
+                return item.isMouseOver(point)
+            }
+        }
+
+        return false
     }
 
     private adjust(window: CanvasWindow): void {

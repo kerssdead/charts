@@ -9,7 +9,6 @@ import {HorizontalAlignment, VerticalAlignment} from "../static/Enums";
 // todo: add label
 // todo: add interaction on mouse over
 // todo: make gaps same for x and y axis (maybe)
-// todo: add context menu
 
 export default class TreeProcess {
     private data: TreeData

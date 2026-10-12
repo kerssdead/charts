@@ -35,6 +35,10 @@ export default class Queue {
         }
 
         this.queue = this.queue.filter(item => !item.isTemp)
+
+        for (let step of this.queue.filter(item => item.isContextMenu)) {
+            step.isTemp = true
+        }
     }
 
     animate(point: Point | null) {
@@ -130,16 +134,16 @@ export default class Queue {
         for (const item of this.queue) {
             item.contextMenu(point)
 
-            if (item.showContextMenu) {
+            if (item.hasContextMenu && item.showContextMenu) {
                 let alignOffset = {
                     x: 0,
                     y: 0
                 }
 
-                let allRows = item.tooltipTemplate.split('\n')
+                let allItems = item.contextMenuItems
 
-                let width = Math.max(...allRows.map(row => stringWidth(row)))
-                let height = (allRows.length + 1) * 14
+                let width = Math.max(...allItems.map(button => stringWidth(button.text)))
+                let height = (allItems.length + 1) * 14
 
                 if (point.x + width + offset + padding > window.width) {
                     alignOffset.x = -RenderItem.reAdjustX(window, width) - padding * 2
@@ -161,10 +165,26 @@ export default class Queue {
                          .temp()
 
                     let rowIndex = 0
-                    for (const row of allRows) {
-                        items.text(row)
-                             .position(pos.x + padding * 1.25 + alignOffset.x,
-                                 pos.y + padding * 1.75 + RenderItem.reAdjustY(window, rowIndex * 16) + alignOffset.y)
+                    for (const button of allItems) {
+                        const x = pos.x
+                                  + padding * 1.25 + alignOffset.x
+                        const y = pos.y
+                                  + padding * 1.75
+                                  + RenderItem.reAdjustY(window, rowIndex * 16)
+                                  + alignOffset.y
+
+                        items.rect()
+                             .position(x, y)
+                             .size(280, 180)
+                             .round([4, 4, 4, 4])
+                             .fill()
+                             .color(Theme.dropdownItemHoverColor)
+                             .layer(Layer.Tooltip - 1)
+                             .contextMenuButton()
+                             .onClick(button.action)
+
+                        items.text(button.text)
+                             .position(x, y)
                              .align(TextAlignment.Left)
                              .color(Theme.text)
                              .layer(Layer.Tooltip)

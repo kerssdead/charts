@@ -8,7 +8,6 @@ import {COORDS_MAX_X, COORDS_MAX_Y} from "static/constants/Index";
 // todo: add tooltips
 // todo: add inner title
 // todo: add inner radius
-// todo: add context menu
 
 export default class PieProcess {
     private data: PieData

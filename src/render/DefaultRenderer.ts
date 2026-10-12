@@ -1,24 +1,24 @@
 import Queue from 'render/Queue'
 import Canvas from 'helpers/Canvas'
 import Point from 'types/Point'
-import {ChartType, Events} from 'static/Enums'
+import { ChartType, Events } from 'static/Enums'
 import Debug from '../Debug'
 import CanvasWindow from '../types/CanvasWindow'
-import {COORDS_MAX_X, COORDS_MAX_Y, ZOOM_DEFAULT_STEP} from 'static/constants/Index'
+import { COORDS_MAX_X, COORDS_MAX_Y, ZOOM_DEFAULT_STEP } from 'static/constants/Index'
 import RenderItem from '../types/RenderItem'
 import PlotProcess from './PlotProcess'
 import Data from '../types/interfaces/Data'
 import PlotData from '../types/data/PlotData'
 import ChartSettings from '../types/ChartSettings'
-import PieProcess from "./PieProcess";
-import PieData from "../types/data/PieData";
-import TreeProcess from "./TreeProcess";
-import TreeData from "../types/data/TreeData";
-import GaugeProcess from "./GaugeProcess";
-import GaugeData from "../types/data/GaugeData";
+import PieProcess from './PieProcess'
+import PieData from '../types/data/PieData'
+import TreeProcess from './TreeProcess'
+import TreeData from '../types/data/TreeData'
+import GaugeProcess from './GaugeProcess'
+import GaugeData from '../types/data/GaugeData'
+import QueueItemsBuilder from '../builders/QueueItemsBuilder'
 
 // todo: add tooltips
-// todo: add context menus
 // todo: add init animation
 // todo: add legend ?
 
@@ -75,7 +75,24 @@ export class DefaultRenderer {
 
         this.canvas.addEventListener(Events.MouseMove, ev => this.onMouseMove2(ev))
         this.canvas.addEventListener(Events.ContextMenu, ev => this.onContextMenu(ev))
-        this.canvas.addEventListener(Events.Click, ev => this.onContextMenuClick(ev))
+        this.canvas.addEventListener(Events.Click, ev => this.onMouseClick(ev))
+
+        document.addEventListener(Events.Click, ev => this.onContextMenuClick(ev))
+
+        this.canvas.addEventListener(Events.MouseMove, ev => this.DEBUGonMouseMove(ev))
+    }
+
+    destroy() {
+        this.canvas.removeEventListener(Events.MouseDown, ev => this.onMouseDown(ev))
+        document.removeEventListener(Events.MouseMove, ev => this.onMouseMove(ev))
+        document.removeEventListener(Events.MouseUp, _ => this.onMouseUp())
+        this.canvas.removeEventListener(Events.Wheel, ev => this.onWheel(ev))
+        this.canvas.removeEventListener(Events.MouseMove, ev => this.onMouseMove2(ev))
+        this.canvas.removeEventListener(Events.ContextMenu, ev => this.onContextMenu(ev))
+        this.canvas.removeEventListener(Events.Click, ev => this.onMouseClick(ev))
+        document.removeEventListener(Events.Click, ev => this.onContextMenuClick(ev))
+
+        this.canvas.removeEventListener(Events.MouseMove, ev => this.DEBUGonMouseMove(ev))
     }
 
     render(): void {
@@ -188,7 +205,7 @@ export class DefaultRenderer {
 
         return {
             x: RenderItem.adjustX(this.window, onCanvas.x / this.window.width * COORDS_MAX_X),
-            y: RenderItem.adjustY(this.window, onCanvas.y / this.window.height * COORDS_MAX_Y),
+            y: RenderItem.adjustY(this.window, onCanvas.y / this.window.height * COORDS_MAX_Y)
         }
     }
 
@@ -212,9 +229,54 @@ export class DefaultRenderer {
         this.contextMenuPoint = this.getMousePoint(event)
     }
 
+    /**
+     * Uses for intercept closing context menu when click outside
+     */
     private onContextMenuClick(event: MouseEvent) {
         this.isOpenContext = false
         this.contextMenuPoint = null
+    }
+
+    /**
+     * Uses for process mouse click on rendered item
+     */
+    private onMouseClick(event: MouseEvent) {
+        const items = this.isOpenContext
+                      ? this.queue.queue.filter(item => item.isContextMenu)
+                      : this.queue.queue
+
+        for (const item of items) {
+            if (item.in(this.getMousePoint(event))) {
+                item.color = 'green'
+                item.activeColor = 'green'
+
+                if (item.onClick) {
+                    item.onClick()
+                }
+            }
+        }
+    }
+
+    private DEBUGonMouseMove(event: MouseEvent) {
+        if (!Debug.isEnabled) {
+            return
+        }
+
+        for (const item of this.queue.queue.filter(item => !item.isDebug)) {
+            const pos = this.getMousePoint(event)
+
+            if (item.in(pos)) {
+                this.queue.add((items: QueueItemsBuilder) => {
+                    items.rect()
+                         .position(pos.x, pos.y)
+                         .size(200, 200)
+                         .fill()
+                         .color('#ff000077')
+                         .temp()
+                         .debug()
+                })
+            }
+        }
     }
 
     /**

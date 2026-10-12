@@ -1,4 +1,5 @@
 import RenderItem from '../types/RenderItem'
+import ButtonOptions from '../types/ButtonOptions'
 
 export default class QueueItemBaseBuilder {
     protected current: RenderItem
@@ -48,8 +49,32 @@ export default class QueueItemBaseBuilder {
         return this
     }
 
-    temp(isTemp: boolean = true) : QueueItemBaseBuilder {
-        this.current.isTemp = isTemp
+    temp(value: boolean = true) : QueueItemBaseBuilder {
+        this.current.isTemp = value
+
+        return this
+    }
+
+    debug() {
+        this.current.isDebug = true
+
+        return this
+    }
+
+    contextMenuButton() {
+        this.current.isContextMenu = true
+
+        return this
+    }
+
+    contextMenu(items: ButtonOptions[]) {
+        this.current.contextMenuItems = items
+
+        return this
+    }
+
+    onClick(action:() => void) {
+        this.current.onClick = action
 
         return this
     }

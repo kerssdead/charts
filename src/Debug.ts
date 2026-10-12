@@ -1,5 +1,5 @@
 export default class Debug {
-    private static isEnabled: boolean = false
+    static isEnabled: boolean = false
 
     static initialize(enabled: boolean) {
         Debug.isEnabled = enabled
