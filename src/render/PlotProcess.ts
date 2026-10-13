@@ -1,6 +1,6 @@
 import PlotData from '../types/data/PlotData'
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
-import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
+import { Animations, COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
 import { HorizontalAlignment, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from '../static/Enums'
 import { getRoundedValues, short } from '../Helper'
 import Margin from '../types/Margin'
@@ -14,7 +14,6 @@ const GAP = 30
 
 // todo: check rendering multiple series when some of them is not have all x-axis points
 // todo: if series.length > 1 then on mouse over series item highlight all values from this series
-// todo: add init animation
 
 export default class PlotProcess {
     private data: PlotData
@@ -321,9 +320,11 @@ export default class PlotProcess {
                      .fill()
                      .round([16, 16, 0, 0])
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
+                     .grow('y', baseY)
                      .color(color)
                      .tooltip(`${ value.label }\n${ value.y }`)
                      .interact()
+                     .init(Animations.plotInit, i * Animations.plotInitStagger)
                      .layer(Layer.Data)
                      .contextMenu([
                          new ButtonOptions('test button', () => console.log('test')),
@@ -354,6 +355,7 @@ export default class PlotProcess {
                 .color(series.color ?? '#00ff00')
                 .layer(Layer.Data)
                 .interact()
+                .init(Animations.plotLineInit)
         }
     }
 
@@ -374,17 +376,19 @@ export default class PlotProcess {
 
             series.values.forEach((value, i) => {
                 const x = this.margin.left
-                const y = baseY - (i + 1) * (step + GAP)
+                const y = baseY - i * (step + GAP) - GAP
 
                 items.rect()
                      .position(x, y)
                      .size(Number(value.y) * this.scale.x, heightInStep)
                      .round([0, 16, 16, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                     .grow('x', x)
                      .fill()
                      .color(color)
                      .layer(Layer.Data)
                      .interact()
+                     .init(Animations.plotInit, i * Animations.plotInitStagger)
             })
         }
     }
@@ -418,9 +422,11 @@ export default class PlotProcess {
                      .fill()
                      .round(round)
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                     .grow('y', baseY)
                      .color(color)
                      .layer(Layer.Data)
                      .interact()
+                     .init(Animations.plotInit, i * Animations.plotInitStagger)
             })
         }
     }
@@ -442,6 +448,7 @@ export default class PlotProcess {
                  .color(color)
                  .layer(Layer.Data)
                  .interact()
+                 .init(Animations.plotLineInit)
         }
     }
 }

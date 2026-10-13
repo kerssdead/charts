@@ -12,6 +12,8 @@ class ThemeOptions {
     static readonly dropdownBorders = ['#bcbcbc', '#7e7e7e']
 
     static readonly canvasBackgrounds = ['#ffffff', '#222222']
+
+    static readonly contextMenuOpacities = [0.85, 0.85]
 }
 
 export default ThemeOptions

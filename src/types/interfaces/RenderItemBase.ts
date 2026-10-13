@@ -5,7 +5,7 @@ import RenderItem from '../RenderItem'
 export default interface RenderItemBase {
     adjust(window: CanvasWindow): void
 
-    render(ctx: CanvasRenderingContext2D, window?: CanvasWindow): void
+    render(ctx: CanvasRenderingContext2D, window?: CanvasWindow, item?: RenderItem): void
 
     // todo: add animation builder
     animate(item: RenderItem, isBackward: boolean, point: Point): void

@@ -10,4 +10,10 @@ export class Animations {
     static button = 200
 
     static title = 500
+
+    static plotInit = 800
+
+    static plotLineInit = 1200
+
+    static plotInitStagger = 40
 }

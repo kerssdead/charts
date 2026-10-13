@@ -11,6 +11,7 @@ import { DefaultRenderer } from '../render/DefaultRenderer'
 import RenderItemText from './RenderItemText'
 import AnimationData from '../AnimationData'
 import ButtonOptions from './ButtonOptions'
+import Animations from '../Animations'
 
 export default class RenderItem {
     isAnimate: boolean = false
@@ -31,6 +32,10 @@ export default class RenderItem {
 
     get hasContextMenu() {
         return this.contextMenuItems.length > 0
+    }
+
+    get isInitializing() {
+        return this.animation.isInitializing
     }
 
     // todo: remove ?
@@ -75,6 +80,12 @@ export default class RenderItem {
     }
 
     render(ctx: CanvasRenderingContext2D, window: CanvasWindow) {
+        this.updateInit()
+
+        if (this.animation.init <= 0) {
+            return
+        }
+
         this.adjust(window)
 
         ctx.beginPath()
@@ -86,14 +97,14 @@ export default class RenderItem {
         ctx.strokeStyle = this.activeStroke ?? this.activeColor
 
         for (const item of this.items()) {
-            item?.render(ctx, window)
+            item?.render(ctx, window, this)
             if (item)
                 return
         }
     }
 
     animate(point: Point) {
-        if (!this.isAnimate) {
+        if (!this.isAnimate || this.isInitializing) {
             return
         }
 
@@ -106,7 +117,7 @@ export default class RenderItem {
     }
 
     tooltip(point: Point) {
-        if (!this.hasTooltip) {
+        if (!this.hasTooltip || this.isInitializing) {
             return
         }
 
@@ -122,6 +133,10 @@ export default class RenderItem {
         // if (!this.hasContextMenu) {
         //     return
         // }
+
+        if (this.isInitializing) {
+            return
+        }
 
         for (const item of this.items()) {
             if (item) {
@@ -146,6 +161,26 @@ export default class RenderItem {
             item?.adjust(window)
             if (item)
                 return
+        }
+    }
+
+    private updateInit() {
+        const animation = this.animation
+
+        if (!animation.isInitializing) {
+            return
+        }
+
+        animation.initStart ??= DefaultRenderer.timer
+
+        const passed = DefaultRenderer.timer - animation.initStart - animation.initDelay
+        const progress = Math.min(Math.max(passed / animation.initDuration, 0), 1)
+
+        animation.init = Animations.getTransition(progress)
+
+        if (progress == 1) {
+            animation.init = 1
+            animation.initDuration = 0
         }
     }
 

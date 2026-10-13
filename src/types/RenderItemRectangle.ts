@@ -36,15 +36,25 @@ export default class RenderItemRectangle
 
     align: Alignment = Alignment.default
 
+    growAxis: 'x' | 'y' | null = null
+
+    growOrigin: number = 0
+
+    private canvasGrowOrigin: number = 0
+
     adjust(window: CanvasWindow): void {
         this.canvas.x = RenderItem.adjustX(window, this.absolute.x)
         this.canvas.y = RenderItem.adjustY(window, this.absolute.y)
         this.canvas.width = this.absolute.width / COORDS_MAX_X * window.width
         this.canvas.height = this.absolute.height / COORDS_MAX_Y * window.height
+
+        this.canvasGrowOrigin = this.growAxis == 'x'
+                                ? RenderItem.adjustX(window, this.growOrigin)
+                                : RenderItem.adjustY(window, this.growOrigin)
     }
 
-    render(ctx: CanvasRenderingContext2D): void {
-        const { left, top, width, height } = this.bounds(1)
+    render(ctx: CanvasRenderingContext2D, _window?: CanvasWindow, item?: RenderItem): void {
+        const { left, top, width, height } = this.grow(item?.animation.init ?? 1)
 
         ctx.roundRect(left, top, width, height, this.radii || 0)
 
@@ -88,6 +98,33 @@ export default class RenderItemRectangle
         return isBackward
                ? (1 - progress) * (1 - transition)
                : progress * transition
+    }
+
+    private grow(progress: number) {
+        if (progress >= 1) {
+            return this.bounds()
+        }
+
+        if (this.growAxis == null) {
+            return this.bounds(progress)
+        }
+
+        const bounds = this.bounds()
+        const origin = this.canvasGrowOrigin
+
+        if (this.growAxis == 'x') {
+            return {
+                ...bounds,
+                left: origin + (bounds.left - origin) * progress,
+                width: bounds.width * progress
+            }
+        }
+
+        return {
+            ...bounds,
+            top: origin + (bounds.top - origin) * progress,
+            height: bounds.height * progress
+        }
     }
 
     private bounds(scale = 1) {

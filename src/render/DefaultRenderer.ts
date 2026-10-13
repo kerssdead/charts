@@ -18,8 +18,12 @@ import GaugeProcess from './GaugeProcess'
 import GaugeData from '../types/data/GaugeData'
 import QueueItemsBuilder from '../builders/QueueItemsBuilder'
 
-// todo: add tooltips
-// todo: add init animation
+type AttachedEvent = {
+    target: EventTarget
+    type: string
+    listener: (event: any) => void
+}
+
 // todo: add legend ?
 
 // todo: "Renderer" is better name for this class
@@ -44,6 +48,12 @@ export class DefaultRenderer {
 
     private readonly settings: ChartSettings
 
+    private events: AttachedEvent[] = []
+
+    private frame: number | null = null
+
+    private isDestroyed: boolean = false
+
     /**
      * Width of single char in absolute coordinates
      */
@@ -66,48 +76,82 @@ export class DefaultRenderer {
         this.settings = settings
 
         if (settings.enableMove) {
-            this.canvas.addEventListener(Events.MouseDown, ev => this.onMouseDown(ev))
-            document.addEventListener(Events.MouseMove, ev => this.onMouseMove(ev))
-            document.addEventListener(Events.MouseUp, _ => this.onMouseUp())
-
-            this.canvas.addEventListener(Events.Wheel, ev => this.onWheel(ev))
+            this.listen(this.canvas, Events.MouseDown, (event: MouseEvent) => {
+                this.onMouseDown(event)
+            })
+            this.listen(document, Events.MouseMove, (event: MouseEvent) => {
+                this.onMouseMove(event)
+            })
+            this.listen(document, Events.MouseUp, () => {
+                this.onMouseUp()
+            })
+            this.listen(this.canvas, Events.Wheel, (event: WheelEvent) => {
+                this.onWheel(event)
+            })
         }
 
-        this.canvas.addEventListener(Events.MouseMove, ev => this.onMouseMove2(ev))
-        this.canvas.addEventListener(Events.ContextMenu, ev => this.onContextMenu(ev))
-        this.canvas.addEventListener(Events.Click, ev => this.onMouseClick(ev))
-
-        document.addEventListener(Events.Click, ev => this.onContextMenuClick(ev))
-
-        this.canvas.addEventListener(Events.MouseMove, ev => this.DEBUGonMouseMove(ev))
+        this.listen(this.canvas, Events.MouseMove, (event: MouseEvent) => {
+            this.onMouseMove2(event)
+        })
+        this.listen(this.canvas, Events.ContextMenu, (event: MouseEvent) => {
+            this.onContextMenu(event)
+        })
+        this.listen(this.canvas, Events.Click, (event: MouseEvent) => {
+            this.onMouseClick(event)
+        })
+        this.listen(document, Events.Click, (event: MouseEvent) => {
+            this.onContextMenuClick(event)
+        })
+        this.listen(this.canvas, Events.MouseMove, (event: MouseEvent) => {
+            this.DEBUGonMouseMove(event)
+        })
     }
 
     destroy() {
-        this.canvas.removeEventListener(Events.MouseDown, ev => this.onMouseDown(ev))
-        document.removeEventListener(Events.MouseMove, ev => this.onMouseMove(ev))
-        document.removeEventListener(Events.MouseUp, _ => this.onMouseUp())
-        this.canvas.removeEventListener(Events.Wheel, ev => this.onWheel(ev))
-        this.canvas.removeEventListener(Events.MouseMove, ev => this.onMouseMove2(ev))
-        this.canvas.removeEventListener(Events.ContextMenu, ev => this.onContextMenu(ev))
-        this.canvas.removeEventListener(Events.Click, ev => this.onMouseClick(ev))
-        document.removeEventListener(Events.Click, ev => this.onContextMenuClick(ev))
+        this.isDestroyed = true
 
-        this.canvas.removeEventListener(Events.MouseMove, ev => this.DEBUGonMouseMove(ev))
+        if (this.frame != null) {
+            cancelAnimationFrame(this.frame)
+            this.frame = null
+        }
+
+        for (const { target, type, listener } of this.events) {
+            target.removeEventListener(type, listener)
+        }
+
+        this.events = []
+
+        this.queue.destroy()
+
+        this.moveStartPosition = null
+        this.moveStartWindow = null
+        this.currentMousePoint = null
+        this.contextMenuPoint = null
+        this.isOpenContext = false
     }
 
     render(): void {
+        if (this.isDestroyed) {
+            return
+        }
+
+        if (this.frame != null) {
+            cancelAnimationFrame(this.frame)
+        }
+
         DefaultRenderer.timer = performance.now()
 
         this.queue.animate(this.currentMousePoint)
 
         this.queue.tooltip(this.window, this.currentMousePoint, this.isOpenContext)
-        this.queue.contextMenu(this.window, this.contextMenuPoint, this.isOpenContext)
+        this.queue.contextMenu(this.window, this.contextMenuPoint, this.currentMousePoint, this.isOpenContext)
 
         // todo: exclude render not in CanvasWindow
         this.queue.render(this.window)
 
-        // todo: if canvas is need to re-render
-        requestAnimationFrame(this.render.bind(this))
+        this.frame = requestAnimationFrame(() => {
+            this.render()
+        })
     }
 
     add(type: ChartType, ...data: Data[]) {
@@ -144,6 +188,12 @@ export class DefaultRenderer {
                     break
             }
         }
+    }
+
+    private listen(target: EventTarget, type: string, listener: (event: any) => void) {
+        target.addEventListener(type, listener)
+
+        this.events.push({ target, type, listener })
     }
 
     /**

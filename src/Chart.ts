@@ -17,9 +17,17 @@ class Chart {
 
     private legend: Legend | undefined
 
-    private observer: ResizeObserver
+    private observer: ResizeObserver | undefined
 
     private canvas: HTMLCanvasElement
+
+    private initialStyles: string
+
+    private isDestroyed: boolean = false
+
+    private readonly onThemeChange = () => {
+        this.resize()
+    }
 
     constructor(element: HTMLElement, settings: ChartSettings) {
         this.node = element
@@ -44,19 +52,34 @@ class Chart {
     }
 
     render() {
+        if (this.isDestroyed)
+            return
+
         this.renderer.render()
         this.legend?.render()
 
         this.refresh()
     }
 
-    // todo: restore
     destroy() {
-        // todo: add destroy to DefaultRenderer
-        // this.renderer.destroy()
-        this.legend?.destroy()
+        if (this.isDestroyed)
+            return
 
-        this.observer.disconnect()
+        this.isDestroyed = true
+
+        this.renderer?.destroy()
+
+        this.legend?.destroy()
+        this.legend = undefined
+
+        this.observer?.disconnect()
+        this.observer = undefined
+
+        Theme.detach(this.onThemeChange)
+
+        this.canvas.remove()
+
+        this.node.style.cssText = this.initialStyles
     }
 
     // todo: remove ?
@@ -96,7 +119,7 @@ class Chart {
         // }
 
         // if (isNeedRestartRender)
-            this.renderer.render()
+        this.renderer.render()
     }
 
     private prepareSettings() {
@@ -104,32 +127,32 @@ class Chart {
         this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
 
         // if (this.renderer == undefined || this.settings.type != this.currentType) {
-            // this.renderer?.destroy()
+        // this.renderer?.destroy()
 
-            // switch (this.settings.type) {
-            //     case ChartType.Plot:
-            //         this.renderer = new PlotRenderer(this)
-            //         this.currentType = ChartType.Plot
-            //         break
-            //
-            //     case ChartType.Circular:
-            //         this.renderer = new PieProcess(this)
-            //         this.currentType = ChartType.Circular
-            //         break
-            //
-            //     case ChartType.Gauge:
-            //         this.renderer = new GaugeRenderer(this)
-            //         this.currentType = ChartType.Gauge
-            //         break
-            //
-            //     case ChartType.TreeMap:
-            //         this.renderer = new TreeRenderer(this)
-            //         this.currentType = ChartType.TreeMap
-            //         break
-            // }
+        // switch (this.settings.type) {
+        //     case ChartType.Plot:
+        //         this.renderer = new PlotRenderer(this)
+        //         this.currentType = ChartType.Plot
+        //         break
+        //
+        //     case ChartType.Circular:
+        //         this.renderer = new PieProcess(this)
+        //         this.currentType = ChartType.Circular
+        //         break
+        //
+        //     case ChartType.Gauge:
+        //         this.renderer = new GaugeRenderer(this)
+        //         this.currentType = ChartType.Gauge
+        //         break
+        //
+        //     case ChartType.TreeMap:
+        //         this.renderer = new TreeRenderer(this)
+        //         this.currentType = ChartType.TreeMap
+        //         break
+        // }
         // } else {
-            // todo: add applying new settings without creating new chart
-            // this.renderer.applySettings(this.settings)
+        // todo: add applying new settings without creating new chart
+        // this.renderer.applySettings(this.settings)
         // }
 
         // this.renderer.prepareSettings()
@@ -151,6 +174,9 @@ class Chart {
     }
 
     private resize() {
+        if (this.isDestroyed)
+            return
+
         let domRect = this.node.getBoundingClientRect()
 
         this.canvas.width = domRect.width
@@ -170,13 +196,15 @@ class Chart {
     private initialize(settings: ChartSettings) {
         Debug.initialize(settings.enableDebugMode)
         Theme.initialize(
-            () => this.resize(),
+            this.onThemeChange,
             settings.isDarkThemeFunction
         )
         Animations.initializeTransitions()
     }
 
     private applyStyles() {
+        this.initialStyles = this.node.style.cssText
+
         this.node.style.display = Styles.Display.Flex
         this.node.style.flexDirection = Styles.FlexDirection.Column
         this.node.style.alignItems = Styles.AlignItems.Center
@@ -188,11 +216,9 @@ class Chart {
         if (this.observer != undefined)
             return
 
-        const chart = this
-
         this.observer = new ResizeObserver(() => {
             // todo: if canvas is not exist on page then destroy chart completely
-            chart.resize()
+            this.resize()
         })
 
         this.observer.observe(this.node)

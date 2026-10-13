@@ -32,6 +32,8 @@ class Tooltip {
 
     #lines: TooltipValue[]
 
+    #elements: HTMLElement[] = []
+
     private event : MouseEvent
 
     constructor(canvas: HTMLCanvasElement, settings: ChartSettings) {
@@ -192,6 +194,8 @@ class Tooltip {
 
             document.body.appendChild(tooltip)
 
+            this.#elements.push(tooltip)
+
             tooltip.position = tooltip.getBoundingClientRect()
 
             updateVisibility()
@@ -230,6 +234,15 @@ class Tooltip {
 
     refresh() {
         this.#canvasPosition = this.canvas.getBoundingClientRect()
+    }
+
+    destroy() {
+        for (const element of this.#elements) {
+            element.remove()
+        }
+
+        this.#elements = []
+        this.#lines = []
     }
 
     #hideAll() {

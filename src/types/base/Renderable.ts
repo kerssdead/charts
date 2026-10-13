@@ -67,6 +67,7 @@ class Renderable {
     }
 
     initAnimations() {
+        this.tooltip?.destroy()
         this.tooltip = new Tooltip(this.canvas, this.settings)
 
         this.canvasPosition = this.canvas.getBoundingClientRect()
@@ -87,6 +88,20 @@ class Renderable {
     }
 
     destroy() {
+        this.isDestroy = true
+
+        this.canvas.onmousemove = null
+        this.canvas.onclick = null
+        this.canvas.oncontextmenu = null
+        this.canvas.onmouseleave = null
+
+        this.tooltip?.destroy()
+        this.animations.clear()
+
+        this.contextMenu = undefined
+        this.clickEvent = undefined
+        this.menuEvent = undefined
+
         this.canvas.remove()
     }
 }

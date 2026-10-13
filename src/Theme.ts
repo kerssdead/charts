@@ -28,7 +28,17 @@ class Theme {
 
     static canvasBackgroundInt: number
 
+    static contextMenuBackground: string
+
+    static contextMenuButton: string
+
+    static contextMenuButtonHover: string
+
     static function: Function | undefined
+
+    static media: MediaQueryList | undefined
+
+    static listeners: Map<Function, (event: MediaQueryListEvent) => void> = new Map()
 
     static initialize(callback: Function, isDark?: Function) {
         if (!Theme.function && isDark)
@@ -39,11 +49,28 @@ class Theme {
         else
             Theme.setTheme(ColorTheme.light)
 
-        window.matchMedia('(prefers-color-scheme: dark)')
-              .addEventListener(Events.Change, event => {
-                  Theme.setTheme(event.matches && (!Theme.function || Theme.function()) ? ColorTheme.dark : ColorTheme.light)
-                  callback()
-              })
+        if (Theme.listeners.has(callback))
+            return
+
+        const listener = (event: MediaQueryListEvent) => {
+            Theme.setTheme(event.matches && (!Theme.function || Theme.function()) ? ColorTheme.dark : ColorTheme.light)
+            callback()
+        }
+
+        Theme.media ??= window.matchMedia('(prefers-color-scheme: dark)')
+        Theme.media.addEventListener(Events.Change, listener)
+
+        Theme.listeners.set(callback, listener)
+    }
+
+    static detach(callback: Function) {
+        const listener = Theme.listeners.get(callback)
+
+        if (!listener)
+            return
+
+        Theme.media?.removeEventListener(Events.Change, listener)
+        Theme.listeners.delete(callback)
     }
 
     static setTheme(index: ColorTheme) {
@@ -58,6 +85,15 @@ class Theme {
         Theme.dropdownBorder = ThemeOptions.dropdownBorders[index]
         Theme.canvasBackground = ThemeOptions.canvasBackgrounds[index]
         Theme.canvasBackgroundInt = Number(`0xff${ Theme.canvasBackground.slice(1) }`)
+        Theme.contextMenuBackground = Theme.withAlpha(Theme.background, ThemeOptions.contextMenuOpacities[index])
+        Theme.contextMenuButton = Theme.withAlpha(Theme.dropdownItemHoverColor, 0)
+        Theme.contextMenuButtonHover = Theme.withAlpha(Theme.dropdownItemHoverColor, 1)
+    }
+
+    static withAlpha(color: string, alpha: number) {
+        const value = Math.round(Math.min(Math.max(alpha, 0), 1) * 255)
+
+        return color.slice(0, 7) + value.toString(16).padStart(2, '0')
     }
 
     static reset() {

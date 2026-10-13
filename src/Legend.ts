@@ -62,9 +62,9 @@ class Legend extends Renderable {
     }
 
     destroy() {
-        this.isDestroy = true
+        super.destroy()
 
-        this.canvas.remove()
+        this.button?.animations.clear()
     }
 
     refresh() {

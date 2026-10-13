@@ -23,6 +23,14 @@ export default class QueueItemBaseBuilder {
         return this
     }
 
+    init(duration: number, delay: number = 0): QueueItemBaseBuilder {
+        this.current.animation.init = 0
+        this.current.animation.initDuration = duration
+        this.current.animation.initDelay = delay
+
+        return this
+    }
+
     tooltip(template: string): QueueItemBaseBuilder {
         this.current.tooltipTemplate = template
 

@@ -44,4 +44,11 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
 
         return this
     }
+
+    grow(axis: 'x' | 'y', origin: number): QueueRectangleItemBuilder {
+        this.current.rect.growAxis = axis
+        this.current.rect.growOrigin = origin
+
+        return this
+    }
 }
