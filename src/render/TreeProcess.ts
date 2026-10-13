@@ -13,6 +13,8 @@ import {HorizontalAlignment, VerticalAlignment} from "../static/Enums";
 export default class TreeProcess {
     private data: TreeData
 
+    private readonly values: Value[]
+
     private position: Point
 
     private unit: number
@@ -28,8 +30,9 @@ export default class TreeProcess {
     constructor(data: TreeData) {
         this.data = data
 
-        this.data.values = this.data.values.filter(v => v.value > 0)
-        this.data.values.sort((a, b) => b.value - a.value)
+        this.values = this.data.values
+                          .filter(v => v.value > 0)
+                          .sort((a, b) => b.value - a.value)
 
         this.padding = this.data.padding
         this.gap = this.data.gap
@@ -43,12 +46,12 @@ export default class TreeProcess {
         this.y.min = this.padding
         this.y.max = COORDS_MAX_Y - this.padding
 
-        const sum = this.data.values.sumByField(v => v.value)
+        const sum = this.values.sumByField(v => v.value)
         const availableSpace = this.x.available * this.y.available
 
         this.unit = availableSpace / sum
 
-        return this.data.values.flatMap((block, index) => {
+        return this.values.flatMap((block, index) => {
             return [this.getBlock(block, index)]
         })
     }
@@ -58,7 +61,7 @@ export default class TreeProcess {
         const y = this.position.y
 
         const isVertical = (index % 2 === 0)
-        const isLast = index + 1 == this.data.values.length
+        const isLast = index + 1 == this.values.length
 
         const area = block.value * this.unit
 
@@ -76,12 +79,12 @@ export default class TreeProcess {
 
         return (items: QueueItemsBuilder) => {
             items.rect()
-                .position(x, y)
-                .size(w - widthGap, h - heightGap)
-                .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-                .round([16, 16, 16, 16])
-                .fill()
-                .color(block.color)
+                 .position(x, y)
+                 .size(w - widthGap, h - heightGap)
+                 .align(HorizontalAlignment.Left, VerticalAlignment.Top)
+                 .round([16, 16, 16, 16])
+                 .fill()
+                 .color(block.color)
         }
     }
 }

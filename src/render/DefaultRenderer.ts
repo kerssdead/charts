@@ -46,13 +46,15 @@ export class DefaultRenderer {
 
     private readonly canvas: HTMLCanvasElement
 
-    private readonly settings: ChartSettings
+    private settings: ChartSettings
 
     private events: AttachedEvent[] = []
 
     private frame: number | null = null
 
     private isDestroyed: boolean = false
+
+    private isApplied: boolean = false
 
     /**
      * Width of single char in absolute coordinates
@@ -75,7 +77,36 @@ export class DefaultRenderer {
 
         this.settings = settings
 
-        if (settings.enableMove) {
+        this.attachEvents()
+    }
+
+    apply(settings: ChartSettings) {
+        Debug.initialize(settings.enableDebugMode)
+
+        this.settings = settings
+
+        this.detachEvents()
+        this.attachEvents()
+
+        this.queue.destroy()
+
+        this.contextMenuPoint = null
+        this.isOpenContext = false
+
+        this.add(settings.type, settings.data)
+
+        if (this.isApplied) {
+            for (const item of this.queue.queue) {
+                item.animation.init = 1
+                item.animation.initDuration = 0
+            }
+        }
+
+        this.isApplied = true
+    }
+
+    private attachEvents() {
+        if (this.settings.enableMove) {
             this.listen(this.canvas, Events.MouseDown, (event: MouseEvent) => {
                 this.onMouseDown(event)
             })
@@ -107,6 +138,14 @@ export class DefaultRenderer {
         })
     }
 
+    private detachEvents() {
+        for (const { target, type, listener } of this.events) {
+            target.removeEventListener(type, listener)
+        }
+
+        this.events = []
+    }
+
     destroy() {
         this.isDestroyed = true
 
@@ -115,11 +154,7 @@ export class DefaultRenderer {
             this.frame = null
         }
 
-        for (const { target, type, listener } of this.events) {
-            target.removeEventListener(type, listener)
-        }
-
-        this.events = []
+        this.detachEvents()
 
         this.queue.destroy()
 

@@ -130,9 +130,9 @@ export default class RenderItem {
     }
 
     contextMenu(point: Point) {
-        // if (!this.hasContextMenu) {
-        //     return
-        // }
+        if (!this.hasContextMenu && !this.group) {
+            return
+        }
 
         if (this.isInitializing) {
             return

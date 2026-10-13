@@ -15,8 +15,7 @@
   },
   "files": [
     "src/types/base/Value.ts",
-    "src/types/interfaces/Data.ts",
-    "src/types/base/Renderer.ts"
+    "src/types/interfaces/Data.ts"
   ],
   "include": [
     "src/**/*.ts"

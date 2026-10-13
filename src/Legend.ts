@@ -213,9 +213,6 @@ class Legend extends Renderable {
                         translate(transition, AnimationType.MouseLeave)
                     }
                 })
-
-            if (!value.disabled)
-                this.chart.highlight(value)
         } else {
             this.animations.handle(value.id,
                 AnimationType.MouseLeave,

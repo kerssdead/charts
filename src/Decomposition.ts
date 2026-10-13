@@ -1,6 +1,5 @@
 import TableData from 'types/TableData'
 import * as Helper from 'Helper'
-import Value from 'types/base/Value'
 import ChartSettings from 'types/ChartSettings'
 import Formatter from 'helpers/Formatter'
 import Styles from 'static/constants/Styles'
@@ -110,7 +109,7 @@ class Decomposition {
         return table
     }
 
-    static toChart<T extends Value>(settings: ChartSettings, values: T[]) {
+    static toChart(settings: ChartSettings) {
         let container = document.createElement(Tag.Div),
             div = document.createElement(Tag.Div),
             script = document.createElement(Tag.Script),
@@ -126,7 +125,6 @@ class Decomposition {
 
         if (cloneSettings.title)
             cloneSettings.title = cloneSettings.title + ' (Other)'
-        // cloneSettings.data.values = values
         cloneSettings.minWidth = undefined
         cloneSettings.minHeight = undefined
 

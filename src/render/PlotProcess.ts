@@ -30,6 +30,8 @@ export default class PlotProcess {
 
     private readonly charPrecision: number
 
+    private readonly yMax: number | undefined
+
     private get available() {
         return {
             x: COORDS_MAX_X - this.margin.left - this.margin.right,
@@ -50,7 +52,7 @@ export default class PlotProcess {
 
     constructor(data: PlotData, charPrecision: number) {
         this.data = data
-        this.data.yMax = this.data.yMax as number == 0 ? undefined : this.data.yMax as number
+        this.yMax = this.data.yMax == 0 ? undefined : this.data.yMax
         this.charPrecision = charPrecision
 
         this.stacks = new Map<string, number>()
@@ -229,13 +231,13 @@ export default class PlotProcess {
                 }
             }
 
-            this.values = getRoundedValues(Array.from(allValues.values()), 5, this.data.yMax)
+            this.values = getRoundedValues(Array.from(allValues.values()), 5, this.yMax)
         } else {
             let flatValues = this.data.values.flatMap(s => s.values.map(p => p.y as number))
             while (flatValues.length < 5) {
                 flatValues.push(flatValues[0])
             }
-            this.values = getRoundedValues(flatValues, 5, this.data.yMax)
+            this.values = getRoundedValues(flatValues, 5, this.yMax)
         }
     }
 
