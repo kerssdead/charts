@@ -90,6 +90,8 @@ export class DefaultRenderer {
 
         this.settings = settings
 
+        this.syncLegend()
+
         this.detachEvents()
         this.attachEvents()
 
@@ -150,6 +152,12 @@ export class DefaultRenderer {
         this.listen(this.canvas, Events.MouseMove, (event: MouseEvent) => {
             this.DEBUGonMouseMove(event)
         })
+        this.listen(this.canvas, Events.MouseLeave, () => {
+            this.resetPointer()
+        })
+        this.listen(window, Events.Blur, () => {
+            this.resetPointer()
+        })
     }
 
     private detachEvents() {
@@ -158,6 +166,11 @@ export class DefaultRenderer {
         }
 
         this.events = []
+    }
+
+    resize(width: number, height: number) {
+        this.legend?.resize(width, height)
+        this.calculateWindow(this.legend?.reserved ?? null)
     }
 
     destroy() {
@@ -170,7 +183,7 @@ export class DefaultRenderer {
 
         this.detachEvents()
 
-        this.legend = undefined
+        this.removeLegend()
 
         this.queue.destroy()
 
@@ -179,6 +192,35 @@ export class DefaultRenderer {
         this.currentMousePoint = null
         this.contextMenuPoint = null
         this.isOpenContext = false
+    }
+
+    private syncLegend() {
+        if (!this.settings.enableLegend) {
+            this.removeLegend()
+            return
+        }
+
+        if (this.legend != undefined)
+            this.legend.applySettings(this.settings)
+        else {
+            this.legend = new Legend(this.settings)
+            this.legend.onChange = () => {
+                this.rebuildAnimated()
+            }
+        }
+
+        this.resize(this.canvas.width, this.canvas.height)
+    }
+
+    private removeLegend() {
+        if (this.legend == undefined)
+            return
+
+        this.legend.clear(this.queue)
+        this.legend.destroy()
+        this.legend = undefined
+
+        this.calculateWindow(null)
     }
 
     render(): void {
@@ -572,5 +614,11 @@ export class DefaultRenderer {
 
         if (this.isApplied && this.window.width > 0 && this.window.height > 0)
             this.rebuild(true)
+    }
+
+    private resetPointer() {
+        this.currentMousePoint = null
+        this.moveStartPosition = null
+        this.moveStartWindow = null
     }
 }

@@ -49,6 +49,8 @@ class Theme {
         else
             Theme.setTheme(ColorTheme.light)
 
+        Theme.update(isDark)
+
         if (Theme.listeners.has(callback))
             return
 
@@ -98,6 +100,13 @@ class Theme {
 
     static reset() {
         this.function = undefined
+    }
+
+    static update(isDark?: Function) {
+        if (isDark)
+            Theme.function = isDark
+
+        Theme.setTheme(!Theme.function || Theme.function() ? ColorTheme.dark : ColorTheme.light)
     }
 }
 

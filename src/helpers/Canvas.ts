@@ -1,5 +1,5 @@
 import Errors from 'helpers/Errors'
-import { ErrorType } from 'static/Enums'
+import { ErrorType, Tag } from 'static/Enums'
 import Theme from 'Theme'
 import * as Helper from 'Helper'
 
@@ -39,6 +39,14 @@ abstract class Canvas {
                 return false
 
         return true
+    }
+
+    static new() {
+        let canvas = document.createElement(Tag.Canvas)
+        canvas.width = 0
+        canvas.height = 0
+
+        return canvas
     }
 }
 

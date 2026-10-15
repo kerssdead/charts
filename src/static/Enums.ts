@@ -5,13 +5,7 @@ export enum AnimationType {
 
     MouseLeave,
 
-    Init,
-
-    Click,
-
-    AnotherItemOver,
-
-    AnotherItemLeave
+    Init
 }
 
 export enum Attribute {
@@ -33,14 +27,10 @@ export enum ErrorType {
 
     ElementNotExist = 'Element does not exist',
 
-    MaxCallsReach = 'Max calls reach',
-
     NotImplemented = 'Not Implemented'
 }
 
 export enum Events {
-    VisibilityChanged = 'visibilitychange',
-
     Blur = 'blur',
 
     MouseMove = 'mousemove',
@@ -55,7 +45,9 @@ export enum Events {
 
     MouseUp = 'mouseup',
 
-    Wheel = 'wheel'
+    Wheel = 'wheel',
+
+    MouseLeave = 'mouseleave'
 }
 
 export enum LegendPlace {

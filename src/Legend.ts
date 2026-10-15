@@ -6,7 +6,6 @@ import Point from 'types/Point'
 import Paddings from 'types/Paddings'
 import RenderItem from 'types/RenderItem'
 import Theme from 'Theme'
-import Chart from 'Chart'
 import Animations from 'Animations'
 import Queue from 'render/Queue'
 import QueueItemsBuilder from 'builders/QueueItemsBuilder'
@@ -16,9 +15,6 @@ import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
 import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from 'static/Enums'
 import ChartSettings from './types/ChartSettings'
 
-/**
- * Legend item position on canvas in pixels
- */
 type LegendEntry = {
     value: Value
     label: string
@@ -47,8 +43,6 @@ class Legend {
     settings: ChartSettings
 
     onChange: (() => void) | undefined
-
-    private readonly chart: Chart
 
     private area: DOMRect | undefined
 
@@ -107,9 +101,8 @@ class Legend {
                : Helper.stringWidth(TextResources.reset) + 12
     }
 
-    constructor(chart: Chart) {
-        this.chart = chart
-        this.settings = chart.settings
+    constructor(settings: ChartSettings) {
+        this.settings = settings
 
         this.prepareValues()
     }

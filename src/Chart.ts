@@ -1,52 +1,38 @@
-import ChartSettings from 'types/ChartSettings'
-import Legend from 'Legend'
 import Animations from 'Animations'
+import Canvas from 'helpers/Canvas'
+import ChartSettings from 'types/ChartSettings'
 import Theme from 'Theme'
-import Styles from 'static/constants/Styles'
-import { ChartType, Tag } from 'static/Enums'
-import Debug from 'Debug'
-import { DefaultRenderer } from './render/DefaultRenderer'
+import { ChartType } from 'static/Enums'
+import { DefaultRenderer } from 'render/DefaultRenderer'
 
-class Chart {
-    node: HTMLElement
-
-    settings: ChartSettings
-
-    private renderer: DefaultRenderer
-
-    private legend: Legend | undefined
-
-    private observer: ResizeObserver | undefined
-
-    private canvas: HTMLCanvasElement
-
-    private initialStyles: string
-
+export default class Chart {
     private isDestroyed: boolean = false
 
+    private settings: ChartSettings
+
+    private readonly canvas: HTMLCanvasElement
+
+    private readonly renderer: DefaultRenderer
+
+    private readonly observer: ResizeObserver
+
     private readonly onThemeChange = () => {
-        this.resize()
+        this.renderer.apply(this.settings)
     }
 
     constructor(element: HTMLElement, settings: ChartSettings) {
-        this.node = element
+        this.canvas = Canvas.new()
+        element.appendChild(this.canvas)
 
-        this.canvas = document.createElement(Tag.Canvas)
+        this.settings = Chart.normalize(settings)
 
-        this.resize()
+        Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
+        Animations.initializeTransitions()
 
-        this.node.appendChild(this.canvas)
+        this.renderer = new DefaultRenderer(this.canvas, this.settings)
+        this.renderer.apply(this.settings)
 
-        this.applyStyles()
-        this.attachEvents()
-
-        this.ctor(settings)
-    }
-
-    ctor(settings: ChartSettings) {
-        this.renderer ??= new DefaultRenderer(this.canvas, settings)
-
-        this.applySettings(settings)
+        this.observer = this.createObserver(element)
     }
 
     render() {
@@ -62,124 +48,66 @@ class Chart {
 
         this.isDestroyed = true
 
-        this.renderer?.destroy()
-
-        this.legend?.destroy()
-        this.legend = undefined
-
-        this.observer?.disconnect()
-        this.observer = undefined
+        this.observer.disconnect()
+        this.renderer.destroy()
 
         Theme.detach(this.onThemeChange)
-
         this.canvas.remove()
-
-        this.node.style.cssText = this.initialStyles
-    }
-
-    reset() {
-        Theme.reset()
-
-        this.initialize(this.settings)
     }
 
     applySettings(settings: ChartSettings) {
-        this.settings = settings
-
-        this.reset()
-        this.prepareSettings()
-        this.syncLegend()
-        this.resize()
-
-        this.renderer.apply(this.settings)
-        this.renderer.render()
-    }
-
-    private syncLegend() {
-        if (!this.settings.enableLegend) {
-            this.removeLegend()
-
-            return
-        }
-
-        if (this.legend != undefined) {
-            this.legend.applySettings(this.settings)
-
-            return
-        }
-
-        this.legend = new Legend(this)
-
-        this.renderer.setLegend(this.legend)
-    }
-
-    private removeLegend() {
-        if (this.legend == undefined)
-            return
-
-        this.renderer.setLegend(undefined)
-
-        this.legend.destroy()
-        this.legend = undefined
-    }
-    private prepareSettings() {
-        // todo: check
-        this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
-
-        if (this.settings.type == ChartType.Gauge || this.settings.type == ChartType.TreeMap)
-            this.settings.enableLegend = false
-    }
-
-    private resize() {
         if (this.isDestroyed)
             return
 
-        let domRect = this.node.getBoundingClientRect()
+        this.settings = Chart.normalize(settings)
 
-        this.canvas.width = domRect.width
-        this.canvas.height = domRect.height
-
-        this.legend?.resize(this.canvas.width, this.canvas.height)
-
-        this.renderer?.calculateWindow(this.legend?.reserved ?? null)
+        Theme.update(this.settings.isDarkThemeFunction)
+        this.renderer.apply(this.settings)
     }
 
-    private initialize(settings: ChartSettings) {
-        Debug.initialize(settings.enableDebugMode)
-        Theme.initialize(
-            this.onThemeChange,
-            settings.isDarkThemeFunction
-        )
-        Animations.initializeTransitions()
-    }
+    private resize(width: number, height: number) {
+        width = Math.floor(width)
+        height = Math.floor(height)
 
-    private applyStyles() {
-        this.initialStyles = this.node.style.cssText
-
-        this.node.style.display = Styles.Display.Flex
-        this.node.style.flexDirection = Styles.FlexDirection.Column
-        this.node.style.alignItems = Styles.AlignItems.Center
-        this.node.style.justifyContent = Styles.JustifyContent.Center
-        this.node.style.height = '100%'
-    }
-
-    private initializeObserver() {
-        if (this.observer != undefined)
+        if (width == 0 || height == 0)
             return
 
-        this.observer = new ResizeObserver(() => {
-            // todo: if canvas is not exist on page then destroy chart completely
-            this.resize()
+        if (this.canvas.width == width && this.canvas.height == height)
+            return
+
+        this.canvas.width = width
+        this.canvas.height = height
+
+        this.renderer.resize(width, height)
+        this.renderer.render()
+    }
+
+    private createObserver(node: HTMLElement) {
+        const observer = new ResizeObserver(entries => {
+            if (!this.canvas.isConnected) {
+                if (this.canvas.width > 0)
+                    this.destroy()
+
+                return
+            }
+
+            const { width, height } = entries[0].contentRect
+
+            this.resize(width, height)
         })
 
-        this.observer.observe(this.node)
+        observer.observe(node)
+
+        return observer
     }
 
-    private attachEvents() {
-        // todo: reset mouse position when alt+tab browser ?
+    private static normalize(settings: ChartSettings): ChartSettings {
+        const isLegendSupported = settings.type != ChartType.Gauge && settings.type != ChartType.TreeMap
 
-        this.initializeObserver()
+        return {
+            ...settings,
+            enableTooltip: !settings.disableInteractions && settings.enableTooltip,
+            enableLegend: isLegendSupported && settings.enableLegend
+        }
     }
 }
-
-export default Chart

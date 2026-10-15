@@ -93,6 +93,9 @@ class Animations {
     }
 
     static initializeTransitions() {
+        if (Animations.transitionCurve.size > 0)
+            return
+
         const valuesCount = 22820,
             offset = .23,
             p0 = { x: 0, y: 0 },
