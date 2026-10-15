@@ -7,11 +7,18 @@ import RenderItemArc from './RenderItemArc'
 import RenderItemGroup from './RenderItemGroup'
 import RenderItemBase from './interfaces/RenderItemBase'
 import Point from './Point'
-import { DefaultRenderer } from '../render/DefaultRenderer'
+import { Renderer } from '../renderer/Renderer'
 import RenderItemText from './RenderItemText'
 import AnimationData from '../AnimationData'
 import ButtonOptions from './ButtonOptions'
 import Animations from '../Animations'
+
+type Bounds = {
+    left: number
+    top: number
+    right: number
+    bottom: number
+}
 
 export default class RenderItem {
     isAnimate: boolean = false
@@ -67,7 +74,7 @@ export default class RenderItem {
 
     layer: number = 0
 
-    onClick: () => void
+    onClick?: () => void
 
     line: RenderItemLine
 
@@ -104,6 +111,10 @@ export default class RenderItem {
         }
 
         this.adjust(window)
+
+        if (!this.isOnCanvas(ctx.canvas)) {
+            return
+        }
 
         ctx.beginPath()
 
@@ -317,6 +328,30 @@ export default class RenderItem {
         }
     }
 
+    private isOnCanvas(canvas: HTMLCanvasElement): boolean {
+        const bounds = this.getBounds()
+
+        if (!bounds) {
+            return true
+        }
+
+        const margin = DEFAULT_LINE_WIDTH
+
+        return bounds.right >= -margin && bounds.left <= canvas.width + margin
+               && bounds.bottom >= -margin && bounds.top <= canvas.height + margin
+    }
+
+    private getBounds(): Bounds | null {
+        if (this.line)
+            return this.line.getBounds()
+        else if (this.rect)
+            return this.rect.getBounds()
+        else if (this.arc)
+            return this.arc.getBounds()
+        else
+            return null
+    }
+
     private updateInit() {
         const animation = this.animation
 
@@ -324,9 +359,9 @@ export default class RenderItem {
             return
         }
 
-        animation.initStart ??= DefaultRenderer.timer
+        animation.initStart ??= Renderer.timer
 
-        const passed = DefaultRenderer.timer - animation.initStart - animation.initDelay
+        const passed = Renderer.timer - animation.initStart - animation.initDelay
         const progress = Math.min(Math.max(passed / animation.initDuration, 0), 1)
 
         const transition = Animations.getTransition(progress)
@@ -350,9 +385,9 @@ export default class RenderItem {
             return
         }
 
-        animation.morphStart ??= DefaultRenderer.timer
+        animation.morphStart ??= Renderer.timer
 
-        const progress = Math.min(Math.max((DefaultRenderer.timer - animation.morphStart) / animation.morphDuration, 0), 1)
+        const progress = Math.min(Math.max((Renderer.timer - animation.morphStart) / animation.morphDuration, 0), 1)
 
         animation.morph = Animations.getTransition(progress)
 
@@ -390,14 +425,14 @@ export default class RenderItem {
 
             item.animate(this, false, point)
         } else if (this.startTimer) {
-            if (!this.mouseLeave && DefaultRenderer.timer - this.startTimer > 450) {
+            if (!this.mouseLeave && Renderer.timer - this.startTimer > 450) {
                 this.startTimer = null
             }
             this.mouseLeave = true
 
             item.animate(this, true, point)
 
-            if (this.startTimer && DefaultRenderer.timer - this.startTimer > 450) {
+            if (this.startTimer && Renderer.timer - this.startTimer > 450) {
                 this.mouseLeave = false
                 this.startTimer = null
             }

@@ -61,6 +61,33 @@ export default class RenderItemLine
         ctx.stroke()
     }
 
+    getBounds() {
+        if (this.stops1.length == 0) {
+            return null
+        }
+
+        let left = Infinity
+        let top = Infinity
+        let right = -Infinity
+        let bottom = -Infinity
+
+        for (const stop of this.stops1) {
+            left = Math.min(left, stop.x)
+            top = Math.min(top, stop.y)
+            right = Math.max(right, stop.x)
+            bottom = Math.max(bottom, stop.y)
+        }
+
+        const padding = this.width / 2
+
+        return {
+            left: left - padding,
+            top: top - padding,
+            right: right + padding,
+            bottom: bottom + padding
+        }
+    }
+
     // todo: implement
     animate(item: RenderItem, isBackward: boolean): void {
     }

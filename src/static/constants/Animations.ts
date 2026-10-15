@@ -3,6 +3,8 @@ export class Animations {
 
     static legend = 500
 
+    static rebuild = 500
+
     static tree = 250
 
     static tooltip = 120

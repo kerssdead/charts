@@ -3,7 +3,7 @@ import Canvas from 'helpers/Canvas'
 import ChartSettings from 'types/ChartSettings'
 import Theme from 'Theme'
 import { ChartType } from 'static/Enums'
-import { DefaultRenderer } from 'render/DefaultRenderer'
+import { Renderer } from 'renderer/Renderer'
 
 export default class Chart {
     private isDestroyed: boolean = false
@@ -12,7 +12,7 @@ export default class Chart {
 
     private readonly canvas: HTMLCanvasElement
 
-    private readonly renderer: DefaultRenderer
+    private readonly renderer: Renderer
 
     private readonly observer: ResizeObserver
 
@@ -29,7 +29,7 @@ export default class Chart {
         Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
         Animations.initializeTransitions()
 
-        this.renderer = new DefaultRenderer(this.canvas, this.settings)
+        this.renderer = new Renderer(this.canvas)
         this.renderer.apply(this.settings)
 
         this.observer = this.createObserver(element)

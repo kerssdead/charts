@@ -1,4 +1,5 @@
-import { ZOOM_MAX, ZOOM_MIN } from 'static/constants/Index'
+import { COORDS_MAX_X, COORDS_MAX_Y, ZOOM_MAX, ZOOM_MIN } from 'static/constants/Index'
+import Point from 'types/Point'
 
 export default class CanvasWindow {
     x: number = 0
@@ -13,11 +14,16 @@ export default class CanvasWindow {
 
     private isNeedNormalize = false
 
-    constructor(canvas: HTMLCanvasElement) {
-        const bounds = canvas.getBoundingClientRect()
+    get pixel(): Point {
+        return {
+            x: COORDS_MAX_X / this.width,
+            y: COORDS_MAX_Y / this.height
+        }
+    }
 
-        this.width = bounds.width
-        this.height = bounds.height
+    constructor(width: number, height: number) {
+        this.width = width
+        this.height = height
     }
 
     in(step: number, xRatio: number, yRatio: number) {

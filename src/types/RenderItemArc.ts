@@ -73,6 +73,17 @@ export default class RenderItemArc implements RenderItemBase {
         ctx.stroke()
     }
 
+    getBounds() {
+        const radius = Math.abs(this.radius1)
+
+        return {
+            left: this.x1 - radius,
+            top: this.y1 - radius,
+            right: this.x1 + radius,
+            bottom: this.y1 + radius
+        }
+    }
+
     // todo: implement
     animate(item: RenderItem, isBackward: boolean): void {
     }

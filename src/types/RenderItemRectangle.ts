@@ -3,7 +3,7 @@ import RenderItemBase from './interfaces/RenderItemBase'
 import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
 import RenderItem from './RenderItem'
 import Point from './Point'
-import { DefaultRenderer } from '../render/DefaultRenderer'
+import { Renderer } from '../renderer/Renderer'
 import Animations from '../Animations'
 import { Alignment } from './Alignment'
 import { HorizontalAlignment, VerticalAlignment } from '../static/Enums'
@@ -111,6 +111,17 @@ export default class RenderItemRectangle
         ctx.stroke()
     }
 
+    getBounds() {
+        const { left, top, width, height } = this.bounds()
+
+        return {
+            left: Math.min(left, left + width),
+            top: Math.min(top, top + height),
+            right: Math.max(left, left + width),
+            bottom: Math.max(top, top + height)
+        }
+    }
+
     // todo: implement
     tooltip(item: RenderItem, point: Point) {
         return true
@@ -136,9 +147,9 @@ export default class RenderItemRectangle
     }
 
     private factor(item: RenderItem, isBackward: boolean) {
-        item.startTimer ??= DefaultRenderer.timer
+        item.startTimer ??= Renderer.timer
 
-        const progress = Math.min((DefaultRenderer.timer - item.startTimer) / ANIMATION_DURATION, 1)
+        const progress = Math.min((Renderer.timer - item.startTimer) / ANIMATION_DURATION, 1)
         const transition = Animations.getTransition(progress)
 
         return isBackward

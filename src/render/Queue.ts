@@ -21,6 +21,8 @@ type Bounds = {
     height: number
 }
 
+const OUTSIDE: Point = { x: -Infinity, y: -Infinity }
+
 export default class Queue {
     queue: RenderItem[]
 
@@ -40,14 +42,18 @@ export default class Queue {
 
     private contextMenuBounds: Bounds | null = null
 
+    private isSorted: boolean = true
+
     constructor(ctx: CanvasRenderingContext2D) {
         this.queue = []
         this.ctx = ctx
     }
 
-    render(window: CanvasWindow, screen: CanvasWindow = window) {
+    render(window: CanvasWindow, screen: CanvasWindow = window): boolean {
         this.ctx.fillStyle = Theme.canvasBackground
         this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+
+        let isAnimating = false
 
         for (const step of this.getSorted()) {
             this.ctx.save()
@@ -62,6 +68,10 @@ export default class Queue {
             step.render(this.ctx, step.isFixed ? screen : window)
 
             this.ctx.restore()
+
+            if (!step.isTemp && (step.animation.isInitializing || step.animation.isMorphing)) {
+                isAnimating = true
+            }
         }
 
         this.queue = this.queue.filter(item => !item.isTemp)
@@ -69,15 +79,13 @@ export default class Queue {
         for (let step of this.queue.filter(item => item.isContextMenu)) {
             step.isTemp = true
         }
+
+        return isAnimating
     }
 
     animate(point: Point | null) {
-        if (!point) {
-            return
-        }
-
-        if (this.isOverContextMenu(point)) {
-            point = { x: -Infinity, y: -Infinity }
+        if (!point || this.isOverContextMenu(point)) {
+            point = OUTSIDE
         }
 
         for (const item of this.queue) {
@@ -381,14 +389,29 @@ export default class Queue {
         this.contextMenuHover = []
         this.contextMenuTimer = null
         this.contextMenuBounds = null
+
+        this.isSorted = true
     }
 
     private getSorted() {
-        return this.queue.sort((a, b) => a.layer - b.layer)
+        if (!this.isSorted) {
+            this.queue.sort((a, b) => { return a.layer - b.layer })
+            this.isSorted = true
+        }
+
+        return this.queue
     }
 
     add(...actions: ((builder: QueueItemsBuilder) => void)[]) {
-        const builder = new QueueItemsBuilder()
+        return this.addItems(actions, false)
+    }
+
+    addInitialized(...actions: ((builder: QueueItemsBuilder) => void)[]) {
+        return this.addItems(actions, true)
+    }
+
+    private addItems(actions: ((builder: QueueItemsBuilder) => void)[], isInitialized: boolean) {
+        const builder = new QueueItemsBuilder(isInitialized)
 
         for (const a of actions) {
             a(builder)
@@ -397,6 +420,10 @@ export default class Queue {
         const items = builder.dispose()
 
         this.queue = this.queue.concat(items)
+
+        if (items.length > 0) {
+            this.isSorted = false
+        }
 
         return items
     }

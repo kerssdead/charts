@@ -13,6 +13,12 @@ export default class QueueItemsBuilder {
 
     private current: QueueItemBuilder | null = null
 
+    private readonly isInitialized: boolean
+
+    constructor(isInitialized: boolean = false) {
+        this.isInitialized = isInitialized
+    }
+
     dispose() {
         this.add()
 
@@ -58,6 +64,13 @@ export default class QueueItemsBuilder {
             return
         }
 
-        this.items.push(this.current.dispose())
+        const item = this.current.dispose()
+
+        if (this.isInitialized) {
+            item.animation.init = 1
+            item.animation.initDuration = 0
+        }
+
+        this.items.push(item)
     }
 }
