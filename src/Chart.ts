@@ -87,33 +87,41 @@ class Chart {
         this.settings = settings
 
         this.reset()
-
         this.prepareSettings()
-
-        if (this.settings.enableLegend && this.legend != undefined)
-            this.legend.applySettings(settings)
-
-        if (this.settings.enableLegend && this.legend == undefined) {
-            this.legend = new Legend(this)
-
-            this.renderer.setLegend(this.legend)
-        }
-
-        if (!this.settings.enableLegend && this.legend != undefined) {
-            this.renderer.setLegend(undefined)
-
-            this.legend.destroy()
-
-            this.legend = undefined
-        }
-
+        this.syncLegend()
         this.resize()
 
         this.renderer.apply(this.settings)
-
         this.renderer.render()
     }
 
+    private syncLegend() {
+        if (!this.settings.enableLegend) {
+            this.removeLegend()
+
+            return
+        }
+
+        if (this.legend != undefined) {
+            this.legend.applySettings(this.settings)
+
+            return
+        }
+
+        this.legend = new Legend(this)
+
+        this.renderer.setLegend(this.legend)
+    }
+
+    private removeLegend() {
+        if (this.legend == undefined)
+            return
+
+        this.renderer.setLegend(undefined)
+
+        this.legend.destroy()
+        this.legend = undefined
+    }
     private prepareSettings() {
         // todo: check
         this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
