@@ -30,6 +30,10 @@ export default class RenderItemRectangle
 
     radii: number[]
 
+    fromRadii: number[] | null = null
+
+    private radii1: number[] | number = 0
+
     absolute: RectangleDimensions = new RectangleDimensions()
 
     canvas: RectangleDimensions = new RectangleDimensions()
@@ -40,13 +44,55 @@ export default class RenderItemRectangle
 
     growOrigin: number = 0
 
+    collapse = { width: true, height: true }
+
+    from: RectangleDimensions | null = null
+
     private canvasGrowOrigin: number = 0
 
-    adjust(window: CanvasWindow): void {
-        this.canvas.x = RenderItem.adjustX(window, this.absolute.x)
-        this.canvas.y = RenderItem.adjustY(window, this.absolute.y)
-        this.canvas.width = this.absolute.width / COORDS_MAX_X * window.width
-        this.canvas.height = this.absolute.height / COORDS_MAX_Y * window.height
+    current(morph: number = 1): RectangleDimensions {
+        const result = Object.assign(new RectangleDimensions(), this.absolute)
+
+        if (!this.from || morph >= 1)
+            return result
+
+        const lerp = (from: number, to: number) => {
+            return from + (to - from) * morph
+        }
+
+        result.x = lerp(this.from.x, this.absolute.x)
+        result.y = lerp(this.from.y, this.absolute.y)
+        result.width = lerp(this.from.width, this.absolute.width)
+        result.height = lerp(this.from.height, this.absolute.height)
+
+        return result
+    }
+
+    currentRadii(morph: number = 1): number[] {
+        const radii = this.radii ?? [0, 0, 0, 0]
+
+        if (!this.fromRadii || morph >= 1)
+            return [...radii]
+
+        const flatten = 1 - Math.pow(1 - morph, 4)
+        const round = Math.pow(morph, 4)
+
+        return radii.map((radius, i) => {
+            const from = this.fromRadii![i] ?? 0
+
+            return from + (radius - from) * (radius < from ? flatten : round)
+        })
+    }
+
+    adjust(window: CanvasWindow, morph: number = 1): void {
+        const absolute = this.current(morph)
+
+        this.radii1 = this.currentRadii(morph)
+
+        this.canvas.x = RenderItem.adjustX(window, absolute.x)
+        this.canvas.y = RenderItem.adjustY(window, absolute.y)
+        this.canvas.width = absolute.width / COORDS_MAX_X * window.width
+        this.canvas.height = absolute.height / COORDS_MAX_Y * window.height
 
         this.canvasGrowOrigin = this.growAxis == 'x'
                                 ? RenderItem.adjustX(window, this.growOrigin)
@@ -56,7 +102,7 @@ export default class RenderItemRectangle
     render(ctx: CanvasRenderingContext2D, _window?: CanvasWindow, item?: RenderItem): void {
         const { left, top, width, height } = this.grow(item?.animation.init ?? 1)
 
-        ctx.roundRect(left, top, width, height, this.radii || 0)
+        ctx.roundRect(left, top, width, height, this.radii1)
 
         if (this.isFill) {
             ctx.fill()

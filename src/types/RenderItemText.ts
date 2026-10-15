@@ -30,9 +30,23 @@ export default class RenderItemText
         return `${this.fontSize}px Arial`
     }
 
-    adjust(window: CanvasWindow): void {
-        this.x1 = RenderItem.adjustX(window, this.x) - this.fontSize / 2
-        this.y1 = RenderItem.adjustY(window, this.y) + this.fontSize * 0.3
+    from: Point | null = null
+
+    current(morph: number = 1): Point {
+        if (!this.from || morph >= 1)
+            return { x: this.x, y: this.y }
+
+        return {
+            x: this.from.x + (this.x - this.from.x) * morph,
+            y: this.from.y + (this.y - this.from.y) * morph
+        }
+    }
+
+    adjust(window: CanvasWindow, morph: number = 1): void {
+        const position = this.current(morph)
+
+        this.x1 = RenderItem.adjustX(window, position.x) - this.fontSize / 2
+        this.y1 = RenderItem.adjustY(window, position.y) + this.fontSize * 0.3
     }
 
     // todo: remove "window" arg ?

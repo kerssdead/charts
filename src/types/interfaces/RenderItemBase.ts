@@ -3,7 +3,7 @@ import Point from '../Point'
 import RenderItem from '../RenderItem'
 
 export default interface RenderItemBase {
-    adjust(window: CanvasWindow): void
+    adjust(window: CanvasWindow, morph?: number): void
 
     render(ctx: CanvasRenderingContext2D, window?: CanvasWindow, item?: RenderItem): void
 

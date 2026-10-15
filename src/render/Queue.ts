@@ -45,7 +45,7 @@ export default class Queue {
         this.ctx = ctx
     }
 
-    render(window: CanvasWindow) {
+    render(window: CanvasWindow, screen: CanvasWindow = window) {
         this.ctx.fillStyle = Theme.canvasBackground
         this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 
@@ -59,7 +59,7 @@ export default class Queue {
                 this.ctx.fillStyle = Theme.text
             }
 
-            step.render(this.ctx, window)
+            step.render(this.ctx, step.isFixed ? screen : window)
 
             this.ctx.restore()
         }

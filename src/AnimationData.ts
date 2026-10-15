@@ -11,8 +11,28 @@ export default class AnimationData {
 
     initStart: DOMHighResTimeStamp | null = null
 
+    isLeaving: boolean = false
+
+    morph: number = 1
+
+    morphDuration: number = 0
+
+    morphStart: DOMHighResTimeStamp | null = null
+
+    morphFade: 'in' | 'out' | null = null
+
+    removeAfterMorph: boolean = false
+
+    initFade: boolean = false
+
+    visibility: number = 1
+
     get isInitializing() {
         return this.initDuration > 0
+    }
+
+    get isMorphing() {
+        return this.morphDuration > 0
     }
 
     static get default() {

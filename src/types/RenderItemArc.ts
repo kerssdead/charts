@@ -6,12 +6,52 @@ import Point from './Point'
 import Errors from '../helpers/Errors'
 import { ErrorType } from '../static/Enums'
 
-export default class RenderItemArc implements RenderItemBase {
-    adjust(window: CanvasWindow): void {
-        this.x1 = RenderItem.adjustX(window, this.x)
-        this.y1 = RenderItem.adjustY(window, this.y)
+type ArcGeometry = {
+    x: number
+    y: number
+    radius: number
+    startAngle: number
+    endAngle: number
+}
 
-        this.radius1 = this.radius * (window.width / COORDS_MAX_X)
+export default class RenderItemArc implements RenderItemBase {
+    from: ArcGeometry | null = null
+
+    current(morph: number = 1): ArcGeometry {
+        const result = {
+            x: this.x,
+            y: this.y,
+            radius: this.radius,
+            startAngle: this.startAngle,
+            endAngle: this.endAngle
+        }
+
+        if (!this.from || morph >= 1)
+            return result
+
+        const lerp = (from: number, to: number) => {
+            return from + (to - from) * morph
+        }
+
+        return {
+            x: lerp(this.from.x, result.x),
+            y: lerp(this.from.y, result.y),
+            radius: lerp(this.from.radius, result.radius),
+            startAngle: lerp(this.from.startAngle, result.startAngle),
+            endAngle: lerp(this.from.endAngle, result.endAngle)
+        }
+    }
+
+    adjust(window: CanvasWindow, morph: number = 1): void {
+        const geometry = this.current(morph)
+
+        this.x1 = RenderItem.adjustX(window, geometry.x)
+        this.y1 = RenderItem.adjustY(window, geometry.y)
+
+        this.radius1 = geometry.radius * (window.width / COORDS_MAX_X)
+
+        this.startAngle1 = geometry.startAngle
+        this.endAngle1 = geometry.endAngle
     }
 
     render(ctx: CanvasRenderingContext2D): void {
@@ -19,8 +59,8 @@ export default class RenderItemArc implements RenderItemBase {
             this.x1,
             this.y1,
             this.radius1,
-            this.startAngle,
-            this.endAngle
+            this.startAngle1,
+            this.endAngle1
         )
 
         ctx.lineTo(this.x1, this.y1)
@@ -69,4 +109,8 @@ export default class RenderItemArc implements RenderItemBase {
     startAngle: number = 0
 
     endAngle: number = Math.PI * 2
+
+    startAngle1: number = 0
+
+    endAngle1: number = Math.PI * 2
 }

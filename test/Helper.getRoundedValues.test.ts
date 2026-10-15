@@ -3,7 +3,7 @@ import * as Helper from 'Helper'
 describe('Calculating rounded values', () => {
     it('Should be 5 in (w/o zero value) and 5 out values with 200 diff', () => {
         expect(Helper.getRoundedValues([111, 222, 333, 444, 555]))
-            .toStrictEqual([0, 200, 400, 600, 800])
+            .toStrictEqual([0, 150, 300, 450, 600])
     })
 
     it('Should be 5 in and 5 out values with 200 diff', () => {
@@ -13,12 +13,12 @@ describe('Calculating rounded values', () => {
 
     it('Should be 2 in (w/o zero value) and 3 out values with 700 diff', () => {
         expect(Helper.getRoundedValues([33, 1287], 3))
-            .toStrictEqual([0, 1000, 2000])
+            .toStrictEqual([0, 800, 1600])
     })
 
     it('Should be 14 in (w/o zero value) and 5 out values with 1100 diff', () => {
         expect(Helper.getRoundedValues([12, 14, 4221, 14, 12, 421, 4, 21, 4, 12, 4122, 2222, 1234, 2211]))
-            .toStrictEqual([0, 2000, 4000, 6000, 8000])
+            .toStrictEqual([0, 1250, 2500, 3750, 5000])
     })
 
     it('Should be 4 in (w/o zero value) and 5 out values with 300 diff', () => {
@@ -33,7 +33,7 @@ describe('Calculating rounded values', () => {
 
     it('Should be 5 in (w/o zero value) and 5 values with 1.1 diff', () => {
         expect(Helper.getRoundedValues([1.2, 4.2, 0.5, 1.22, 3.4]))
-            .toStrictEqual([0, 2, 4, 6, 8])
+            .toStrictEqual([0, 1.25, 2.5, 3.75, 5])
     })
 
     it('Should be 4 in and 5 values with 2.5 diff', () => {

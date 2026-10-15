@@ -3,7 +3,7 @@ import Legend from 'Legend'
 import Animations from 'Animations'
 import Theme from 'Theme'
 import Styles from 'static/constants/Styles'
-import { Tag } from 'static/Enums'
+import { ChartType, Tag } from 'static/Enums'
 import Debug from 'Debug'
 import { DefaultRenderer } from './render/DefaultRenderer'
 
@@ -44,7 +44,7 @@ class Chart {
     }
 
     ctor(settings: ChartSettings) {
-        this.renderer = new DefaultRenderer(this.canvas, settings)
+        this.renderer ??= new DefaultRenderer(this.canvas, settings)
 
         this.applySettings(settings)
     }
@@ -54,7 +54,6 @@ class Chart {
             return
 
         this.renderer.render()
-        this.legend?.render()
     }
 
     destroy() {
@@ -91,22 +90,26 @@ class Chart {
 
         this.prepareSettings()
 
+        if (this.settings.enableLegend && this.legend != undefined)
+            this.legend.applySettings(settings)
+
+        if (this.settings.enableLegend && this.legend == undefined) {
+            this.legend = new Legend(this)
+
+            this.renderer.setLegend(this.legend)
+        }
+
+        if (!this.settings.enableLegend && this.legend != undefined) {
+            this.renderer.setLegend(undefined)
+
+            this.legend.destroy()
+
+            this.legend = undefined
+        }
+
+        this.resize()
+
         this.renderer.apply(this.settings)
-
-        // if (this.settings.enableLegend && this.legend != undefined)
-        //     this.legend.applySettings(settings)
-
-        // if (this.settings.enableLegend && this.legend == undefined) {
-        //     this.legend = new Legend(this)
-        //
-        //     this.legend.render()
-        // }
-
-        // if (!this.settings.enableLegend && this.legend != undefined) {
-        //     this.legend.destroy()
-        //
-        //     this.legend = undefined
-        // }
 
         this.renderer.render()
     }
@@ -114,6 +117,9 @@ class Chart {
     private prepareSettings() {
         // todo: check
         this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
+
+        if (this.settings.type == ChartType.Gauge || this.settings.type == ChartType.TreeMap)
+            this.settings.enableLegend = false
     }
 
     private resize() {
@@ -125,9 +131,9 @@ class Chart {
         this.canvas.width = domRect.width
         this.canvas.height = domRect.height
 
-        this.renderer?.calculateWindow()
+        this.legend?.resize(this.canvas.width, this.canvas.height)
 
-        this.legend?.resize()
+        this.renderer?.calculateWindow(this.legend?.reserved ?? null)
     }
 
     private initialize(settings: ChartSettings) {

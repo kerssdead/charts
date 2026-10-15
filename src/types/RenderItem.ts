@@ -22,6 +22,16 @@ export default class RenderItem {
 
     isContextMenu: boolean = false
 
+    isFixed: boolean = false
+
+    key: string | null = null
+
+    isGhost: boolean = false
+
+    axisValue: number | null = null
+
+    isFading: boolean = true
+
     showTooltip: boolean = false
 
     showContextMenu: boolean = false
@@ -81,6 +91,13 @@ export default class RenderItem {
 
     render(ctx: CanvasRenderingContext2D, window: CanvasWindow) {
         this.updateInit()
+        this.updateMorph()
+
+        if (this.isGhost && !this.animation.isMorphing) {
+            return
+        }
+
+        this.updateVisibility()
 
         if (this.animation.init <= 0) {
             return
@@ -89,6 +106,8 @@ export default class RenderItem {
         this.adjust(window)
 
         ctx.beginPath()
+
+        ctx.globalAlpha *= this.animation.visibility
 
         ctx.lineWidth = DEFAULT_LINE_WIDTH
         ctx.setLineDash([])
@@ -156,9 +175,143 @@ export default class RenderItem {
         return false
     }
 
+    morphFrom(previous: RenderItem, duration: number) {
+        const morph = previous.animation.morph
+
+        if (this.rect && previous.rect) {
+            this.rect.from = previous.rect.current(morph)
+            this.rect.fromRadii = previous.rect.currentRadii(morph)
+        }
+        else if (this.line && previous.line)
+            this.line.from = previous.line.current(morph)
+        else if (this.text && previous.text)
+            this.text.from = previous.text.current(morph)
+        else if (this.arc && previous.arc)
+            this.arc.from = previous.arc.current(morph)
+        else
+            return
+
+        this.startMorph(previous.isGhost ? 'in' : this.isGhost ? 'out' : null, duration)
+    }
+
+    enter(duration: number) {
+        this.animation.isLeaving = false
+        this.animation.initFade = true
+        this.animation.init = 0
+        this.animation.initDuration = duration
+        this.animation.initDelay = 0
+        this.animation.initStart = null
+    }
+
+    appear(duration: number, mapY?: (y: number) => number) {
+        if (!this.rect)
+            return this.enter(duration)
+
+        const from = this.rect.current()
+
+        if (mapY)
+            from.y = mapY(from.y)
+
+        if (this.rect.collapse.width)
+            from.width = 0
+
+        if (this.rect.collapse.height)
+            from.height = 0
+
+        this.rect.from = from
+
+        this.startMorph('in', duration)
+    }
+
+    disappear(duration: number, mapY?: (y: number) => number) {
+        if (!this.rect)
+            return this.leave(duration)
+
+        this.rect.from = this.rect.current(this.animation.morph)
+
+        if (mapY)
+            this.rect.absolute.y = mapY(this.rect.from.y)
+
+        if (this.rect.collapse.width)
+            this.rect.absolute.width = 0
+
+        if (this.rect.collapse.height)
+            this.rect.absolute.height = 0
+
+        this.animation.removeAfterMorph = true
+
+        this.startMorph('out', duration)
+    }
+
+    appearFromAngle(angle: number, duration: number) {
+        if (!this.arc)
+            return this.enter(duration)
+
+        this.arc.from = Object.assign(this.arc.current(), { startAngle: angle, endAngle: angle })
+
+        this.startMorph('in', duration)
+    }
+
+    disappearToAngle(angle: number, duration: number) {
+        if (!this.arc)
+            return this.leave(duration)
+
+        this.arc.from = this.arc.current(this.animation.morph)
+        this.arc.startAngle = angle
+        this.arc.endAngle = angle
+
+        this.animation.removeAfterMorph = true
+
+        this.startMorph('out', duration)
+    }
+
+    enterFromAxis(y: number, duration: number) {
+        if (this.text)
+            this.text.from = { x: this.text.x, y }
+        else if (this.line)
+            this.line.from = this.line.stops.map(stop => ({ x: stop.x, y }))
+        else
+            return this.enter(duration)
+
+        this.startMorph('in', duration)
+    }
+
+    leaveToAxis(y: number, duration: number) {
+        const morph = this.animation.morph
+
+        if (this.text) {
+            this.text.from = this.text.current(morph)
+            this.text.y = y
+        } else if (this.line) {
+            this.line.from = this.line.current(morph)
+            this.line.stops = this.line.stops.map(stop => ({ x: stop.x, y }))
+        } else {
+            return this.leave(duration)
+        }
+
+        this.animation.removeAfterMorph = true
+
+        this.startMorph('out', duration)
+    }
+
+    private startMorph(fade: 'in' | 'out' | null, duration: number) {
+        this.animation.morphFade = fade
+        this.animation.morph = 0
+        this.animation.morphDuration = duration
+        this.animation.morphStart = null
+    }
+
+    leave(duration: number) {
+        this.animation.isLeaving = true
+        this.animation.initFade = true
+        this.animation.initDuration = duration
+        this.animation.initDelay = 0
+        this.animation.initStart = null
+    }
+
     private adjust(window: CanvasWindow): void {
         for (const item of this.items()) {
-            item?.adjust(window)
+            item?.adjust(window, this.animation.morph)
             if (item)
                 return
         }
@@ -176,12 +329,57 @@ export default class RenderItem {
         const passed = DefaultRenderer.timer - animation.initStart - animation.initDelay
         const progress = Math.min(Math.max(passed / animation.initDuration, 0), 1)
 
-        animation.init = Animations.getTransition(progress)
+        const transition = Animations.getTransition(progress)
+
+        animation.init = animation.isLeaving ? 1 - transition : transition
 
         if (progress == 1) {
-            animation.init = 1
+            animation.init = animation.isLeaving ? 0 : 1
             animation.initDuration = 0
+            animation.initFade = animation.isLeaving
+
+            if (animation.isLeaving)
+                this.isTemp = true
         }
+    }
+
+    private updateMorph() {
+        const animation = this.animation
+
+        if (!animation.isMorphing) {
+            return
+        }
+
+        animation.morphStart ??= DefaultRenderer.timer
+
+        const progress = Math.min(Math.max((DefaultRenderer.timer - animation.morphStart) / animation.morphDuration, 0), 1)
+
+        animation.morph = Animations.getTransition(progress)
+
+        if (progress == 1) {
+            animation.morph = 1
+            animation.morphDuration = 0
+
+            if (animation.removeAfterMorph)
+                this.isTemp = true
+            else
+                animation.morphFade = null
+        }
+    }
+
+    private updateVisibility() {
+        const animation = this.animation
+
+        if (!this.isFading)
+            animation.visibility = 1
+        else if (animation.initFade)
+            animation.visibility = animation.init
+        else if (animation.morphFade == 'in')
+            animation.visibility = animation.morph
+        else if (animation.morphFade == 'out')
+            animation.visibility = 1 - animation.morph
+        else
+            animation.visibility = 1
     }
 
     private continueAnimate(point: Point, item: RenderItemBase) {

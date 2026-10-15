@@ -14,10 +14,26 @@ export default class RenderItemLine
 
     dash: number[] = []
 
-    adjust(window: CanvasWindow): void {
+    from: Point[] | null = null
+
+    current(morph: number = 1): Point[] {
+        if (!this.from || morph >= 1 || this.from.length != this.stops.length)
+            return this.stops.map(stop => ({ x: stop.x, y: stop.y }))
+
+        return this.stops.map((stop, i) => {
+            const from = this.from![i]
+
+            return {
+                x: from.x + (stop.x - from.x) * morph,
+                y: from.y + (stop.y - from.y) * morph
+            }
+        })
+    }
+
+    adjust(window: CanvasWindow, morph: number = 1): void {
         this.stops1 = []
 
-        for (let stop of this.stops) {
+        for (let stop of this.current(morph)) {
             this.stops1.push({ x: RenderItem.adjustX(window, stop.x), y: RenderItem.adjustY(window, stop.y) })
         }
     }

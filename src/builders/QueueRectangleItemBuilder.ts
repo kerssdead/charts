@@ -45,6 +45,12 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
         return this
     }
 
+    collapse(width: boolean, height: boolean): QueueRectangleItemBuilder {
+        this.current.rect.collapse = { width, height }
+
+        return this
+    }
+
     grow(axis: 'x' | 'y', origin: number): QueueRectangleItemBuilder {
         this.current.rect.growAxis = axis
         this.current.rect.growOrigin = origin

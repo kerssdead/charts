@@ -134,21 +134,20 @@ export function getRoundedValues(
     const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
     const normalizedStep = rawStep / magnitude
 
+    const niceSteps = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]
+
+    const isFit = (step: number) => {
+        const neg = minVal < 0 ? Math.ceil(Math.abs(minVal) / step) : 0
+        const pos = maxVal > 0 ? Math.ceil(maxVal / step) : 0
+
+        return neg + pos <= intervals
+    }
+
     let prettyNormalizedStep
     if (max != undefined) {
         prettyNormalizedStep = normalizedStep
     } else {
-        if (normalizedStep <= 1) {
-            prettyNormalizedStep = 1
-        } else if (normalizedStep <= 2) {
-            prettyNormalizedStep = 2
-        } else if (normalizedStep <= 2.5) {
-            prettyNormalizedStep = 2.5
-        } else if (normalizedStep <= 5) {
-            prettyNormalizedStep = 5
-        } else {
-            prettyNormalizedStep = 10
-        }
+        prettyNormalizedStep = niceSteps.find(nice => nice >= normalizedStep && isFit(nice * magnitude)) ?? 10
     }
 
     let step = prettyNormalizedStep * magnitude

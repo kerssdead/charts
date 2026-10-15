@@ -8,11 +8,6 @@ export default class QueueItemBaseBuilder {
         this.current = new RenderItem()
     }
 
-    /**
-     * Returns configured item.
-     *
-     * @returns {RenderItem}
-     */
     dispose(): RenderItem {
         return this.current
     }
@@ -59,6 +54,42 @@ export default class QueueItemBaseBuilder {
 
     temp(value: boolean = true) : QueueItemBaseBuilder {
         this.current.isTemp = value
+
+        return this
+    }
+
+    fixed(value: boolean = true) : QueueItemBaseBuilder {
+        this.current.isFixed = value
+
+        return this
+    }
+
+    key(value: string) : QueueItemBaseBuilder {
+        this.current.key = value
+
+        return this
+    }
+
+    ghost(value: boolean = true) : QueueItemBaseBuilder {
+        this.current.isGhost = value
+
+        if (value) {
+            this.current.isAnimate = false
+            this.current.tooltipTemplate = ''
+            this.current.contextMenuItems = []
+        }
+
+        return this
+    }
+
+    axisValue(value: number) : QueueItemBaseBuilder {
+        this.current.axisValue = value
+
+        return this
+    }
+
+    fade(value: boolean) : QueueItemBaseBuilder {
+        this.current.isFading = value
 
         return this
     }
