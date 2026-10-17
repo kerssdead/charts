@@ -98,10 +98,6 @@ class Theme {
         return color.slice(0, 7) + value.toString(16).padStart(2, '0')
     }
 
-    static reset() {
-        this.function = undefined
-    }
-
     static update(isDark?: Function) {
         if (isDark)
             Theme.function = isDark

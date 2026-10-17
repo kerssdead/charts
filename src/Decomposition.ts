@@ -1,8 +1,5 @@
 import TableData from 'types/TableData'
-import * as Helper from 'Helper'
-import ChartSettings from 'types/ChartSettings'
 import Formatter from 'helpers/Formatter'
-import Styles from 'static/constants/Styles'
 import { ChartType, Tag } from 'static/Enums'
 import ChartItem from 'types/ChartItem'
 import PlotData from 'types/data/PlotData'
@@ -133,35 +130,6 @@ class Decomposition {
         `
 
         return table
-    }
-
-    static toChart(settings: ChartSettings) {
-        let container = document.createElement(Tag.Div),
-            div = document.createElement(Tag.Div),
-            script = document.createElement(Tag.Script),
-            id = Helper.guid()
-
-        container.style.display = Styles.Display.Flex
-        container.style.height = '100%'
-
-        div.id = id
-        div.style.flexGrow = '1'
-
-        let cloneSettings = JSON.parse(JSON.stringify(settings)) as ChartSettings
-
-        if (cloneSettings.title)
-            cloneSettings.title = cloneSettings.title + ' (Other)'
-        cloneSettings.minWidth = undefined
-        cloneSettings.minHeight = undefined
-
-        script.innerHTML = `
-            new OCharts.chart(document.getElementById('${ id }'), ${ JSON.stringify(cloneSettings) })
-                .render()
-        `
-
-        container.append(div, script)
-
-        return container
     }
 }
 

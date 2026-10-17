@@ -2,8 +2,7 @@ import TableValue from 'types/TableValue'
 import Sector from 'types/Sector'
 import TableData from 'types/TableData'
 import Data from 'types/interfaces/Data'
-import {ChartType, ErrorType} from "../../static/Enums";
-import Errors from "../../helpers/Errors";
+import { ChartType } from "static/Enums"
 
 export default class PieData implements Data {
     values: Sector[]
@@ -12,7 +11,6 @@ export default class PieData implements Data {
 
     innerTitle: string
 
-    // todo: fix decomposition to table
     static getRows(data: PieData): TableData {
         const key = 'Value'
 
@@ -36,8 +34,4 @@ export default class PieData implements Data {
     }
 
     type: ChartType
-
-    recalculate(): void {
-        Errors.throw(ErrorType.NotImplemented)
-    }
 }

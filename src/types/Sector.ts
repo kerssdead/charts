@@ -1,38 +1,12 @@
 import Value from 'types/base/Value'
-import Point from 'types/Point'
-import { AnimationType } from 'static/Enums'
-import LineStyles from 'types/LineStyles'
 
 class Sector extends Value {
-    canRenderLabel: boolean | undefined
-
-    isMouseInside: boolean
-
     current: number
-
-    transition: number
-
-    innerRadius: number
-
-    /**
-     * Angle in radians
-     */
-    direction: number
-
-    lineStyles: LineStyles | undefined
-
-    translate: Point
-
-    state: AnimationType
 
     constructor(obj: object) {
         super()
 
         Object.assign(this, obj)
-
-        this.baseColor = this.color
-        this.canRenderLabel = false
-        this.isMouseInside = false
     }
 
     toggle(transition: number) {

@@ -1,5 +1,4 @@
 import Color from 'types/Color'
-import Theme from 'Theme'
 import Point from 'types/Point'
 
 export function adjustColor(color: string, amount: number) {
@@ -112,35 +111,6 @@ export function getShortHexValues(str: string) {
     return /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(str)
 }
 
-export function applyAlpha(color: string, opacity: number) {
-    function hexToRgb(hex: string) {
-        const result = getHexValues(hex)
-        return result ? getColor(result[1], result[2], result[3]) : new Color()
-    }
-
-    function rgbToHex(r: number, g: number, b: number) {
-        function toHex(c: number) {
-            let hex = c.toString(16)
-            return hex.length == 1 ? '0' + hex : hex
-        }
-
-        return '#' + toHex(r) + toHex(g) + toHex(b)
-    }
-
-    const rgb = hexToRgb(color),
-        bg = hexToRgb(Theme.canvasBackground)
-
-    opacity /= 255
-
-    const alpha = 1 - opacity
-
-    return rgbToHex(
-        Math.round((opacity * (rgb.r / 255) + (alpha * (bg.r / 255))) * 255),
-        Math.round((opacity * (rgb.g / 255) + (alpha * (bg.g / 255))) * 255),
-        Math.round((opacity * (rgb.b / 255) + (alpha * (bg.b / 255))) * 255)
-    )
-}
-
 export function getRoundedValues(
     all: number[],
     targetTicks: number = 5,
@@ -230,26 +200,6 @@ export function getRoundedValues(
     }
 
     return ticks
-}
-
-export function min(array: number[]) {
-    let len = array.length
-    let min = Infinity
-
-    while (len--)
-        min = array[len] < min ? array[len] : min
-
-    return min
-}
-
-export function max(array: number[]) {
-    let len = array.length
-    let max = -Infinity
-
-    while (len--)
-        max = array[len] > max ? array[len] : max
-
-    return max
 }
 
 export function parseNumber(value: string | null | number, decimalSeparator: string = '.') {

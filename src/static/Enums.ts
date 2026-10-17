@@ -1,17 +1,3 @@
-export enum AnimationType {
-    None,
-
-    MouseOver,
-
-    MouseLeave,
-
-    Init
-}
-
-export enum Attribute {
-    Name = 'name'
-}
-
 export enum ChartType {
     Plot,
 
@@ -25,9 +11,7 @@ export enum ChartType {
 export enum ErrorType {
     NullContext = 'Can\'t find context',
 
-    ElementNotExist = 'Element does not exist',
-
-    NotImplemented = 'Not Implemented'
+    ElementNotExist = 'Element does not exist'
 }
 
 export enum Events {
@@ -97,10 +81,6 @@ export enum Tag {
 
     Dialog = 'dialog',
 
-    Table = 'table',
-
-    Script = 'script',
-
     Button = 'button',
 
     Span = 'span'
@@ -135,9 +115,7 @@ export enum TextBaseline {
 
     Top = 'top',
 
-    Middle = 'middle',
-
-    Bottom = 'bottom'
+    Middle = 'middle'
 }
 
 export enum HorizontalAlignment {

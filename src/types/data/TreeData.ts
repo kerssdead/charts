@@ -11,10 +11,6 @@ export type TreeValue = Value & {
 class TreeData implements Data {
     type: ChartType
 
-    recalculate(): void {
-        throw new Error("Method not implemented.")
-    }
-
     values: TreeValue[]
 
     padding: number

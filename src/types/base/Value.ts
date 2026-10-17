@@ -3,13 +3,9 @@ import ItemData from 'types/ItemData'
 class Value {
     id: string
 
-    baseColor: string
-
     isColorGenerated?: boolean
 
     color: string
-
-    textColor: string
 
     label: string
 

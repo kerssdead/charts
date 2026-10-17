@@ -9,10 +9,6 @@ import { ChartType, PlotAxisType } from 'static/Enums'
 export default class PlotData implements Data {
     type: ChartType
 
-    recalculate(): void {
-        throw new Error('Method not implemented.')
-    }
-
     shortLabels: boolean
 
     simple: boolean

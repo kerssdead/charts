@@ -18,14 +18,6 @@ export default class ChartSettings {
 
     enableDebugMode: boolean
 
-    width: number
-
-    height: number
-
-    minWidth: number | undefined
-
-    minHeight: number | undefined
-
     baseColor: string
 
     title: string

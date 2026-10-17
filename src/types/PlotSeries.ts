@@ -17,17 +17,9 @@ export default class PlotSeries extends Value {
         Object.assign(this, obj)
     }
 
-    toggle(transition: number) {
-        super.toggle(transition)
-    }
-
     checkCondition(): boolean {
         super.checkCondition()
 
         return true
-    }
-
-    reset() {
-        super.reset()
     }
 }
