@@ -9,8 +9,7 @@ export default class QueueArcItemBuilder extends QueueItemBaseBuilder {
     }
 
     position(x: number, y: number): QueueArcItemBuilder {
-        this.current.arc.x = x
-        this.current.arc.y = y
+        this.current.arc.absolute = { x: x, y: y }
 
         return this
     }

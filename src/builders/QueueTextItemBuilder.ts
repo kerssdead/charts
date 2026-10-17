@@ -13,8 +13,7 @@ export default class QueueTextItemBuilder
     }
 
     position(x: number, y: number) {
-        this.current.text.x = x
-        this.current.text.y = y
+        this.current.text.absolute = { x: x, y: y }
 
         return this
     }

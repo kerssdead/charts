@@ -22,6 +22,10 @@ const V_FACTOR = {
     [VerticalAlignment.Bottom]: 1
 }
 
+type RectangleCanvas = RectangleDimensions & {
+    radii: number[] | number
+}
+
 export default class RenderItemRectangle
     implements RenderItemBase {
     isFill: boolean
@@ -32,11 +36,9 @@ export default class RenderItemRectangle
 
     fromRadii: number[] | null = null
 
-    private radii1: number[] | number = 0
-
     absolute: RectangleDimensions = new RectangleDimensions()
 
-    canvas: RectangleDimensions = new RectangleDimensions()
+    canvas: RectangleCanvas = { x: 0, y: 0, width: 0, height: 0, radii: 0 }
 
     align: Alignment = Alignment.default
 
@@ -87,7 +89,7 @@ export default class RenderItemRectangle
     adjust(window: CanvasWindow, morph: number = 1): void {
         const absolute = this.current(morph)
 
-        this.radii1 = this.currentRadii(morph)
+        this.canvas.radii = this.currentRadii(morph)
 
         this.canvas.x = RenderItem.adjustX(window, absolute.x)
         this.canvas.y = RenderItem.adjustY(window, absolute.y)
@@ -102,7 +104,7 @@ export default class RenderItemRectangle
     render(ctx: CanvasRenderingContext2D, item?: RenderItem): void {
         const { left, top, width, height } = this.grow(item?.animation.init ?? 1)
 
-        ctx.roundRect(left, top, width, height, this.radii1)
+        ctx.roundRect(left, top, width, height, this.canvas.radii)
 
         if (this.isGradient && item && height != 0) {
             ctx.fillStyle = ctx.strokeStyle = Canvas.verticalGradient(ctx, item.activeColor, top, top + height)

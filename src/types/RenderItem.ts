@@ -276,7 +276,7 @@ export default class RenderItem {
 
     enterFromAxis(y: number, duration: number) {
         if (this.text)
-            this.text.from = { x: this.text.x, y }
+            this.text.from = { x: this.text.absolute.x, y }
         else if (this.line)
             this.line.from = this.line.absolute.map(stop => ({ x: stop.x, y }))
         else
@@ -290,7 +290,7 @@ export default class RenderItem {
 
         if (this.text) {
             this.text.from = this.text.current(morph)
-            this.text.y = y
+            this.text.absolute.y = y
         } else if (this.line) {
             this.line.from = this.line.current(morph)
             this.line.absolute = this.line.absolute.map(stop => ({ x: stop.x, y }))

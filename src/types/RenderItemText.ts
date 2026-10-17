@@ -13,19 +13,17 @@ export type Orbit = {
     radiusY: number
 }
 
+type TextCanvas = Point & {
+    angle: number
+}
+
 export default class RenderItemText
     implements RenderItemBase {
     value: string
 
-    x: number
+    absolute: Point = { x: 0, y: 0 }
 
-    y: number
-
-    // todo: meh solution
-    x1: number
-
-    // todo: meh solution
-    y1: number
+    canvas: TextCanvas = { x: 0, y: 0, angle: 0 }
 
     fontSize: number = 14
 
@@ -48,8 +46,6 @@ export default class RenderItemText
     fromAngle: number | null = null
 
     follow: RenderItemArc | null = null
-
-    private angle1: number = 0
 
     private halfWidth: number | null = null
 
@@ -75,25 +71,25 @@ export default class RenderItemText
         }
 
         if (!this.from || morph >= 1)
-            return { x: this.x, y: this.y }
+            return { x: this.absolute.x, y: this.absolute.y }
 
         return {
-            x: this.from.x + (this.x - this.from.x) * morph,
-            y: this.from.y + (this.y - this.from.y) * morph
+            x: this.from.x + (this.absolute.x - this.from.x) * morph,
+            y: this.from.y + (this.absolute.y - this.from.y) * morph
         }
     }
 
     adjust(window: CanvasWindow, morph: number = 1): void {
         const position = this.current(morph)
 
-        this.angle1 = this.currentAngle(morph)
+        this.canvas.angle = this.currentAngle(morph)
 
-        this.x1 = RenderItem.adjustX(window, position.x) - (this.orbit ? 0 : this.fontSize / 2)
-        this.y1 = RenderItem.adjustY(window, position.y) + (this.rotate == 0 ? this.baselineShift : 0)
+        this.canvas.x = RenderItem.adjustX(window, position.x) - (this.orbit ? 0 : this.fontSize / 2)
+        this.canvas.y = RenderItem.adjustY(window, position.y) + (this.rotate == 0 ? this.baselineShift : 0)
 
         if (this.follow) {
-            this.x1 += this.follow.pop.x
-            this.y1 += this.follow.pop.y
+            this.canvas.x += this.follow.pop.x
+            this.canvas.y += this.follow.pop.y
         }
     }
 
@@ -105,7 +101,7 @@ export default class RenderItemText
         if (this.rotate != 0) {
             ctx.save()
 
-            ctx.translate(this.x1, this.y1)
+            ctx.translate(this.canvas.x, this.canvas.y)
             ctx.rotate(this.rotate * Math.PI / 180)
 
             ctx.fillText(this.value, 0, this.baselineShift)
@@ -114,15 +110,15 @@ export default class RenderItemText
         } else if (this.orbit) {
             this.halfWidth ??= stringWidth(this.value, this.fontSize) / 2
 
-            const distance = boxEdgeDistance(this.angle1, this.halfWidth, this.fontSize / 2)
+            const distance = boxEdgeDistance(this.canvas.angle, this.halfWidth, this.fontSize / 2)
 
             ctx.textAlign = TextAlignment.Center
             ctx.textBaseline = TextBaseline.Middle as CanvasTextBaseline
             ctx.fillText(this.value,
-                this.x1 + distance * Math.cos(this.angle1),
-                this.y1 + distance * Math.sin(this.angle1))
+                this.canvas.x + distance * Math.cos(this.canvas.angle),
+                this.canvas.y + distance * Math.sin(this.canvas.angle))
         } else {
-            ctx.fillText(this.value, this.x1, this.y1)
+            ctx.fillText(this.value, this.canvas.x, this.canvas.y)
         }
     }
 
