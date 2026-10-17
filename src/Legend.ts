@@ -13,6 +13,7 @@ import * as Constants from 'static/constants/Index'
 import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
 import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from 'static/Enums'
 import ChartSettings from './types/ChartSettings'
+import ChartItem from 'types/ChartItem'
 import HoverProgress from 'types/HoverProgress'
 import Animations from 'Animations'
 
@@ -109,6 +110,23 @@ class Legend {
         }
 
         return reserved
+    }
+
+    private get isShared() {
+        return this.settings.charts.length > 1
+    }
+
+    private get values(): Value[] {
+        return this.settings.charts.filter(Legend.isSupported).flatMap(chart => chart.data.values)
+    }
+
+    static isSupported(chart: ChartItem) {
+        return chart.type != ChartType.Gauge
+               && (chart.type != ChartType.TreeMap || (chart.data?.values?.length ?? 0) > 1)
+    }
+
+    static getGroupKey(value: Value, isShared: boolean) {
+        return isShared ? value.label : value.id
     }
 
     private get isVertical() {
@@ -449,18 +467,39 @@ class Legend {
     }
 
     private visibleValues(): Value[] {
-        return this.settings.data.values.filter(value => !value.hideInLegend)
+        const keys = new Set<string>()
+
+        return this.values.filter(value => {
+            const key = this.getKey(value)
+
+            if (value.hideInLegend || keys.has(key))
+                return false
+
+            keys.add(key)
+
+            return true
+        })
+    }
+
+    private getKey(value: Value) {
+        return Legend.getGroupKey(value, this.isShared)
     }
 
     private toggle(value: Value) {
         this.isDirty = true
 
-        if (this.toggles.has(value.id) || !value.checkCondition())
+        const key = this.getKey(value)
+
+        if (this.toggles.has(key) || !value.checkCondition())
             return
 
-        value.toggle(0)
+        const disabled = value.disabled
 
-        this.toggles.set(value.id, performance.now())
+        for (const item of this.values)
+            if (this.getKey(item) == key && item.disabled == disabled)
+                item.toggle(0)
+
+        this.toggles.set(key, performance.now())
 
         this.onChange?.()
     }
@@ -469,7 +508,7 @@ class Legend {
         this.toggles.clear()
         this.isDirty = true
 
-        for (const value of this.settings.data.values)
+        for (const value of this.values)
             value.reset()
 
         this.onChange?.()
@@ -477,9 +516,11 @@ class Legend {
 
     private updateToggles(now: DOMHighResTimeStamp) {
         const isToggling = this.toggles.size > 0
+        const finished = new Set<string>()
 
-        for (const value of this.settings.data.values) {
-            const start = this.toggles.get(value.id)
+        for (const value of this.values) {
+            const key = this.getKey(value)
+            const start = this.toggles.get(key)
 
             if (start == undefined)
                 continue
@@ -490,8 +531,11 @@ class Legend {
                 value.toggle(transition)
 
             if (transition == 1)
-                this.toggles.delete(value.id)
+                finished.add(key)
         }
+
+        for (const key of finished)
+            this.toggles.delete(key)
 
         return isToggling
     }
@@ -531,20 +575,22 @@ class Legend {
     }
 
     private prepareValues() {
-        this.settings.data.values = this.settings.data.values.map(value => {
-            if (!(value instanceof Value))
-                value = this.settings.type == ChartType.Plot
-                        ? new PlotSeries(value)
-                        : new Sector(value)
+        for (const chart of this.settings.charts.filter(Legend.isSupported)) {
+            chart.data.values = chart.data.values.map(value => {
+                if (!(value instanceof Value))
+                    value = chart.type == ChartType.Plot
+                            ? new PlotSeries(value)
+                            : new Sector(value)
 
-            value.id ??= Helper.guid()
-            value.label ??= TextResources.noLabel
+                value.id ??= Helper.guid()
+                value.label ??= TextResources.noLabel
 
-            if (value instanceof Sector)
-                value.current ??= value.value
+                if (value instanceof Sector)
+                    value.current ??= value.value
 
-            return value
-        })
+                return value
+            })
+        }
     }
 
     private x(value: number) {

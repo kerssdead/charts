@@ -12,6 +12,7 @@ import AnimationData from 'AnimationData'
 import ItemData from 'types/ItemData'
 import Animations from 'Animations'
 import HoverProgress from 'types/HoverProgress'
+import Panel from 'types/Panel'
 
 type Bounds = {
     left: number
@@ -44,6 +45,8 @@ export default class RenderItem {
     showContextMenu: boolean = false
 
     hoverGroup: string | null = null
+
+    panel: Panel | null = null
 
     get hasTooltip() {
         return this.tooltipTemplate && this.tooltipTemplate.length > 0
@@ -103,7 +106,7 @@ export default class RenderItem {
             return
         }
 
-        this.adjust(window)
+        this.adjust(this.panel?.window ?? window)
 
         if (!this.isOnCanvas(ctx.canvas)) {
             return

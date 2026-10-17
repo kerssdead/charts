@@ -3,8 +3,8 @@ import CanvasWindow from 'types/CanvasWindow'
 import ChartSettings from 'types/ChartSettings'
 import Debug from 'Debug'
 import Legend from 'Legend'
-import PlotProcess from 'render/PlotProcess'
 import Paddings from 'types/Paddings'
+import Panel from 'types/Panel'
 import Point from 'types/Point'
 import Pointer from 'renderer/Pointer'
 import ProcessFactory from 'render/ProcessFactory'
@@ -22,6 +22,10 @@ export class Renderer {
     private static readonly titleFont = 20
 
     private static readonly titlePadding = 12
+
+    private static readonly panelTitleFont = 16
+
+    private static readonly panelTitlePadding = 8
 
     static timer: DOMHighResTimeStamp = 0
 
@@ -47,7 +51,7 @@ export class Renderer {
 
     private customTooltip: CustomTooltip | null = null
 
-    private plot: PlotProcess | null = null
+    private panels: Panel[] = []
 
     private screen: CanvasWindow
 
@@ -103,11 +107,11 @@ export class Renderer {
 
     private rebuildAnimated() {
         const previous = Transition.snapshot(this.queue)
-        const previousPlot = this.plot
+        const previousPanels = this.panels
 
         this.rebuild(true)
 
-        Transition.apply(this.queue, previous, previousPlot, this.plot, Animations.rebuild)
+        Transition.apply(this.queue, previous, previousPanels, this.panels, Animations.rebuild)
     }
 
     resize(width: number, height: number) {
@@ -141,7 +145,7 @@ export class Renderer {
 
         this.cancelFrame()
 
-        this.plot = null
+        this.panels = []
         this.window = new CanvasWindow(this.canvas.width, this.canvas.height)
         this.isApplied = false
         this.isLaidOut = false
@@ -206,6 +210,9 @@ export class Renderer {
         if (isLegendMoving)
             this.fit(this.legend!.currentReserved)
 
+        for (const panel of this.panels)
+            panel.update(this.window)
+
         const isAnimating = this.queue.render(this.window, this.screen)
 
         if (timestamp < this.activeUntil || isAnimating)
@@ -213,16 +220,72 @@ export class Renderer {
     }
 
     private buildChart(isInitialized: boolean) {
-        const { actions, plot } = ProcessFactory.create(this.settings, this.window.pixel)
+        const add = (...actions: ((items: QueueItemsBuilder) => void)[]) => {
+            return isInitialized || this.settings.disableInitAnimation
+                   ? this.queue.addInitialized(...actions)
+                   : this.queue.add(...actions)
+        }
 
-        actions.push(this.getTitle())
+        const { charts } = this.settings
+        const isMultiple = charts.length > 1
 
-        this.plot = plot
+        this.panels = this.getPanels()
 
-        if (isInitialized || this.settings.disableInitAnimation)
-            this.queue.addInitialized(...actions)
-        else
-            this.queue.add(...actions)
+        this.panels.forEach((panel, index) => {
+            const chart = charts[index]
+            const pixel = panel.pixel(this.window)
+
+            const { actions, plot } = ProcessFactory.create({ ...this.settings, type: chart.type, data: chart.data }, pixel)
+
+            panel.plot = plot
+
+            for (const item of add(...actions, this.getPanelTitle(chart.title, pixel))) {
+                if (!item.isFixed)
+                    item.panel = panel
+
+                if (isMultiple) {
+                    item.key &&= `${ index }-${ item.key }`
+                    item.hoverGroup &&= `${ index }-${ item.hoverGroup }`
+                }
+            }
+        })
+
+        add(this.getTitle())
+    }
+
+    private getPanels() {
+        const { charts, columns } = this.settings
+        const { x, y } = this.window.pixel
+
+        const width = COORDS_MAX_X / x
+        const height = COORDS_MAX_Y / y
+
+        const titles = charts.map(chart => chart.title ? this.panelTitleHeight : 0)
+
+        const panels = Panel.grid(titles, width, height, columns)
+
+        for (const panel of panels)
+            panel.update(this.window)
+
+        return panels
+    }
+
+    private get panelTitleHeight() {
+        return Renderer.panelTitleFont + Renderer.panelTitlePadding * 2
+    }
+
+    private getPanelTitle(title: string | undefined, pixel: Point) {
+        if (!title)
+            return QueueItemsBuilder.empty
+
+        return (items: QueueItemsBuilder) => {
+            items.text(title)
+                 .position(COORDS_MAX_X / 2 + Renderer.panelTitleFont / 2 * pixel.x, -this.panelTitleHeight / 2 * pixel.y)
+                 .size(Renderer.panelTitleFont)
+                 .align(TextAlignment.Center)
+                 .key('panel-title')
+                 .init(Animations.title, 0, true)
+        }
     }
 
     private getClickableItemAt(point: Point): RenderItem | undefined {

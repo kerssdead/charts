@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Multiple Mixed
+    </title>
+
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
+
+    <script src="../dist/ocharts.js"></script>
+</head>
+
+<body>
+<div></div>
+</body>
+
+<script>
+    const points = values => values.map((y, x) => ({ x: x, y: y }))
+
+    const sectors = values => Object.entries(values).map(([label, value]) => ({ label: label, value: value }))
+
+    const chart = OCharts.chart(
+        document.querySelector('div'),
+        {
+            title: 'Regional Overview',
+            enableTooltip: true,
+            enableLegend: true,
+            charts: [
+                {
+                    type: 0,
+                    title: 'Monthly Sales',
+                    data: {
+                        xType: 0,
+                        values: [
+                            { type: 0, label: 'North', width: 2, values: points([12, 18, 15, 24, 20, 28]) },
+                            { type: 2, label: 'South', values: points([10, 14, 9, 16, 12, 18]) },
+                            { type: 4, label: 'East', values: points([4, 6, 5, 7, 6, 8]) },
+                            { type: 4, label: 'West', values: points([3, 4, 6, 3, 5, 4]) }
+                        ]
+                    }
+                },
+                {
+                    type: 1,
+                    title: 'Share',
+                    data: { values: sectors({ North: 40, South: 25, East: 20, West: 15 }), innerRadius: 50 }
+                },
+                {
+                    type: 3,
+                    title: 'Stores',
+                    data: { values: sectors({ North: 12, South: 9, East: 7, West: 5 }), padding: 0, gap: 8 }
+                },
+                {
+                    type: 2,
+                    title: 'Target',
+                    data: { values: sectors({ Completed: 72 }), min: 0, max: 100, enableTrack: true }
+                }
+            ]
+        }
+    )
+
+    chart.render()
+</script>
+</html>

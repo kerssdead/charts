@@ -5,6 +5,8 @@ import Theme from 'Theme'
 import { ChartType } from 'static/Enums'
 import { Renderer } from 'renderer/Renderer'
 import { adjustColor, randomColor } from 'Helper'
+import Legend from 'Legend'
+import Value from 'types/base/Value'
 
 const BASE_COLOR_RANGE = 67
 
@@ -105,34 +107,58 @@ export default class Chart {
     }
 
     private static normalize(settings: ChartSettings): ChartSettings {
-        const isLegendSupported = settings.type != ChartType.Gauge
-                                  && (settings.type != ChartType.TreeMap || (settings.data?.values?.length ?? 0) > 1)
+        const charts = settings.charts?.length
+                       ? settings.charts.map(chart => ({ ...chart, type: chart.type ?? ChartType.Plot }))
+                       : [{ type: settings.type, data: settings.data }]
+
+        settings = { ...settings, charts }
 
         Chart.applyBaseColor(settings)
 
         return {
             ...settings,
             enableTooltip: !settings.disableInteractions && settings.enableTooltip,
-            enableLegend: isLegendSupported && settings.enableLegend
+            enableLegend: charts.some(Legend.isSupported) && settings.enableLegend
         }
     }
 
     private static applyBaseColor(settings: ChartSettings) {
-        const values = (settings.data?.values ?? []).filter(value => {
-            return !value.color || (!!settings.baseColor && value.isColorGenerated)
-        })
+        const isShared = settings.charts.length > 1
+        const groups = new Map<string | Value, Value[]>()
 
-        if (values.length == 0)
+        for (const chart of settings.charts) {
+            for (const value of chart.data?.values ?? []) {
+                const key = isShared ? value.label : value
+
+                groups.set(key, [...groups.get(key) ?? [], value])
+            }
+        }
+
+        const needsColor = (value: Value) => !value.color || (!!settings.baseColor && !!value.isColorGenerated)
+
+        const uncolored = Array.from(groups.values()).filter(values => values.every(needsColor))
+
+        for (const values of groups.values()) {
+            const color = values.find(value => !needsColor(value))?.color
+
+            if (color)
+                for (const value of values.filter(needsColor))
+                    value.color = color
+        }
+
+        if (uncolored.length == 0)
             return
 
         const base = settings.baseColor || randomColor()
 
-        values.forEach((value, index) => {
-            const ratio = values.length == 1 ? .5 : index / (values.length - 1)
+        uncolored.forEach((values, index) => {
+            const ratio = uncolored.length == 1 ? .5 : index / (uncolored.length - 1)
+            const color = adjustColor(base, Math.round((ratio * 2 - 1) * BASE_COLOR_RANGE))
 
-            value.color = adjustColor(base, Math.round((ratio * 2 - 1) * BASE_COLOR_RANGE))
-
-            value.isColorGenerated = true
+            for (const value of values) {
+                value.color = color
+                value.isColorGenerated = true
+            }
         })
     }
 }

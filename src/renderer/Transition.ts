@@ -1,6 +1,7 @@
 import Queue from 'render/Queue'
 import PlotProcess from 'render/PlotProcess'
 import RenderItem from 'types/RenderItem'
+import Panel from 'types/Panel'
 
 export default class Transition {
     static snapshot(queue: Queue): Map<string, RenderItem> {
@@ -15,22 +16,20 @@ export default class Transition {
 
     static apply(queue: Queue,
                  previous: Map<string, RenderItem>,
-                 previousPlot: PlotProcess | null,
-                 nextPlot: PlotProcess | null,
+                 previousPanels: Panel[],
+                 panels: Panel[],
                  duration: number) {
-        const verticalPrevious = previousPlot && !previousPlot.isHorizontal ? previousPlot : null
-        const verticalNext = nextPlot && !nextPlot.isHorizontal ? nextPlot : null
+        const vertical = (panels: Panel[], item: RenderItem) => {
+            const plot = item.panel ? panels[item.panel.index]?.plot : null
 
-        const toPrevious = verticalPrevious && verticalNext
-                           ? (y: number) => {
-                return verticalPrevious.getAxisY(verticalNext.getAxisValue(y))
-            }
-                           : undefined
-        const toNext = verticalPrevious && verticalNext
-                       ? (y: number) => {
-                return verticalNext.getAxisY(verticalPrevious.getAxisValue(y))
-            }
-                       : undefined
+            return plot && !plot.isHorizontal ? plot : null
+        }
+
+        const mapY = (from: PlotProcess | null, to: PlotProcess | null) => {
+            return from && to
+                   ? (y: number) => from.getAxisY(to.getAxisValue(y))
+                   : undefined
+        }
 
         const matches = new Map<RenderItem, RenderItem>()
 
@@ -50,6 +49,8 @@ export default class Transition {
             if (old?.isGhost && item.isGhost)
                 continue
 
+            const verticalPrevious = vertical(previousPanels, item)
+
             if (old)
                 item.morphFrom(old, duration)
             else if (item.axisValue != null && verticalPrevious)
@@ -57,7 +58,7 @@ export default class Transition {
             else if (item.arc && !item.isGhost)
                 appearedArcs.push(item)
             else if (!item.isGhost)
-                item.appear(duration, toPrevious)
+                item.appear(duration, mapY(verticalPrevious, vertical(panels, item)))
         }
 
         const removed = Array.from(previous.values())
@@ -68,10 +69,12 @@ export default class Transition {
             if (item.isGhost || item.arc)
                 continue
 
+            const verticalNext = vertical(panels, item)
+
             if (item.axisValue != null && verticalNext)
                 item.leaveToAxis(verticalNext.getAxisY(item.axisValue), duration)
             else
-                item.disappear(duration, toNext)
+                item.disappear(duration, mapY(verticalNext, vertical(previousPanels, item)))
 
             queue.queue.push(item)
         }
@@ -100,7 +103,9 @@ export default class Transition {
             visited.add(item)
 
             const before = newArcs.filter(other => {
-                return !visited.has(other) && Math.abs(other.arc.endAngle - item.arc.startAngle) < epsilon
+                return !visited.has(other)
+                       && Transition.isSamePanel(other, item)
+                       && Math.abs(other.arc.endAngle - item.arc.startAngle) < epsilon
             })
 
             const matched = before.find(other => {
@@ -125,6 +130,7 @@ export default class Transition {
 
             const before = oldArcs.filter(other => {
                 return !visited.has(other)
+                       && Transition.isSamePanel(other, item)
                        && Math.abs(other.arc.current(other.animation.morph).endAngle - start) < epsilon
             })
 
@@ -159,5 +165,9 @@ export default class Transition {
 
             queue.queue.push(item)
         })
+    }
+
+    private static isSamePanel(a: RenderItem, b: RenderItem) {
+        return a.panel?.index === b.panel?.index
     }
 }
