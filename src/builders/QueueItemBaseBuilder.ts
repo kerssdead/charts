@@ -27,6 +27,18 @@ export default class QueueItemBaseBuilder {
         return this
     }
 
+    appearDelay(delay: number): QueueItemBaseBuilder {
+        this.current.animation.appearDelay = delay
+
+        return this
+    }
+
+    hoverGroup(group: string): QueueItemBaseBuilder {
+        this.current.hoverGroup = group
+
+        return this
+    }
+
     tooltip(template: string): QueueItemBaseBuilder {
         this.current.tooltipTemplate = template
 

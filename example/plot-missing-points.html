@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Plot Missing Points
+    </title>
+
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
+
+    <script src="../dist/ocharts.js"></script>
+</head>
+
+<body>
+<div></div>
+</body>
+
+<script>
+    const points = values => values.map(([x, y]) => ({ x: x, y: y }))
+
+    const chart = OCharts.chart(
+        document.querySelector('div'),
+        {
+            type: 0,
+            title: 'Plot Missing Points',
+            enableTooltip: true,
+            enableLegend: true,
+            data: {
+                xType: 0,
+                xTitle: 'X',
+                yTitle: 'Y',
+                values: [
+                    {
+                        type: 0,
+                        label: 'Line: all points',
+                        width: 2,
+                        values: points([[0, 12], [1, -8], [2, 15], [3, 24], [4, -14], [5, 28], [6, 26]])
+                    },
+                    {
+                        type: 0,
+                        label: 'Line: first 4 points',
+                        width: 2,
+                        values: points([[0, -6], [1, 10], [2, -12], [3, 12]])
+                    },
+                    {
+                        type: 0,
+                        label: 'Line: even points',
+                        width: 2,
+                        values: points([[0, 20], [2, 22], [4, 18], [6, 25]])
+                    },
+                    {
+                        type: 2,
+                        label: 'Column: all points',
+                        values: points([[0, 10], [1, -14], [2, 9], [3, 16], [4, -12], [5, 18], [6, 15]])
+                    },
+                    {
+                        type: 2,
+                        label: 'Column: last 3 points',
+                        values: points([[4, 6], [5, -9], [6, 7]])
+                    },
+                    {
+                        type: 4,
+                        label: 'Stacking A: all points',
+                        values: points([[0, 4], [1, -6], [2, 5], [3, 7], [4, -6], [5, 8], [6, 7]])
+                    },
+                    {
+                        type: 4,
+                        label: 'Stacking B: odd points',
+                        values: points([[1, -4], [3, 6], [5, -3]])
+                    }
+                ]
+            }
+        }
+    )
+
+    chart.render()
+</script>
+</html>

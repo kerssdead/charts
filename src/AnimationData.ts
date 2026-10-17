@@ -19,6 +19,10 @@ export default class AnimationData {
 
     morphStart: DOMHighResTimeStamp | null = null
 
+    morphDelay: number = 0
+
+    appearDelay: number = 0
+
     morphFade: 'in' | 'out' | null = null
 
     removeAfterMorph: boolean = false

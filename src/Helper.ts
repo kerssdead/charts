@@ -64,12 +64,18 @@ export function guid() {
     return (S4() + S4() + '-' + S4() + '-4' + S4().slice(0, 3) + '-' + S4() + '-' + S4() + S4() + S4()).toLowerCase()
 }
 
-export function isColorVisible(background: string, foreground: string) {
-    const backgroundAsRgb = hexToRgb(background),
-        foregroundAsRgb = hexToRgb(foreground),
-        value = .77
+export function contrastText(background: string) {
+    const { r, g, b } = hexToRgb(background)
 
-    return (backgroundAsRgb.r + backgroundAsRgb.g + backgroundAsRgb.b) / (foregroundAsRgb.r + foregroundAsRgb.g + foregroundAsRgb.b) < value
+    const channel = (value: number) => {
+        const c = value / 255
+
+        return c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4)
+    }
+
+    const luminance = .2126 * channel(r) + .7152 * channel(g) + .0722 * channel(b)
+
+    return (luminance + .05) / .05 > 1.05 / (luminance + .05) ? '#000000' : '#ffffff'
 }
 
 export function getColor(red: string, green: string, blue: string) {
@@ -96,10 +102,6 @@ export function hexToRgb(hex: string): Color {
     }
 
     return new Color()
-}
-
-export function isISOString(str: string) {
-    return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+/.test(str)
 }
 
 export function getHexValues(str: string) {

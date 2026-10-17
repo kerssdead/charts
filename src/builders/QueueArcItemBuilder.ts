@@ -6,7 +6,7 @@ export default class QueueArcItemBuilder extends QueueItemBaseBuilder {
     constructor() {
         super()
 
-        this.current.type = RenderStepType.ArcTo
+        this.current.type = RenderStepType.Arc
         this.current.arc = new RenderItemArc()
     }
 

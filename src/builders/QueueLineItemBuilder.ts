@@ -11,7 +11,7 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder {
     }
 
     stop(x: number, y: number) : QueueLineItemBuilder {
-        this.current.line.stops.push({ x: x, y: y })
+        this.current.line.absolute.push({ x: x, y: y })
 
         return this
     }

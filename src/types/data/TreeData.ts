@@ -4,6 +4,10 @@ import TableData from 'types/TableData'
 import Data from 'types/interfaces/Data'
 import { ChartType } from "static/Enums"
 
+export type TreeValue = Value & {
+    sectors?: Value[]
+}
+
 class TreeData implements Data {
     type: ChartType
 
@@ -11,7 +15,7 @@ class TreeData implements Data {
         throw new Error("Method not implemented.")
     }
 
-    values: Value[]
+    values: TreeValue[]
 
     padding: number
 

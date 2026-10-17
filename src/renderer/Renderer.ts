@@ -4,6 +4,7 @@ import ChartSettings from 'types/ChartSettings'
 import Debug from 'Debug'
 import Legend from 'Legend'
 import PlotProcess from 'render/PlotProcess'
+import Paddings from 'types/Paddings'
 import Point from 'types/Point'
 import Pointer from 'renderer/Pointer'
 import ProcessFactory from 'render/ProcessFactory'
@@ -11,11 +12,16 @@ import Queue from 'render/Queue'
 import RenderItem from 'types/RenderItem'
 import Transition from 'renderer/Transition'
 import CustomTooltip from 'renderer/CustomTooltip'
-import { Animations } from 'static/constants/Index'
-import { ChartType } from 'static/Enums'
+import QueueItemsBuilder from 'builders/QueueItemsBuilder'
+import { Animations, COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
+import { TextAlignment } from 'static/Enums'
 
 export class Renderer {
     private static readonly idleDelay = 1000
+
+    private static readonly titleFont = 20
+
+    private static readonly titlePadding = 12
 
     static timer: DOMHighResTimeStamp = 0
 
@@ -110,17 +116,17 @@ export class Renderer {
 
         const isResized = this.layout(width, height)
 
-        const { type } = this.settings
-
-        const isSizeDependent = type != ChartType.TreeMap && type != ChartType.Gauge
         const hasArea = this.window.width > 0 && this.window.height > 0
 
-        if (isResized && isSizeDependent && hasArea)
+        if (isResized && hasArea)
             this.rebuild(this.isLaidOut)
         else
             this.render()
 
         this.isLaidOut ||= hasArea
+
+        this.cancelFrame()
+        this.draw(performance.now())
     }
 
     destroy() {
@@ -193,7 +199,12 @@ export class Renderer {
         this.queue.tooltip(this.window, this.settings.enableTooltip ? position : null, isContextOpen, this.customTooltip)
         this.queue.contextMenu(this.window, contextPoint, position, isContextOpen, this.settings.contextMenu)
 
+        const isLegendMoving = this.legend?.isMoving
+
         this.legend?.build(this.queue, position)
+
+        if (isLegendMoving)
+            this.fit(this.legend!.currentReserved)
 
         const isAnimating = this.queue.render(this.window, this.screen)
 
@@ -203,6 +214,8 @@ export class Renderer {
 
     private buildChart(isInitialized: boolean) {
         const { actions, plot } = ProcessFactory.create(this.settings, this.window.pixel)
+
+        actions.push(this.getTitle())
 
         this.plot = plot
 
@@ -233,13 +246,40 @@ export class Renderer {
         this.render()
     }
 
+    private get titleHeight() {
+        return this.settings.title ? Renderer.titleFont + Renderer.titlePadding * 2 : 0
+    }
+
+    private getTitle() {
+        const { title } = this.settings
+        const { width, height } = this.canvas
+
+        if (!title)
+            return QueueItemsBuilder.empty
+
+        return (items: QueueItemsBuilder) => {
+            items.text(title)
+                 .position((width + Renderer.titleFont) / 2 * COORDS_MAX_X / width, this.titleHeight / 2 * COORDS_MAX_Y / height)
+                 .size(Renderer.titleFont)
+                 .align(TextAlignment.Center)
+                 .fixed()
+                 .key('title')
+                 .init(Animations.title, 0, true)
+        }
+    }
+
     private layout(width: number, height: number): boolean {
-        this.legend?.resize(width, height)
+        this.legend?.resize(width, height, this.titleHeight)
 
+        this.screen = new CanvasWindow(this.canvas.width, this.canvas.height)
+
+        return this.fit(this.legend?.reserved ?? { left: 0, top: 0, right: 0, bottom: 0 })
+    }
+
+    private fit({ left, top, right, bottom }: Paddings): boolean {
         const { width: canvasWidth, height: canvasHeight } = this.canvas
-        const { left, top, right, bottom } = this.legend?.reserved ?? { left: 0, top: 0, right: 0, bottom: 0 }
 
-        this.screen = new CanvasWindow(canvasWidth, canvasHeight)
+        top += this.titleHeight
 
         return this.window.fit(left, top,
             Math.max(canvasWidth - left - right, 0),

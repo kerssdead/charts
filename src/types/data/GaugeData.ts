@@ -14,4 +14,8 @@ export default class GaugeData implements Data {
     max: number
 
     min: number
+
+    innerRadius: number
+
+    enableTrack: boolean
 }

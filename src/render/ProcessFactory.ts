@@ -26,7 +26,7 @@ export default class ProcessFactory {
             const plot = new PlotProcess(settings.data as PlotData, pixel, settings)
 
             return {
-                actions: [plot.getTitles(settings.title), plot.getBase(), ...plot.getData()],
+                actions: [plot.getTitles(), plot.getBase(), ...plot.getData()],
                 plot
             }
         }],
@@ -36,15 +36,15 @@ export default class ProcessFactory {
                 plot: null
             }
         }],
-        [ChartType.TreeMap, (settings: ChartSettings) => {
+        [ChartType.TreeMap, (settings: ChartSettings, pixel: Point) => {
             return {
-                actions: new TreeProcess(settings.data as TreeData).getData(),
+                actions: new TreeProcess(settings.data as TreeData, pixel, settings).getData(),
                 plot: null
             }
         }],
-        [ChartType.Gauge, (settings: ChartSettings) => {
+        [ChartType.Gauge, (settings: ChartSettings, pixel: Point) => {
             return {
-                actions: new GaugeProcess(settings.data as GaugeData).getData(),
+                actions: new GaugeProcess(settings.data as GaugeData, pixel, settings).getData(),
                 plot: null
             }
         }]

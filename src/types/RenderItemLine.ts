@@ -1,14 +1,16 @@
-import Point from './Point'
-import RenderItemBase from './interfaces/RenderItemBase'
-import CanvasWindow from './CanvasWindow'
-import RenderItem from './RenderItem'
+import Point from 'types/Point'
+import RenderItemBase from 'types/interfaces/RenderItemBase'
+import CanvasWindow from 'types/CanvasWindow'
+import RenderItem from 'types/RenderItem'
+import { Animations } from 'static/constants/Index'
+
+const ALPHA_DELTA = 0.5
 
 export default class RenderItemLine
     implements RenderItemBase {
-    stops: Point[] = []
+    absolute: Point[] = []
 
-    // todo: meh solution
-    stops1: Point[] = []
+    canvas: Point[] = []
 
     width: number = 1
 
@@ -17,10 +19,10 @@ export default class RenderItemLine
     from: Point[] | null = null
 
     current(morph: number = 1): Point[] {
-        if (!this.from || morph >= 1 || this.from.length != this.stops.length)
-            return this.stops.map(stop => ({ x: stop.x, y: stop.y }))
+        if (!this.from || morph >= 1 || this.from.length != this.absolute.length)
+            return this.absolute.map(stop => ({ x: stop.x, y: stop.y }))
 
-        return this.stops.map((stop, i) => {
+        return this.absolute.map((stop, i) => {
             const from = this.from![i]
 
             return {
@@ -31,17 +33,13 @@ export default class RenderItemLine
     }
 
     adjust(window: CanvasWindow, morph: number = 1): void {
-        this.stops1 = []
-
-        for (let stop of this.current(morph)) {
-            this.stops1.push({ x: RenderItem.adjustX(window, stop.x), y: RenderItem.adjustY(window, stop.y) })
-        }
+        this.canvas = this.current(morph).map(stop => ({ x: RenderItem.adjustX(window, stop.x), y: RenderItem.adjustY(window, stop.y) }))
     }
 
-    render(ctx: CanvasRenderingContext2D, _window?: CanvasWindow, item?: RenderItem): void {
+    render(ctx: CanvasRenderingContext2D, item?: RenderItem): void {
         const progress = item?.animation.init ?? 1
 
-        if (this.stops1.length == 0 || progress <= 0) {
+        if (this.canvas.length == 0 || progress <= 0) {
             return
         }
 
@@ -50,7 +48,7 @@ export default class RenderItemLine
 
         const stops = progress < 1
                       ? this.partial(progress)
-                      : this.stops1
+                      : this.canvas
 
         ctx.moveTo(stops[0].x, stops[0].y)
 
@@ -62,7 +60,7 @@ export default class RenderItemLine
     }
 
     getBounds() {
-        if (this.stops1.length == 0) {
+        if (this.canvas.length == 0) {
             return null
         }
 
@@ -71,7 +69,7 @@ export default class RenderItemLine
         let right = -Infinity
         let bottom = -Infinity
 
-        for (const stop of this.stops1) {
+        for (const stop of this.canvas) {
             left = Math.min(left, stop.x)
             top = Math.min(top, stop.y)
             right = Math.max(right, stop.x)
@@ -88,8 +86,8 @@ export default class RenderItemLine
         }
     }
 
-    // todo: implement
     animate(item: RenderItem, isBackward: boolean): void {
+        item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, Animations.hover)
     }
 
     // todo: implement
@@ -108,17 +106,17 @@ export default class RenderItemLine
     }
 
     private partial(progress: number): Point[] {
-        const lengths = this.stops1.slice(1).map((stop, i) => {
-            return Math.hypot(stop.x - this.stops1[i].x, stop.y - this.stops1[i].y)
+        const lengths = this.canvas.slice(1).map((stop, i) => {
+            return Math.hypot(stop.x - this.canvas[i].x, stop.y - this.canvas[i].y)
         })
 
         let left = lengths.reduce((acc, length) => { return acc + length }, 0) * progress
 
-        const result: Point[] = [this.stops1[0]]
+        const result: Point[] = [this.canvas[0]]
 
         for (let i = 0; i < lengths.length; i++) {
-            const from = this.stops1[i]
-            const to = this.stops1[i + 1]
+            const from = this.canvas[i]
+            const to = this.canvas[i + 1]
 
             if (left >= lengths[i]) {
                 result.push(to)

@@ -53,6 +53,10 @@ export default class RenderItemText
 
     private halfWidth: number | null = null
 
+    private get baselineShift(): number {
+        return this.orbit ? 0 : this.fontSize * 0.3
+    }
+
     currentAngle(morph: number = 1): number {
         if (this.fromAngle == null || morph >= 1)
             return this.angle
@@ -85,7 +89,7 @@ export default class RenderItemText
         this.angle1 = this.currentAngle(morph)
 
         this.x1 = RenderItem.adjustX(window, position.x) - (this.orbit ? 0 : this.fontSize / 2)
-        this.y1 = RenderItem.adjustY(window, position.y) + (this.orbit ? 0 : this.fontSize * 0.3)
+        this.y1 = RenderItem.adjustY(window, position.y) + (this.rotate == 0 ? this.baselineShift : 0)
 
         if (this.follow) {
             this.x1 += this.follow.pop.x
@@ -93,8 +97,7 @@ export default class RenderItemText
         }
     }
 
-    // todo: remove "window" arg ?
-    render(ctx: CanvasRenderingContext2D, window?: CanvasWindow): void {
+    render(ctx: CanvasRenderingContext2D): void {
         ctx.font = this.font
         ctx.textAlign = this.alignment
         ctx.textBaseline = this.baseline as CanvasTextBaseline
@@ -102,15 +105,10 @@ export default class RenderItemText
         if (this.rotate != 0) {
             ctx.save()
 
-            if (this.baseline == TextBaseline.Alphabetic) {
-                // todo: adjust formula for various this.rotate
-                this.x1 = this.x1 - this.fontSize / 2
-            }
-
             ctx.translate(this.x1, this.y1)
             ctx.rotate(this.rotate * Math.PI / 180)
 
-            ctx.fillText(this.value, 0, 0)
+            ctx.fillText(this.value, 0, this.baselineShift)
 
             ctx.restore()
         } else if (this.orbit) {
@@ -128,22 +126,18 @@ export default class RenderItemText
         }
     }
 
-    animate(item: RenderItem, isBackward: boolean, point: Point): void {
-        // todo
+    animate(_item: RenderItem, _isBackward: boolean, _point: Point): void {
     }
 
-    // todo: implement
-    tooltip(item: RenderItem, point: Point) {
+    tooltip(_item: RenderItem, _point: Point) {
         return false
     }
 
-    // todo: implement
-    contextMenu(item: RenderItem, point: Point): boolean {
+    contextMenu(_item: RenderItem, _point: Point): boolean {
         return false
     }
 
-    isMouseOver(point: Point): boolean {
-        // todo
+    isMouseOver(_point: Point): boolean {
         return false
     }
 }

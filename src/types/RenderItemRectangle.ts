@@ -99,7 +99,7 @@ export default class RenderItemRectangle
                                 : RenderItem.adjustY(window, this.growOrigin)
     }
 
-    render(ctx: CanvasRenderingContext2D, _window?: CanvasWindow, item?: RenderItem): void {
+    render(ctx: CanvasRenderingContext2D, item?: RenderItem): void {
         const { left, top, width, height } = this.grow(item?.animation.init ?? 1)
 
         ctx.roundRect(left, top, width, height, this.radii1)

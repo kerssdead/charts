@@ -60,7 +60,6 @@ export enum LegendPlace {
     Right
 }
 
-// todo: remove if not use
 export enum LineType {
     Solid,
 
@@ -107,26 +106,10 @@ export enum Tag {
     Span = 'span'
 }
 
-export enum RenderState {
-    Idle,
-
-    Init
-}
-
 export enum Icon {
     ThreeLines = '☰',
 
     Close = '×'
-}
-
-export enum DrawPointType {
-    Move = 'move',
-
-    Line = 'line',
-
-    QuadraticCurve = 'quadratic-curve',
-
-    ArcTo = 'arc-to'
 }
 
 export enum RenderStepType {
@@ -134,19 +117,11 @@ export enum RenderStepType {
 
     Line = 'line',
 
-    QuadraticCurve = 'quadratic-curve',
-
-    // todo: rename to "Arc"
-    ArcTo = 'arc-to',
+    Arc = 'arc',
 
     Rect = 'rect',
 
-    // todo: remove ?
-    RectFill = 'rect-fill',
-
-    Text = 'text',
-
-    Sector = 'sector'
+    Text = 'text'
 }
 
 export enum RenderGroupDirection {

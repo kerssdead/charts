@@ -14,6 +14,7 @@ import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
 import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from 'static/Enums'
 import ChartSettings from './types/ChartSettings'
 import HoverProgress from 'types/HoverProgress'
+import Animations from 'Animations'
 
 type LegendEntry = {
     value: Value
@@ -52,6 +53,8 @@ class Legend {
 
     private size: { width: number, height: number } | undefined
 
+    private top: number = 0
+
     private items: Set<RenderItem> = new Set()
 
     private hover: Map<string, HoverProgress> = new Map()
@@ -60,28 +63,48 @@ class Legend {
 
     private isDirty: boolean = true
 
+    private moveStart: DOMHighResTimeStamp | null = null
+
+    private from: Map<number, Point> = new Map()
+
+    private fromArea: DOMRect | undefined
+
+    private leaving: LegendEntry[] = []
+
     get reserved(): Paddings {
+        return this.getReserved(this.area)
+    }
+
+    get currentReserved(): Paddings {
+        return this.getReserved(this.area && this.getArea(this.getMoveProgress(performance.now())))
+    }
+
+    get isMoving() {
+        return this.moveStart != null
+    }
+
+    private getReserved(area: DOMRect | undefined): Paddings {
         const reserved: Paddings = { top: 0, right: 0, bottom: 0, left: 0 }
 
-        if (!this.area)
+        if (!area)
             return reserved
 
         switch (this.settings.legendPlace) {
             case LegendPlace.Top:
-                reserved.top = this.area.height
+                reserved.top = area.height
                 break
 
             case LegendPlace.Left:
-                reserved.left = this.area.width
+                reserved.left = area.width
                 break
 
             case LegendPlace.Right:
-                reserved.right = this.area.width
+                reserved.right = area.width
                 break
 
             case LegendPlace.Bottom:
             default:
-                reserved.bottom = this.area.height
+                reserved.bottom = area.height
                 break
         }
 
@@ -106,17 +129,24 @@ class Legend {
     }
 
     applySettings(settings?: ChartSettings) {
+        const previous = this.entries
+        const previousArea = this.area
+
         if (settings)
             this.settings = settings
 
         this.prepareValues()
 
         if (this.size)
-            this.resize(this.size.width, this.size.height)
+            this.resize(this.size.width, this.size.height, this.top)
+
+        if (settings && previous.length > 0)
+            this.move(previous, previousArea)
     }
 
-    resize(width: number, height: number) {
+    resize(width: number, height: number, top: number = 0) {
         this.size = { width, height }
+        this.top = top
 
         if (this.isVertical)
             this.calculateVertical(width, height)
@@ -144,14 +174,17 @@ class Legend {
 
         const isToggling = this.updateToggles(now)
         const isHoverChanged = this.updateHover(mouse, now)
+        const isMoving = this.moveStart != null
 
-        if (!this.isDirty && !isToggling && !isHoverChanged)
+        if (!this.isDirty && !isToggling && !isHoverChanged && !isMoving)
             return
+
+        const progress = this.getMoveProgress(now)
 
         this.clear(queue)
 
         const added = queue.add((items: QueueItemsBuilder) => {
-            const area = this.area!
+            const area = this.getArea(progress)
 
             items.rect()
                  .position(this.x(area.x), this.y(area.y))
@@ -161,20 +194,81 @@ class Legend {
                  .color(Theme.canvasBackground)
                  .layer(Layer.Legend)
                  .fixed()
-                 // renderer recolors clicked items, restore them
                  .onClick(() => {
                      this.isDirty = true
                  })
-
-            for (const entry of this.entries)
-                this.buildEntry(items, entry, this.getHover(entry.value.id))
 
             if (this.button)
                 this.buildButton(items, this.button, this.getHover(Legend.resetKey))
         })
 
+        this.entries.forEach((entry, index) => {
+            const from = this.from.get(index)
+
+            const current = from
+                            ? {
+                    ...entry,
+                    x: from.x + (entry.x - from.x) * progress,
+                    y: from.y + (entry.y - from.y) * progress
+                }
+                            : entry
+
+            added.push(...this.addEntry(queue, current, this.getHover(entry.value.id), from ? 1 : progress))
+        })
+
+        for (const entry of this.leaving)
+            added.push(...this.addEntry(queue, entry, 0, 1 - progress))
+
+        if (progress == 1) {
+            this.moveStart = null
+            this.from.clear()
+            this.fromArea = undefined
+            this.leaving = []
+        }
+
         this.items = new Set(added)
         this.isDirty = false
+    }
+
+    private move(previous: LegendEntry[], previousArea: DOMRect | undefined) {
+        this.fromArea = previousArea
+        this.from = new Map(previous.map((entry, index) => [index, { x: entry.x, y: entry.y }]))
+        this.leaving = previous.slice(this.entries.length)
+        this.moveStart = performance.now()
+        this.isDirty = true
+    }
+
+    private getArea(progress: number) {
+        const area = this.area!
+        const from = this.fromArea
+
+        if (!from)
+            return area
+
+        const lerp = (start: number, end: number) => start + (end - start) * progress
+
+        return new DOMRect(lerp(from.x, area.x), lerp(from.y, area.y),
+            lerp(from.width, area.width), lerp(from.height, area.height))
+    }
+
+    private getMoveProgress(now: DOMHighResTimeStamp) {
+        if (this.moveStart == null)
+            return 1
+
+        const progress = Math.min((now - this.moveStart) / Constants.Animations.legend, 1)
+
+        return progress == 1 ? 1 : Animations.getTransition(progress)
+    }
+
+    private addEntry(queue: Queue, entry: LegendEntry, hover: number, alpha: number) {
+        const added = queue.add((items: QueueItemsBuilder) => {
+            this.buildEntry(items, entry, hover)
+        })
+
+        for (const item of added)
+            item.animation.alpha = alpha
+
+        return added
     }
 
     clear(queue: Queue) {
@@ -297,7 +391,7 @@ class Legend {
 
         const rowsCount = Math.max(rows.length, 1),
             areaHeight = paddingY * 2 + rowsCount * itemHeight + (rowsCount - 1) * rowGap,
-            areaY = this.settings.legendPlace == LegendPlace.Top ? 0 : height - areaHeight
+            areaY = this.settings.legendPlace == LegendPlace.Top ? this.top : height - areaHeight
 
         this.area = new DOMRect(0, areaY, width, areaHeight)
 
@@ -328,13 +422,13 @@ class Legend {
             available = areaWidth - paddingX * 2,
             areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
 
-        this.area = new DOMRect(areaX, 0, areaWidth, height)
+        this.area = new DOMRect(areaX, this.top, areaWidth, height - this.top)
 
         const buttonSpace = this.buttonWidth > 0 ? itemHeight + rowGap : 0,
-            availableHeight = height - paddingY * 2 - buttonSpace,
+            availableHeight = height - this.top - paddingY * 2 - buttonSpace,
             count = Math.min(Math.max(Math.floor((availableHeight + rowGap) / (itemHeight + rowGap)), 0), values.length),
             blockHeight = count * itemHeight + Math.max(count - 1, 0) * rowGap,
-            startY = paddingY + buttonSpace + Math.max((availableHeight - blockHeight) / 2, 0)
+            startY = this.top + paddingY + buttonSpace + Math.max((availableHeight - blockHeight) / 2, 0)
 
         this.entries = values.slice(0, count).map((value, index) => {
             const label = Legend.truncate(value.label, available - Legend.itemExtraWidth)

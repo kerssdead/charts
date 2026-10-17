@@ -77,7 +77,7 @@ export default class RenderItemArc implements RenderItemBase {
         this.endAngle1 = geometry.endAngle
     }
 
-    render(ctx: CanvasRenderingContext2D, _window?: CanvasWindow, item?: RenderItem): void {
+    render(ctx: CanvasRenderingContext2D, item?: RenderItem): void {
         const shape = this.shape(item?.animation.init ?? 1)
 
         if (this.isGradient && item)

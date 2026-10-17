@@ -24,4 +24,12 @@ export class Animations {
     static pieInit = 800
 
     static pieLabelInit = 300
+
+    static gaugeInit = 800
+
+    static gaugeLabelInit = 300
+
+    static treeInit = 500
+
+    static treeInitStagger = 40
 }

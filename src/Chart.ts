@@ -105,7 +105,8 @@ export default class Chart {
     }
 
     private static normalize(settings: ChartSettings): ChartSettings {
-        const isLegendSupported = settings.type != ChartType.Gauge && settings.type != ChartType.TreeMap
+        const isLegendSupported = settings.type != ChartType.Gauge
+                                  && (settings.type != ChartType.TreeMap || (settings.data?.values?.length ?? 0) > 1)
 
         Chart.applyBaseColor(settings)
 

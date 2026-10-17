@@ -9,6 +9,7 @@ import Debug from 'Debug'
 import Point from 'types/Point'
 import Theme from 'Theme'
 import QueueRectangleItemBuilder from 'builders/QueueRectangleItemBuilder'
+import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
 import PlotPoint from 'types/PlotPoint'
 import Formatter from 'helpers/Formatter'
 import ChartSettings from 'types/ChartSettings'
@@ -31,8 +32,24 @@ const X_LABEL_FONT = 12
 
 const X_LABEL_SPACING = 8
 
-// todo: check rendering multiple series when some of them is not have all x-axis points
-// todo: if series.length > 1 then on mouse over series item highlight all values from this series
+const BAND_SPACING = 24
+
+const BAR_BAND_RATIO = 0.35
+
+type Band = {
+    top: number
+    bottom: number
+}
+
+type ColumnGroup = {
+    columns: PlotSeries[]
+    hasStacking: boolean
+}
+
+type Slots = {
+    values: (number | Date | string)[]
+    index: Map<string, number>
+}
 
 export default class PlotProcess {
     private data: PlotData
@@ -41,13 +58,19 @@ export default class PlotProcess {
 
     private margin: Margin
 
-    private isBothTypes: boolean
-
     private stacks: Map<string, number>
+
+    private readonly stackTops: Map<string, PlotSeries> = new Map()
+
+    private readonly columnGroups: Map<string, ColumnGroup> = new Map()
 
     private values: number[] = []
 
-    private zero: Point
+    private barValues: number[] = []
+
+    private readonly mainSlots: Slots
+
+    private readonly barSlots: Slots
 
     private readonly pixel: Point
 
@@ -63,14 +86,48 @@ export default class PlotProcess {
     }
 
     private get scale() {
+        const { top, bottom } = this.mainBand
+
         return {
-            x: this.available.x / this.range,
-            y: this.available.y / this.range
+            x: this.available.x / PlotProcess.range(this.barValues),
+            y: (bottom - top) / PlotProcess.range(this.values)
         }
     }
 
-    private get range() {
-        return Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
+    private static range(values: number[]) {
+        return Math.abs(Math.max(...values)) + Math.abs(Math.min(...values))
+    }
+
+    private get hasBars() {
+        return this.data.values.some(series => series.type == PlotType.Bar)
+    }
+
+    private get isMixed() {
+        return this.hasBars && !this.isHorizontal
+    }
+
+    private get bandGap() {
+        return (X_LABEL_FONT * 1.3 + BAND_SPACING) * this.pixel.y
+    }
+
+    private get barBand(): Band {
+        const top = this.margin.top
+        const bottom = COORDS_MAX_Y - this.margin.bottom
+
+        if (!this.isMixed)
+            return { top, bottom }
+
+        return { top, bottom: top + (bottom - top - this.bandGap) * BAR_BAND_RATIO }
+    }
+
+    private get mainBand(): Band {
+        const top = this.margin.top
+        const bottom = COORDS_MAX_Y - this.margin.bottom
+
+        if (!this.isMixed)
+            return { top, bottom }
+
+        return { top: this.barBand.bottom + this.bandGap, bottom }
     }
 
     constructor(data: PlotData, pixel: Point, settings: ChartSettings) {
@@ -81,10 +138,27 @@ export default class PlotProcess {
         this.pixel = pixel
 
         this.stacks = new Map<string, number>()
-        this.zero = {
-            x: -1,
-            y: -1
+
+        for (const series of this.series.filter(s => s.type == PlotType.StackingColumn))
+            for (const value of series.values)
+                this.stackTops.set(PlotProcess.getStackKey(value), series)
+
+        for (const series of this.series.filter(s => s.type == PlotType.Column || s.type == PlotType.StackingColumn)) {
+            for (const value of series.values) {
+                const key = value.x.toString()
+                const group = this.columnGroups.get(key) ?? { columns: [], hasStacking: false }
+
+                if (series.type == PlotType.Column)
+                    group.columns.push(series)
+                else
+                    group.hasStacking = true
+
+                this.columnGroups.set(key, group)
+            }
         }
+
+        this.mainSlots = this.getSlots(data.values.filter(s => s.type != PlotType.Bar))
+        this.barSlots = this.getSlots(data.values.filter(s => s.type == PlotType.Bar))
 
         this.calculateLabels()
 
@@ -108,9 +182,10 @@ export default class PlotProcess {
     private getLeftMargin() {
         const titleWidth = this.data.xTitle ? AXIS_TITLE_FONT + LEFT_GAP : 0
 
-        const labels = this.isHorizontal
-                       ? this.getCategories()
-                       : this.values.map(value => short(value, this.data.shortLabels))
+        const labels = [
+            ...(this.hasBars ? this.getCategories() : []),
+            ...(this.isHorizontal ? [] : this.values.map(value => short(value, this.data.shortLabels)))
+        ]
 
         const labelsWidth = Math.max(0, ...labels.map(label => {
             return stringWidth(label, AXIS_LABEL_FONT)
@@ -127,7 +202,7 @@ export default class PlotProcess {
     }
 
     getAxisY(value: number) {
-        const bottom = COORDS_MAX_Y - this.margin.bottom
+        const { top, bottom } = this.mainBand
 
         if (this.values.length < 2)
             return bottom
@@ -137,7 +212,7 @@ export default class PlotProcess {
 
         return max == min
                ? bottom
-               : bottom - (value - min) / (max - min) * this.available.y
+               : bottom - (value - min) / (max - min) * (bottom - top)
     }
 
     get isHorizontal() {
@@ -146,11 +221,29 @@ export default class PlotProcess {
     }
 
     private getCategories() {
-        const longest = this.data.values.reduce((acc: PlotSeries | null, series) => {
-            return !acc || series.values.length > acc.values.length ? series : acc
-        }, null)
+        return this.barSlots.values.map(x => this.formatX(x))
+    }
 
-        return longest?.values.map(value => this.formatX(value.x)) ?? []
+    private getSlots(series: PlotSeries[]): Slots {
+        const unique = new Map<string, number | Date | string>()
+
+        for (const s of series)
+            for (const value of s.values)
+                if (!unique.has(value.x.toString()))
+                    unique.set(value.x.toString(), value.x)
+
+        const values = Array.from(unique.values())
+
+        const order = (x: number | Date | string) => this.data.xType == PlotAxisType.Date ? new Date(x).getTime() : Number(x)
+
+        if (this.data.xType != PlotAxisType.Text && values.every(x => !isNaN(order(x))))
+            values.sort((a, b) => order(a) - order(b))
+
+        return { values, index: new Map(values.map((x, i) => [x.toString(), i])) }
+    }
+
+    private static getSlot(slots: Slots, value: PlotPoint) {
+        return slots.index.get(value.x.toString()) ?? 0
     }
 
     private formatX(x: number | Date | string) {
@@ -158,11 +251,11 @@ export default class PlotProcess {
     }
 
     getAxisX(value: number) {
-        if (this.values.length < 2)
+        if (this.barValues.length < 2)
             return this.margin.left
 
-        const min = this.values[0]
-        const max = this.values[this.values.length - 1]
+        const min = this.barValues[0]
+        const max = this.barValues[this.barValues.length - 1]
 
         return max == min
                ? this.margin.left
@@ -170,32 +263,30 @@ export default class PlotProcess {
     }
 
     getAxisValue(y: number) {
-        const bottom = COORDS_MAX_Y - this.margin.bottom
+        const { top, bottom } = this.mainBand
 
-        if (this.values.length < 2 || this.available.y == 0)
+        if (this.values.length < 2 || bottom == top)
             return 0
 
         const min = this.values[0]
         const max = this.values[this.values.length - 1]
 
-        return min + (bottom - y) / this.available.y * (max - min)
+        return min + (bottom - y) / (bottom - top) * (max - min)
     }
 
-    private getZero() {
-        return {
-            x: this.zero.x,
-            y: this.zero.y == -1
-               ? COORDS_MAX_Y - this.margin.bottom
-               : this.zero.y
-        }
+    private getMainStep() {
+        return (this.available.x - GAP) / this.mainSlots.values.length - GAP
+    }
+
+    private getBarStep() {
+        const { top, bottom } = this.barBand
+
+        return (bottom - top - GAP) / this.barSlots.values.length - GAP
     }
 
     getBase() {
         if (this.data.simple)
             return QueueItemsBuilder.empty
-
-        const barSeriesCount = this.series.filter(s => s.type == PlotType.Bar).length
-        this.isBothTypes = barSeriesCount > 0 && barSeriesCount != this.series.length
 
         return (items: QueueItemsBuilder) => {
             this.getBaseLabels(items)
@@ -206,80 +297,29 @@ export default class PlotProcess {
     private getBaseLabels(items: QueueItemsBuilder) {
         const x1 = this.margin.left + (AXIS_LABEL_FONT / 2 - LEFT_GAP) * this.pixel.x
 
+        if (this.hasBars)
+            this.getHorizontalLabels(items, x1)
+
         if (this.isHorizontal)
-            return this.getHorizontalLabels(items, x1)
-
-        const intermediateCount = 4
-
-        let i = 0
-
-        if (this.isBothTypes) {
-            this.margin.top += 100
-
-            i = 0
-            const step = (this.available.x - GAP * 2) / (this.values.length - 1)
-
-            // Top labels
-            for (const label of this.values) {
-                const x = this.margin.left + GAP + i * step
-
-                // todo: test long values visibility/offset
-                items.text(short(label, this.data.shortLabels))
-                     .position(x, this.margin.top - GAP * 2)
-                     .align(TextAlignment.Center)
-
-                i++
-            }
-
-            // Right labels
-            const count = Math.max(...this.series.map(s => s.values.length))
-            // todo: remove columnMargin from here ?
-            const stepY = (this.available.y - GAP) / count - GAP
-
-            const x = COORDS_MAX_X - this.margin.right + GAP * 2
-
-            i = 0
-
-            for (const value of this.series[0].values) {
-                const y = COORDS_MAX_Y - this.margin.bottom - i * stepY - (i + 1) * GAP
-
-                items.text(this.formatX(value.x))
-                     .position(x, y - stepY / 2)
-                     .align(TextAlignment.Left)
-                     .size(12)
-
-                i++
-            }
-        }
-
-        let step = this.available.y / intermediateCount
+            return
 
         // Left labels
-        let y = COORDS_MAX_Y - this.margin.bottom
         for (const label of this.values) {
-            // todo: test long values visibility/offset
             items.text(short(label, this.data.shortLabels))
-                 .position(x1, y)
+                 .position(x1, this.getAxisY(label))
                  .size(AXIS_LABEL_FONT)
                  .align(TextAlignment.Right)
                  .key(`y-label-${ label }`)
                  .axisValue(label)
-
-            if (label == 0) {
-                this.zero.y = y
-            }
-
-            y -= step
         }
 
-        if (this.series.length > 0) {
+        if (this.mainSlots.values.length > 0) {
             // Bottom labels
-            const count = Math.max(...this.series.map(s => s.values.length))
-            const stepX = (this.available.x - GAP) / count - GAP
+            const stepX = this.getMainStep()
 
             const y = COORDS_MAX_Y - this.margin.bottom
 
-            const labels = this.series[0].values.map(value => this.formatX(value.x))
+            const labels = this.mainSlots.values.map(x => this.formatX(x))
 
             const slot = (stepX + GAP) / this.pixel.x
             const widest = Math.max(0, ...labels.map(label => stringWidth(label, X_LABEL_FONT)))
@@ -302,10 +342,10 @@ export default class PlotProcess {
     }
 
     private getHorizontalLabels(items: QueueItemsBuilder, x1: number) {
-        const bottom = COORDS_MAX_Y - this.margin.bottom
+        const { bottom } = this.barBand
 
         // Bottom labels
-        for (const label of this.values) {
+        for (const label of this.barValues) {
             items.text(short(label, this.data.shortLabels))
                  .position(this.getAxisX(label) + X_LABEL_FONT / 2 * this.pixel.x, bottom)
                  .align(TextAlignment.Center)
@@ -320,10 +360,10 @@ export default class PlotProcess {
         if (categories.length == 0)
             return
 
-        const step = (this.available.y - GAP) / categories.length - GAP
+        const step = this.getBarStep()
 
         categories.forEach((category, i) => {
-            const groupBottom = this.getZero().y - i * (step + GAP) - GAP
+            const groupBottom = bottom - i * (step + GAP) - GAP
 
             items.text(category)
                  .position(x1, groupBottom - step / 2)
@@ -334,17 +374,16 @@ export default class PlotProcess {
     }
 
     private getHorizontalLines(items: QueueItemsBuilder) {
-        const top = this.margin.top
-        const bottom = COORDS_MAX_Y - this.margin.bottom
+        const { top, bottom } = this.barBand
 
         items.line()
-             .stop(this.getAxisX(this.values[0] ?? 0), top)
-             .stop(this.getAxisX(this.values[0] ?? 0), bottom)
+             .stop(this.getAxisX(this.barValues[0] ?? 0), top)
+             .stop(this.getAxisX(this.barValues[0] ?? 0), bottom)
              .stroke(Theme.line)
              .layer(Layer.Data + 50)
              .key('axis-y')
 
-        for (const value of this.values.slice(1)) {
+        for (const value of this.barValues.slice(1)) {
             const x = this.getAxisX(value)
 
             items.line()
@@ -358,8 +397,11 @@ export default class PlotProcess {
     }
 
     private getBaseLines(items: QueueItemsBuilder) {
+        if (this.hasBars)
+            this.getHorizontalLines(items)
+
         if (this.isHorizontal)
-            return this.getHorizontalLines(items)
+            return
 
         const x1 = this.margin.left
         const x2 = COORDS_MAX_X - this.margin.right
@@ -393,47 +435,35 @@ export default class PlotProcess {
             return
         }
 
-        if (this.series.filter(s => s.type == PlotType.StackingColumn).length > 0) {
-            let allValues: Map<string, number> = new Map()
+        const stacks: Map<string, number> = new Map()
+        const values: number[] = []
+        const barValues: number[] = []
 
-            for (const series of this.series) {
-                for (const value of series.values) {
-                    const key = value.x.toString()
-                    const v = allValues.get(key) ?? 0
+        for (const series of this.series) {
+            for (const value of series.values) {
+                const y = Number(value.y)
 
-                    allValues.set(key, v + (value.y as number))
+                if (series.type == PlotType.Bar) {
+                    barValues.push(y)
+                } else if (series.type == PlotType.StackingColumn) {
+                    const key = PlotProcess.getStackKey(value)
+
+                    stacks.set(key, (stacks.get(key) ?? 0) + y)
+                } else {
+                    values.push(y)
                 }
             }
-
-            this.values = getRoundedValues(Array.from(allValues.values()), 5, this.yMax)
-        } else {
-            let flatValues = this.series.flatMap(s => s.values.map(p => p.y as number))
-            while (flatValues.length < 5) {
-                flatValues.push(flatValues[0])
-            }
-            this.values = getRoundedValues(flatValues, 5, this.yMax)
         }
+
+        this.values = getRoundedValues([...stacks.values(), ...values], 5, this.yMax)
+        this.barValues = getRoundedValues(barValues, 5, this.isHorizontal ? this.yMax : undefined)
     }
 
-    // todo: remove title from arg
-    getTitles(title: string | null) {
+    getTitles() {
         if (this.data.simple)
             return QueueItemsBuilder.empty
 
         return (items: QueueItemsBuilder) => {
-            // todo: this title should be rendered on another layer/canvas/space
-            if (title) {
-                items.text(title)
-                     .position(COORDS_MAX_X / 2, 150)
-                     .size(20)
-                     .key('title')
-
-                // todo: bad
-                if (this.margin.bottom < 320) {
-                    this.margin.top = 320
-                }
-            }
-
             if (this.data.xTitle) {
                 items.text(this.data.xTitle)
                      .position((LEFT_PADDING + AXIS_TITLE_FONT / 2) * this.pixel.x, COORDS_MAX_Y / 2)
@@ -464,6 +494,11 @@ export default class PlotProcess {
         [PlotType.AttentionLine, this.getAttentionLine.bind(this)]
     ])
 
+    private groupHover(item: QueueItemBaseBuilder, series: PlotSeries) {
+        if (this.series.length > 1)
+            item.hoverGroup(this.getKey(series))
+    }
+
     private getKey(series: PlotSeries, ...parts: (string | number)[]) {
         return [this.data.values.indexOf(series), ...parts].join('-')
     }
@@ -486,20 +521,22 @@ export default class PlotProcess {
     }
 
     private getColumns(series: PlotSeries) {
-        const baseY = this.getZero().y
+        const baseY = this.getAxisY(0)
         const color = series.color ?? '#ffa500'
 
-        const count = Math.max(...this.data.values.map(s => s.values.length))
-        const step = (this.available.x - GAP) / count - GAP
-
-        const columnSeries = this.data.values.filter(s => s.type == PlotType.Column)
-        const visibleBefore = columnSeries.slice(0, columnSeries.indexOf(series)).filter(s => !s.disabled).length
-        const widthInStep = step / Math.max(columnSeries.filter(s => !s.disabled).length, 1)
-        const width = series.disabled ? 0 : widthInStep
-        const offset = visibleBefore * widthInStep
+        const step = this.getMainStep()
+        const index = this.data.values.indexOf(series)
 
         return (items: QueueItemsBuilder) => {
-            series.values.forEach((value, i) => {
+            series.values.forEach(value => {
+                const i = PlotProcess.getSlot(this.mainSlots, value)
+
+                const { columns, slots } = this.getColumnGroup(value)
+                const visibleBefore = columns.filter(s => this.data.values.indexOf(s) < index).length
+                const widthInStep = step / slots
+                const width = series.disabled ? 0 : widthInStep
+                const offset = visibleBefore * widthInStep
+
                 const column = items.rect()
                      .position(this.margin.left + i * step + (i + 1) * GAP + offset + width / 2, baseY)
                      .size(width, series.disabled ? 0 : Number(value.y) * this.scale.y)
@@ -507,8 +544,7 @@ export default class PlotProcess {
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                      .grow('y', baseY)
 
-                this.dataRect(column, series, value, i, color,
-                    `${ value.label ?? this.formatX(value.x) }\n${ Formatter.format(value.y, PlotAxisType.Number, this.valuePostfix) }`)
+                this.dataRect(column, series, value, i, color, this.getValueTooltip(series, value))
             })
         }
     }
@@ -532,6 +568,8 @@ export default class PlotProcess {
         if (tooltip)
             item.tooltip(tooltip)
 
+        this.groupHover(item, series)
+
         if (series.disabled)
             item.ghost()
 
@@ -539,15 +577,17 @@ export default class PlotProcess {
     }
 
     private getLines(series: PlotSeries) {
-        const baseY = this.getZero().y
+        const baseY = this.getAxisY(0)
 
-        const count = Math.max(...this.series.map(s => s.values.length))
-        const step = (this.available.x - GAP) / count - GAP
+        const step = this.getMainStep()
 
         return (items: QueueItemsBuilder) => {
             const line = items.line()
 
-            series.values.forEach((value, i) => {
+            const slots = series.values.map(value => ({ value, i: PlotProcess.getSlot(this.mainSlots, value) }))
+                                .sort((a, b) => a.i - b.i)
+
+            slots.forEach(({ value, i }) => {
                 line.stop(
                     this.margin.left + (i + 0.5) * step + (i + 1) * GAP,
                     baseY - Number(value.y) * this.scale.y
@@ -555,31 +595,32 @@ export default class PlotProcess {
             })
 
             line.width(series.width)
-                .dash(JSON.parse(series.dash ?? '[]'))
+                .dash(JSON.parse(series.dash || '[]'))
                 .color(series.color ?? '#00ff00')
-                .layer(Layer.Data)
+                .layer(Layer.Data + 1)
                 .key(this.getKey(series, 'line'))
                 .interact()
                 .init(Animations.plotLineInit)
+
+            this.groupHover(line, series)
         }
     }
 
-    // todo: if there is columns/lines with bars add second base lines
     private getBars(series: PlotSeries) {
         return (items: QueueItemsBuilder) => {
-            const count = Math.max(...this.data.values.map(s => s.values.length))
-            const step = (this.available.y - GAP) / count - GAP
+            const step = this.getBarStep()
 
             const barSeries = this.data.values.filter(s => s.type == PlotType.Bar)
             const visibleBefore = barSeries.slice(0, barSeries.indexOf(series)).filter(s => !s.disabled).length
             const heightInStep = step / Math.max(barSeries.filter(s => !s.disabled).length, 1)
             const height = series.disabled ? 0 : heightInStep
 
-            const baseY = this.getZero().y - visibleBefore * heightInStep
+            const baseY = this.barBand.bottom - visibleBefore * heightInStep
             const color = series.color ?? '#0000ff'
 
-            series.values.forEach((value, i) => {
-                const x = this.margin.left
+            series.values.forEach(value => {
+                const i = PlotProcess.getSlot(this.barSlots, value)
+                const x = this.getAxisX(0)
                 const y = baseY - i * (step + GAP) - GAP
 
                 const bar = items.rect()
@@ -589,24 +630,26 @@ export default class PlotProcess {
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', x)
 
-                this.dataRect(bar, series, value, i, color)
+                this.dataRect(bar, series, value, i, color, this.getValueTooltip(series, value))
             })
         }
     }
 
     private getStackedColumns(series: PlotSeries) {
-        const baseY = this.getZero().y
+        const baseY = this.getAxisY(0)
         const color = series.color ?? '#a6f022'
 
-        const count = Math.max(...this.data.values.map(s => s.values.length))
-        const step = (this.available.x - GAP) / count - GAP
-
-        const isLast = series === this.series[this.series.length - 1]
-        const round = isLast ? [16, 16, 0, 0] : [0, 0, 0, 0]
+        const step = this.getMainStep()
 
         return (items: QueueItemsBuilder) => {
-            series.values.forEach((value, i) => {
-                const key = value.x.toString()
+            series.values.forEach(value => {
+                const i = PlotProcess.getSlot(this.mainSlots, value)
+
+                const { columns, slots } = this.getColumnGroup(value)
+                const width = step / slots
+                const offset = columns.length * width
+
+                const key = PlotProcess.getStackKey(value)
                 const stack = this.stacks.get(key) ?? 0
                 const height = series.disabled ? 0 : Number(value.y) * this.scale.y
 
@@ -615,24 +658,41 @@ export default class PlotProcess {
                 const x = this.margin.left
                           + i * step
                           + (i + 1) * GAP
+                          + offset
                 const y = baseY + stack
 
                 const column = items.rect()
                      .position(x, y)
-                     .size(step, height)
+                     .size(width, height)
                      .collapse(false, true)
-                     .round(round)
+                     .round(this.stackTops.get(key) === series ? [16, 16, 0, 0] : [0, 0, 0, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('y', baseY)
 
-                this.dataRect(column, series, value, i, color)
+                this.dataRect(column, series, value, i, color, this.getValueTooltip(series, value))
                     .fade(false)
             })
         }
     }
 
+    private getValueTooltip(series: PlotSeries, value: PlotPoint) {
+        const rows = [series.label, value.label ?? this.formatX(value.x), Formatter.format(value.y, PlotAxisType.Number, this.valuePostfix)]
+
+        return rows.filter(row => row).join('\n')
+    }
+
+    private static getStackKey(value: PlotPoint) {
+        return `${ value.x.toString() }${ Number(value.y) < 0 ? '-' : '+' }`
+    }
+
+    private getColumnGroup(value: PlotPoint) {
+        const group = this.columnGroups.get(value.x.toString()) ?? { columns: [], hasStacking: false }
+
+        return { columns: group.columns, slots: Math.max(group.columns.length + (group.hasStacking ? 1 : 0), 1) }
+    }
+
     private getAttentionLine(series: PlotSeries) {
-        const y = this.getZero().y
+        const y = this.getAxisY(0)
                   - Number(series.values[0].y) * this.scale.y
 
         const x1 = this.margin.left
@@ -641,15 +701,17 @@ export default class PlotProcess {
         const color = series.color ?? '#aa5533'
 
         return (items: QueueItemsBuilder) => {
-            items.line()
-                 .stop(x1, y)
-                 .stop(x2, y)
-                 .width(series.width)
-                 .color(color)
-                 .layer(Layer.Data)
-                 .key(this.getKey(series, 'attention'))
-                 .interact()
-                 .init(Animations.plotLineInit)
+            const line = items.line()
+                              .stop(x1, y)
+                              .stop(x2, y)
+                              .width(series.width)
+                              .color(color)
+                              .layer(Layer.Data + 1)
+                              .key(this.getKey(series, 'attention'))
+                              .interact()
+                              .init(Animations.plotLineInit)
+
+            this.groupHover(line, series)
         }
     }
 }

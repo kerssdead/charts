@@ -1,6 +1,5 @@
 import Value from 'types/base/Value'
 import Point from 'types/Point'
-import DrawPoint from 'types/DrawPoint'
 import { AnimationType } from 'static/Enums'
 import LineStyles from 'types/LineStyles'
 
@@ -25,10 +24,6 @@ class Sector extends Value {
     translate: Point
 
     state: AnimationType
-
-    points: DrawPoint[]
-
-    labelPoints: DrawPoint[]
 
     constructor(obj: object) {
         super()

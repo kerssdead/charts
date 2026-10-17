@@ -35,10 +35,10 @@ export default class RenderItemGroup
     }
 
     adjust(window: CanvasWindow): void {
-        return
+        this.window = window
     }
 
-    render(ctx: CanvasRenderingContext2D, window: CanvasWindow): void {
+    render(ctx: CanvasRenderingContext2D): void {
         const margin = this.margin ?? new Margin()
         const itemsCount = this.items.length
 
@@ -98,7 +98,7 @@ export default class RenderItemGroup
                     break
             }
 
-            item.render(ctx, window)
+            item.render(ctx, this.window)
 
             index++
         }
@@ -115,4 +115,6 @@ export default class RenderItemGroup
     items: RenderItem[] = []
 
     margin: Margin | null
+
+    private window: CanvasWindow
 }

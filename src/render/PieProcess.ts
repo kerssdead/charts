@@ -21,7 +21,7 @@ const LABEL_ITERATIONS = 500
 
 const LABEL_MAX_DRIFT = Math.PI / 6
 
-const LABEL_SPACE = 40
+const LABEL_SPACE = 36
 
 const LABEL_FONT = 14
 
@@ -82,7 +82,7 @@ export default class PieProcess {
         const width = COORDS_MAX_X / this.pixel.x
         const height = COORDS_MAX_Y / this.pixel.y
 
-        return Math.max(Math.min(width / 6, height / 2 - LABEL_SPACE), 0)
+        return Math.max(Math.min(width / 5, height / 2 - LABEL_SPACE), 0)
     }
 
     private get innerRatio() {

@@ -1,100 +1,168 @@
-import TreeData from "../types/data/TreeData";
-import Value from "../types/base/Value";
-import QueueItemsBuilder from "../builders/QueueItemsBuilder";
-import {COORDS_MAX_X, COORDS_MAX_Y} from "static/constants/Index";
-import Point from "../types/Point";
-import {HorizontalAlignment, VerticalAlignment} from "../static/Enums";
+import TreeData, { TreeValue } from "types/data/TreeData"
+import QueueItemsBuilder from "builders/QueueItemsBuilder"
+import { Animations, COORDS_MAX_X, COORDS_MAX_Y } from "static/constants/Index"
+import { HorizontalAlignment, PlotAxisType, TextAlignment, VerticalAlignment } from "static/Enums"
+import { adjustColor, contrastText, stringWidth } from "Helper"
+import Point from "types/Point"
+import ChartSettings from "types/ChartSettings"
+import Formatter from "helpers/Formatter"
 
-// todo: add init animation
-// todo: add label
-// todo: add interaction on mouse over
-// todo: make gaps same for x and y axis (maybe)
+const COLOR_RANGE = 40
+
+const LABEL_FONT = 14
+
+const LABEL_PADDING = 8
+
+type Box = {
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
+type Cell<T> = {
+    value: T
+    box: Box
+}
 
 export default class TreeProcess {
     private data: TreeData
-
-    private readonly values: Value[]
-
-    private position: Point
-
-    private unit: number
 
     private readonly padding: number
 
     private readonly gap: number
 
-    private x: Axis = new Axis()
+    private readonly pixel: Point
 
-    private y: Axis = new Axis()
+    private readonly valuePostfix: string | undefined
 
-    constructor(data: TreeData) {
+    private order: number = 0
+
+    constructor(data: TreeData, pixel: Point, settings: ChartSettings) {
         this.data = data
-
-        this.values = this.data.values
-                          .filter(v => v.value > 0)
-                          .sort((a, b) => b.value - a.value)
+        this.pixel = pixel
+        this.valuePostfix = settings.valuePostfix
 
         this.padding = this.data.padding
         this.gap = this.data.gap
-        this.position = {x: this.padding, y: this.padding}
-        this.unit = 1
     }
 
     getData() {
-        this.x.min = this.padding
-        this.x.max = COORDS_MAX_X - this.padding
-        this.y.min = this.padding
-        this.y.max = COORDS_MAX_Y - this.padding
+        this.order = 0
 
-        const sum = this.values.sumByField(v => v.value)
-        const availableSpace = this.x.available * this.y.available
+        const box = {
+            x: this.padding,
+            y: this.padding,
+            width: COORDS_MAX_X - this.padding * 2,
+            height: COORDS_MAX_Y - this.padding * 2
+        }
 
-        this.unit = availableSpace / sum
+        const groups = TreeProcess.prepare(this.data.values.filter(value => !value.disabled), TreeProcess.getSum)
 
-        return this.values.flatMap((block, index) => {
-            return [this.getBlock(block, index)]
+        if (groups.length == 1 && groups[0].sectors?.length)
+            return this.getSectors(groups[0], 0, box)
+
+        return this.layout(groups, box, TreeProcess.getSum).flatMap(({ value, box }, index) => {
+            return value.sectors?.length
+                   ? this.getSectors(value, index, box)
+                   : [this.getBlock(value.color, value, `tree-${ index }`, box)]
         })
     }
 
-    private getBlock(block: Value, index: number) {
-        const x = this.position.x
-        const y = this.position.y
+    private getSectors(group: TreeValue, groupIndex: number, box: Box) {
+        const sectors = TreeProcess.prepare(group.sectors ?? [], value => value.value)
 
-        const isVertical = (index % 2 === 0)
-        const isLast = index + 1 == this.values.length
+        return this.layout(sectors, box, value => value.value).map(({ value, box }, index) => {
+            const ratio = sectors.length == 1 ? .5 : index / (sectors.length - 1)
+            const color = adjustColor(group.color, Math.round((ratio * 2 - 1) * COLOR_RANGE))
 
-        const area = block.value * this.unit
+            return this.getBlock(color, value, `tree-${ groupIndex }-${ index }`, box, group)
+        })
+    }
 
-        const w = isVertical ? (area / (this.y.max - y)) : (this.x.max - x)
-        const h = isVertical ? (this.y.max - y) : (area / (this.x.max - x))
+    private layout<T>(values: T[], box: Box, getValue: (value: T) => number): Cell<T>[] {
+        const right = box.x + box.width
+        const bottom = box.y + box.height
 
-        if (isVertical) {
-            this.position.x += w
-        } else {
-            this.position.y += h
-        }
+        const unit = box.width * box.height / values.sumByField(getValue)
 
-        const widthGap = isVertical && !isLast ? this.gap / 2 : 0
-        const heightGap = isVertical || isLast ? 0 : this.gap / 2
+        const position = { x: box.x, y: box.y }
+
+        return values.map((value, index) => {
+            const { x, y } = position
+
+            const isVertical = (index % 2 === 0)
+            const isLast = index + 1 == values.length
+
+            const area = getValue(value) * unit
+
+            const w = isVertical ? (area / (bottom - y)) : (right - x)
+            const h = isVertical ? (bottom - y) : (area / (right - x))
+
+            if (isVertical) {
+                position.x += w
+            } else {
+                position.y += h
+            }
+
+            const widthGap = isVertical && !isLast ? this.gap / 2 * this.pixel.x : 0
+            const heightGap = isVertical || isLast ? 0 : this.gap / 2 * this.pixel.y
+
+            return { value, box: { x, y, width: w - widthGap, height: h - heightGap } }
+        })
+    }
+
+    private getBlock(color: string, value: TreeValue, key: string, box: Box, group?: TreeValue) {
+        const delay = this.order++ * Animations.treeInitStagger
+
+        const label = value.label
+
+        const isLabelVisible = !!label
+                               && stringWidth(label, LABEL_FONT) + LABEL_PADDING * 2 <= box.width / this.pixel.x
+                               && LABEL_FONT + LABEL_PADDING * 2 <= box.height / this.pixel.y
 
         return (items: QueueItemsBuilder) => {
             items.rect()
-                 .position(x, y)
-                 .size(w - widthGap, h - heightGap)
-                 .align(HorizontalAlignment.Left, VerticalAlignment.Top)
+                 .position(box.x + box.width / 2, box.y + box.height / 2)
+                 .size(box.width, box.height)
+                 .align(HorizontalAlignment.Center, VerticalAlignment.Center)
                  .round([16, 16, 16, 16])
                  .fill()
-                 .color(block.color)
+                 .gradient()
+                 .color(color)
+                 .key(key)
+                 .init(Animations.treeInit, delay, true)
+                 .appearDelay(delay)
+                 .interact()
+                 .tooltip(this.getTooltip(value, group))
+                 .data(value.data)
+                 .contextMenu()
+
+            if (isLabelVisible)
+                items.text(label)
+                     .position(box.x + box.width / 2 + LABEL_FONT / 2 * this.pixel.x, box.y + box.height / 2)
+                     .size(LABEL_FONT)
+                     .align(TextAlignment.Center)
+                     .color(contrastText(color))
+                     .key(`${ key }-label`)
+                     .init(Animations.treeInit, delay, true)
         }
     }
-}
 
-class Axis {
-    min: number
+    private getTooltip(value: TreeValue, group?: TreeValue) {
+        const rows = [group?.label, value.label, Formatter.format(TreeProcess.getSum(value), PlotAxisType.Number, this.valuePostfix)]
 
-    max: number
+        return rows.filter(row => row).join('\n')
+    }
 
-    get available() {
-        return this.max - this.min
+    private static prepare<T>(values: T[], getValue: (value: T) => number) {
+        return values.filter(value => getValue(value) > 0)
+                     .sort((a, b) => getValue(b) - getValue(a))
+    }
+
+    private static getSum(value: TreeValue) {
+        return value.sectors?.length
+               ? value.sectors.filter(sector => sector.value > 0).sumByField(sector => sector.value)
+               : value.value
     }
 }

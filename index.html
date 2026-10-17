@@ -36,7 +36,7 @@
 
         <div class="settings">
             <div>
-                <label class="fine">
+                <label>
                     Chart Type
 
                     <select id="chart-type" onchange="refresh()">
@@ -58,7 +58,7 @@
                     </select>
                 </label>
 
-                <label class="fine">
+                <label>
                     Values
 
                     <select id="values-type" onchange="refresh()">
@@ -76,109 +76,109 @@
                     </select>
                 </label>
 
-                <label class="fine">
+                <label>
                     Values Count
 
                     <input type="number" min="0" id="values-count" onchange="refresh()" value="1"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     Width
 
                     <input type="range" id="width" value="100" oninput="setWidth()"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     Height
 
                     <input type="range" id="height" height="100" oninput="setHeight()"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="tooltip" onchange="refresh()"/>
 
                     Tooltip
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="custom-tooltip" onchange="refresh()"/>
 
                     Custom Tooltip
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="legend" onchange="refresh()"/>
 
                     Legend
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="title" onchange="refresh()"/>
 
                     Title
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="context-menu" onchange="refresh()"/>
 
                     Context Menu
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="dark-theme" onchange="refresh()"/>
 
                     Dark Theme
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="init-animation" onchange="refresh()"/>
 
                     Disable init animation
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="use-base-color" onchange="refresh()"/>
 
                     Use base color
                 </label>
 
-                <label class="fine">
+                <label>
                     Base Color
 
                     <input type="color" id="base-color" onchange="refresh()" value="#32a852"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     Custom Label
 
                     <input type="text" id="custom-label" onchange="refresh()" value=""/>
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="indexed-custom-label" onchange="refresh()"/>
 
                     Indexed custom label
                 </label>
 
-                <label class="fine">
+                <label>
                     Postfix
 
                     <input type="text" id="postfix" onchange="refresh()"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     Base Value
 
                     <input type="number" id="base-value" onchange="refresh()" value="1000"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="debug-mode" onchange="refresh()"/>
 
                     Debug mode
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="move" onchange="refresh()"/>
 
                     Move
@@ -186,7 +186,7 @@
             </div>
 
             <div>
-                <label class="fine">
+                <label>
                     Plot Type
 
                     <select id="plot-type" onchange="refresh()">
@@ -212,37 +212,37 @@
                     </select>
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="x-axis-label" onchange="refresh()"/>
 
                     X-axis Label
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="y-axis-label" onchange="refresh()"/>
 
                     Y-axis Label
                 </label>
 
-                <label class="fine">
+                <label>
                     Points count
 
                     <input type="number" min="0" id="points-count" onchange="refresh()" value="40"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     Series Width
 
                     <input type="number" id="series-width" onchange="refresh()" value="4"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="simple" onchange="refresh()"/>
 
                     Simple
                 </label>
 
-                <label class="fine">
+                <label>
                     X-axis type
 
                     <select id="x-axis-type" onchange="refresh()">
@@ -264,13 +264,13 @@
                     </select>
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="negative-values-in-plot" onchange="refresh()"/>
 
                     Enable negative values in plot
                 </label>
 
-                <label class="fine">
+                <label>
                     Line type
 
                     <select id="line-type" onchange="refresh()">
@@ -288,13 +288,13 @@
                     </select>
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="short-labels" onchange="refresh()"/>
 
                     Short Labels
                 </label>
 
-                <label class="fine">
+                <label>
                     Y-axis max
 
                     <input type="number" min="0" id="y-max" onchange="refresh()" value=""/>
@@ -302,19 +302,19 @@
             </div>
 
             <div>
-                <label class="fine">
+                <label>
                     Inner Radius
 
                     <input type="range" id="inner-radius" oninput="refresh()"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="checkbox" id="other" onchange="refresh()"/>
 
                     Other
                 </label>
 
-                <label class="fine">
+                <label>
                     <input type="text" id="inner-title" onchange="refresh()"/>
 
                     Inner Title
@@ -323,30 +323,42 @@
 
 
             <div>
-                <label class="fine">
+                <label>
                     Min
 
                     <input type="number" id="gauge-min" onchange="refresh()" value="0"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     Max
 
                     <input type="number" id="gauge-max" onchange="refresh()" value="100"/>
                 </label>
+
+                <label>
+                    <input type="checkbox" id="use-track" onchange="refresh()" checked/>
+
+                    Use track
+                </label>
             </div>
 
             <div>
-                <label class="fine">
+                <label>
                     Padding
 
                     <input type="range" id="tree-padding" oninput="refresh()"/>
                 </label>
 
-                <label class="fine">
+                <label>
                     Gap
 
                     <input type="range" id="tree-gap" oninput="refresh()"/>
+                </label>
+
+                <label>
+                    Sectors Count
+
+                    <input type="number" min="0" id="tree-sectors-count" onchange="refresh()" value="10"/>
                 </label>
             </div>
         </div>
@@ -630,42 +642,6 @@
                 break
 
             case 2:
-                let value = 0
-
-                sameValue = rng.nextFloat() * baseValue
-
-                switch (valuesType) {
-                    case 0:
-                        value = rng.nextFloat() * baseValue
-
-                        break
-
-                    case 1:
-                        value = 50
-
-                        break
-
-                    case 2:
-                        value = sameValue
-
-                        break
-
-                    default:
-                        break
-                }
-
-                values.push({
-                    value: value,
-                    label: isCustomLabel
-                        ? customLabel
-                        : `Label`,
-                    data: getData(0),
-                    color: getColor()
-                })
-
-                break
-
-            case 3:
                 sameValue = rng.nextFloat() * baseValue
 
                 for (let i = 0; i < count; i++) {
@@ -678,7 +654,7 @@
                             break
 
                         case 1:
-                            value = i
+                            value = 50
 
                             break
 
@@ -691,14 +667,63 @@
                             break
                     }
 
-
                     values.push({
                         value: value,
                         label: isCustomLabel
-                            ? indexedCustomLabel
-                                ? customLabel + ` ${i}`
-                                : customLabel
-                            : `Cell ${i}`,
+                            ? customLabel
+                            : `Label ${i}`,
+                        data: getData(i),
+                        color: getColor()
+                    })
+                }
+
+                break
+
+            case 3:
+                sameValue = rng.nextFloat() * baseValue
+
+                const sectorsCount = +document.getElementById('tree-sectors-count').value
+
+                for (let i = 0; i < count; i++) {
+                    let sectors = []
+
+                    for (let j = 0; j < sectorsCount; j++) {
+                        let value = 0
+
+                        switch (valuesType) {
+                            case 0:
+                                value = rng.nextFloat() * baseValue
+
+                                break
+
+                            case 1:
+                                value = j
+
+                                break
+
+                            case 2:
+                                value = sameValue
+
+                                break
+
+                            default:
+                                break
+                        }
+
+                        sectors.push({
+                            value: value,
+                            label: isCustomLabel
+                                ? indexedCustomLabel
+                                    ? customLabel + ` ${j}`
+                                    : customLabel
+                                : `Cell ${j}`,
+                            data: getData(j)
+                        })
+                    }
+
+                    values.push({
+                        label: `Group ${i}`,
+                        sectors: sectors,
                         data: getData(i),
                         color: getColor()
                     })
@@ -745,6 +770,7 @@
                         : null,
             gaugeMin = +document.getElementById('gauge-min').value,
             gaugeMax = +document.getElementById('gauge-max').value,
+            enableTrack = document.getElementById('use-track').checked,
             padding = +document.getElementById('tree-padding').value,
             gap = +document.getElementById('tree-gap').value,
             customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
@@ -785,6 +811,7 @@
                 xType: xType,
                 min: gaugeMin,
                 max: gaugeMax,
+                enableTrack: enableTrack,
                 padding: padding,
                 gap: gap,
                 innerRadius: innerRadius,

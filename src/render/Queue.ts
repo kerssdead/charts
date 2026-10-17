@@ -84,8 +84,15 @@ export default class Queue {
             point = OUTSIDE
         }
 
+        const hoveredGroups = new Set<string>()
+
         for (const item of this.queue) {
-            item.animate(point)
+            if (item.hoverGroup != null && item.isAnimate && !item.isInitializing && item.in(point))
+                hoveredGroups.add(item.hoverGroup)
+        }
+
+        for (const item of this.queue) {
+            item.animate(point, hoveredGroups)
         }
     }
 

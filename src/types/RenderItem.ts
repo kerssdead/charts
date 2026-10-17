@@ -44,6 +44,8 @@ export default class RenderItem {
 
     showContextMenu: boolean = false
 
+    hoverGroup: string | null = null
+
     get hasTooltip() {
         return this.tooltipTemplate && this.tooltipTemplate.length > 0
     }
@@ -122,20 +124,20 @@ export default class RenderItem {
         ctx.strokeStyle = this.activeStroke ?? this.activeColor
 
         for (const item of this.items()) {
-            item?.render(ctx, window, this)
+            item?.render(ctx, this)
             if (item)
                 return
         }
     }
 
-    animate(point: Point) {
+    animate(point: Point, hoveredGroups: Set<string> = new Set()) {
         if (!this.isAnimate || this.isInitializing) {
             return
         }
 
         for (const item of this.items()) {
             if (item) {
-                this.continueAnimate(point, item)
+                this.continueAnimate(point, item, hoveredGroups)
                 return
             }
         }
@@ -228,7 +230,7 @@ export default class RenderItem {
 
         this.rect.from = from
 
-        this.startMorph('in', duration)
+        this.startMorph('in', duration, this.animation.appearDelay)
     }
 
     disappear(duration: number, mapY?: (y: number) => number) {
@@ -277,7 +279,7 @@ export default class RenderItem {
         if (this.text)
             this.text.from = { x: this.text.x, y }
         else if (this.line)
-            this.line.from = this.line.stops.map(stop => ({ x: stop.x, y }))
+            this.line.from = this.line.absolute.map(stop => ({ x: stop.x, y }))
         else
             return this.enter(duration)
 
@@ -292,7 +294,7 @@ export default class RenderItem {
             this.text.y = y
         } else if (this.line) {
             this.line.from = this.line.current(morph)
-            this.line.stops = this.line.stops.map(stop => ({ x: stop.x, y }))
+            this.line.absolute = this.line.absolute.map(stop => ({ x: stop.x, y }))
         } else {
             return this.leave(duration)
         }
@@ -308,10 +310,11 @@ export default class RenderItem {
         return this.hover.value
     }
 
-    private startMorph(fade: 'in' | 'out' | null, duration: number) {
+    private startMorph(fade: 'in' | 'out' | null, duration: number, delay: number = 0) {
         this.animation.morphFade = fade
         this.animation.morph = 0
         this.animation.morphDuration = duration
+        this.animation.morphDelay = delay
         this.animation.morphStart = null
 
         if (fade == 'in')
@@ -393,7 +396,8 @@ export default class RenderItem {
 
         animation.morphStart ??= Renderer.timer
 
-        const progress = Math.min(Math.max((Renderer.timer - animation.morphStart) / animation.morphDuration, 0), 1)
+        const passed = Renderer.timer - animation.morphStart - animation.morphDelay
+        const progress = Math.min(Math.max(passed / animation.morphDuration, 0), 1)
 
         animation.morph = Animations.getTransition(progress)
 
@@ -423,8 +427,10 @@ export default class RenderItem {
             animation.visibility = 1
     }
 
-    private continueAnimate(point: Point, item: RenderItemBase) {
-        const isOver = item.isMouseOver(point)
+    private continueAnimate(point: Point, item: RenderItemBase, hoveredGroups: Set<string>) {
+        const isOver = this.hoverGroup == null
+                       ? item.isMouseOver(point)
+                       : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
 
         if (!isOver && this.hover.isIdle)
             return
@@ -432,12 +438,10 @@ export default class RenderItem {
         item.animate(this, !isOver, point)
     }
 
-    // todo: remove "item" argument ?
     private continueTooltip(point: Point, item: RenderItemBase) {
         this.showTooltip = item.isMouseOver(point) && item.tooltip(this, point)
     }
 
-    // todo: remove "item" argument ?
     private continueContextMenu(point: Point, item: RenderItemBase) {
         this.showContextMenu = item.isMouseOver(point) && item.contextMenu(this, point)
     }

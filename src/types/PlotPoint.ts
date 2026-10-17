@@ -10,13 +10,6 @@ class PlotPoint extends Value {
 
         Object.assign(this, obj)
     }
-
-    // TODO: better name ?
-    inverse() {
-        const x = this.x
-        this.x = this.y as any
-        this.y = x as any
-    }
 }
 
 export default PlotPoint
