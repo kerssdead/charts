@@ -90,18 +90,7 @@ export default class RenderItemLine
         item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, Animations.hover)
     }
 
-    // todo: implement
-    tooltip(item: RenderItem, point: Point) {
-        return false
-    }
-
-    // todo: implement
-    contextMenu(item: RenderItem, point: Point): boolean {
-        return false
-    }
-
-    // todo: implement
-    isMouseOver(point: Point): boolean {
+    isMouseOver(_point: Point): boolean {
         return false
     }
 

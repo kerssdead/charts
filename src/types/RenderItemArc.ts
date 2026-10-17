@@ -251,14 +251,6 @@ export default class RenderItemArc implements RenderItemBase {
         this.hover = item.hoverFactor(isBackward, Animations.hover)
     }
 
-    tooltip(item: RenderItem, point: Point) {
-        return true
-    }
-
-    contextMenu(item: RenderItem, point: Point): boolean {
-        return true
-    }
-
     isMouseOver(point: Point): boolean {
         const dx = point.x - this.canvas.x
         const dy = point.y - this.canvas.y

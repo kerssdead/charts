@@ -128,16 +128,6 @@ export default class RenderItemRectangle
         }
     }
 
-    // todo: implement
-    tooltip(item: RenderItem, point: Point) {
-        return true
-    }
-
-    // todo: implement
-    contextMenu(item: RenderItem, point: Point): boolean {
-        return true
-    }
-
     isMouseOver(point: Point) {
         const { left, top, width, height } = this.bounds()
 

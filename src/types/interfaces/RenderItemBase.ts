@@ -10,10 +10,5 @@ export default interface RenderItemBase {
     // todo: add animation builder
     animate(item: RenderItem, isBackward: boolean, point: Point): void
 
-    // todo: add tooltip builder
-    tooltip(item: RenderItem, point: Point): boolean
-
-    contextMenu(item: RenderItem, point: Point): boolean
-
     isMouseOver(point: Point): boolean
 }

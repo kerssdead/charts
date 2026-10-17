@@ -147,12 +147,7 @@ export default class RenderItem {
             return
         }
 
-        for (const item of this.items()) {
-            if (item) {
-                this.continueTooltip(point, item)
-                return
-            }
-        }
+        this.showTooltip = this.in(point)
     }
 
     contextMenu(point: Point) {
@@ -164,12 +159,12 @@ export default class RenderItem {
             return
         }
 
-        for (const item of this.items()) {
-            if (item) {
-                this.continueContextMenu(point, item)
-                return
-            }
+        if (this.group) {
+            this.group.contextMenu(point)
+            return
         }
+
+        this.showContextMenu = this.in(point)
     }
 
     in(point: Point) {
@@ -435,14 +430,6 @@ export default class RenderItem {
             return
 
         item.animate(this, !isOver, point)
-    }
-
-    private continueTooltip(point: Point, item: RenderItemBase) {
-        this.showTooltip = item.isMouseOver(point) && item.tooltip(this, point)
-    }
-
-    private continueContextMenu(point: Point, item: RenderItemBase) {
-        this.showContextMenu = item.isMouseOver(point) && item.contextMenu(this, point)
     }
 
     static adjustX(window: CanvasWindow, x: number) {

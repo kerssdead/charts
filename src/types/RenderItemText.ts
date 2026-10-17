@@ -125,14 +125,6 @@ export default class RenderItemText
     animate(_item: RenderItem, _isBackward: boolean, _point: Point): void {
     }
 
-    tooltip(_item: RenderItem, _point: Point) {
-        return false
-    }
-
-    contextMenu(_item: RenderItem, _point: Point): boolean {
-        return false
-    }
-
     isMouseOver(_point: Point): boolean {
         return false
     }
