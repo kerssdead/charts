@@ -5,6 +5,8 @@ export class ContextMenu {
 
     static readonly buttonHeight = 22
 
+    static readonly dividerHeight = 9
+
     static readonly textPadding = 10
 
     static readonly fontSize = 13

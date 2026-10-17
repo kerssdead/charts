@@ -31,6 +31,8 @@ export default class Pointer {
 
     isContextOpen: boolean = false
 
+    isMenu: boolean = false
+
     private drag: DragState | null = null
 
     private isDragged: boolean = false
@@ -73,10 +75,18 @@ export default class Pointer {
         this.listen(this.canvas, Events.PointerLeave, () => this.setPosition(null))
         this.listen(this.canvas, Events.ContextMenu, event => this.onContextMenu(event))
         this.listen(this.canvas, Events.Click, event => {
+            const isOpen = this.isContextOpen
+
             if (!this.isDragged)
                 this.handlers.onClick(this.toPoint(event))
+
+            if (isOpen)
+                this.closeContext()
         })
-        this.listen(document, Events.Click, () => this.closeContext())
+        this.listen(document, Events.Click, event => {
+            if (event.target !== this.canvas)
+                this.closeContext()
+        })
         this.listen(window, Events.Blur, () => this.setPosition(null))
     }
 
@@ -89,9 +99,18 @@ export default class Pointer {
         this.position = null
         this.contextPoint = null
         this.isContextOpen = false
+        this.isMenu = false
         this.drag = null
         this.isDragged = false
         this.isMoveEnabled = null
+    }
+
+    openMenu(point: Point) {
+        this.isContextOpen = true
+        this.isMenu = true
+        this.contextPoint = point
+
+        this.handlers.onChange()
     }
 
     closeContext() {
@@ -99,6 +118,7 @@ export default class Pointer {
             return
 
         this.isContextOpen = false
+        this.isMenu = false
         this.contextPoint = null
 
         this.handlers.onChange()
@@ -201,6 +221,7 @@ export default class Pointer {
         event.preventDefault()
 
         this.isContextOpen = true
+        this.isMenu = false
         this.contextPoint = this.toPoint(event)
 
         this.handlers.onChange()

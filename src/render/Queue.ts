@@ -149,12 +149,13 @@ export default class Queue {
                 point: Point | null,
                 mouse: Point | null,
                 isOpen: boolean,
-                menu: DropdownItem[] | undefined) {
+                menu: DropdownItem[] | undefined,
+                fixedButtons?: ButtonOptions[]) {
         this.queue = this.queue.filter(item => !item.isContextMenu)
 
         let target: RenderItem | undefined
 
-        if (isOpen && point) {
+        if (isOpen && point && !fixedButtons) {
             for (const item of this.queue) {
                 item.contextMenu(point)
             }
@@ -165,7 +166,9 @@ export default class Queue {
         const previous = this.contextMenuState
         const isSame = previous != null && previous.point.x === point?.x && previous.point.y === point?.y
 
-        const targetButtons = !target ? [] : isSame ? previous.buttons : ButtonOptions.fromItems(menu, target.data)
+        const targetButtons = isOpen && fixedButtons
+                              ? isSame ? previous.buttons : fixedButtons
+                              : !target ? [] : isSame ? previous.buttons : ButtonOptions.fromItems(menu, target.data)
 
         const isVisible = point != null && targetButtons.length > 0
 
@@ -243,11 +246,11 @@ export default class Queue {
     }
 
     private getContextMenuBounds(window: CanvasWindow, point: Point, buttons: ButtonOptions[]): Bounds {
-        const { offset, padding, buttonHeight, textPadding, fontSize, minWidth } = ContextMenu
+        const { offset, padding, textPadding, fontSize, minWidth } = ContextMenu
 
         const width = Math.max(minWidth,
             Math.max(...buttons.map(button => stringWidth(button.text, fontSize))) + textPadding * 2 + padding * 2)
-        const height = buttons.length * buttonHeight + padding * 2
+        const height = buttons.reduce((acc, button) => acc + Queue.getButtonHeight(button), 0) + padding * 2
 
         const { x: left, y: top } = placeNear(point, width, height, offset, window)
 
@@ -291,10 +294,24 @@ export default class Queue {
              .layer(Layer.ContextMenu - 20)
              .temp()
 
+        let y = top + padding
+
         buttons.forEach((button, index) => {
             const x = left + padding
-            const y = top + padding + index * buttonHeight
             const buttonWidth = width - padding * 2
+
+            if (button.isDivider) {
+                items.line()
+                     .stop(toX(x), toY(y + ContextMenu.dividerHeight / 2))
+                     .stop(toX(x + buttonWidth), toY(y + ContextMenu.dividerHeight / 2))
+                     .color(Theme.dropdownBorder)
+                     .layer(Layer.ContextMenu - 10)
+                     .temp()
+
+                y += ContextMenu.dividerHeight
+
+                return
+            }
 
             const isOver = !!mouse
                            && x <= mouse.x && mouse.x <= x + buttonWidth
@@ -332,7 +349,13 @@ export default class Queue {
                  .color(Theme.text)
                  .layer(Layer.ContextMenu)
                  .temp()
+
+            y += buttonHeight
         })
+    }
+
+    private static getButtonHeight(button: ButtonOptions) {
+        return button.isDivider ? ContextMenu.dividerHeight : ContextMenu.buttonHeight
     }
 
     private fade(fade: HoverProgress, isVisible: boolean, duration: number) {

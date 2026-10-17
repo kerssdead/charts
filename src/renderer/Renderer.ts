@@ -13,7 +13,13 @@ import RenderItem from 'types/RenderItem'
 import Transition from 'renderer/Transition'
 import CustomTooltip from 'renderer/CustomTooltip'
 import QueueItemsBuilder from 'builders/QueueItemsBuilder'
-import { Animations, COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
+import MenuButton from 'renderer/MenuButton'
+import ButtonOptions from 'types/ButtonOptions'
+import Export from 'Export'
+import Modal from 'Modal'
+import Decomposition from 'Decomposition'
+import TextResources from 'static/TextResources'
+import { Animations, ContextMenu, COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
 import { TextAlignment } from 'static/Enums'
 
 export class Renderer {
@@ -49,6 +55,8 @@ export class Renderer {
 
     private legend: Legend | undefined
 
+    private menu: MenuButton | undefined
+
     private customTooltip: CustomTooltip | null = null
 
     private panels: Panel[] = []
@@ -76,6 +84,7 @@ export class Renderer {
 
         this.settings = settings
 
+        this.syncMenu()
         this.syncLegend()
 
         this.customTooltip?.hide()
@@ -97,6 +106,7 @@ export class Renderer {
         this.queue.destroy()
 
         this.legend?.clear(this.queue)
+        this.menu?.clear(this.queue)
 
         this.pointer.closeContext()
 
@@ -137,6 +147,7 @@ export class Renderer {
         this.pointer.detach()
 
         this.removeLegend()
+        this.removeMenu()
 
         this.customTooltip?.hide()
         this.customTooltip = null
@@ -162,6 +173,42 @@ export class Renderer {
         }
 
         this.layout(this.canvas.width, this.canvas.height)
+    }
+
+    private syncMenu() {
+        if (this.settings.disableInteractions) {
+            this.removeMenu()
+        } else if (!this.menu) {
+            this.menu = new MenuButton()
+            this.menu.onClick = () => {
+                const bounds = this.menu?.bounds
+
+                if (bounds)
+                    this.pointer.openMenu({ x: bounds.right, y: bounds.bottom })
+            }
+        }
+    }
+
+    private removeMenu() {
+        this.menu?.clear(this.queue)
+        this.menu = undefined
+    }
+
+    private getMenuButtons() {
+        const { title, charts } = this.settings
+
+        return [
+            new ButtonOptions(TextResources.exportPNG, () => {
+                setTimeout(() => Export.asPng(this.canvas, title, this.menu?.bounds), ContextMenu.fadeDuration)
+            }),
+            new ButtonOptions(TextResources.exportCSV, () => {
+                Export.asCsv(Decomposition.fromCharts(charts), title)
+            }),
+            ButtonOptions.divider(),
+            new ButtonOptions(TextResources.decomposeToTable, () => {
+                new Modal(Decomposition.fromCharts(charts), undefined, title || TextResources.dataAsTable).open()
+            })
+        ]
     }
 
     private removeLegend() {
@@ -201,11 +248,13 @@ export class Renderer {
         this.queue.animate(position)
 
         this.queue.tooltip(this.window, this.settings.enableTooltip ? position : null, isContextOpen, this.customTooltip)
-        this.queue.contextMenu(this.window, contextPoint, position, isContextOpen, this.settings.contextMenu)
+        this.queue.contextMenu(this.window, contextPoint, position, isContextOpen, this.settings.contextMenu,
+            this.pointer.isMenu ? this.getMenuButtons() : undefined)
 
         const isLegendMoving = this.legend?.isMoving
 
         this.legend?.build(this.queue, position)
+        this.menu?.build(this.queue, position)
 
         if (isLegendMoving)
             this.fit(this.legend!.currentReserved)
@@ -310,7 +359,7 @@ export class Renderer {
     }
 
     private get titleHeight() {
-        return this.settings.title ? Renderer.titleFont + Renderer.titlePadding * 2 : 0
+        return this.settings.title || this.menu ? Renderer.titleFont + Renderer.titlePadding * 2 : 0
     }
 
     private getTitle() {
@@ -333,6 +382,7 @@ export class Renderer {
 
     private layout(width: number, height: number): boolean {
         this.legend?.resize(width, height, this.titleHeight)
+        this.menu?.resize(width, height, this.titleHeight)
 
         this.screen = new CanvasWindow(this.canvas.width, this.canvas.height)
 

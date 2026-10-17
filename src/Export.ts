@@ -1,18 +1,16 @@
 import Theme from 'Theme'
-import * as Helper from 'Helper'
 import Canvas from 'helpers/Canvas'
-import { Icon, Tag } from 'static/Enums'
+import { Tag } from 'static/Enums'
 
 class Export {
-    static asPng(canvas: HTMLCanvasElement, title: string) {
+    static asPng(canvas: HTMLCanvasElement, title: string, exclude?: DOMRect) {
         requestAnimationFrame(() => {
             const ctx = Canvas.getContext(canvas)
 
-            let width = Helper.stringWidth(Icon.ThreeLines) + 20,
-                height = 64
-
-            ctx.fillStyle = Theme.canvasBackground
-            ctx.fillRect(canvas.width - width, 0, width, height)
+            if (exclude) {
+                ctx.fillStyle = Theme.canvasBackground
+                ctx.fillRect(exclude.x, exclude.y, exclude.width, exclude.height)
+            }
 
             let leftEmpty = 0,
                 rightEmpty = 0
@@ -78,17 +76,15 @@ class Export {
     }
 
     static asCsv(table: HTMLElement, title: string) {
-        let rows = table.querySelectorAll('tr'),
+        let rows = table.querySelectorAll('.o-table-header, .o-table-row, .o-table-footer'),
             csv = []
 
         for (let i = 0; i < rows.length; i++) {
             let row = [],
-                cols = rows[i].querySelectorAll('td, th')
+                cols = rows[i].querySelectorAll(':scope > div')
 
             for (let j = 0; j < cols.length; j++) {
-                let data = cols[j].innerHTML
-                                  .replace(/(\r\n|\n|\r)/gm, '')
-                                  .replace(/(\s\s)/gm, ' ')
+                let data = (cols[j].textContent ?? '').trim()
 
                 data = data.replace(/"/g, '""')
                 row.push('"' + data + '"')

@@ -107,7 +107,7 @@ export enum Tag {
 }
 
 export enum Icon {
-    ThreeLines = '☰',
+    ThreeDots = '⋯',
 
     Close = '×'
 }
