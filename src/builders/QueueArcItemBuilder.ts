@@ -1,12 +1,10 @@
 import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
-import { RenderStepType } from '../static/Enums'
-import RenderItemArc from '../types/RenderItemArc'
+import RenderItemArc from 'types/RenderItemArc'
 
 export default class QueueArcItemBuilder extends QueueItemBaseBuilder {
     constructor() {
         super()
 
-        this.current.type = RenderStepType.Arc
         this.current.arc = new RenderItemArc()
     }
 

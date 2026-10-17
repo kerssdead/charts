@@ -1,4 +1,3 @@
-import { RenderStepType } from 'static/Enums'
 import { COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from 'static/constants/Index'
 import CanvasWindow from 'types/CanvasWindow'
 import RenderItemLine from 'types/RenderItemLine'
@@ -53,9 +52,6 @@ export default class RenderItem {
     get isInitializing() {
         return this.animation.isInitializing
     }
-
-    // todo: remove ?
-    type: RenderStepType
 
     color: string
 

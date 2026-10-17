@@ -1,12 +1,10 @@
-import QueueItemBaseBuilder from './QueueItemBaseBuilder'
-import { RenderStepType } from '../static/Enums'
-import RenderItemLine from '../types/RenderItemLine'
+import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
+import RenderItemLine from 'types/RenderItemLine'
 
 export default class QueueLineItemBuilder extends QueueItemBaseBuilder {
     constructor() {
         super()
 
-        this.current.type = RenderStepType.Line
         this.current.line = new RenderItemLine()
     }
 

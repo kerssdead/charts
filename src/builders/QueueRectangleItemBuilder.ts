@@ -1,12 +1,11 @@
-import QueueItemBaseBuilder from './QueueItemBaseBuilder'
-import { HorizontalAlignment, RenderStepType, VerticalAlignment } from '../static/Enums'
-import RenderItemRectangle from '../types/RenderItemRectangle'
+import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
+import { HorizontalAlignment, VerticalAlignment } from 'static/Enums'
+import RenderItemRectangle from 'types/RenderItemRectangle'
 
 export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
     constructor() {
         super()
 
-        this.current.type = RenderStepType.Rect
         this.current.rect = new RenderItemRectangle()
     }
 

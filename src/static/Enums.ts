@@ -112,18 +112,6 @@ export enum Icon {
     Close = '×'
 }
 
-export enum RenderStepType {
-    Move = 'move',
-
-    Line = 'line',
-
-    Arc = 'arc',
-
-    Rect = 'rect',
-
-    Text = 'text'
-}
-
 export enum RenderGroupDirection {
     Row,
 

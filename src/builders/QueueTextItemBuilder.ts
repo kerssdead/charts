@@ -1,5 +1,5 @@
 import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
-import { RenderStepType, TextAlignment, TextBaseline } from 'static/Enums'
+import { TextAlignment, TextBaseline } from 'static/Enums'
 import RenderItemText, { Orbit } from 'types/RenderItemText'
 import RenderItemArc from 'types/RenderItemArc'
 
@@ -8,7 +8,6 @@ export default class QueueTextItemBuilder
     constructor(text: string) {
         super()
 
-        this.current.type = RenderStepType.Text
         this.current.text = new RenderItemText()
         this.current.text.value = text
     }
