@@ -23,6 +23,24 @@ export default class QueueArcItemBuilder extends QueueItemBaseBuilder {
         return this
     }
 
+    innerRadius(radius: number) : QueueArcItemBuilder {
+        this.current.arc.innerRadius = radius
+
+        return this
+    }
+
+    gap(gap: number) : QueueArcItemBuilder {
+        this.current.arc.gap = gap
+
+        return this
+    }
+
+    cornerRadius(radius: number) : QueueArcItemBuilder {
+        this.current.arc.cornerRadius = radius
+
+        return this
+    }
+
     startAngle(angle: number) : QueueArcItemBuilder {
         this.current.arc.startAngle = angle
 
@@ -31,6 +49,26 @@ export default class QueueArcItemBuilder extends QueueItemBaseBuilder {
 
     endAngle(angle: number) : QueueArcItemBuilder {
         this.current.arc.endAngle = angle
+
+        return this
+    }
+
+    leader(gap: number, length: number, offset: number = 0) : QueueArcItemBuilder {
+        this.current.arc.leaderGap = gap
+        this.current.arc.leaderLength = length
+        this.current.arc.leaderOffset = offset
+
+        return this
+    }
+
+    gradient() : QueueArcItemBuilder {
+        this.current.arc.isGradient = true
+
+        return this
+    }
+
+    grow(angle: number) : QueueArcItemBuilder {
+        this.current.arc.growOrigin = angle
 
         return this
     }

@@ -1,7 +1,7 @@
-import QueueItemBaseBuilder from './QueueItemBaseBuilder'
-import { RenderStepType, TextAlignment, TextBaseline } from '../static/Enums'
-import RenderItemLine from '../types/RenderItemLine'
-import RenderItemText from '../types/RenderItemText'
+import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
+import { RenderStepType, TextAlignment, TextBaseline } from 'static/Enums'
+import RenderItemText, { Orbit } from 'types/RenderItemText'
+import RenderItemArc from 'types/RenderItemArc'
 
 export default class QueueTextItemBuilder
     extends QueueItemBaseBuilder {
@@ -16,6 +16,19 @@ export default class QueueTextItemBuilder
     position(x: number, y: number) {
         this.current.text.x = x
         this.current.text.y = y
+
+        return this
+    }
+
+    orbit(angle: number, orbit: Orbit) {
+        this.current.text.angle = angle
+        this.current.text.orbit = orbit
+
+        return this
+    }
+
+    follow(arc: RenderItemArc) {
+        this.current.text.follow = arc
 
         return this
     }

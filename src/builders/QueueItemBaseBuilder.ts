@@ -1,5 +1,5 @@
-import RenderItem from '../types/RenderItem'
-import ButtonOptions from '../types/ButtonOptions'
+import RenderItem from 'types/RenderItem'
+import ItemData from 'types/ItemData'
 
 export default class QueueItemBaseBuilder {
     protected current: RenderItem
@@ -18,16 +18,23 @@ export default class QueueItemBaseBuilder {
         return this
     }
 
-    init(duration: number, delay: number = 0): QueueItemBaseBuilder {
+    init(duration: number, delay: number = 0, fade: boolean = false): QueueItemBaseBuilder {
         this.current.animation.init = 0
         this.current.animation.initDuration = duration
         this.current.animation.initDelay = delay
+        this.current.animation.initFade = fade
 
         return this
     }
 
     tooltip(template: string): QueueItemBaseBuilder {
         this.current.tooltipTemplate = template
+
+        return this
+    }
+
+    data(data: ItemData | undefined): QueueItemBaseBuilder {
+        this.current.data = data ?? null
 
         return this
     }
@@ -76,7 +83,7 @@ export default class QueueItemBaseBuilder {
         if (value) {
             this.current.isAnimate = false
             this.current.tooltipTemplate = ''
-            this.current.contextMenuItems = []
+            this.current.hasContextMenu = false
         }
 
         return this
@@ -106,8 +113,8 @@ export default class QueueItemBaseBuilder {
         return this
     }
 
-    contextMenu(items: ButtonOptions[]) {
-        this.current.contextMenuItems = items
+    contextMenu() {
+        this.current.hasContextMenu = true
 
         return this
     }

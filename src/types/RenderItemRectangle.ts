@@ -1,15 +1,13 @@
-import CanvasWindow from './CanvasWindow'
-import RenderItemBase from './interfaces/RenderItemBase'
-import { COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
-import RenderItem from './RenderItem'
-import Point from './Point'
-import { Renderer } from '../renderer/Renderer'
-import Animations from '../Animations'
-import { Alignment } from './Alignment'
-import { HorizontalAlignment, VerticalAlignment } from '../static/Enums'
-import RectangleDimensions from './RectangleDimensions'
+import CanvasWindow from 'types/CanvasWindow'
+import RenderItemBase from 'types/interfaces/RenderItemBase'
+import { Animations, COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
+import RenderItem from 'types/RenderItem'
+import Point from 'types/Point'
+import { Alignment } from 'types/Alignment'
+import { HorizontalAlignment, VerticalAlignment } from 'static/Enums'
+import RectangleDimensions from 'types/RectangleDimensions'
+import Canvas from 'helpers/Canvas'
 
-const ANIMATION_DURATION = 450
 const SCALE_DELTA = 0.01
 const ALPHA_DELTA = 0.5
 
@@ -27,6 +25,8 @@ const V_FACTOR = {
 export default class RenderItemRectangle
     implements RenderItemBase {
     isFill: boolean
+
+    isGradient: boolean = false
 
     radii: number[]
 
@@ -104,6 +104,10 @@ export default class RenderItemRectangle
 
         ctx.roundRect(left, top, width, height, this.radii1)
 
+        if (this.isGradient && item && height != 0) {
+            ctx.fillStyle = ctx.strokeStyle = Canvas.verticalGradient(ctx, item.activeColor, top, top + height)
+        }
+
         if (this.isFill) {
             ctx.fill()
         }
@@ -140,21 +144,10 @@ export default class RenderItemRectangle
     }
 
     animate(item: RenderItem, isBackward = false) {
-        const k = this.factor(item, isBackward)
+        const k = item.hoverFactor(isBackward, Animations.hover)
 
         item.animation.scale = 1 - SCALE_DELTA * k
         item.animation.alpha = 1 - ALPHA_DELTA * k
-    }
-
-    private factor(item: RenderItem, isBackward: boolean) {
-        item.startTimer ??= Renderer.timer
-
-        const progress = Math.min((Renderer.timer - item.startTimer) / ANIMATION_DURATION, 1)
-        const transition = Animations.getTransition(progress)
-
-        return isBackward
-               ? (1 - progress) * (1 - transition)
-               : progress * transition
     }
 
     private grow(progress: number) {

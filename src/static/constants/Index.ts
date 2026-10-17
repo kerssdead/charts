@@ -16,3 +16,5 @@ export const DEFAULT_LINE_WIDTH = 1
 export const ZOOM_MIN = .5
 export const ZOOM_MAX = 1.5
 export const ZOOM_DEFAULT_STEP = .05
+
+export const PAN_MIN_VISIBLE = .25

@@ -33,6 +33,10 @@ namespace Styles {
         static Absolute = 'absolute'
     }
 
+    export class TouchAction {
+        static None = 'none'
+    }
+
     export class PointerEvents {
         static None = 'none'
     }

@@ -1,14 +1,17 @@
-import PlotData from '../types/data/PlotData'
-import QueueItemsBuilder from '../builders/QueueItemsBuilder'
+import PlotData from 'types/data/PlotData'
+import QueueItemsBuilder from 'builders/QueueItemsBuilder'
 import { Animations, COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
-import { HorizontalAlignment, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from '../static/Enums'
-import { getRoundedValues, short, stringWidth } from '../Helper'
-import Margin from '../types/Margin'
-import PlotSeries from '../types/PlotSeries'
-import Debug from '../Debug'
-import Point from '../types/Point'
-import Theme from '../Theme'
-import ButtonOptions from '../types/ButtonOptions'
+import { HorizontalAlignment, PlotAxisType, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from 'static/Enums'
+import { getRoundedValues, short, stringWidth } from 'Helper'
+import Margin from 'types/Margin'
+import PlotSeries from 'types/PlotSeries'
+import Debug from 'Debug'
+import Point from 'types/Point'
+import Theme from 'Theme'
+import QueueRectangleItemBuilder from 'builders/QueueRectangleItemBuilder'
+import PlotPoint from 'types/PlotPoint'
+import Formatter from 'helpers/Formatter'
+import ChartSettings from 'types/ChartSettings'
 
 const GAP = 30
 
@@ -25,6 +28,8 @@ const BOTTOM_PADDING = 6
 const BOTTOM_GAP = 6
 
 const X_LABEL_FONT = 12
+
+const X_LABEL_SPACING = 8
 
 // todo: check rendering multiple series when some of them is not have all x-axis points
 // todo: if series.length > 1 then on mouse over series item highlight all values from this series
@@ -48,6 +53,8 @@ export default class PlotProcess {
 
     private readonly yMax: number | undefined
 
+    private readonly valuePostfix: string | undefined
+
     private get available() {
         return {
             x: COORDS_MAX_X - this.margin.left - this.margin.right,
@@ -66,8 +73,9 @@ export default class PlotProcess {
         return Math.abs(Math.max(...this.values)) + Math.abs(Math.min(...this.values))
     }
 
-    constructor(data: PlotData, pixel: Point) {
+    constructor(data: PlotData, pixel: Point, settings: ChartSettings) {
         this.data = data
+        this.valuePostfix = settings.valuePostfix
         this.series = data.values.filter(series => !series.disabled)
         this.yMax = this.data.yMax == 0 ? undefined : this.data.yMax
         this.pixel = pixel
@@ -142,7 +150,11 @@ export default class PlotProcess {
             return !acc || series.values.length > acc.values.length ? series : acc
         }, null)
 
-        return longest?.values.map(value => value.x.toString()) ?? []
+        return longest?.values.map(value => this.formatX(value.x)) ?? []
+    }
+
+    private formatX(x: number | Date | string) {
+        return Formatter.axis(x, this.data.xType)
     }
 
     getAxisX(value: number) {
@@ -231,7 +243,7 @@ export default class PlotProcess {
             for (const value of this.series[0].values) {
                 const y = COORDS_MAX_Y - this.margin.bottom - i * stepY - (i + 1) * GAP
 
-                items.text(value.x.toString())
+                items.text(this.formatX(value.x))
                      .position(x, y - stepY / 2)
                      .align(TextAlignment.Left)
                      .size(12)
@@ -267,20 +279,25 @@ export default class PlotProcess {
 
             const y = COORDS_MAX_Y - this.margin.bottom
 
-            i = 0
+            const labels = this.series[0].values.map(value => this.formatX(value.x))
 
-            for (const value of this.series[0].values) {
+            const slot = (stepX + GAP) / this.pixel.x
+            const widest = Math.max(0, ...labels.map(label => stringWidth(label, X_LABEL_FONT)))
+            const every = Math.max(1, Math.ceil((widest + X_LABEL_SPACING) / slot))
+
+            labels.forEach((label, i) => {
+                if (i % every != 0)
+                    return
+
                 const x = this.margin.left + i * stepX + (i + 1) * GAP
 
-                items.text(value.x.toString())
-                     .position(x + stepX / 2, y)
-                     .align(TextAlignment.Left)
+                items.text(label)
+                     .position(x + stepX / 2 + X_LABEL_FONT / 2 * this.pixel.x, y)
+                     .align(TextAlignment.Center)
                      .baseline(TextBaseline.Top)
                      .size(X_LABEL_FONT)
                      .key(`x-category-${ i }`)
-
-                i++
-            }
+            })
         }
     }
 
@@ -486,25 +503,39 @@ export default class PlotProcess {
                 const column = items.rect()
                      .position(this.margin.left + i * step + (i + 1) * GAP + offset + width / 2, baseY)
                      .size(width, series.disabled ? 0 : Number(value.y) * this.scale.y)
-                     .fill()
                      .round([16, 16, 0, 0])
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                      .grow('y', baseY)
-                     .color(color)
-                     .tooltip(`${ value.label }\n${ value.y }`)
-                     .interact()
-                     .init(Animations.plotInit, i * Animations.plotInitStagger)
-                     .layer(Layer.Data)
-                     .key(this.getKey(series, 'rect', i))
-                     .contextMenu([
-                         new ButtonOptions('test button', () => console.log('test')),
-                         new ButtonOptions('test button 2', () => console.log('another one'))
-                     ])
 
-                if (series.disabled)
-                    column.ghost()
+                this.dataRect(column, series, value, i, color,
+                    `${ value.label ?? this.formatX(value.x) }\n${ Formatter.format(value.y, PlotAxisType.Number, this.valuePostfix) }`)
             })
         }
+    }
+
+    private dataRect(rect: QueueRectangleItemBuilder,
+                     series: PlotSeries,
+                     value: PlotPoint,
+                     index: number,
+                     color: string,
+                     tooltip?: string) {
+        const item = rect.fill()
+                         .gradient()
+                         .color(color)
+                         .layer(Layer.Data)
+                         .key(this.getKey(series, 'rect', index))
+                         .interact()
+                         .init(Animations.plotInit, index * Animations.plotInitStagger)
+                         .data(value.data)
+                         .contextMenu()
+
+        if (tooltip)
+            item.tooltip(tooltip)
+
+        if (series.disabled)
+            item.ghost()
+
+        return item
     }
 
     private getLines(series: PlotSeries) {
@@ -557,15 +588,8 @@ export default class PlotProcess {
                      .round([0, 16, 16, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', x)
-                     .fill()
-                     .color(color)
-                     .layer(Layer.Data)
-                     .key(this.getKey(series, 'rect', i))
-                     .interact()
-                     .init(Animations.plotInit, i * Animations.plotInitStagger)
 
-                if (series.disabled)
-                    bar.ghost()
+                this.dataRect(bar, series, value, i, color)
             })
         }
     }
@@ -597,19 +621,12 @@ export default class PlotProcess {
                      .position(x, y)
                      .size(step, height)
                      .collapse(false, true)
-                     .fill()
                      .round(round)
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('y', baseY)
-                     .color(color)
-                     .layer(Layer.Data)
-                     .key(this.getKey(series, 'rect', i))
-                     .interact()
-                     .init(Animations.plotInit, i * Animations.plotInitStagger)
-                     .fade(false)
 
-                if (series.disabled)
-                    column.ghost()
+                this.dataRect(column, series, value, i, color)
+                    .fade(false)
             })
         }
     }

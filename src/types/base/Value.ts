@@ -1,7 +1,11 @@
+import ItemData from 'types/ItemData'
+
 class Value {
     id: string
 
     baseColor: string
+
+    isColorGenerated?: boolean
 
     color: string
 
@@ -13,7 +17,7 @@ class Value {
 
     hideInLegend: boolean
 
-    data: { [key: string]: string }
+    data: ItemData
 
     value: number
 

@@ -15,7 +15,5 @@ export class ContextMenu {
 
     static readonly buttonRadius = 4
 
-    static readonly hoverDuration = 200
-
     static readonly fadeDuration = 150
 }

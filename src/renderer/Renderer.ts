@@ -10,6 +10,7 @@ import ProcessFactory from 'render/ProcessFactory'
 import Queue from 'render/Queue'
 import RenderItem from 'types/RenderItem'
 import Transition from 'renderer/Transition'
+import CustomTooltip from 'renderer/CustomTooltip'
 import { Animations } from 'static/constants/Index'
 import { ChartType } from 'static/Enums'
 
@@ -34,7 +35,11 @@ export class Renderer {
 
     private isApplied: boolean = false
 
+    private isLaidOut: boolean = false
+
     private legend: Legend | undefined
+
+    private customTooltip: CustomTooltip | null = null
 
     private plot: PlotProcess | null = null
 
@@ -47,11 +52,12 @@ export class Renderer {
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
         this.queue = new Queue(Canvas.getContext(this.canvas))
+        this.window = new CanvasWindow(this.canvas.width, this.canvas.height)
 
         this.pointer = new Pointer(this.canvas, () => this.window, {
             onClick: (point: Point) => this.onClick(point),
-            onMove: () => this.render(),
-            onChange: () => this.render()
+            onChange: () => this.render(),
+            canDrag: (point: Point) => !this.pointer.isContextOpen && !this.getClickableItemAt(point)
         })
     }
 
@@ -61,6 +67,11 @@ export class Renderer {
         this.settings = settings
 
         this.syncLegend()
+
+        this.customTooltip?.hide()
+        this.customTooltip = settings.enableTooltip && settings.templateId
+                             ? CustomTooltip.create(this.canvas, settings.templateId)
+                             : null
 
         this.pointer.attach(this.settings.enableMove)
 
@@ -105,23 +116,29 @@ export class Renderer {
         const hasArea = this.window.width > 0 && this.window.height > 0
 
         if (isResized && isSizeDependent && hasArea)
-            this.rebuild(true)
+            this.rebuild(this.isLaidOut)
         else
             this.render()
+
+        this.isLaidOut ||= hasArea
     }
 
     destroy() {
         this.pointer.detach()
-        this.pointer.reset()
 
         this.removeLegend()
+
+        this.customTooltip?.hide()
+        this.customTooltip = null
 
         this.queue.destroy()
 
         this.cancelFrame()
 
         this.plot = null
+        this.window = new CanvasWindow(this.canvas.width, this.canvas.height)
         this.isApplied = false
+        this.isLaidOut = false
     }
 
     private syncLegend() {
@@ -173,14 +190,14 @@ export class Renderer {
 
         this.queue.animate(position)
 
-        this.queue.tooltip(this.window, position, isContextOpen)
-        this.queue.contextMenu(this.window, contextPoint, position, isContextOpen)
+        this.queue.tooltip(this.window, this.settings.enableTooltip ? position : null, isContextOpen, this.customTooltip)
+        this.queue.contextMenu(this.window, contextPoint, position, isContextOpen, this.settings.contextMenu)
 
         this.legend?.build(this.queue, position)
 
         const isAnimating = this.queue.render(this.window, this.screen)
 
-        if (timestamp < this.activeUntil || position != null || isAnimating)
+        if (timestamp < this.activeUntil || isAnimating)
             this.requestFrame()
     }
 
@@ -189,7 +206,7 @@ export class Renderer {
 
         this.plot = plot
 
-        if (isInitialized)
+        if (isInitialized || this.settings.disableInitAnimation)
             this.queue.addInitialized(...actions)
         else
             this.queue.add(...actions)
@@ -221,16 +238,11 @@ export class Renderer {
 
         const { width: canvasWidth, height: canvasHeight } = this.canvas
         const { left, top, right, bottom } = this.legend?.reserved ?? { left: 0, top: 0, right: 0, bottom: 0 }
-        const previous = this.window
 
         this.screen = new CanvasWindow(canvasWidth, canvasHeight)
-        this.window = new CanvasWindow(canvasWidth, canvasHeight)
 
-        this.window.x = left
-        this.window.y = top
-        this.window.width = Math.max(canvasWidth - left - right, 0)
-        this.window.height = Math.max(canvasHeight - top - bottom, 0)
-
-        return !!previous && (previous.width != this.window.width || previous.height != this.window.height)
+        return this.window.fit(left, top,
+            Math.max(canvasWidth - left - right, 0),
+            Math.max(canvasHeight - top - bottom, 0))
     }
 }

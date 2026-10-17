@@ -23,7 +23,7 @@ type Factory = (settings: ChartSettings, pixel: Point) => ProcessResult
 export default class ProcessFactory {
     private static readonly factories = new Map<ChartType, Factory>([
         [ChartType.Plot, (settings: ChartSettings, pixel: Point) => {
-            const plot = new PlotProcess(settings.data as PlotData, pixel)
+            const plot = new PlotProcess(settings.data as PlotData, pixel, settings)
 
             return {
                 actions: [plot.getTitles(settings.title), plot.getBase(), ...plot.getData()],
@@ -32,7 +32,7 @@ export default class ProcessFactory {
         }],
         [ChartType.Pie, (settings: ChartSettings, pixel: Point) => {
             return {
-                actions: new PieProcess(settings.data as PieData, pixel).getData(),
+                actions: new PieProcess(settings.data as PieData, pixel, settings).getData(),
                 plot: null
             }
         }],

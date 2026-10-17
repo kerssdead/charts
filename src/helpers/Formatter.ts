@@ -1,17 +1,24 @@
 import { PlotAxisType } from 'static/Enums'
 
 abstract class Formatter {
-    static number = (value: number | undefined) =>
-        value?.toLocaleString(undefined, {
+    static number(value: number | undefined) {
+        return value?.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }) ?? ''
+    }
 
-    static date = (value: Date | undefined) =>
-        value?.toLocaleDateString() ?? ''
+    static date(value: Date | undefined) {
+        return value?.toLocaleDateString() ?? ''
+    }
 
-    static text = (value: string | undefined) =>
-        value ?? ''
+    static text(value: string | undefined) {
+        return value ?? ''
+    }
+
+    static axis(value: number | Date | string, type: PlotAxisType) {
+        return type == PlotAxisType.Date ? Formatter.date(new Date(value)) : value.toString()
+    }
 
     static format(value: any | undefined, type: PlotAxisType, postfix?: string | undefined) {
         let result = value

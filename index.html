@@ -94,13 +94,13 @@
                     <input type="range" id="height" height="100" oninput="setHeight()"/>
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     <input type="checkbox" id="tooltip" onchange="refresh()"/>
 
                     Tooltip
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     <input type="checkbox" id="custom-tooltip" onchange="refresh()"/>
 
                     Custom Tooltip
@@ -130,31 +130,37 @@
                     Dark Theme
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     <input type="checkbox" id="init-animation" onchange="refresh()"/>
 
                     Disable init animation
                 </label>
 
-                <label class="danger">
+                <label class="fine">
+                    <input type="checkbox" id="use-base-color" onchange="refresh()"/>
+
+                    Use base color
+                </label>
+
+                <label class="fine">
                     Base Color
 
                     <input type="color" id="base-color" onchange="refresh()" value="#32a852"/>
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     Custom Label
 
                     <input type="text" id="custom-label" onchange="refresh()" value=""/>
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     <input type="checkbox" id="indexed-custom-label" onchange="refresh()"/>
 
                     Indexed custom label
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     Postfix
 
                     <input type="text" id="postfix" onchange="refresh()"/>
@@ -236,7 +242,7 @@
                     Simple
                 </label>
 
-                <label class="warn" title="date should be fixed">
+                <label class="fine">
                     X-axis type
 
                     <select id="x-axis-type" onchange="refresh()">
@@ -244,7 +250,7 @@
                             Number
                         </option>
 
-                        <option value="1" disabled>
+                        <option value="1">
                             Date
                         </option>
 
@@ -296,19 +302,19 @@
             </div>
 
             <div>
-                <label class="danger">
+                <label class="fine">
                     Inner Radius
 
                     <input type="range" id="inner-radius" oninput="refresh()"/>
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     <input type="checkbox" id="other" onchange="refresh()"/>
 
                     Other
                 </label>
 
-                <label class="danger">
+                <label class="fine">
                     <input type="text" id="inner-title" onchange="refresh()"/>
 
                     Inner Title
@@ -464,7 +470,10 @@
     }
 
     function getColor() {
-        return `#${Math.floor(rng.nextFloat() * 16777215).toString(16).padStart(6, '0')}`
+        const color = `#${Math.floor(rng.nextFloat() * 16777215).toString(16).padStart(6, '0')}`
+
+        // random value is taken anyway, so other generated values don't change when base color is toggled
+        return document.getElementById('use-base-color').checked ? undefined : color
     }
 
     function getValues(type, count, valuesType, pointsCount, plotType) {
@@ -731,7 +740,9 @@
             valuesType = +document.getElementById('values-type').value,
             pointsCount = +document.getElementById('points-count').value,
             plotType = +document.getElementById('plot-type').value,
-            baseColor = document.getElementById('base-color').value,
+            baseColor = document.getElementById('use-base-color').checked
+                        ? document.getElementById('base-color').value
+                        : null,
             gaugeMin = +document.getElementById('gauge-min').value,
             gaugeMax = +document.getElementById('gauge-max').value,
             padding = +document.getElementById('tree-padding').value,

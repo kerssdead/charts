@@ -1,11 +1,33 @@
 import Color from 'types/Color'
 import Theme from 'Theme'
-import Errors from 'helpers/Errors'
-import {ErrorType} from 'static/Enums'
-import {Plot} from 'static/constants/Index'
+import Point from 'types/Point'
 
 export function adjustColor(color: string, amount: number) {
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).slice(-2))
+}
+
+export function boxEdgeDistance(angle: number, halfWidth: number, halfHeight: number) {
+    const cos = Math.abs(Math.cos(angle))
+    const sin = Math.abs(Math.sin(angle))
+
+    return Math.min(cos > 1e-6 ? halfWidth / cos : Infinity, sin > 1e-6 ? halfHeight / sin : Infinity)
+}
+
+export function placeNear(point: Point,
+                          width: number,
+                          height: number,
+                          offset: number,
+                          bounds: { x: number, y: number, width: number, height: number }): Point {
+    let x = point.x + offset
+    let y = point.y + offset
+
+    if (x + width > bounds.x + bounds.width)
+        x = point.x - offset - width
+
+    if (y + height > bounds.y + bounds.height)
+        y = point.y - offset - height
+
+    return { x: Math.max(x, bounds.x), y: Math.max(y, bounds.y) }
 }
 
 export function grayScale(color: string) {
@@ -21,14 +43,20 @@ export function randomColor() {
     return color
 }
 
+const CHAR_WIDTHS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.559375, 0.2765625, 0.3546875, 0.5546875, 0.5546875, 0.8890625, 0.665625, 0.190625, 0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125, 0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.2765625, 0.2765625, 0.584375, 0.5828125, 0.584375, 0.5546875, 1.0140625, 0.665625, 0.665625, 0.721875, 0.721875, 0.665625, 0.609375, 0.7765625, 0.721875, 0.2765625, 0.5, 0.665625, 0.5546875, 0.8328125, 0.721875, 0.7765625, 0.665625, 0.7765625, 0.721875, 0.665625, 0.609375, 0.721875, 0.665625, 0.94375, 0.665625, 0.665625, 0.609375, 0.2765625, 0.3546875, 0.2765625, 0.4765625, 0.5546875, 0.3328125, 0.5546875, 0.5546875, 0.5, 0.5546875, 0.5546875, 0.2765625, 0.5546875, 0.5546875, 0.221875, 0.240625, 0.5, 0.221875, 0.8328125, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.3328125, 0.5, 0.2765625, 0.5546875, 0.5, 0.721875, 0.5, 0.5, 0.5, 0.3546875, 0.259375, 0.353125, 0.5890625]
+
+const CHAR_WIDTH_AVERAGE = 0.5279276315789471
+
 export function stringWidth(str: any | undefined, font?: number) {
     if (!str)
         return 0
 
-    const widths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.559375, 0.2765625, 0.3546875, 0.5546875, 0.5546875, 0.8890625, 0.665625, 0.190625, 0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125, 0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.2765625, 0.2765625, 0.584375, 0.5828125, 0.584375, 0.5546875, 1.0140625, 0.665625, 0.665625, 0.721875, 0.721875, 0.665625, 0.609375, 0.7765625, 0.721875, 0.2765625, 0.5, 0.665625, 0.5546875, 0.8328125, 0.721875, 0.7765625, 0.665625, 0.7765625, 0.721875, 0.665625, 0.609375, 0.721875, 0.665625, 0.94375, 0.665625, 0.665625, 0.609375, 0.2765625, 0.3546875, 0.2765625, 0.4765625, 0.5546875, 0.3328125, 0.5546875, 0.5546875, 0.5, 0.5546875, 0.5546875, 0.2765625, 0.5546875, 0.5546875, 0.221875, 0.240625, 0.5, 0.221875, 0.8328125, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.3328125, 0.5, 0.2765625, 0.5546875, 0.5, 0.721875, 0.5, 0.5, 0.5, 0.3546875, 0.259375, 0.353125, 0.5890625],
-        avg = 0.5279276315789471
+    let width = 0
 
-    return Array.from(String(str)).reduce((acc, cur) => acc + (widths[cur.charCodeAt(0)] ?? avg), 0) * (font || 14)
+    for (const char of String(str))
+        width += CHAR_WIDTHS[char.charCodeAt(0)] ?? CHAR_WIDTH_AVERAGE
+
+    return width * (font || 14)
 }
 
 export function guid() {

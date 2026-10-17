@@ -6,7 +6,6 @@ import Point from 'types/Point'
 import Paddings from 'types/Paddings'
 import RenderItem from 'types/RenderItem'
 import Theme from 'Theme'
-import Animations from 'Animations'
 import Queue from 'render/Queue'
 import QueueItemsBuilder from 'builders/QueueItemsBuilder'
 import TextResources from 'static/TextResources'
@@ -14,6 +13,7 @@ import * as Constants from 'static/constants/Index'
 import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
 import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from 'static/Enums'
 import ChartSettings from './types/ChartSettings'
+import HoverProgress from 'types/HoverProgress'
 
 type LegendEntry = {
     value: Value
@@ -54,11 +54,9 @@ class Legend {
 
     private items: Set<RenderItem> = new Set()
 
-    private hover: Map<string, number> = new Map()
+    private hover: Map<string, HoverProgress> = new Map()
 
     private toggles: Map<string, number> = new Map()
-
-    private timer: DOMHighResTimeStamp | null = null
 
     private isDirty: boolean = true
 
@@ -143,11 +141,9 @@ class Legend {
         }
 
         const now = performance.now()
-        const delta = (now - (this.timer ?? now)) / Constants.Animations.button
-        this.timer = now
 
         const isToggling = this.updateToggles(now)
-        const isHoverChanged = this.updateHover(mouse, delta)
+        const isHoverChanged = this.updateHover(mouse, now)
 
         if (!this.isDirty && !isToggling && !isHoverChanged)
             return
@@ -406,18 +402,16 @@ class Legend {
         return isToggling
     }
 
-    private updateHover(mouse: Point | null, delta: number) {
+    private updateHover(mouse: Point | null, now: DOMHighResTimeStamp) {
         let isChanged = false
 
         const step = (key: string, isOver: boolean) => {
-            const current = this.hover.get(key) ?? 0,
-                progress = Math.min(Math.max(current + (isOver ? delta : -delta), 0), 1)
+            let hover = this.hover.get(key)
 
-            if (progress != current) {
-                this.hover.set(key, progress)
+            if (!hover)
+                this.hover.set(key, hover = new HoverProgress())
 
-                isChanged = true
-            }
+            isChanged = hover.step(isOver, now, Constants.Animations.button) || isChanged
         }
 
         for (const entry of this.entries) {
@@ -433,7 +427,7 @@ class Legend {
     }
 
     private getHover(key: string) {
-        return Animations.getTransition(this.hover.get(key) ?? 0)
+        return this.hover.get(key)?.value ?? 0
     }
 
     private isOver(mouse: Point | null, x: number, y: number, width: number) {

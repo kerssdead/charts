@@ -40,9 +40,7 @@ export default class PlotData implements Data {
                 seriesValues.set(value.x.toString(), value.y)
                 headers.push({
                     value: value.x.toString(),
-                    display: data.xType == PlotAxisType.Date
-                             ? Formatter.date(new Date(value.x))
-                             : value.x.toString()
+                    display: Formatter.axis(value.x, data.xType)
                 })
             }
 

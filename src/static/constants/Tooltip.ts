@@ -1,11 +1,11 @@
 export class Tooltip {
-    static readonly offset = 50
+    static readonly offset = 12
 
-    static readonly padding = 50
+    static readonly padding = 8
 
-    static readonly rowHeight = 14
+    static readonly rowHeight = 18
 
-    static readonly rowSpacing = 16
+    static readonly fontSize = 14
 
     static readonly radius = 4
 

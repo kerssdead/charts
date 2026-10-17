@@ -4,6 +4,9 @@ import ChartSettings from 'types/ChartSettings'
 import Theme from 'Theme'
 import { ChartType } from 'static/Enums'
 import { Renderer } from 'renderer/Renderer'
+import { adjustColor, randomColor } from 'Helper'
+
+const BASE_COLOR_RANGE = 67
 
 export default class Chart {
     private isDestroyed: boolean = false
@@ -104,10 +107,31 @@ export default class Chart {
     private static normalize(settings: ChartSettings): ChartSettings {
         const isLegendSupported = settings.type != ChartType.Gauge && settings.type != ChartType.TreeMap
 
+        Chart.applyBaseColor(settings)
+
         return {
             ...settings,
             enableTooltip: !settings.disableInteractions && settings.enableTooltip,
             enableLegend: isLegendSupported && settings.enableLegend
         }
+    }
+
+    private static applyBaseColor(settings: ChartSettings) {
+        const values = (settings.data?.values ?? []).filter(value => {
+            return !value.color || (!!settings.baseColor && value.isColorGenerated)
+        })
+
+        if (values.length == 0)
+            return
+
+        const base = settings.baseColor || randomColor()
+
+        values.forEach((value, index) => {
+            const ratio = values.length == 1 ? .5 : index / (values.length - 1)
+
+            value.color = adjustColor(base, Math.round((ratio * 2 - 1) * BASE_COLOR_RANGE))
+
+            value.isColorGenerated = true
+        })
     }
 }

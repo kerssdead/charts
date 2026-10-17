@@ -33,21 +33,21 @@ export enum ErrorType {
 export enum Events {
     Blur = 'blur',
 
-    MouseMove = 'mousemove',
-
     Click = 'click',
 
     Change = 'change',
 
     ContextMenu = 'contextmenu',
 
-    MouseDown = 'mousedown',
+    PointerDown = 'pointerdown',
 
-    MouseUp = 'mouseup',
+    PointerMove = 'pointermove',
 
-    Wheel = 'wheel',
+    PointerLeave = 'pointerleave',
 
-    MouseLeave = 'mouseleave'
+    LostPointerCapture = 'lostpointercapture',
+
+    Wheel = 'wheel'
 }
 
 export enum LegendPlace {

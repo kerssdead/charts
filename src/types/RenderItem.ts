@@ -1,17 +1,18 @@
-import { RenderStepType } from '../static/Enums'
+import { RenderStepType } from 'static/Enums'
 import { COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from 'static/constants/Index'
-import CanvasWindow from './CanvasWindow'
-import RenderItemLine from './RenderItemLine'
-import RenderItemRectangle from './RenderItemRectangle'
-import RenderItemArc from './RenderItemArc'
-import RenderItemGroup from './RenderItemGroup'
-import RenderItemBase from './interfaces/RenderItemBase'
-import Point from './Point'
-import { Renderer } from '../renderer/Renderer'
-import RenderItemText from './RenderItemText'
-import AnimationData from '../AnimationData'
-import ButtonOptions from './ButtonOptions'
-import Animations from '../Animations'
+import CanvasWindow from 'types/CanvasWindow'
+import RenderItemLine from 'types/RenderItemLine'
+import RenderItemRectangle from 'types/RenderItemRectangle'
+import RenderItemArc from 'types/RenderItemArc'
+import RenderItemGroup from 'types/RenderItemGroup'
+import RenderItemBase from 'types/interfaces/RenderItemBase'
+import Point from 'types/Point'
+import { Renderer } from 'renderer/Renderer'
+import RenderItemText from 'types/RenderItemText'
+import AnimationData from 'AnimationData'
+import ItemData from 'types/ItemData'
+import Animations from 'Animations'
+import HoverProgress from 'types/HoverProgress'
 
 type Bounds = {
     left: number
@@ -47,10 +48,6 @@ export default class RenderItem {
         return this.tooltipTemplate && this.tooltipTemplate.length > 0
     }
 
-    get hasContextMenu() {
-        return this.contextMenuItems.length > 0
-    }
-
     get isInitializing() {
         return this.animation.isInitializing
     }
@@ -70,7 +67,9 @@ export default class RenderItem {
 
     tooltipTemplate: string
 
-    contextMenuItems: ButtonOptions[] = []
+    data: ItemData | null = null
+
+    hasContextMenu: boolean = false
 
     layer: number = 0
 
@@ -86,11 +85,7 @@ export default class RenderItem {
 
     group: RenderItemGroup
 
-    // todo: group to RenderItemAnimationItem ?
-    startTimer: DOMHighResTimeStamp | null
-
-    // todo: group to RenderItemAnimationItem ?
-    mouseLeave: boolean
+    private readonly hover = new HoverProgress()
 
     private items(): RenderItemBase[] {
         return [this.line, this.rect, this.arc, this.text, this.group]
@@ -195,8 +190,10 @@ export default class RenderItem {
         }
         else if (this.line && previous.line)
             this.line.from = previous.line.current(morph)
-        else if (this.text && previous.text)
+        else if (this.text && previous.text) {
             this.text.from = previous.text.current(morph)
+            this.text.fromAngle = previous.text.orbit ? previous.text.currentAngle(morph) : null
+        }
         else if (this.arc && previous.arc)
             this.arc.from = previous.arc.current(morph)
         else
@@ -305,11 +302,20 @@ export default class RenderItem {
         this.startMorph('out', duration)
     }
 
+    hoverFactor(isBackward: boolean, duration: number) {
+        this.hover.step(!isBackward, Renderer.timer, duration)
+
+        return this.hover.value
+    }
+
     private startMorph(fade: 'in' | 'out' | null, duration: number) {
         this.animation.morphFade = fade
         this.animation.morph = 0
         this.animation.morphDuration = duration
         this.animation.morphStart = null
+
+        if (fade == 'in')
+            this.animation.visibility = 0
     }
 
     leave(duration: number) {
@@ -418,51 +424,22 @@ export default class RenderItem {
     }
 
     private continueAnimate(point: Point, item: RenderItemBase) {
-        if (item.isMouseOver(point)) {
-            if (this.mouseLeave) {
-                this.mouseLeave = false
-            }
+        const isOver = item.isMouseOver(point)
 
-            item.animate(this, false, point)
-        } else if (this.startTimer) {
-            if (!this.mouseLeave && Renderer.timer - this.startTimer > 450) {
-                this.startTimer = null
-            }
-            this.mouseLeave = true
+        if (!isOver && this.hover.isIdle)
+            return
 
-            item.animate(this, true, point)
-
-            if (this.startTimer && Renderer.timer - this.startTimer > 450) {
-                this.mouseLeave = false
-                this.startTimer = null
-            }
-        }
+        item.animate(this, !isOver, point)
     }
 
     // todo: remove "item" argument ?
     private continueTooltip(point: Point, item: RenderItemBase) {
-        if (item.isMouseOver(point)) {
-            this.showTooltip = item.tooltip(this, point)
-        } else if (this.startTimer && !this.mouseLeave) {
-            this.mouseLeave = true
-
-            this.showTooltip = item.tooltip(this, point)
-        } else {
-            this.showTooltip = false
-        }
+        this.showTooltip = item.isMouseOver(point) && item.tooltip(this, point)
     }
 
     // todo: remove "item" argument ?
     private continueContextMenu(point: Point, item: RenderItemBase) {
-        if (item.isMouseOver(point)) {
-            this.showContextMenu = item.contextMenu(this, point)
-        } else if (this.startTimer && !this.mouseLeave) {
-            this.mouseLeave = true
-
-            this.showContextMenu = item.contextMenu(this, point)
-        } else {
-            this.showContextMenu = false
-        }
+        this.showContextMenu = item.isMouseOver(point) && item.contextMenu(this, point)
     }
 
     static adjustX(window: CanvasWindow, x: number) {
@@ -479,5 +456,13 @@ export default class RenderItem {
 
     static reAdjustY(window: CanvasWindow, y: number): number {
         return ((y - window.y) * COORDS_MAX_Y) / window.height
+    }
+
+    static reAdjustWidth(window: CanvasWindow, width: number): number {
+        return width * COORDS_MAX_X / window.width
+    }
+
+    static reAdjustHeight(window: CanvasWindow, height: number): number {
+        return height * COORDS_MAX_Y / window.height
     }
 }

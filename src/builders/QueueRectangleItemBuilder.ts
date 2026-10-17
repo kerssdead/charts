@@ -30,6 +30,12 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
         return this
     }
 
+    gradient(): QueueRectangleItemBuilder {
+        this.current.rect.isGradient = true
+
+        return this
+    }
+
     round(radii?: number[] | null): QueueRectangleItemBuilder {
         this.current.rect.radii = radii ?? [16, 16, 16, 16]
 

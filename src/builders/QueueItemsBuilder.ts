@@ -69,6 +69,7 @@ export default class QueueItemsBuilder {
         if (this.isInitialized) {
             item.animation.init = 1
             item.animation.initDuration = 0
+            item.animation.initFade = false
         }
 
         this.items.push(item)

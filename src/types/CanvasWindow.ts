@@ -1,5 +1,12 @@
-import { COORDS_MAX_X, COORDS_MAX_Y, ZOOM_MAX, ZOOM_MIN } from 'static/constants/Index'
+import { COORDS_MAX_X, COORDS_MAX_Y, PAN_MIN_VISIBLE, ZOOM_MAX, ZOOM_MIN } from 'static/constants/Index'
 import Point from 'types/Point'
+
+type Rect = {
+    x: number
+    y: number
+    width: number
+    height: number
+}
 
 export default class CanvasWindow {
     x: number = 0
@@ -10,79 +17,60 @@ export default class CanvasWindow {
 
     height: number
 
-    zoomValue: number = 1
+    private scale: number = 1
 
-    private isNeedNormalize = false
+    private base: Rect
 
     get pixel(): Point {
         return {
-            x: COORDS_MAX_X / this.width,
-            y: COORDS_MAX_Y / this.height
+            x: COORDS_MAX_X / this.base.width,
+            y: COORDS_MAX_Y / this.base.height
         }
     }
 
     constructor(width: number, height: number) {
         this.width = width
         this.height = height
+        this.base = { x: 0, y: 0, width, height }
     }
 
-    in(step: number, xRatio: number, yRatio: number) {
-        if (this.zoomValue > ZOOM_MAX) {
+    fit(x: number, y: number, width: number, height: number): boolean {
+        const isResized = width != this.base.width || height != this.base.height
+        const offsetX = this.x - this.base.x
+        const offsetY = this.y - this.base.y
+
+        this.base = { x, y, width, height }
+        this.width = Math.round(width * this.scale)
+        this.height = Math.round(height * this.scale)
+
+        this.moveTo(x + offsetX, y + offsetY)
+
+        return isResized
+    }
+
+    zoom(step: number, anchor: Point) {
+        const scale = Math.min(Math.max(this.scale * (1 + step), ZOOM_MIN), ZOOM_MAX)
+
+        if (scale == this.scale)
             return
-        }
 
-        this.zoom(step, xRatio, yRatio)
+        const ratio = scale / this.scale
+
+        this.scale = scale
+        this.width = Math.round(this.base.width * scale)
+        this.height = Math.round(this.base.height * scale)
+
+        this.moveTo(anchor.x - (anchor.x - this.x) * ratio,
+            anchor.y - (anchor.y - this.y) * ratio)
     }
 
-    out(step: number, xRatio: number, yRatio: number) {
-        if (this.zoomValue < ZOOM_MIN) {
-            return
-        }
+    moveTo(x: number, y: number) {
+        const keepX = Math.min(this.width, this.base.width) * PAN_MIN_VISIBLE
+        const keepY = Math.min(this.height, this.base.height) * PAN_MIN_VISIBLE
 
-        this.zoom(step, xRatio, yRatio)
-    }
+        const { base } = this
 
-    private zoom(step: number, xRatio: number = -1, yRatio: number = -1) {
-        this.isNeedNormalize = true
-
-        this.zoomValue += step
-
-        const widthDiff = step * this.width
-        const heightDiff = step * this.height
-
-        this.width -= widthDiff
-        this.height -= heightDiff
-
-        this.move(widthDiff / 2 + widthDiff * xRatio,
-            heightDiff / 2 + heightDiff * yRatio)
-
-        this.normalize()
-    }
-
-    move(x: number = 0, y: number = 0) {
-        this.isNeedNormalize = true
-
-        this.x += x
-        this.y += y
-
-        this.normalize()
-    }
-
-    moveTo(x: number = 0, y: number = 0) {
-        this.x = x
-        this.y = y
-    }
-
-    private normalize() {
-        if (!this.isNeedNormalize) {
-            return
-        }
-
-        this.x = Math.round(this.x)
-        this.y = Math.round(this.y)
-        this.width = Math.round(this.width)
-        this.height = Math.round(this.height)
-
-        this.isNeedNormalize = false
+        this.x = Math.round(Math.min(Math.max(x, base.x - this.width + keepX), base.x + base.width - keepX))
+        this.y = Math.round(Math.min(Math.max(y, base.y - this.height + keepY), base.y + base.height - keepY))
     }
 }

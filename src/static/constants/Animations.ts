@@ -18,4 +18,10 @@ export class Animations {
     static plotLineInit = 1200
 
     static plotInitStagger = 40
+
+    static hover = 450
+
+    static pieInit = 800
+
+    static pieLabelInit = 300
 }

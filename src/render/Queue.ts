@@ -4,15 +4,13 @@ import CanvasWindow from 'types/CanvasWindow'
 import Point from 'types/Point'
 import ButtonOptions from 'types/ButtonOptions'
 import Theme from 'Theme'
-import { ContextMenu, COORDS_MAX_X, COORDS_MAX_Y, Layer, Tooltip } from 'static/constants/Index'
+import { Animations, ContextMenu, Layer, Tooltip } from 'static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from 'static/Enums'
-import { stringWidth } from 'Helper'
-import Animations from 'Animations'
-
-type Fade = {
-    progress: number
-    timer: DOMHighResTimeStamp | null
-}
+import { placeNear, stringWidth } from 'Helper'
+import CustomTooltip from 'renderer/CustomTooltip'
+import HoverProgress from 'types/HoverProgress'
+import ItemData from 'types/ItemData'
+import DropdownItem from 'types/DropdownItem'
 
 type Bounds = {
     left: number
@@ -30,15 +28,13 @@ export default class Queue {
 
     private tooltipState: { point: Point, template: string } | null = null
 
-    private tooltipFade: Fade = { progress: 0, timer: null }
+    private tooltipFade = new HoverProgress()
 
     private contextMenuState: { point: Point, buttons: ButtonOptions[] } | null = null
 
-    private contextMenuFade: Fade = { progress: 0, timer: null }
+    private contextMenuFade = new HoverProgress()
 
-    private contextMenuHover: number[] = []
-
-    private contextMenuTimer: DOMHighResTimeStamp | null = null
+    private contextMenuHover: HoverProgress[] = []
 
     private contextMenuBounds: Bounds | null = null
 
@@ -93,8 +89,9 @@ export default class Queue {
         }
     }
 
-    tooltip(window: CanvasWindow, point: Point | null, isContextMenuOpen: boolean) {
+    tooltip(window: CanvasWindow, point: Point | null, isContextMenuOpen: boolean, custom: CustomTooltip | null) {
         let template: string | null = null
+        let data: ItemData | null = null
 
         if (point && !isContextMenuOpen) {
             for (const item of this.queue) {
@@ -102,11 +99,17 @@ export default class Queue {
 
                 if (template == null && item.showTooltip) {
                     template = item.tooltipTemplate
+                    data = item.data
                 }
             }
         }
 
-        const isVisible = point != null && template != null
+        if (custom && point && data)
+            custom.show(data, point)
+        else
+            custom?.hide()
+
+        const isVisible = !(custom && data) && point != null && template != null
 
         if (isVisible) {
             this.tooltipState = { point: point as Point, template: template as string }
@@ -114,7 +117,7 @@ export default class Queue {
             this.tooltipState.point = point
         }
 
-        const alpha = this.stepFade(this.tooltipFade, isVisible, Tooltip.fadeDuration)
+        const alpha = this.fade(this.tooltipFade, isVisible, Tooltip.fadeDuration)
 
         if (!isVisible && alpha == 0) {
             this.tooltipState = null
@@ -135,7 +138,11 @@ export default class Queue {
         }
     }
 
-    contextMenu(window: CanvasWindow, point: Point | null, mouse: Point | null, isOpen: boolean) {
+    contextMenu(window: CanvasWindow,
+                point: Point | null,
+                mouse: Point | null,
+                isOpen: boolean,
+                menu: DropdownItem[] | undefined) {
         this.queue = this.queue.filter(item => !item.isContextMenu)
 
         let target: RenderItem | undefined
@@ -148,22 +155,23 @@ export default class Queue {
             target = this.queue.find(item => item.hasContextMenu && item.showContextMenu)
         }
 
-        const isVisible = point != null && target != null
+        const previous = this.contextMenuState
+        const isSame = previous != null && previous.point.x === point?.x && previous.point.y === point?.y
 
-        if (isVisible) {
-            if (this.contextMenuState?.point !== point) {
-                this.contextMenuHover = []
-            }
+        const targetButtons = !target ? [] : isSame ? previous.buttons : ButtonOptions.fromItems(menu, target.data)
 
-            this.contextMenuState = { point: point as Point, buttons: (target as RenderItem).contextMenuItems }
+        const isVisible = point != null && targetButtons.length > 0
+
+        if (isVisible && !isSame) {
+            this.contextMenuHover = []
+            this.contextMenuState = { point, buttons: targetButtons }
         }
 
-        const alpha = this.stepFade(this.contextMenuFade, isVisible, ContextMenu.fadeDuration)
+        const alpha = this.fade(this.contextMenuFade, isVisible, ContextMenu.fadeDuration)
 
         if (!isVisible && alpha == 0) {
             this.contextMenuState = null
             this.contextMenuHover = []
-            this.contextMenuTimer = null
         }
 
         if (!this.contextMenuState) {
@@ -191,55 +199,40 @@ export default class Queue {
     }
 
     private buildTooltip(items: QueueItemsBuilder, window: CanvasWindow, point: Point, template: string) {
-        const { offset, padding } = Tooltip
+        const { offset, padding, rowHeight, fontSize, radius } = Tooltip
+        const { width: canvasWidth, height: canvasHeight } = this.ctx.canvas
 
-        const pos = {
-            x: RenderItem.reAdjustX(window, point.x) + offset,
-            y: RenderItem.reAdjustY(window, point.y) + offset
-        }
+        const rows = template.split('\n')
 
-        let alignOffset = {
-            x: 0,
-            y: 0
-        }
+        const width = Math.max(...rows.map(row => stringWidth(row, fontSize))) + padding * 2
+        const height = rows.length * rowHeight + padding * 2
 
-        let allRows = template.split('\n')
+        const { x: left, y: top } = placeNear(point, width, height, offset,
+            { x: 0, y: 0, width: canvasWidth, height: canvasHeight })
 
-        let width = Math.max(...allRows.map(row => stringWidth(row)))
-        let height = (allRows.length + 1) * Tooltip.rowHeight
-
-        if (point.x + width + offset + padding > window.width) {
-            alignOffset.x = -RenderItem.reAdjustX(window, width) - padding * 2
-        }
-
-        if (point.y + height + offset + padding > window.height) {
-            alignOffset.y = -RenderItem.reAdjustY(window, height) - padding * 2
-        }
+        const toX = (x: number) => RenderItem.reAdjustX(window, x)
+        const toY = (y: number) => RenderItem.reAdjustY(window, y)
 
         items.rect()
-             .position(pos.x + alignOffset.x, pos.y + alignOffset.y)
-             .size(RenderItem.reAdjustX(window, width) + padding,
-                 RenderItem.reAdjustY(window, height))
+             .position(toX(left), toY(top))
+             .size(RenderItem.reAdjustWidth(window, width), RenderItem.reAdjustHeight(window, height))
              .fill()
-             .round([Tooltip.radius, Tooltip.radius, Tooltip.radius, Tooltip.radius])
+             .round([radius, radius, radius, radius])
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
              .color(Theme.background)
              .stroke(Theme.dropdownBorder)
              .layer(Layer.Tooltip)
              .temp()
 
-        let rowIndex = 0
-        for (const row of allRows) {
+        rows.forEach((row, index) => {
             items.text(row)
-                 .position(pos.x + padding * 1.25 + alignOffset.x,
-                     pos.y + padding * 1.75 + RenderItem.reAdjustY(window, rowIndex * Tooltip.rowSpacing) + alignOffset.y)
+                 .position(toX(left + padding + fontSize / 2), toY(top + padding + (index + .5) * rowHeight))
+                 .size(fontSize)
                  .align(TextAlignment.Left)
                  .color(Theme.text)
                  .layer(Layer.Tooltip)
                  .temp()
-
-            rowIndex++
-        }
+        })
     }
 
     private getContextMenuBounds(window: CanvasWindow, point: Point, buttons: ButtonOptions[]): Bounds {
@@ -249,20 +242,7 @@ export default class Queue {
             Math.max(...buttons.map(button => stringWidth(button.text, fontSize))) + textPadding * 2 + padding * 2)
         const height = buttons.length * buttonHeight + padding * 2
 
-        // open to the right/bottom of cursor, flip if it does not fit
-        let left = point.x + offset
-        let top = point.y + offset
-
-        if (left + width > window.x + window.width) {
-            left = point.x - offset - width
-        }
-
-        if (top + height > window.y + window.height) {
-            top = point.y - offset - height
-        }
-
-        left = Math.max(left, window.x)
-        top = Math.max(top, window.y)
+        const { x: left, y: top } = placeNear(point, width, height, offset, window)
 
         return { left, top, width, height }
     }
@@ -284,22 +264,12 @@ export default class Queue {
 
         const { left, top, width, height } = bounds
 
-        const toX = (x: number) => {
-            return RenderItem.reAdjustX(window, x)
-        }
-        const toY = (y: number) => {
-            return RenderItem.reAdjustY(window, y)
-        }
-        const toWidth = (w: number) => {
-            return w * COORDS_MAX_X / window.width
-        }
-        const toHeight = (h: number) => {
-            return h * COORDS_MAX_Y / window.height
-        }
+        const toX = (x: number) => RenderItem.reAdjustX(window, x)
+        const toY = (y: number) => RenderItem.reAdjustY(window, y)
+        const toWidth = (width: number) => RenderItem.reAdjustWidth(window, width)
+        const toHeight = (height: number) => RenderItem.reAdjustHeight(window, height)
 
         const now = performance.now()
-        const delta = (now - (this.contextMenuTimer ?? now)) / ContextMenu.hoverDuration
-        this.contextMenuTimer = now
 
         this.contextMenuHover.length = buttons.length
 
@@ -323,16 +293,14 @@ export default class Queue {
                            && x <= mouse.x && mouse.x <= x + buttonWidth
                            && y <= mouse.y && mouse.y <= y + buttonHeight
 
-            let progress = this.contextMenuHover[index] ?? 0
+            const hover = this.contextMenuHover[index] ??= new HoverProgress()
 
-            if (isInteractive) {
-                progress = Math.min(Math.max(progress + (isOver ? delta : -delta), 0), 1)
-                this.contextMenuHover[index] = progress
-            }
+            if (isInteractive)
+                hover.step(isOver, now, Animations.button)
 
-            const color = progress == 0
+            const color = hover.isIdle
                           ? Theme.contextMenuButton
-                          : Theme.withAlpha(Theme.contextMenuButtonHover, Animations.getTransition(progress))
+                          : Theme.withAlpha(Theme.contextMenuButtonHover, hover.value)
 
             const rect = items.rect()
                               .position(toX(x), toY(y))
@@ -360,14 +328,10 @@ export default class Queue {
         })
     }
 
-    private stepFade(fade: Fade, isVisible: boolean, duration: number) {
-        const now = performance.now()
-        const delta = (now - (fade.timer ?? now)) / duration
+    private fade(fade: HoverProgress, isVisible: boolean, duration: number) {
+        fade.step(isVisible, performance.now(), duration)
 
-        fade.timer = now
-        fade.progress = Math.min(Math.max(fade.progress + (isVisible ? delta : -delta), 0), 1)
-
-        return Animations.getTransition(fade.progress)
+        return fade.value
     }
 
     private isOverContextMenu(point: Point) {
@@ -382,12 +346,11 @@ export default class Queue {
         this.queue = []
 
         this.tooltipState = null
-        this.tooltipFade = { progress: 0, timer: null }
+        this.tooltipFade = new HoverProgress()
 
         this.contextMenuState = null
-        this.contextMenuFade = { progress: 0, timer: null }
+        this.contextMenuFade = new HoverProgress()
         this.contextMenuHover = []
-        this.contextMenuTimer = null
         this.contextMenuBounds = null
 
         this.isSorted = true
