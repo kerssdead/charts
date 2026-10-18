@@ -9,7 +9,9 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: 'list',
     use: {
-        baseURL: 'https://kerssdead.github.io',
+        locale: 'en-US',
+        timezoneId: 'UTC',
+        colorScheme: 'light',
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
