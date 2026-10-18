@@ -1,9 +1,29 @@
 import Color from '@/types/Color'
 import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import Errors from '@/helpers/Errors'
+import { fail } from '@/helpers/Errors'
 import { ErrorType, Tag } from '@/static/Enums'
 import { FONT_FAMILY } from '@/static/constants/Index'
+
+export function clamp(value: number, min: number, max: number) {
+    return Math.min(Math.max(value, min), max)
+}
+
+export function lerp(from: number, to: number, t: number) {
+    return from + (to - from) * t
+}
+
+export function samePoint(a: Point | null | undefined, b: Point | null | undefined) {
+    return a?.x === b?.x && a?.y === b?.y
+}
+
+export function sameRect(a: RectangleDimensions, b: RectangleDimensions) {
+    return a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height
+}
+
+export function copyRect({ x, y, width, height }: RectangleDimensions): RectangleDimensions {
+    return { x, y, width, height }
+}
 
 export function adjustColor(color: string, amount: number) {
     const rgb = hexToRgb(color)
@@ -15,27 +35,36 @@ export function adjustColor(color: string, amount: number) {
 }
 
 function toHex(channel: number) {
-    return Math.round(Math.min(255, Math.max(0, channel))).toString(16).padStart(2, '0')
+    return Math.round(clamp(channel, 0, 255)).toString(16).padStart(2, '0')
 }
 
-let colorContext: CanvasRenderingContext2D | null = null
+const MEASURE_FONT_SIZE = 100
+
+let scratch: CanvasRenderingContext2D | null = null
+
+function scratchContext() {
+    if (!scratch) {
+        scratch = document.createElement(Tag.Canvas).getContext('2d') ?? fail(ErrorType.NullContext)
+        scratch.font = `${ MEASURE_FONT_SIZE }px ${ FONT_FAMILY }`
+    }
+
+    return scratch
+}
 
 export function normalizeColor(color: string) {
     if (color.startsWith('#')) {
-        const short = getShortHexValues(color)
+        const hex = expandHex(color)
 
-        if (short)
-            return '#' + short.slice(1).filter(Boolean).map(value => value + value).join('')
-
-        if (getHexValues(color))
-            return color
+        if (getHexValues(hex))
+            return hex
     }
 
-    colorContext ??= document.createElement(Tag.Canvas).getContext('2d') ?? Errors.throw(ErrorType.NullContext)
-    colorContext.fillStyle = '#000000'
-    colorContext.fillStyle = color
+    const ctx = scratchContext()
 
-    const style = String(colorContext.fillStyle)
+    ctx.fillStyle = '#000000'
+    ctx.fillStyle = color
+
+    const style = String(ctx.fillStyle)
     const rgba = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(style)
 
     if (!rgba)
@@ -84,21 +113,12 @@ export function grayScale(color: string) {
 }
 
 export function randomColor() {
-    let letters = '0123456789ABCDEF',
-        color = '#'
-    for (let i = 0; i < 6; i++)
-        color += letters[Math.floor(Math.random() * 16)]
-
-    return color
+    return '#' + Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, '0')
 }
-
-const MEASURE_FONT_SIZE = 100
 
 const MEASURE_CACHE_LIMIT = 10000
 
 const textWidths = new Map<string, number>()
-
-let measureContext: CanvasRenderingContext2D | null = null
 
 export function stringWidth(str: any | undefined, font?: number) {
     if (!str)
@@ -109,11 +129,6 @@ export function stringWidth(str: any | undefined, font?: number) {
     let width = textWidths.get(text)
 
     if (width == undefined) {
-        if (!measureContext) {
-            measureContext = document.createElement(Tag.Canvas).getContext('2d') ?? Errors.throw(ErrorType.NullContext)
-            measureContext.font = `${ MEASURE_FONT_SIZE }px ${ FONT_FAMILY }`
-        }
-
         if (textWidths.size >= MEASURE_CACHE_LIMIT) {
             let count = MEASURE_CACHE_LIMIT / 2
 
@@ -125,7 +140,7 @@ export function stringWidth(str: any | undefined, font?: number) {
             }
         }
 
-        width = measureContext.measureText(text).width / MEASURE_FONT_SIZE
+        width = scratchContext().measureText(text).width / MEASURE_FONT_SIZE
 
         textWidths.set(text, width)
     }
@@ -147,36 +162,23 @@ export function contrastText(background: string) {
     return (luminance + .05) / .05 > 1.05 / (luminance + .05) ? '#000000' : '#ffffff'
 }
 
-function getColor(red: string, green: string, blue: string): Color {
-    return {
-        r: parseInt(red, 16),
-        g: parseInt(green, 16),
-        b: parseInt(blue, 16)
-    }
-}
-
 export function hexToRgb(hex: string): Color | null {
-    const value = getHexValues(hex)
-    if (value)
-        return getColor(value[1], value[2], value[3])
+    const value = getHexValues(expandHex(hex))
 
-    const short = getShortHexValues(hex)
-    if (short)
-        return getColor(
-            short[1] + short[1],
-            short[2] + short[2],
-            short[3] + short[3]
-        )
+    if (!value)
+        return null
 
-    return null
+    return { r: parseInt(value[1], 16), g: parseInt(value[2], 16), b: parseInt(value[3], 16) }
 }
 
 function getHexValues(str: string) {
     return /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(str)
 }
 
-function getShortHexValues(str: string) {
-    return /^#?([a-f\d])([a-f\d])([a-f\d])([a-f\d])?$/i.exec(str)
+function expandHex(str: string) {
+    const short = /^#?([a-f\d])([a-f\d])([a-f\d])([a-f\d])?$/i.exec(str)
+
+    return short ? '#' + short.slice(1).filter(Boolean).map(value => value + value).join('') : str
 }
 
 export function getRoundedValues(
@@ -205,19 +207,22 @@ export function getRoundedValues(
 
     const niceSteps = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]
 
+    const round = max != undefined ? Math.round : Math.ceil
+
+    const intervalsFor = (step: number) => ({
+        neg: minVal < 0 ? round(Math.abs(minVal) / step) : 0,
+        pos: maxVal > 0 ? round(maxVal / step) : 0
+    })
+
     const isFit = (step: number) => {
-        const neg = minVal < 0 ? Math.ceil(Math.abs(minVal) / step) : 0
-        const pos = maxVal > 0 ? Math.ceil(maxVal / step) : 0
+        const { neg, pos } = intervalsFor(step)
 
         return neg + pos <= intervals
     }
 
-    let prettyNormalizedStep
-    if (max != undefined) {
-        prettyNormalizedStep = normalizedStep
-    } else {
-        prettyNormalizedStep = niceSteps.find(nice => nice >= normalizedStep && isFit(nice * magnitude)) ?? 10
-    }
+    const prettyNormalizedStep = max != undefined
+                                 ? normalizedStep
+                                 : niceSteps.find(nice => nice >= normalizedStep && isFit(nice * magnitude)) ?? 10
 
     let step = prettyNormalizedStep * magnitude
 
@@ -225,8 +230,10 @@ export function getRoundedValues(
     let posIntervals = 0
 
     while (true) {
-        negIntervals = minVal < 0 ? (max != undefined ? Math.round(Math.abs(minVal) / step) : Math.ceil(Math.abs(minVal) / step)) : 0
-        posIntervals = maxVal > 0 ? (max != undefined ? Math.round(maxVal / step) : Math.ceil(maxVal / step)) : 0
+        const counts = intervalsFor(step)
+
+        negIntervals = counts.neg
+        posIntervals = counts.pos
 
         if (maxVal > 0 && posIntervals === 0) {
             posIntervals = 1
@@ -262,10 +269,8 @@ export function getRoundedValues(
 
     for (let i = 0; i < targetTicks; i++) {
         const val = startTick + i * step
-        let fixedVal = Number(val.toFixed(12))
-        if (fixedVal === 0)
-            fixedVal = 0
-        ticks.push(fixedVal)
+
+        ticks.push(Number(val.toFixed(12)) || 0)
     }
 
     return ticks
@@ -332,6 +337,22 @@ export function sum<T>(values: T[], selector: (value: T) => number) {
 
 export function maxOf<T>(values: T[], selector: (value: T) => number) {
     return values.reduce((acc, value) => Math.max(acc, selector(value)), 0)
+}
+
+export function groupBy<T, K>(values: T[], selector: (value: T) => K) {
+    const groups = new Map<K, T[]>()
+
+    for (const value of values) {
+        const key = selector(value)
+        const group = groups.get(key)
+
+        if (group)
+            group.push(value)
+        else
+            groups.set(key, [value])
+    }
+
+    return groups
 }
 
 export function deepClone<T>(value: T): T {

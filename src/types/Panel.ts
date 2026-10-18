@@ -2,6 +2,7 @@ import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
 import type PlotProcess from '@/render/PlotProcess'
 import RectangleDimensions from '@/types/RectangleDimensions'
+import { clamp } from '@/Helper'
 
 const GAP = 16
 
@@ -39,7 +40,7 @@ export default class Panel {
         if (titles.length == 1 && titles[0] == 0)
             return [new Panel(0, { x: 0, y: 0, width: 1, height: 1 })]
 
-        const cols = Math.min(Math.max(columns ?? Panel.getColumns(titles.length, width, height), 1), titles.length)
+        const cols = clamp(columns ?? Panel.getColumns(titles.length, width, height), 1, titles.length)
         const rows = Math.ceil(titles.length / cols)
 
         const cellWidth = Math.max((width - GAP * (cols - 1)) / cols, 0)

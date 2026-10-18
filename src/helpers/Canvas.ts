@@ -1,7 +1,7 @@
-import Errors from '@/helpers/Errors'
+import { fail } from '@/helpers/Errors'
 import { ErrorType, Tag } from '@/static/Enums'
 import Theme from '@/Theme'
-import * as Helper from '@/Helper'
+import { adjustColor } from '@/Helper'
 
 const GRADIENT_DELTA = 20
 
@@ -22,7 +22,7 @@ export class GradientCache {
     }
 }
 
-abstract class Canvas {
+export default abstract class Canvas {
     private static readonly gradientStops = new Map<string, [string, string]>()
 
     static verticalGradient(ctx: CanvasRenderingContext2D, color: string, y1: number, y2: number) {
@@ -32,7 +32,7 @@ abstract class Canvas {
             const base = color.slice(0, 7)
             const alpha = color.slice(7)
 
-            stops = [Helper.adjustColor(base, GRADIENT_DELTA) + alpha, Helper.adjustColor(base, -GRADIENT_DELTA) + alpha]
+            stops = [adjustColor(base, GRADIENT_DELTA) + alpha, adjustColor(base, -GRADIENT_DELTA) + alpha]
 
             Canvas.gradientStops.set(color, stops)
         }
@@ -47,7 +47,7 @@ abstract class Canvas {
 
     static getContext(canvas: HTMLCanvasElement, willReadFrequently: boolean = false): CanvasRenderingContext2D {
         return canvas.getContext('2d', { willReadFrequently })
-               ?? Errors.throw(ErrorType.NullContext)
+               ?? fail(ErrorType.NullContext)
     }
 
     static isPixelBusy(pixel: number) {
@@ -62,5 +62,3 @@ abstract class Canvas {
         return canvas
     }
 }
-
-export default Canvas

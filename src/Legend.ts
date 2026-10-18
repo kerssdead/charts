@@ -1,7 +1,7 @@
 import Value from '@/types/base/Value'
-import * as Helper from '@/Helper'
+import { clamp, contains, grayScale, lerp, maxOf, stringWidth, sum } from '@/Helper'
 import Point from '@/types/Point'
-import Paddings from '@/types/Paddings'
+import Paddings, { NO_PADDINGS } from '@/types/Paddings'
 import RenderItem from '@/types/RenderItem'
 import Overlay from '@/renderer/Overlay'
 import Units from '@/helpers/Units'
@@ -9,13 +9,12 @@ import Theme from '@/Theme'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import TextResources from '@/static/TextResources'
-import * as Constants from '@/static/constants/Index'
-import { Layer } from '@/static/constants/Index'
+import { AnimationTiming, Layer } from '@/static/constants/Index'
 import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import ChartItem from '@/types/ChartItem'
 import HoverProgress from '@/types/HoverProgress'
-import Animations from '@/Animations'
+import { ease } from '@/Animations'
 
 type LegendEntry = {
     value: Value
@@ -76,6 +75,10 @@ class Legend extends Overlay {
 
     private leaving: LegendEntry[] = []
 
+    private values: Value[] = []
+
+    private isHoverAnimating: boolean = false
+
     get reserved(): Paddings {
         return this.getReserved(this.area)
     }
@@ -89,7 +92,7 @@ class Legend extends Overlay {
     }
 
     private getReserved(area: DOMRect | undefined): Paddings {
-        const reserved: Paddings = { top: 0, right: 0, bottom: 0, left: 0 }
+        const reserved = { ...NO_PADDINGS }
 
         if (!area)
             return reserved
@@ -120,10 +123,6 @@ class Legend extends Overlay {
         return this.settings.charts.length > 1
     }
 
-    private values: Value[] = []
-
-    private isHoverAnimating: boolean = false
-
     static isSupported(chart: ChartItem) {
         return chart.type != ChartType.Gauge
                && (chart.type != ChartType.TreeMap || (chart.data?.values?.length ?? 0) > 1)
@@ -141,7 +140,7 @@ class Legend extends Overlay {
     private get buttonWidth() {
         return this.settings.disableInteractions
                ? 0
-               : Helper.stringWidth(TextResources.reset) + 12
+               : stringWidth(TextResources.reset) + 12
     }
 
     constructor(settings: ChartSettings) {
@@ -225,26 +224,23 @@ class Legend extends Overlay {
 
         this.clear(queue)
 
-        let resetBackground: RenderItem | undefined
+        const builder = new QueueItemsBuilder()
+        const area = this.getArea(progress)
 
-        const added = QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
-            const area = this.getArea(progress)
+        builder.rect()
+               .position(this.units.x(area.x), this.units.y(area.y))
+               .size(this.units.x(area.width), this.units.y(area.height))
+               .fill()
+               .align(HorizontalAlignment.Left, VerticalAlignment.Top)
+               .color(Theme.canvasBackground)
+               .layer(Layer.Legend)
+               .fixed()
+               .onClick(() => {
+                   this.isDirty = true
+               })
 
-            items.rect()
-                 .position(this.units.x(area.x), this.units.y(area.y))
-                 .size(this.units.x(area.width), this.units.y(area.height))
-                 .fill()
-                 .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-                 .color(Theme.canvasBackground)
-                 .layer(Layer.Legend)
-                 .fixed()
-                 .onClick(() => {
-                     this.isDirty = true
-                 })
-
-            if (this.button)
-                resetBackground = this.buildButton(items, this.button, this.getHover(Legend.resetKey))
-        }])
+        const resetBackground = this.button && this.buildButton(builder, this.button, this.getHover(Legend.resetKey))
+        const added = builder.dispose()
 
         if (resetBackground)
             this.backgrounds.set(Legend.resetKey, resetBackground)
@@ -255,8 +251,8 @@ class Legend extends Overlay {
             const current = from
                             ? {
                     ...entry,
-                    x: from.x + (entry.x - from.x) * progress,
-                    y: from.y + (entry.y - from.y) * progress
+                    x: lerp(from.x, entry.x, progress),
+                    y: lerp(from.y, entry.y, progress)
                 }
                             : entry
 
@@ -306,32 +302,28 @@ class Legend extends Overlay {
         if (!from)
             return area
 
-        const lerp = (start: number, end: number) => start + (end - start) * progress
-
-        return new DOMRect(lerp(from.x, area.x), lerp(from.y, area.y),
-            lerp(from.width, area.width), lerp(from.height, area.height))
+        return new DOMRect(lerp(from.x, area.x, progress), lerp(from.y, area.y, progress),
+            lerp(from.width, area.width, progress), lerp(from.height, area.height, progress))
     }
 
     private getMoveProgress(now: DOMHighResTimeStamp) {
         if (this.moveStart == null)
             return 1
 
-        const progress = Math.min((now - this.moveStart) / Constants.AnimationTiming.legend, 1)
+        const progress = Math.min((now - this.moveStart) / AnimationTiming.legend, 1)
 
-        return progress == 1 ? 1 : Animations.getTransition(progress)
+        return progress == 1 ? 1 : ease(progress)
     }
 
     private createEntry(entry: LegendEntry, hover: number, alpha: number) {
-        let background: RenderItem | undefined
-
-        const items = QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
-            background = this.buildEntry(items, entry, hover)
-        }])
+        const builder = new QueueItemsBuilder()
+        const background = this.buildEntry(builder, entry, hover)
+        const items = builder.dispose()
 
         for (const item of items)
             item.animation.alpha = alpha
 
-        return { items, background: background! }
+        return { items, background }
     }
 
     clear(queue: Queue) {
@@ -349,18 +341,18 @@ class Legend extends Overlay {
     }
 
     private buildEntry(items: QueueItemsBuilder, entry: LegendEntry, hover: number) {
-        const { value, label, x, y, width } = entry,
-            centerY = y + Legend.itemHeight / 2,
-            textX = x + 22,
-            textColor = value.disabled ? Theme.text + '7f' : Theme.text
+        const { value, label, x, y, width } = entry
+        const centerY = y + Legend.itemHeight / 2
+        const textX = x + 22
+        const textColor = value.disabled ? Theme.text + '7f' : Theme.text
 
         const background = items.rect()
              .position(this.units.x(x), this.units.y(y))
              .size(this.units.x(width), this.units.y(Legend.itemHeight))
-             .round(Array(4).fill(this.units.x(6)))
+             .round(this.units.x(6))
              .fill()
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-             .color(Legend.hoverColor(hover))
+             .color(Theme.hoverBackground(hover))
              .layer(Layer.Legend + 1)
              .fixed()
              .onClick(() => {
@@ -371,7 +363,7 @@ class Legend extends Overlay {
              .position(this.units.x(x + 11), this.units.y(centerY))
              .radius(this.units.x(3))
              .fill()
-             .color(value.disabled ? Helper.grayScale(value.color) : value.color)
+             .color(value.disabled ? grayScale(value.color) : value.color)
              .layer(Layer.Legend + 2)
              .fixed()
 
@@ -386,7 +378,7 @@ class Legend extends Overlay {
         if (value.disabled)
             items.line()
                  .stop(this.units.x(textX), this.units.y(centerY + 1))
-                 .stop(this.units.x(textX + Helper.stringWidth(label)), this.units.y(centerY + 1))
+                 .stop(this.units.x(textX + stringWidth(label)), this.units.y(centerY + 1))
                  .color(textColor)
                  .layer(Layer.Legend + 2)
                  .fixed()
@@ -398,10 +390,10 @@ class Legend extends Overlay {
         const background = items.rect()
              .position(this.units.x(button.x), this.units.y(button.y))
              .size(this.units.x(button.width), this.units.y(button.height))
-             .round(Array(4).fill(this.units.x(4)))
+             .round(this.units.x(4))
              .fill()
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-             .color(Legend.hoverColor(hover))
+             .color(Theme.hoverBackground(hover))
              .layer(Layer.Legend + 1)
              .fixed()
              .onClick(() => {
@@ -422,17 +414,17 @@ class Legend extends Overlay {
     private calculateHorizontal(width: number, height: number) {
         const { paddingX, paddingY, itemHeight, rowGap, itemGap } = Legend
 
-        const buttonSpace = this.buttonWidth > 0 ? this.buttonWidth + itemGap : 0,
-            available = Math.max(width - (paddingX + buttonSpace) * 2, 0),
-            maxRows = Math.max(Math.floor((height / 4 - paddingY * 2 + rowGap) / (itemHeight + rowGap)), 1)
+        const buttonSpace = this.buttonWidth > 0 ? this.buttonWidth + itemGap : 0
+        const available = Math.max(width - (paddingX + buttonSpace) * 2, 0)
+        const maxRows = Math.max(Math.floor((height / 4 - paddingY * 2 + rowGap) / (itemHeight + rowGap)), 1)
 
-        let rows: LegendEntry[][] = [],
-            row: LegendEntry[] = [],
-            rowWidth = 0
+        const rows: LegendEntry[][] = []
+        let row: LegendEntry[] = []
+        let rowWidth = 0
 
         for (const value of this.visibleValues()) {
-            const label = Legend.truncate(value.label, available - Legend.itemExtraWidth),
-                itemWidth = Helper.stringWidth(label) + Legend.itemExtraWidth
+            const label = Legend.truncate(value.label, available - Legend.itemExtraWidth)
+            const itemWidth = stringWidth(label) + Legend.itemExtraWidth
 
             if (row.length > 0 && rowWidth + itemGap + itemWidth > available) {
                 rows.push(row)
@@ -452,16 +444,16 @@ class Legend extends Overlay {
         if (row.length > 0 && rows.length < maxRows)
             rows.push(row)
 
-        const rowsCount = Math.max(rows.length, 1),
-            areaHeight = paddingY * 2 + rowsCount * itemHeight + (rowsCount - 1) * rowGap,
-            areaY = this.settings.legendPlace == LegendPlace.Top ? this.top : height - areaHeight
+        const rowsCount = Math.max(rows.length, 1)
+        const areaHeight = paddingY * 2 + rowsCount * itemHeight + (rowsCount - 1) * rowGap
+        const areaY = this.settings.legendPlace == LegendPlace.Top ? this.top : height - areaHeight
 
         this.area = new DOMRect(0, areaY, width, areaHeight)
 
         this.entries = []
 
         rows.forEach((items, index) => {
-            const total = items.reduce((acc, item) => { return acc + item.width }, 0) + (items.length - 1) * itemGap
+            const total = sum(items, item => item.width) + (items.length - 1) * itemGap
 
             let x = (width - total) / 2
 
@@ -479,19 +471,19 @@ class Legend extends Overlay {
     private calculateVertical(width: number, height: number) {
         const { paddingX, paddingY, itemHeight, rowGap } = Legend
 
-        const values = this.visibleValues(),
-            widest = Helper.maxOf(values, value => Helper.stringWidth(value.label)) + Legend.itemExtraWidth,
-            areaWidth = Math.min(Math.max(widest, this.buttonWidth) + paddingX * 2, width / 4),
-            available = areaWidth - paddingX * 2,
-            areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
+        const values = this.visibleValues()
+        const widest = maxOf(values, value => stringWidth(value.label)) + Legend.itemExtraWidth
+        const areaWidth = Math.min(Math.max(widest, this.buttonWidth) + paddingX * 2, width / 4)
+        const available = areaWidth - paddingX * 2
+        const areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
 
         this.area = new DOMRect(areaX, this.top, areaWidth, height - this.top)
 
-        const buttonSpace = this.buttonWidth > 0 ? itemHeight + rowGap : 0,
-            availableHeight = height - this.top - paddingY * 2 - buttonSpace,
-            count = Math.min(Math.max(Math.floor((availableHeight + rowGap) / (itemHeight + rowGap)), 0), values.length),
-            blockHeight = count * itemHeight + Math.max(count - 1, 0) * rowGap,
-            startY = this.top + paddingY + buttonSpace + Math.max((availableHeight - blockHeight) / 2, 0)
+        const buttonSpace = this.buttonWidth > 0 ? itemHeight + rowGap : 0
+        const availableHeight = height - this.top - paddingY * 2 - buttonSpace
+        const count = clamp(Math.floor((availableHeight + rowGap) / (itemHeight + rowGap)), 0, values.length)
+        const blockHeight = count * itemHeight + Math.max(count - 1, 0) * rowGap
+        const startY = this.top + paddingY + buttonSpace + Math.max((availableHeight - blockHeight) / 2, 0)
 
         this.entries = values.slice(0, count).map((value, index) => {
             const label = Legend.truncate(value.label, available - Legend.itemExtraWidth)
@@ -501,11 +493,11 @@ class Legend extends Overlay {
                 label,
                 x: 0,
                 y: startY + index * (itemHeight + rowGap),
-                width: Math.min(Helper.stringWidth(label) + Legend.itemExtraWidth, available)
+                width: Math.min(stringWidth(label) + Legend.itemExtraWidth, available)
             }
         })
 
-        const blockWidth = Helper.maxOf(this.entries, entry => entry.width)
+        const blockWidth = maxOf(this.entries, entry => entry.width)
 
         for (const entry of this.entries)
             entry.x = areaX + (areaWidth - blockWidth) / 2
@@ -563,7 +555,7 @@ class Legend extends Overlay {
         for (const [key, start] of this.toggles) {
             if (start == null)
                 this.toggles.set(key, now)
-            else if (now - start >= Constants.AnimationTiming.legend)
+            else if (now - start >= AnimationTiming.legend)
                 this.toggles.delete(key)
         }
     }
@@ -579,7 +571,7 @@ class Legend extends Overlay {
             if (!hover)
                 this.hover.set(key, hover = new HoverProgress())
 
-            isChanged = hover.step(isOver, now, Constants.AnimationTiming.button) || isChanged
+            isChanged = hover.step(isOver, now, AnimationTiming.button) || isChanged
 
             this.isHoverAnimating ||= hover.isAnimating
         }
@@ -591,18 +583,14 @@ class Legend extends Overlay {
         }
 
         if (this.button)
-            step(Legend.resetKey, this.isOver(mouse, this.button.x, this.button.y, this.button.width))
+            step(Legend.resetKey, contains(this.button, mouse))
 
         return isChanged
     }
 
     private updateBackgrounds() {
         for (const [key, item] of this.backgrounds)
-            item.color = item.activeColor = Legend.hoverColor(this.getHover(key))
-    }
-
-    private static hoverColor(hover: number) {
-        return Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * hover))
+            item.color = Theme.hoverBackground(this.getHover(key))
     }
 
     private getHover(key: string) {
@@ -610,11 +598,11 @@ class Legend extends Overlay {
     }
 
     private isOver(mouse: Point | null, x: number, y: number, width: number) {
-        return Helper.contains({ x, y, width, height: Legend.itemHeight }, mouse)
+        return contains({ x, y, width, height: Legend.itemHeight }, mouse)
     }
 
     private static truncate(label: string, maxWidth: number) {
-        if (Helper.stringWidth(label) <= maxWidth)
+        if (stringWidth(label) <= maxWidth)
             return label
 
         let low = 0
@@ -623,7 +611,7 @@ class Legend extends Overlay {
         while (low < high) {
             const middle = Math.ceil((low + high) / 2)
 
-            if (Helper.stringWidth(label.slice(0, middle) + '…') <= maxWidth)
+            if (stringWidth(label.slice(0, middle) + '…') <= maxWidth)
                 low = middle
             else
                 high = middle - 1

@@ -1,4 +1,4 @@
-import * as Helper from '@/Helper'
+import { contains } from '@/Helper'
 import Point from '@/types/Point'
 import Overlay from '@/renderer/Overlay'
 import Units from '@/helpers/Units'
@@ -6,8 +6,7 @@ import Theme from '@/Theme'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import HoverProgress from '@/types/HoverProgress'
-import * as Constants from '@/static/constants/Index'
-import { Layer } from '@/static/constants/Index'
+import { AnimationTiming, Layer } from '@/static/constants/Index'
 import { HorizontalAlignment, Icon, TextAlignment, VerticalAlignment } from '@/static/Enums'
 
 export default class MenuButton extends Overlay {
@@ -46,21 +45,21 @@ export default class MenuButton extends Overlay {
 
         const { x, y, width, height } = this.bounds
 
-        const isHoverChanged = this.hover.step(Helper.contains(this.bounds, mouse), now, Constants.AnimationTiming.button)
+        const isHoverChanged = this.hover.step(contains(this.bounds, mouse), now, AnimationTiming.button)
 
         if (!this.isDirty && !isHoverChanged)
             return this.hover.isAnimating
 
         const units = Units.fromSize(this.size.width, this.size.height)
 
-        this.show(queue, QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
+        this.show(queue, QueueItemsBuilder.build((items: QueueItemsBuilder) => {
             items.rect()
                  .position(units.x(x), units.y(y))
                  .size(units.x(width), units.y(height))
-                 .round(Array(4).fill(units.x(4)))
+                 .round(units.x(4))
                  .fill()
                  .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-                 .color(Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * this.hover.value)))
+                 .color(Theme.hoverBackground(this.hover.value))
                  .layer(Layer.Legend + 1)
                  .fixed()
                  .onClick(() => this.onClick?.())
@@ -72,7 +71,7 @@ export default class MenuButton extends Overlay {
                  .color(Theme.text)
                  .layer(Layer.Legend + 2)
                  .fixed()
-        }]))
+        }))
 
         this.isDirty = false
 

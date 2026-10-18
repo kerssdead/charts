@@ -2,12 +2,12 @@ import { COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from '@/static/constan
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import Point from '@/types/Point'
-import { Renderer } from '@/renderer/Renderer'
 import AnimationData from '@/AnimationData'
 import ItemData from '@/types/ItemData'
-import Animations from '@/Animations'
+import { ease } from '@/Animations'
 import HoverProgress from '@/types/HoverProgress'
 import Panel from '@/types/Panel'
+import { clamp } from '@/Helper'
 
 export default class RenderItem {
     isAnimate: boolean = false
@@ -26,16 +26,12 @@ export default class RenderItem {
 
     isFading: boolean = true
 
-    showTooltip: boolean = false
-
-    showContextMenu: boolean = false
-
     hoverGroup: string | null = null
 
     panel: Panel | null = null
 
     get hasTooltip() {
-        return this.tooltipTemplate && this.tooltipTemplate.length > 0
+        return !!this.tooltipTemplate
     }
 
     get isInitializing() {
@@ -46,11 +42,7 @@ export default class RenderItem {
 
     animation: AnimationData = new AnimationData()
 
-    activeColor: string
-
     stroke: string
-
-    activeStroke: string
 
     tooltipTemplate: string
 
@@ -70,9 +62,9 @@ export default class RenderItem {
         this.shape = shape
     }
 
-    render(ctx: CanvasRenderingContext2D, window: CanvasWindow, screen: CanvasWindow) {
-        this.updateInit()
-        this.updateMorph()
+    render(ctx: CanvasRenderingContext2D, window: CanvasWindow, screen: CanvasWindow, now: DOMHighResTimeStamp) {
+        this.updateInit(now)
+        this.updateMorph(now)
 
         if (this.isGhost && !this.animation.isMorphing) {
             return
@@ -97,8 +89,8 @@ export default class RenderItem {
         ctx.lineWidth = DEFAULT_LINE_WIDTH
         ctx.setLineDash([])
 
-        const fill = this.activeColor ?? this.shape.defaultColor
-        const stroke = this.activeStroke ?? fill
+        const fill = this.color ?? this.shape.defaultColor
+        const stroke = this.stroke ?? fill
 
         if (fill)
             ctx.fillStyle = fill
@@ -109,28 +101,20 @@ export default class RenderItem {
         this.shape.render(ctx, this)
     }
 
-    animate(point: Point, hoveredGroups: Set<string> = new Set()): boolean {
+    animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string> = new Set()): boolean {
         if (!this.isAnimate || this.isInitializing) {
             return false
         }
 
-        return this.continueAnimate(point, hoveredGroups)
+        return this.continueAnimate(point, now, hoveredGroups)
     }
 
-    tooltip(point: Point) {
-        if (!this.hasTooltip || this.isInitializing) {
-            return
-        }
-
-        this.showTooltip = this.in(point)
+    hasTooltipAt(point: Point) {
+        return this.hasTooltip && !this.isInitializing && this.in(point)
     }
 
-    contextMenu(point: Point) {
-        if (!this.hasContextMenu || this.isInitializing) {
-            return
-        }
-
-        this.showContextMenu = this.in(point)
+    hasContextMenuAt(point: Point) {
+        return this.hasContextMenu && !this.isInitializing && this.in(point)
     }
 
     in(point: Point) {
@@ -144,10 +128,12 @@ export default class RenderItem {
         this.startMorph(previous.isGhost ? 'in' : this.isGhost ? 'out' : null, duration)
     }
 
-    enter(duration: number) {
-        this.animation.isLeaving = false
+    private startInit(duration: number, isLeaving: boolean) {
+        if (!isLeaving)
+            this.animation.init = 0
+
+        this.animation.isLeaving = isLeaving
         this.animation.initFade = true
-        this.animation.init = 0
         this.animation.initDuration = duration
         this.animation.initDelay = 0
         this.animation.initStart = null
@@ -155,28 +141,28 @@ export default class RenderItem {
 
     appear(duration: number, mapY?: (y: number) => number) {
         if (!this.shape.appear(mapY))
-            return this.enter(duration)
+            return this.startInit(duration, false)
 
         this.morphIn(duration, this.animation.appearDelay)
     }
 
     disappear(duration: number, mapY?: (y: number) => number) {
         if (!this.shape.disappear(this.animation.morph, mapY))
-            return this.leave(duration)
+            return this.startInit(duration, true)
 
         this.morphOut(duration)
     }
 
     enterFromAxis(y: number, duration: number) {
         if (!this.shape.enterFromAxis(y))
-            return this.enter(duration)
+            return this.startInit(duration, false)
 
         this.morphIn(duration)
     }
 
     leaveToAxis(y: number, duration: number) {
         if (!this.shape.leaveToAxis(y, this.animation.morph))
-            return this.leave(duration)
+            return this.startInit(duration, true)
 
         this.morphOut(duration)
     }
@@ -191,8 +177,8 @@ export default class RenderItem {
         this.startMorph('out', duration)
     }
 
-    hoverFactor(isBackward: boolean, duration: number) {
-        this.hover.step(!isBackward, Renderer.timer, duration)
+    hoverFactor(isBackward: boolean, now: DOMHighResTimeStamp, duration: number) {
+        this.hover.step(!isBackward, now, duration)
 
         return this.hover.value
     }
@@ -206,14 +192,6 @@ export default class RenderItem {
 
         if (fade == 'in')
             this.animation.visibility = 0
-    }
-
-    leave(duration: number) {
-        this.animation.isLeaving = true
-        this.animation.initFade = true
-        this.animation.initDuration = duration
-        this.animation.initDelay = 0
-        this.animation.initStart = null
     }
 
     private adjust(window: CanvasWindow): void {
@@ -233,19 +211,22 @@ export default class RenderItem {
                && bounds.bottom >= -margin && bounds.top <= screen.height + margin
     }
 
-    private updateInit() {
+    private static progress(now: DOMHighResTimeStamp, start: DOMHighResTimeStamp, delay: number, duration: number) {
+        return clamp((now - start - delay) / duration, 0, 1)
+    }
+
+    private updateInit(now: DOMHighResTimeStamp) {
         const animation = this.animation
 
         if (!animation.isInitializing) {
             return
         }
 
-        animation.initStart ??= Renderer.timer
+        animation.initStart ??= now
 
-        const passed = Renderer.timer - animation.initStart - animation.initDelay
-        const progress = Math.min(Math.max(passed / animation.initDuration, 0), 1)
+        const progress = RenderItem.progress(now, animation.initStart, animation.initDelay, animation.initDuration)
 
-        const transition = Animations.getTransition(progress)
+        const transition = ease(progress)
 
         animation.init = animation.isLeaving ? 1 - transition : transition
 
@@ -259,19 +240,18 @@ export default class RenderItem {
         }
     }
 
-    private updateMorph() {
+    private updateMorph(now: DOMHighResTimeStamp) {
         const animation = this.animation
 
         if (!animation.isMorphing) {
             return
         }
 
-        animation.morphStart ??= Renderer.timer
+        animation.morphStart ??= now
 
-        const passed = Renderer.timer - animation.morphStart - animation.morphDelay
-        const progress = Math.min(Math.max(passed / animation.morphDuration, 0), 1)
+        const progress = RenderItem.progress(now, animation.morphStart, animation.morphDelay, animation.morphDuration)
 
-        animation.morph = Animations.getTransition(progress)
+        animation.morph = ease(progress)
 
         if (progress == 1) {
             animation.morph = 1
@@ -299,7 +279,7 @@ export default class RenderItem {
             animation.visibility = 1
     }
 
-    private continueAnimate(point: Point, hoveredGroups: Set<string>): boolean {
+    private continueAnimate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>): boolean {
         const isOver = this.hoverGroup == null
                        ? this.shape.isMouseOver(point)
                        : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
@@ -307,7 +287,7 @@ export default class RenderItem {
         if (!isOver && this.hover.isIdle)
             return false
 
-        this.shape.animate(this, !isOver, point)
+        this.shape.animate(this, !isOver, now)
 
         return this.hover.isAnimating
     }

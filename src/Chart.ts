@@ -3,7 +3,7 @@ import ChartSettings from '@/types/ChartSettings'
 import Theme from '@/Theme'
 import { ChartType, Events } from '@/static/Enums'
 import { Renderer } from '@/renderer/Renderer'
-import { adjustColor, deepClone, normalizeColor, parseNumber, randomColor } from '@/Helper'
+import { adjustColor, deepClone, groupBy, normalizeColor, parseNumber, randomColor } from '@/Helper'
 import Legend from '@/Legend'
 import Value from '@/types/base/Value'
 import PlotSeries from '@/types/PlotSeries'
@@ -23,8 +23,6 @@ export default class Chart {
     private isSuspended: boolean = false
 
     private suspendedTheme: number = 0
-
-    private source: ChartSettings
 
     private settings: ChartSettings
 
@@ -52,7 +50,6 @@ export default class Chart {
         this.canvas = Canvas.new()
         element.appendChild(this.canvas)
 
-        this.source = settings
         this.settings = Chart.normalize(settings, this.fallbackColor)
 
         Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
@@ -60,7 +57,7 @@ export default class Chart {
         this.renderer = new Renderer(this.canvas)
         this.renderer.apply(this.settings)
 
-        Debug.log(this.source, this.settings, this.canvas)
+        Debug.log(settings, this.settings, this.canvas)
 
         this.observer = this.createObserver(element)
         this.watchRatio()
@@ -96,15 +93,13 @@ export default class Chart {
 
         const previous = this.settings
 
-        this.source = settings
         this.settings = Chart.normalize(settings, this.fallbackColor)
 
         Chart.keepDisabled(previous, this.settings)
 
-        Theme.update(this.settings.isDarkThemeFunction)
         this.renderer.apply(this.settings)
 
-        Debug.log(this.source, this.settings, this.canvas)
+        Debug.log(settings, this.settings, this.canvas)
     }
 
     private resize(width: number, height: number) {
@@ -272,32 +267,18 @@ export default class Chart {
 
     private static applyBaseColor(settings: ChartSettings, fallbackColor: string) {
         const isShared = settings.charts.length > 1
-        const groups = new Map<string | Value, Value[]>()
-
-        for (const chart of settings.charts) {
-            for (const value of chart.data?.values ?? []) {
-                const key = isShared ? value.label : value
-
-                const group = groups.get(key)
-
-                if (group)
-                    group.push(value)
-                else
-                    groups.set(key, [value])
-            }
-        }
-
-        const needsColor = (value: Value) => !value.color
-
-        const uncolored = Array.from(groups.values()).filter(values => values.every(needsColor))
+        const groups = groupBy(settings.charts.flatMap(chart => chart.data?.values ?? []),
+            (value): string | Value => isShared ? value.label : value)
 
         for (const values of groups.values()) {
-            const color = values.find(value => !needsColor(value))?.color
+            const color = values.find(value => value.color)?.color
 
             if (color)
-                for (const value of values.filter(needsColor))
-                    value.color = color
+                for (const value of values)
+                    value.color ||= color
         }
+
+        const uncolored = Array.from(groups.values()).filter(values => !values[0].color)
 
         if (uncolored.length == 0)
             return

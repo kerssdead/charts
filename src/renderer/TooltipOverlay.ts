@@ -1,30 +1,28 @@
 import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
-import Overlay from '@/renderer/Overlay'
+import FadingOverlay from '@/renderer/FadingOverlay'
 import Units from '@/helpers/Units'
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
+import RectangleDimensions from '@/types/RectangleDimensions'
 import ItemData from '@/types/ItemData'
-import HoverProgress from '@/types/HoverProgress'
 import CustomTooltip from '@/renderer/CustomTooltip'
 import Theme from '@/Theme'
 import { Layer, Tooltip } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
-import { placeNear, stringWidth } from '@/Helper'
+import { copyRect, maxOf, placeNear, sameRect, samePoint, stringWidth } from '@/Helper'
 
-export default class TooltipOverlay extends Overlay {
+type TooltipState = { point: Point, template: string }
+
+type TooltipBuilt = TooltipState & { window: RectangleDimensions }
+
+export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipBuilt> {
     private readonly canvas: HTMLCanvasElement
-
-    private state: { point: Point, template: string } | null = null
-
-    private fade = new HoverProgress()
-
-    private built: { point: Point, template: string, window: Pick<CanvasWindow, 'x' | 'y' | 'width' | 'height'> } | null = null
 
     private scan: {
         point: Point
         version: number
-        window: Pick<CanvasWindow, 'x' | 'y' | 'width' | 'height'>
+        window: RectangleDimensions
         template: string | null
         data: ItemData | null
     } | null = null
@@ -53,7 +51,7 @@ export default class TooltipOverlay extends Overlay {
         const isVisible = !(custom && data) && point != null && template != null
 
         if (isVisible) {
-            this.state = { point: point as Point, template: template as string }
+            this.state = { point, template }
         } else if (this.state && point) {
             this.state.point = point
         }
@@ -77,47 +75,26 @@ export default class TooltipOverlay extends Overlay {
         if (!this.isBuilt(state.point, state.template, window))
             this.add(queue, window, state.point, state.template)
 
-        for (const item of this.items) {
-            item.animation.alpha = alpha
-        }
+        this.setAlpha(alpha)
 
         return this.fade.isAnimating
-    }
-
-    clear(queue: Queue) {
-        this.remove(queue)
-
-        this.state = null
-        this.fade = new HoverProgress()
     }
 
     private getTarget(queue: Queue, window: CanvasWindow, point: Point) {
         const scan = this.scan
 
         if (scan != null && !queue.isAnimating && scan.version == queue.version
-            && scan.point.x == point.x && scan.point.y == point.y
-            && scan.window.x == window.x && scan.window.y == window.y
-            && scan.window.width == window.width && scan.window.height == window.height)
+            && samePoint(scan.point, point) && sameRect(scan.window, window))
             return scan
 
-        let template: string | null = null
-        let data: ItemData | null = null
-
-        for (const item of queue.items) {
-            item.tooltip(point)
-
-            if (template == null && item.showTooltip) {
-                template = item.tooltipTemplate
-                data = item.data
-            }
-        }
+        const target = queue.items.find(item => item.hasTooltipAt(point))
 
         this.scan = {
             point,
             version: queue.version,
-            window: { x: window.x, y: window.y, width: window.width, height: window.height },
-            template,
-            data
+            window: copyRect(window),
+            template: target?.tooltipTemplate ?? null,
+            data: target?.data ?? null
         }
 
         return this.scan
@@ -127,23 +104,14 @@ export default class TooltipOverlay extends Overlay {
         const built = this.built
 
         return built != null
-               && built.point.x == point.x && built.point.y == point.y && built.template == template
-               && built.window.x == window.x && built.window.y == window.y
-               && built.window.width == window.width && built.window.height == window.height
-    }
-
-    protected remove(queue: Queue) {
-        super.remove(queue)
-
-        this.built = null
+               && samePoint(built.point, point) && built.template == template
+               && sameRect(built.window, window)
     }
 
     private add(queue: Queue, window: CanvasWindow, point: Point, template: string) {
-        this.show(queue, QueueItemsBuilder.build([
-            (builder: QueueItemsBuilder) => this.build(builder, window, point, template)
-        ]))
+        this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => this.build(builder, window, point, template)))
 
-        this.built = { point, template, window: { x: window.x, y: window.y, width: window.width, height: window.height } }
+        this.built = { point, template, window: copyRect(window) }
     }
 
     private build(items: QueueItemsBuilder, window: CanvasWindow, point: Point, template: string) {
@@ -152,7 +120,7 @@ export default class TooltipOverlay extends Overlay {
 
         const rows = template.split('\n')
 
-        const width = Math.max(...rows.map(row => stringWidth(row, fontSize))) + padding * 2
+        const width = maxOf(rows, row => stringWidth(row, fontSize)) + padding * 2
         const height = rows.length * rowHeight + padding * 2
 
         const { x: left, y: top } = placeNear(point, width, height, offset,
@@ -164,7 +132,7 @@ export default class TooltipOverlay extends Overlay {
              .position(units.positionX(left), units.positionY(top))
              .size(units.x(width), units.y(height))
              .fill()
-             .round(Array(4).fill(units.x(radius)))
+             .round(units.x(radius))
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
              .color(Theme.background)
              .stroke(Theme.dropdownBorder)

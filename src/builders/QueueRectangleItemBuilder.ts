@@ -7,34 +7,34 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<Rend
         super(new RenderItemRectangle())
     }
 
-    position(x: number, y: number): QueueRectangleItemBuilder {
+    position(x: number, y: number) {
         this.shape.absolute.x = x
         this.shape.absolute.y = y
 
         return this
     }
 
-    size(width: number, height: number): QueueRectangleItemBuilder {
+    size(width: number, height: number) {
         this.shape.absolute.width = width
         this.shape.absolute.height = height
 
         return this
     }
 
-    fill(): QueueRectangleItemBuilder {
+    fill() {
         this.shape.isFill = true
 
         return this
     }
 
-    gradient(): QueueRectangleItemBuilder {
+    gradient() {
         this.shape.isGradient = true
 
         return this
     }
 
-    round(radii?: number[] | null): QueueRectangleItemBuilder {
-        this.shape.radii = radii ?? [16, 16, 16, 16]
+    round(radii?: number | number[] | null) {
+        this.shape.radii = typeof radii == 'number' ? Array(4).fill(radii) : radii ?? [16, 16, 16, 16]
 
         return this
     }
@@ -48,13 +48,13 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<Rend
         return this
     }
 
-    collapse(width: boolean, height: boolean): QueueRectangleItemBuilder {
+    collapse(width: boolean, height: boolean) {
         this.shape.collapse = { width, height }
 
         return this
     }
 
-    grow(axis: 'x' | 'y', origin: number): QueueRectangleItemBuilder {
+    grow(axis: 'x' | 'y', origin: number) {
         this.shape.growAxis = axis
         this.shape.growOrigin = origin
 

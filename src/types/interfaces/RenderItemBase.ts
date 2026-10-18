@@ -15,9 +15,12 @@ export default abstract class RenderItemBase {
     abstract render(ctx: CanvasRenderingContext2D, item: RenderItem): void
 
     // todo: add animation builder
-    abstract animate(item: RenderItem, isBackward: boolean, point: Point): void
+    animate(_item: RenderItem, _isBackward: boolean, _now: DOMHighResTimeStamp): void {
+    }
 
-    abstract isMouseOver(point: Point): boolean
+    isMouseOver(_point: Point): boolean {
+        return false
+    }
 
     get defaultColor(): string | undefined {
         return undefined

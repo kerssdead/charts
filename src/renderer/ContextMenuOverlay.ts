@@ -3,35 +3,38 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
-import ButtonOptions from '@/types/ButtonOptions'
+import ButtonOptions, { fromDropdownItems } from '@/types/ButtonOptions'
 import DropdownItem from '@/types/DropdownItem'
 import HoverProgress from '@/types/HoverProgress'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import Overlay from '@/renderer/Overlay'
+import FadingOverlay from '@/renderer/FadingOverlay'
 import Units from '@/helpers/Units'
 import Theme from '@/Theme'
 import { AnimationTiming, ContextMenu, Layer } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
-import { contains, placeNear, stringWidth } from '@/Helper'
+import { contains, copyRect, maxOf, placeNear, sameRect, samePoint, stringWidth, sum } from '@/Helper'
+
+type MenuState = {
+    point: Point
+    buttons: ButtonOptions[]
+}
 
 type BuildKey = {
-    state: ContextMenuOverlay['state']
-    window: Pick<CanvasWindow, 'x' | 'y' | 'width' | 'height'>
+    state: MenuState
+    window: RectangleDimensions
     isInteractive: boolean
 }
 
-export default class ContextMenuOverlay extends Overlay {
-    private state: { point: Point, buttons: ButtonOptions[] } | null = null
+type MenuRow = RectangleDimensions & {
+    isDivider: boolean
+}
 
-    private fade = new HoverProgress()
-
+export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKey> {
     private hover: HoverProgress[] = []
 
     private bounds: RectangleDimensions | null = null
 
     private buttonRects: (RenderItem | null)[] = []
-
-    private built: BuildKey | null = null
 
     update(queue: Queue,
            window: CanvasWindow,
@@ -43,20 +46,18 @@ export default class ContextMenuOverlay extends Overlay {
            fixedButtons?: ButtonOptions[]): boolean {
         let target: RenderItem | undefined
 
-        if (isOpen && point && !fixedButtons) {
-            for (const item of queue.items) {
-                item.contextMenu(point)
-            }
-
-            target = queue.items.find(item => item.hasContextMenu && item.showContextMenu)
-        }
+        if (isOpen && point && !fixedButtons)
+            target = queue.items.find(item => item.hasContextMenuAt(point))
 
         const previous = this.state
-        const isSame = previous != null && previous.point.x === point?.x && previous.point.y === point?.y
+        const isSame = previous != null && samePoint(previous.point, point)
 
-        const targetButtons = isOpen && fixedButtons
-                              ? isSame ? previous.buttons : fixedButtons
-                              : !target ? [] : isSame ? previous.buttons : ButtonOptions.fromItems(menu, target.data)
+        let targetButtons: ButtonOptions[] = []
+
+        if (isOpen && fixedButtons)
+            targetButtons = isSame ? previous.buttons : fixedButtons
+        else if (target)
+            targetButtons = isSame ? previous.buttons : fromDropdownItems(menu, target.data)
 
         const isVisible = point != null && targetButtons.length > 0
 
@@ -95,20 +96,16 @@ export default class ContextMenuOverlay extends Overlay {
         if (!this.isBuilt(window, isVisible)) {
             this.remove(queue)
 
-            this.show(queue, QueueItemsBuilder.build([
-                (builder: QueueItemsBuilder) => this.build(builder, window, bounds, buttons, isVisible)
-            ]))
+            this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => this.build(builder, window, bounds, buttons, isVisible)))
 
             this.built = {
                 state: this.state,
-                window: { x: window.x, y: window.y, width: window.width, height: window.height },
+                window: copyRect(window),
                 isInteractive: isVisible
             }
         }
 
-        for (const item of this.items) {
-            item.animation.alpha = alpha
-        }
+        this.setAlpha(alpha)
 
         const isHoverAnimating = isVisible && this.updateHover(bounds, buttons, mouse, now)
 
@@ -120,10 +117,8 @@ export default class ContextMenuOverlay extends Overlay {
     }
 
     clear(queue: Queue) {
-        this.remove(queue)
+        super.clear(queue)
 
-        this.state = null
-        this.fade = new HoverProgress()
         this.hover = []
         this.bounds = null
     }
@@ -132,7 +127,6 @@ export default class ContextMenuOverlay extends Overlay {
         super.remove(queue)
 
         this.buttonRects = []
-        this.built = null
     }
 
     private isBuilt(window: CanvasWindow, isInteractive: boolean) {
@@ -141,24 +135,23 @@ export default class ContextMenuOverlay extends Overlay {
         return built != null
                && built.state === this.state
                && built.isInteractive == isInteractive
-               && built.window.x == window.x && built.window.y == window.y
-               && built.window.width == window.width && built.window.height == window.height
+               && sameRect(built.window, window)
     }
 
     private updateHover(bounds: RectangleDimensions, buttons: ButtonOptions[], mouse: Point | null, now: DOMHighResTimeStamp) {
         let isAnimating = false
 
-        ContextMenuOverlay.getButtonBounds(bounds, buttons).forEach((button, index) => {
+        ContextMenuOverlay.getRows(bounds, buttons).forEach((row, index) => {
             const rect = this.buttonRects[index]
 
-            if (!button || !rect)
+            if (row.isDivider || !rect)
                 return
 
             const hover = this.hover[index] ??= new HoverProgress()
 
-            hover.step(contains(button, mouse), now, AnimationTiming.button)
+            hover.step(contains(row, mouse), now, AnimationTiming.button)
 
-            rect.color = rect.activeColor = ContextMenuOverlay.getButtonColor(hover)
+            rect.color = ContextMenuOverlay.getButtonColor(hover)
 
             isAnimating ||= hover.isAnimating
         })
@@ -170,8 +163,8 @@ export default class ContextMenuOverlay extends Overlay {
         const { offset, padding, textPadding, fontSize, minWidth } = ContextMenu
 
         const width = Math.max(minWidth,
-            Math.max(...buttons.map(button => stringWidth(button.text, fontSize))) + textPadding * 2 + padding * 2)
-        const height = buttons.reduce((acc, button) => acc + ContextMenuOverlay.getButtonHeight(button), 0) + padding * 2
+            maxOf(buttons, button => stringWidth(button.text, fontSize)) + textPadding * 2 + padding * 2)
+        const height = sum(buttons, ContextMenuOverlay.getButtonHeight) + padding * 2
 
         const { x, y } = placeNear(point, width, height, offset, window)
 
@@ -202,15 +195,15 @@ export default class ContextMenuOverlay extends Overlay {
              .position(units.positionX(x), units.positionY(y))
              .size(units.x(width), units.y(height))
              .fill()
-             .round(Array(4).fill(units.x(menuRadius)))
+             .round(units.x(menuRadius))
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
              .color(Theme.contextMenuBackground)
              .stroke(Theme.dropdownBorder)
              .layer(Layer.ContextMenu - 20)
 
-        ContextMenuOverlay.getButtonBounds(bounds, buttons).forEach((button, index) => {
-            if (!button) {
-                const dividerY = ContextMenuOverlay.getButtonTop(bounds, buttons, index) + ContextMenu.dividerHeight / 2
+        ContextMenuOverlay.getRows(bounds, buttons).forEach((button, index) => {
+            if (button.isDivider) {
+                const dividerY = button.y + button.height / 2
 
                 items.line()
                      .stop(units.positionX(x + padding), units.positionY(dividerY))
@@ -226,7 +219,7 @@ export default class ContextMenuOverlay extends Overlay {
             const rect = items.rect()
                               .position(units.positionX(button.x), units.positionY(button.y))
                               .size(units.x(button.width), units.y(button.height))
-                              .round(Array(4).fill(units.x(buttonRadius)))
+                              .round(units.x(buttonRadius))
                               .fill()
                               .align(HorizontalAlignment.Left, VerticalAlignment.Top)
                               .color(ContextMenuOverlay.getButtonColor(this.hover[index]))
@@ -253,24 +246,18 @@ export default class ContextMenuOverlay extends Overlay {
                : Theme.withAlpha(Theme.contextMenuButtonHover, hover.value)
     }
 
-    private static getButtonTop(bounds: RectangleDimensions, buttons: ButtonOptions[], index: number) {
-        return bounds.y + ContextMenu.padding
-               + buttons.slice(0, index).reduce((acc, button) => acc + ContextMenuOverlay.getButtonHeight(button), 0)
-    }
-
-    private static getButtonBounds(bounds: RectangleDimensions, buttons: ButtonOptions[]): (RectangleDimensions | null)[] {
-        const { padding, buttonHeight } = ContextMenu
+    private static getRows(bounds: RectangleDimensions, buttons: ButtonOptions[]): MenuRow[] {
+        const { padding } = ContextMenu
 
         let y = bounds.y + padding
 
         return buttons.map(button => {
-            const top = y
+            const height = ContextMenuOverlay.getButtonHeight(button)
+            const row = { x: bounds.x + padding, y, width: bounds.width - padding * 2, height, isDivider: !!button.isDivider }
 
-            y += ContextMenuOverlay.getButtonHeight(button)
+            y += height
 
-            return button.isDivider
-                   ? null
-                   : { x: bounds.x + padding, y: top, width: bounds.width - padding * 2, height: buttonHeight }
+            return row
         })
     }
 

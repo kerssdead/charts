@@ -3,6 +3,7 @@ import PlotProcess from '@/render/PlotProcess'
 import RenderItem from '@/types/RenderItem'
 import RenderItemArc from '@/types/RenderItemArc'
 import Panel from '@/types/Panel'
+import { groupBy } from '@/Helper'
 
 export default class Transition {
     static snapshot(queue: Queue): Map<string, RenderItem> {
@@ -90,49 +91,25 @@ export default class Transition {
 
         const arc = (item: RenderItem) => item.shape as RenderItemArc
 
-        const newArcs = queue.items.filter(item => {
-            return Transition.isArc(item)
-        })
+        const newArcs = queue.items.filter(Transition.isArc)
         const newByOld = new Map<RenderItem, RenderItem>()
 
         for (const [item, old] of matches)
             newByOld.set(old, item)
 
-        const oldArcs = [...matches.values(), ...removed].filter(item => {
-            return Transition.isArc(item)
-        })
+        const oldArcs = [...matches.values(), ...removed].filter(Transition.isArc)
 
         const key = (item: RenderItem, angle: number) => `${ item.panel?.index }|${ Math.round(angle / epsilon) }`
 
-        const index = (items: RenderItem[], getEnd: (item: RenderItem) => number) => {
-            const result = new Map<string, RenderItem[]>()
-
-            for (const item of items) {
-                const itemKey = key(item, getEnd(item))
-                const group = result.get(itemKey)
-
-                if (group)
-                    group.push(item)
-                else
-                    result.set(itemKey, [item])
-            }
-
-            return result
-        }
-
-        const newByEnd = index(newArcs, item => arc(item).endAngle)
-        const oldByEnd = index(oldArcs, item => arc(item).current(item.animation.morph).endAngle)
+        const newByEnd = groupBy(newArcs, item => key(item, arc(item).endAngle))
+        const oldByEnd = groupBy(oldArcs, item => key(item, arc(item).current(item.animation.morph).endAngle))
 
         const previousEnd = (item: RenderItem, visited: Set<RenderItem>): number => {
             visited.add(item)
 
-            const before = (newByEnd.get(key(item, arc(item).startAngle)) ?? []).filter(other => {
-                return !visited.has(other)
-            })
+            const before = (newByEnd.get(key(item, arc(item).startAngle)) ?? []).filter(other => !visited.has(other))
 
-            const matched = before.find(other => {
-                return matches.has(other)
-            })
+            const matched = before.find(other => matches.has(other))
 
             if (matched) {
                 const old = matches.get(matched)!
@@ -150,13 +127,9 @@ export default class Transition {
 
             const start = arc(item).current(item.animation.morph).startAngle
 
-            const before = (oldByEnd.get(key(item, start)) ?? []).filter(other => {
-                return !visited.has(other)
-            })
+            const before = (oldByEnd.get(key(item, start)) ?? []).filter(other => !visited.has(other))
 
-            const matched = before.find(other => {
-                return newByOld.has(other)
-            })
+            const matched = before.find(other => newByOld.has(other))
 
             if (matched)
                 return arc(newByOld.get(matched)!).endAngle
@@ -166,12 +139,8 @@ export default class Transition {
                    : start
         }
 
-        const appearAngles = appeared.map(item => {
-            return previousEnd(item, new Set())
-        })
-        const removeAngles = removed.map(item => {
-            return Transition.isArc(item) && !item.isGhost ? nextEnd(item, new Set()) : 0
-        })
+        const appearAngles = appeared.map(item => previousEnd(item, new Set()))
+        const removeAngles = removed.map(item => Transition.isArc(item) && !item.isGhost ? nextEnd(item, new Set()) : 0)
 
         appeared.forEach((item, i) => {
             arc(item).appearFromAngle(appearAngles[i])

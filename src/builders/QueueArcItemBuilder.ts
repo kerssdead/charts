@@ -6,49 +6,49 @@ export default class QueueArcItemBuilder extends QueueItemBaseBuilder<RenderItem
         super(new RenderItemArc())
     }
 
-    position(x: number, y: number): QueueArcItemBuilder {
-        this.shape.absolute = { x: x, y: y }
+    position(x: number, y: number) {
+        this.shape.absolute = { x, y }
 
         return this
     }
 
-    radius(radius: number) : QueueArcItemBuilder {
+    radius(radius: number) {
         this.shape.radius = radius
 
         return this
     }
 
-    innerRadius(radius: number) : QueueArcItemBuilder {
+    innerRadius(radius: number) {
         this.shape.innerRadius = radius
 
         return this
     }
 
-    gap(gap: number) : QueueArcItemBuilder {
+    gap(gap: number) {
         this.shape.gap = gap
 
         return this
     }
 
-    cornerRadius(radius: number) : QueueArcItemBuilder {
+    cornerRadius(radius: number) {
         this.shape.cornerRadius = radius
 
         return this
     }
 
-    startAngle(angle: number) : QueueArcItemBuilder {
+    startAngle(angle: number) {
         this.shape.startAngle = angle
 
         return this
     }
 
-    endAngle(angle: number) : QueueArcItemBuilder {
+    endAngle(angle: number) {
         this.shape.endAngle = angle
 
         return this
     }
 
-    leader(gap: number, length: number, offset: number = 0) : QueueArcItemBuilder {
+    leader(gap: number, length: number, offset: number = 0) {
         this.shape.leaderGap = gap
         this.shape.leaderLength = length
         this.shape.leaderOffset = offset
@@ -56,19 +56,19 @@ export default class QueueArcItemBuilder extends QueueItemBaseBuilder<RenderItem
         return this
     }
 
-    gradient() : QueueArcItemBuilder {
+    gradient() {
         this.shape.isGradient = true
 
         return this
     }
 
-    grow(angle: number) : QueueArcItemBuilder {
+    grow(angle: number) {
         this.shape.growOrigin = angle
 
         return this
     }
 
-    fill(isFill: boolean = true) : QueueArcItemBuilder {
+    fill(isFill: boolean = true) {
         this.shape.isFill = isFill
 
         return this

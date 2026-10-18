@@ -57,14 +57,12 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
 
     color(color: string): this {
         this.current.color = color
-        this.current.activeColor = color
 
         return this
     }
 
     stroke(color: string): this {
         this.current.stroke = color
-        this.current.activeStroke = color
 
         return this
     }

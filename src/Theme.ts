@@ -1,4 +1,4 @@
-import * as Helper from '@/Helper'
+import { adjustColor, clamp, hexToRgb } from '@/Helper'
 import ThemeOptions from '@/static/ThemeOptions'
 import { Events } from '@/static/Enums'
 
@@ -17,8 +17,6 @@ class Theme {
     static line: string
 
     static lineAxis: string
-
-    static lineActive: string
 
     static dropdownItemHoverColor: string
 
@@ -69,25 +67,25 @@ class Theme {
 
         Theme.currentTheme = index
 
-        Theme.text = ThemeOptions.colors[index]
-        Theme.background = ThemeOptions.backgrounds[index]
-        Theme.line = ThemeOptions.lines[index]
-        Theme.lineAxis = ThemeOptions.lineAxes[index]
-        Theme.lineActive = ThemeOptions.lineActives[index]
-        Theme.dropdownItemHoverColor = Helper.adjustColor(Theme.background, index == ColorTheme.light ? -50 : 50)
-        Theme.dropdownBorder = ThemeOptions.dropdownBorders[index]
-        Theme.canvasBackground = ThemeOptions.canvasBackgrounds[index]
-        const { r, g, b } = Helper.hexToRgb(Theme.canvasBackground)!
+        Object.assign(Theme, ThemeOptions.palettes[index])
+
+        Theme.dropdownItemHoverColor = adjustColor(Theme.background, index == ColorTheme.light ? -50 : 50)
+
+        const { r, g, b } = hexToRgb(Theme.canvasBackground)!
         Theme.canvasBackgroundInt = new Uint32Array(new Uint8ClampedArray([r, g, b, 255]).buffer)[0]
-        Theme.contextMenuBackground = Theme.withAlpha(Theme.background, ThemeOptions.contextMenuOpacities[index])
+        Theme.contextMenuBackground = Theme.withAlpha(Theme.background, ThemeOptions.contextMenuOpacity)
         Theme.contextMenuButton = Theme.withAlpha(Theme.dropdownItemHoverColor, 0)
         Theme.contextMenuButtonHover = Theme.withAlpha(Theme.dropdownItemHoverColor, 1)
     }
 
     static withAlpha(color: string, alpha: number) {
-        const value = Math.round(Math.min(Math.max(alpha, 0), 1) * 255)
+        const value = Math.round(clamp(alpha, 0, 1) * 255)
 
         return color.slice(0, 7) + value.toString(16).padStart(2, '0')
+    }
+
+    static hoverBackground(hover: number) {
+        return adjustColor(Theme.canvasBackground, Math.round(-25 * hover))
     }
 
     static update(isDark?: Function) {

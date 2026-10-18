@@ -1,10 +1,9 @@
 import TreeData, { TreeValue } from '@/types/data/TreeData'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
-import { HorizontalAlignment, PlotAxisType, TextAlignment, VerticalAlignment } from '@/static/Enums'
+import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
 import { adjustColor, contrastText, stringWidth, sum } from '@/Helper'
 import Point from '@/types/Point'
-import ChartSettings from '@/types/ChartSettings'
 import Formatter from '@/helpers/Formatter'
 import Units from '@/helpers/Units'
 
@@ -31,33 +30,26 @@ type Cell<T> = {
 export default class TreeProcess {
     private data: TreeData
 
-    private readonly padding: number
-
-    private readonly gap: number
-
     private readonly units: Units
 
     private readonly valuePostfix: string | undefined
 
     private order: number = 0
 
-    constructor(data: TreeData, pixel: Point, settings: ChartSettings) {
+    constructor(data: TreeData, pixel: Point, valuePostfix: string | undefined) {
         this.data = data
         this.units = new Units(pixel)
-        this.valuePostfix = settings.valuePostfix
-
-        this.padding = this.data.padding
-        this.gap = this.data.gap
+        this.valuePostfix = valuePostfix
     }
 
     getData() {
         this.order = 0
 
         const box = {
-            x: this.padding,
-            y: this.padding,
-            width: COORDS_MAX_X - this.padding * 2,
-            height: COORDS_MAX_Y - this.padding * 2
+            x: this.data.padding,
+            y: this.data.padding,
+            width: COORDS_MAX_X - this.data.padding * 2,
+            height: COORDS_MAX_Y - this.data.padding * 2
         }
 
         const groups = TreeProcess.prepare(this.data.values.filter(value => !value.disabled), TreeProcess.getSum)
@@ -108,8 +100,8 @@ export default class TreeProcess {
                 position.y += h
             }
 
-            const widthGap = isVertical && !isLast ? this.gap / 2 : 0
-            const heightGap = isVertical || isLast ? 0 : this.gap / 2
+            const widthGap = isVertical && !isLast ? this.data.gap / 2 : 0
+            const heightGap = isVertical || isLast ? 0 : this.data.gap / 2
 
             return { value, box: { x, y, width: w - widthGap, height: h - heightGap } }
         })
@@ -129,7 +121,7 @@ export default class TreeProcess {
                  .position(box.x + box.width / 2, box.y + box.height / 2)
                  .size(box.width, box.height)
                  .align(HorizontalAlignment.Center, VerticalAlignment.Center)
-                 .round(Array(4).fill(CORNER_RADIUS))
+                 .round(CORNER_RADIUS)
                  .fill()
                  .gradient()
                  .color(color)
@@ -153,7 +145,7 @@ export default class TreeProcess {
     }
 
     private getTooltip(value: TreeValue, group?: TreeValue) {
-        const rows = [group?.label, value.label, Formatter.format(TreeProcess.getSum(value), PlotAxisType.Number, this.valuePostfix)]
+        const rows = [group?.label, value.label, Formatter.value(TreeProcess.getSum(value), this.valuePostfix)]
 
         return rows.filter(row => row).join('\n')
     }

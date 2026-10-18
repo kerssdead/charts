@@ -12,7 +12,7 @@ export default class QueueTextItemBuilder
     }
 
     position(x: number, y: number) {
-        this.shape.absolute = { x: x, y: y }
+        this.shape.absolute = { x, y }
 
         return this
     }

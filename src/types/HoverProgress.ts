@@ -1,4 +1,5 @@
-import Animations from '@/Animations'
+import { ease } from '@/Animations'
+import { clamp } from '@/Helper'
 
 export default class HoverProgress {
     private progress: number = 0
@@ -8,7 +9,7 @@ export default class HoverProgress {
     private isOver: boolean = false
 
     get value() {
-        return Animations.getTransition(this.progress)
+        return ease(this.progress)
     }
 
     get isIdle() {
@@ -25,7 +26,7 @@ export default class HoverProgress {
         this.time = now
         this.isOver = isOver
 
-        const progress = Math.min(Math.max(this.progress + (isOver ? delta : -delta) / duration, 0), 1)
+        const progress = clamp(this.progress + (isOver ? delta : -delta) / duration, 0, 1)
         const isChanged = progress != this.progress
 
         this.progress = progress

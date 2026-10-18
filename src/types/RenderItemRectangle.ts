@@ -3,10 +3,11 @@ import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import RenderItem from '@/types/RenderItem'
 import Point from '@/types/Point'
-import { Alignment } from '@/types/Alignment'
+import { Alignment, DEFAULT_ALIGNMENT } from '@/types/Alignment'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { GradientCache } from '@/helpers/Canvas'
+import { lerp } from '@/Helper'
 
 const SCALE_DELTA = 0.01
 const ALPHA_DELTA = 0.5
@@ -23,24 +24,24 @@ const V_FACTOR = {
 }
 
 type RectangleCanvas = RectangleDimensions & {
-    radii: number[] | number
+    radii: number[]
 }
 
 export default class RenderItemRectangle
     extends RenderItemBase {
-    isFill: boolean
+    isFill: boolean = false
 
     isGradient: boolean = false
 
-    radii: number[]
+    radii: number[] = [0, 0, 0, 0]
 
     fromRadii: number[] | null = null
 
     absolute: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
 
-    canvas: RectangleCanvas = { x: 0, y: 0, width: 0, height: 0, radii: 0 }
+    canvas: RectangleCanvas = { x: 0, y: 0, width: 0, height: 0, radii: [0, 0, 0, 0] }
 
-    align: Alignment = Alignment.default
+    align: Alignment = DEFAULT_ALIGNMENT
 
     growAxis: 'x' | 'y' | null = null
 
@@ -60,31 +61,25 @@ export default class RenderItemRectangle
         if (!this.from || morph >= 1)
             return result
 
-        const lerp = (from: number, to: number) => {
-            return from + (to - from) * morph
-        }
-
-        result.x = lerp(this.from.x, this.absolute.x)
-        result.y = lerp(this.from.y, this.absolute.y)
-        result.width = lerp(this.from.width, this.absolute.width)
-        result.height = lerp(this.from.height, this.absolute.height)
+        result.x = lerp(this.from.x, this.absolute.x, morph)
+        result.y = lerp(this.from.y, this.absolute.y, morph)
+        result.width = lerp(this.from.width, this.absolute.width, morph)
+        result.height = lerp(this.from.height, this.absolute.height, morph)
 
         return result
     }
 
     currentRadii(morph: number = 1): number[] {
-        const radii = this.radii ?? [0, 0, 0, 0]
-
         if (!this.fromRadii || morph >= 1)
-            return [...radii]
+            return [...this.radii]
 
         const flatten = 1 - Math.pow(1 - morph, 4)
         const round = Math.pow(morph, 4)
 
-        return radii.map((radius, i) => {
+        return this.radii.map((radius, i) => {
             const from = this.fromRadii![i] ?? 0
 
-            return from + (radius - from) * (radius < from ? flatten : round)
+            return lerp(from, radius, radius < from ? flatten : round)
         })
     }
 
@@ -145,13 +140,13 @@ export default class RenderItemRectangle
                                 : RenderItem.adjustY(window, this.growOrigin)
     }
 
-    render(ctx: CanvasRenderingContext2D, item?: RenderItem): void {
-        const { left, top, width, height } = this.grow(item?.animation.init ?? 1)
+    render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
+        const { left, top, width, height } = this.grow(item.animation.init)
 
         ctx.roundRect(left, top, width, height, this.canvas.radii)
 
-        if (this.isGradient && item && height != 0) {
-            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.activeColor, top, top + height)
+        if (this.isGradient && height != 0) {
+            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.color, top, top + height)
         }
 
         if (this.isFill) {
@@ -179,8 +174,8 @@ export default class RenderItemRectangle
                && top <= point.y && point.y <= top + height
     }
 
-    animate(item: RenderItem, isBackward = false) {
-        const k = item.hoverFactor(isBackward, AnimationTiming.hover)
+    animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp) {
+        const k = item.hoverFactor(isBackward, now, AnimationTiming.hover)
 
         item.animation.scale = 1 - SCALE_DELTA * k
         item.animation.alpha = 1 - ALPHA_DELTA * k
@@ -201,14 +196,14 @@ export default class RenderItemRectangle
         if (this.growAxis == 'x') {
             return {
                 ...bounds,
-                left: origin + (bounds.left - origin) * progress,
+                left: lerp(origin, bounds.left, progress),
                 width: bounds.width * progress
             }
         }
 
         return {
             ...bounds,
-            top: origin + (bounds.top - origin) * progress,
+            top: lerp(origin, bounds.top, progress),
             height: bounds.height * progress
         }
     }

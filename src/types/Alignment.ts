@@ -1,14 +1,12 @@
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 
-export class Alignment {
-    x: HorizontalAlignment = HorizontalAlignment.Center
+export type Alignment = {
+    x: HorizontalAlignment
 
-    y: VerticalAlignment = VerticalAlignment.Center
+    y: VerticalAlignment
+}
 
-    static get default(): Alignment {
-        return {
-            x: HorizontalAlignment.Center,
-            y: VerticalAlignment.Center
-        }
-    }
+export const DEFAULT_ALIGNMENT: Alignment = {
+    x: HorizontalAlignment.Center,
+    y: VerticalAlignment.Center
 }

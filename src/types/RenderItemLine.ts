@@ -3,6 +3,7 @@ import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming } from '@/static/constants/Index'
+import { lerp, sum } from '@/Helper'
 
 const ALPHA_DELTA = 0.5
 
@@ -28,8 +29,8 @@ export default class RenderItemLine
             const from = this.from![i]
 
             return {
-                x: from.x + (stop.x - from.x) * morph,
-                y: from.y + (stop.y - from.y) * morph
+                x: lerp(from.x, stop.x, morph),
+                y: lerp(from.y, stop.y, morph)
             }
         })
     }
@@ -68,10 +69,10 @@ export default class RenderItemLine
         }
     }
 
-    render(ctx: CanvasRenderingContext2D, item?: RenderItem): void {
-        const progress = item?.animation.init ?? 1
+    render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
+        const progress = item.animation.init
 
-        if (this.canvas.length == 0 || progress <= 0) {
+        if (this.canvas.length == 0) {
             return
         }
 
@@ -125,20 +126,14 @@ export default class RenderItemLine
         }
     }
 
-    animate(item: RenderItem, isBackward: boolean): void {
-        item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, AnimationTiming.hover)
-    }
-
-    isMouseOver(_point: Point): boolean {
-        return false
+    animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp): void {
+        item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, now, AnimationTiming.hover)
     }
 
     private partial(progress: number): Point[] {
-        const lengths = this.canvas.slice(1).map((stop, i) => {
-            return Math.hypot(stop.x - this.canvas[i].x, stop.y - this.canvas[i].y)
-        })
+        const lengths = this.canvas.slice(1).map((stop, i) => Math.hypot(stop.x - this.canvas[i].x, stop.y - this.canvas[i].y))
 
-        let left = lengths.reduce((acc, length) => { return acc + length }, 0) * progress
+        let left = sum(lengths, length => length) * progress
 
         const result: Point[] = [this.canvas[0]]
 

@@ -56,6 +56,10 @@ abstract class Formatter {
         return result + (postfix ?? '')
     }
 
+    static value(value: any | undefined, postfix?: string | undefined) {
+        return Formatter.format(value, PlotAxisType.Number, postfix)
+    }
+
 }
 
 export default Formatter

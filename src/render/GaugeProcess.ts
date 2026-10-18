@@ -3,12 +3,11 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import Sector from '@/types/Sector'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
 import Point from '@/types/Point'
-import ChartSettings from '@/types/ChartSettings'
 import Formatter from '@/helpers/Formatter'
 import Theme from '@/Theme'
-import { stringWidth, sum } from '@/Helper'
+import { clamp, stringWidth, sum } from '@/Helper'
 import Units from '@/helpers/Units'
-import { PlotAxisType, TextAlignment } from '@/static/Enums'
+import { TextAlignment } from '@/static/Enums'
 
 const PADDING = 80
 
@@ -58,11 +57,33 @@ export default class GaugeProcess {
 
     private readonly lines: Label[][]
 
-    constructor(data: GaugeData, pixel: Point, settings: ChartSettings) {
+    private readonly labelSpace: number
+
+    private readonly innerRatio: number
+
+    private readonly radius: number
+
+    private readonly thickness: number
+
+    private readonly center: Point
+
+    constructor(data: GaugeData, pixel: Point, valuePostfix: string | undefined) {
         this.data = data
         this.units = new Units(pixel)
-        this.valuePostfix = settings.valuePostfix
+        this.valuePostfix = valuePostfix
         this.lines = this.getLines()
+
+        const width = this.units.toPxX(COORDS_MAX_X)
+        const height = this.units.toPxY(COORDS_MAX_Y)
+
+        this.labelSpace = LABEL_GAP + LABEL_FONT * this.labelRows + LABEL_GAP
+        this.innerRatio = clamp(this.data.innerRadius ?? DEFAULT_INNER_RADIUS, 0, 100) / 100
+        this.radius = Math.max(Math.min(width / 2 - this.units.toPxX(PADDING), height - this.labelSpace - this.units.toPxY(PADDING) * 2), 0)
+        this.thickness = this.radius * (1 - this.innerRatio) / this.data.values.length
+        this.center = {
+            x: COORDS_MAX_X / 2,
+            y: this.units.y((height - this.radius - this.labelSpace) / 2 + this.radius)
+        }
     }
 
     private get min() {
@@ -73,41 +94,12 @@ export default class GaugeProcess {
         return this.data.max ?? 100
     }
 
-    private get radius() {
-        const width = this.units.toPxX(COORDS_MAX_X)
-        const height = this.units.toPxY(COORDS_MAX_Y)
-
-        return Math.max(Math.min(width / 2 - this.units.toPxX(PADDING), height - this.labelSpace - this.units.toPxY(PADDING) * 2), 0)
-    }
-
     private get isSingle() {
         return this.data.values.length == 1
     }
 
     private get labelRows() {
         return this.isSingle ? 2 : this.lines.length + 1
-    }
-
-    private get labelSpace() {
-        return LABEL_GAP + LABEL_FONT * this.labelRows + LABEL_GAP
-    }
-
-    private get thickness() {
-        return this.radius * (1 - this.innerRatio) / this.data.values.length
-    }
-
-    private get innerRatio() {
-        return Math.min(Math.max(this.data.innerRadius ?? DEFAULT_INNER_RADIUS, 0), 100) / 100
-    }
-
-    private get center(): Point {
-        const height = this.units.toPxY(COORDS_MAX_Y)
-        const top = (height - this.radius - this.labelSpace) / 2
-
-        return {
-            x: COORDS_MAX_X / 2,
-            y: this.units.y(top + this.radius)
-        }
     }
 
     getData() {
@@ -137,7 +129,7 @@ export default class GaugeProcess {
     private getRatio(value: number) {
         const range = this.max - this.min
 
-        return range == 0 ? 0 : Math.min(Math.max((value - this.min) / range, 0), 1)
+        return range == 0 ? 0 : clamp((value - this.min) / range, 0, 1)
     }
 
     private getTrack(index: number) {
@@ -311,7 +303,7 @@ export default class GaugeProcess {
     }
 
     private formatValue(value: number) {
-        return Formatter.format(value, PlotAxisType.Number, this.valuePostfix)
+        return Formatter.value(value, this.valuePostfix)
     }
 
     private getPercent(value: number) {

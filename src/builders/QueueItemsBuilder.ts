@@ -5,7 +5,7 @@ import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
 import QueueArcItemBuilder from '@/builders/QueueArcItemBuilder'
 import QueueTextItemBuilder from '@/builders/QueueTextItemBuilder'
 
-type BuilderConstructor<T extends QueueItemBaseBuilder> = new (...args: any[]) => T
+export type QueueAction = (items: QueueItemsBuilder) => void
 
 export default class QueueItemsBuilder {
     private items: RenderItem[] = []
@@ -24,42 +24,40 @@ export default class QueueItemsBuilder {
         return this.items
     }
 
-    private getBuilder<T extends QueueItemBaseBuilder>(BuilderClass: BuilderConstructor<T>, ...args: any[]): T {
+    private next<T extends QueueItemBaseBuilder>(builder: T): T {
         this.add()
-
-        const builder = new BuilderClass(...args)
 
         this.current = builder
 
         return builder
     }
 
-    line(): QueueLineItemBuilder {
-        return this.getBuilder(QueueLineItemBuilder)
+    line() {
+        return this.next(new QueueLineItemBuilder())
     }
 
-    rect(): QueueRectangleItemBuilder {
-        return this.getBuilder(QueueRectangleItemBuilder)
+    rect() {
+        return this.next(new QueueRectangleItemBuilder())
     }
 
-    arc(): QueueArcItemBuilder {
-        return this.getBuilder(QueueArcItemBuilder)
+    arc() {
+        return this.next(new QueueArcItemBuilder())
     }
 
-    text(text: string): QueueTextItemBuilder {
-        return this.getBuilder(QueueTextItemBuilder, text)
+    text(text: string) {
+        return this.next(new QueueTextItemBuilder(text))
     }
 
-    static build(actions: ((builder: QueueItemsBuilder) => void)[], isInitialized: boolean = false) {
+    static build(actions: QueueAction | QueueAction[], isInitialized: boolean = false) {
         const builder = new QueueItemsBuilder(isInitialized)
 
-        for (const action of actions)
+        for (const action of Array.isArray(actions) ? actions : [actions])
             action(builder)
 
         return builder.dispose()
     }
 
-    static readonly empty = (_items: QueueItemsBuilder) => { }
+    static readonly empty: QueueAction = () => { }
 
     private add() {
         if (this.current == null) {

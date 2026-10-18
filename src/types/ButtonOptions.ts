@@ -1,40 +1,29 @@
 import DropdownItem from '@/types/DropdownItem'
 
-class ButtonOptions {
+type ButtonOptions = {
     text: string
 
     action: () => void
 
-    isDivider: boolean = false
+    isDivider?: boolean
+}
 
-    constructor(text: string, action: () => void) {
-        this.text = text
-        this.action = action
+export const DIVIDER: ButtonOptions = { text: '', action: () => { }, isDivider: true }
+
+export function fromDropdownItems(items: DropdownItem[] | undefined, data?: any): ButtonOptions[] {
+    const buttons: ButtonOptions[] = []
+
+    for (const item of items ?? []) {
+        if (!item.isDivider && (item.condition?.(data) ?? true))
+            buttons.push({ text: item.text, action: () => item.action(data) })
+        else if (item.isDivider && buttons.length > 0 && !buttons[buttons.length - 1].isDivider)
+            buttons.push(DIVIDER)
     }
 
-    static divider() {
-        const divider = new ButtonOptions('', () => { })
+    if (buttons[buttons.length - 1]?.isDivider)
+        buttons.pop()
 
-        divider.isDivider = true
-
-        return divider
-    }
-
-    static fromItems(items: DropdownItem[] | undefined, data?: any): ButtonOptions[] {
-        const buttons: ButtonOptions[] = []
-
-        for (const item of items ?? []) {
-            if (!item.isDivider && (item.condition?.(data) ?? true))
-                buttons.push(new ButtonOptions(item.text, () => item.action(data)))
-            else if (item.isDivider && buttons.length > 0 && !buttons[buttons.length - 1].isDivider)
-                buttons.push(ButtonOptions.divider())
-        }
-
-        if (buttons[buttons.length - 1]?.isDivider)
-            buttons.pop()
-
-        return buttons
-    }
+    return buttons
 }
 
 export default ButtonOptions

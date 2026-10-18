@@ -5,8 +5,6 @@ class Modal {
 
     private isClosed: boolean = false
 
-    #content: HTMLDivElement | undefined
-
     constructor(content?: HTMLElement, size?: DOMRect, title?: string) {
         this.modal = document.createElement(Tag.Dialog)
 
@@ -21,9 +19,9 @@ class Modal {
 
         document.body.appendChild(this.modal)
 
-        this.#setHeader(title)
+        this.setHeader(title)
 
-        this.#setContent(content)
+        this.setContent(content)
     }
 
     open() {
@@ -41,18 +39,18 @@ class Modal {
         this.modal.remove()
     }
 
-    #setHeader(title: string | undefined) {
-        let titleSpan = document.createElement(Tag.Span)
+    private setHeader(title: string | undefined) {
+        const titleSpan = document.createElement(Tag.Span)
 
         titleSpan.classList.add(ModalClasses.title)
         titleSpan.textContent = title ?? ''
 
-        let closeButton = document.createElement(Tag.Button)
+        const closeButton = document.createElement(Tag.Button)
 
         closeButton.classList.add(ModalClasses.close)
-        closeButton.innerHTML = Icon.Close
+        closeButton.textContent = Icon.Close
 
-        let header = document.createElement(Tag.Div)
+        const header = document.createElement(Tag.Div)
 
         header.classList.add(ModalClasses.header)
 
@@ -64,30 +62,28 @@ class Modal {
         closeButton.onclick = () => this.close()
     }
 
-    #setContent(content: HTMLElement | undefined) {
-        if (this.#content == undefined) {
-            this.#content = document.createElement(Tag.Div)
+    private setContent(content: HTMLElement | undefined) {
+        const container = document.createElement(Tag.Div)
 
-            this.#content.classList.add(ModalClasses.content)
-
-            this.modal.appendChild(this.#content)
-        }
+        container.classList.add(ModalClasses.content)
 
         if (content != undefined)
-            this.#content.appendChild(content)
+            container.appendChild(content)
+
+        this.modal.appendChild(container)
     }
 }
 
 export default Modal
 
 class ModalClasses {
-    static modal = 'o-modal'
+    static readonly modal = 'o-modal'
 
-    static title = 'o-modal-title'
+    static readonly title = 'o-modal-title'
 
-    static close = 'o-modal-close'
+    static readonly close = 'o-modal-close'
 
-    static header = 'o-modal-header'
+    static readonly header = 'o-modal-header'
 
-    static content = 'o-modal-content'
+    static readonly content = 'o-modal-content'
 }

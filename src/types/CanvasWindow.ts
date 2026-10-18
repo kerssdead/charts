@@ -1,6 +1,7 @@
 import { COORDS_MAX_X, COORDS_MAX_Y, PAN_MIN_VISIBLE, ZOOM_MAX, ZOOM_MIN } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
+import { clamp } from '@/Helper'
 
 export default class CanvasWindow {
     x: number = 0
@@ -51,7 +52,7 @@ export default class CanvasWindow {
     }
 
     zoom(step: number, anchor: Point) {
-        const scale = Math.min(Math.max(this.scale * (1 + step), ZOOM_MIN), ZOOM_MAX)
+        const scale = clamp(this.scale * (1 + step), ZOOM_MIN, ZOOM_MAX)
 
         if (scale == this.scale)
             return
@@ -72,7 +73,7 @@ export default class CanvasWindow {
 
         const { base } = this
 
-        this.x = Math.round(Math.min(Math.max(x, base.x - this.width + keepX), base.x + base.width - keepX))
-        this.y = Math.round(Math.min(Math.max(y, base.y - this.height + keepY), base.y + base.height - keepY))
+        this.x = Math.round(clamp(x, base.x - this.width + keepX, base.x + base.width - keepX))
+        this.y = Math.round(clamp(y, base.y - this.height + keepY, base.y + base.height - keepY))
     }
 }

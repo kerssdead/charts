@@ -6,8 +6,8 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
         super(new RenderItemLine())
     }
 
-    stop(x: number, y: number) : QueueLineItemBuilder {
-        this.shape.absolute.push({ x: x, y: y })
+    stop(x: number, y: number) {
+        this.shape.absolute.push({ x, y })
 
         return this
     }

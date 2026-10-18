@@ -11,12 +11,6 @@ export default class PlotSeries extends Value {
 
     dash: number[]
 
-    constructor(obj: object) {
-        super()
-
-        Object.assign(this, obj)
-    }
-
     checkCondition(): boolean {
         return true
     }

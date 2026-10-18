@@ -1,4 +1,5 @@
 import PieData from '@/types/data/PieData'
+import { getValueRows } from '@/types/TableData'
 
 describe('Getting circular rows for decomposition', () => {
     it('Should has 3 rows', () => {
@@ -19,7 +20,7 @@ describe('Getting circular rows for decomposition', () => {
             ]
         } as PieData
 
-        expect(PieData.getRows(data).values.length)
+        expect(getValueRows(data.values).values.length)
             .toBe(3)
     })
 })

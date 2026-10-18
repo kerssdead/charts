@@ -15,6 +15,10 @@ class Value {
 
     value: number
 
+    constructor(obj: object = {}) {
+        Object.assign(this, obj)
+    }
+
     checkCondition(): boolean {
         return false
     }

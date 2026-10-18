@@ -4,11 +4,10 @@ import Sector from '@/types/Sector'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import TextResources from '@/static/TextResources'
-import { boxEdgeDistance, stringWidth, sum } from '@/Helper'
+import { boxEdgeDistance, clamp, stringWidth, sum } from '@/Helper'
 import Formatter from '@/helpers/Formatter'
-import ChartSettings from '@/types/ChartSettings'
 import Units from '@/helpers/Units'
-import { PlotAxisType, TextAlignment } from '@/static/Enums'
+import { TextAlignment } from '@/static/Enums'
 
 const LEADER_GAP = 20
 
@@ -68,30 +67,28 @@ export default class PieProcess {
 
     private readonly valuePostfix: string | undefined
 
+    private readonly radius: number
+
+    private readonly innerRatio: number
+
+    private readonly labelDistance: number
+
     private scale: number = 0
 
     private sum: number = 0
 
-    constructor(data: PieData, pixel: Point, settings: ChartSettings) {
+    constructor(data: PieData, pixel: Point, valuePostfix: string | undefined, enableOther: boolean) {
         this.data = data
         this.units = new Units(pixel)
-        this.enableOther = settings.enableOther
-        this.valuePostfix = settings.valuePostfix
-    }
+        this.enableOther = enableOther
+        this.valuePostfix = valuePostfix
 
-    private get radius() {
         const width = this.units.toPxX(COORDS_MAX_X)
         const height = this.units.toPxY(COORDS_MAX_Y)
 
-        return Math.max(Math.min(width / 5, height / 2 - LABEL_SPACE), 0)
-    }
-
-    private get innerRatio() {
-        return Math.min(Math.max(this.data.innerRadius ?? 0, 0), 100) / 100
-    }
-
-    private get labelDistance() {
-        return this.radius + this.units.toPxX(LEADER_GAP + LEADER_LENGTH + LEADER_GAP)
+        this.radius = Math.max(Math.min(width / 5, height / 2 - LABEL_SPACE), 0)
+        this.innerRatio = clamp(this.data.innerRadius ?? 0, 0, 100) / 100
+        this.labelDistance = this.radius + this.units.toPxX(LEADER_GAP + LEADER_LENGTH + LEADER_GAP)
     }
 
     getData() {
@@ -166,8 +163,8 @@ export default class PieProcess {
                    && Math.abs(a.center.y - b.center.y) < a.halfHeight + b.halfHeight + LABEL_SPACING
         }
 
-        const clamp = (label: Box) => {
-            label.angle = Math.min(Math.max(label.angle, label.middle - LABEL_MAX_DRIFT), label.middle + LABEL_MAX_DRIFT)
+        const clampLabel = (label: Box) => {
+            label.angle = clamp(label.angle, label.middle - LABEL_MAX_DRIFT, label.middle + LABEL_MAX_DRIFT)
             label.center = getCenter(label, label.angle)
         }
 
@@ -192,8 +189,8 @@ export default class PieProcess {
                 current.angle -= LABEL_STEP
                 next.angle += LABEL_STEP
 
-                clamp(current)
-                clamp(next)
+                clampLabel(current)
+                clampLabel(next)
 
                 isMoved = true
             }
@@ -337,7 +334,7 @@ export default class PieProcess {
     }
 
     private formatValue(value: number) {
-        return Formatter.format(value, PlotAxisType.Number, this.valuePostfix)
+        return Formatter.value(value, this.valuePostfix)
     }
 
     private getPercent(value: number) {

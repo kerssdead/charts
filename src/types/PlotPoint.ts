@@ -4,12 +4,6 @@ class PlotPoint extends Value {
     x: number | Date | string
 
     y: number | Date | string
-
-    constructor(obj: object) {
-        super()
-
-        Object.assign(this, obj)
-    }
 }
 
 export default PlotPoint

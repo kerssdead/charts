@@ -3,6 +3,7 @@ import { Events } from '@/static/Enums'
 import { ZOOM_DEFAULT_STEP } from '@/static/constants/Index'
 import Styles from '@/static/constants/Styles'
 import CanvasWindow from '@/types/CanvasWindow'
+import { clamp, copyRect, sameRect, samePoint } from '@/Helper'
 
 type PointerHandlers = {
     onClick: (point: Point) => void
@@ -143,7 +144,7 @@ export default class Pointer {
     }
 
     private setPosition(position: Point | null) {
-        if (position?.x === this.position?.x && position?.y === this.position?.y)
+        if (samePoint(position, this.position))
             return
 
         this.position = position
@@ -202,7 +203,7 @@ export default class Pointer {
 
         const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? WHEEL_LINE_HEIGHT : 1)
 
-        const step = Math.min(Math.max(-delta / WHEEL_NOTCH, -1), 1) * ZOOM_DEFAULT_STEP
+        const step = clamp(-delta / WHEEL_NOTCH, -1, 1) * ZOOM_DEFAULT_STEP
 
         if (this.updateWindow(view => view.zoom(step, this.toPoint(event))))
             this.handlers.onChange()
@@ -210,11 +211,11 @@ export default class Pointer {
 
     private updateWindow(update: (view: CanvasWindow) => void): boolean {
         const view = this.getWindow()
-        const { x, y, width, height } = view
+        const previous = copyRect(view)
 
         update(view)
 
-        return view.x !== x || view.y !== y || view.width !== width || view.height !== height
+        return !sameRect(view, previous)
     }
 
     private onContextMenu(event: MouseEvent) {

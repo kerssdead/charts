@@ -28,7 +28,7 @@ export default class Queue {
         return this.queue
     }
 
-    render(window: CanvasWindow, screen: CanvasWindow = window): boolean {
+    render(now: DOMHighResTimeStamp, window: CanvasWindow, screen: CanvasWindow = window): boolean {
         this.ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0)
 
         this.ctx.fillStyle = Theme.canvasBackground
@@ -39,11 +39,9 @@ export default class Queue {
         let hasTemp = false
 
         for (const step of this.getSorted()) {
-            this.ctx.beginPath()
-
             this.ctx.globalAlpha = step.animation.alpha
 
-            step.render(this.ctx, step.isFixed ? screen : window, screen)
+            step.render(this.ctx, step.isFixed ? screen : window, screen, now)
 
             if (step.isTemp)
                 hasTemp = true
@@ -59,7 +57,7 @@ export default class Queue {
         return isAnimating
     }
 
-    animate(point: Point | null): boolean {
+    animate(point: Point | null, now: DOMHighResTimeStamp): boolean {
         point ??= OUTSIDE
 
         const hoveredGroups = this.hoveredGroups
@@ -74,7 +72,7 @@ export default class Queue {
         let isAnimating = false
 
         for (const item of this.queue) {
-            if (item.animate(point, hoveredGroups))
+            if (item.animate(point, now, hoveredGroups))
                 isAnimating = true
         }
 
@@ -120,7 +118,7 @@ export default class Queue {
 
     private getSorted() {
         if (!this.isSorted) {
-            this.queue.sort((a, b) => { return a.layer - b.layer })
+            this.queue.sort((a, b) => a.layer - b.layer)
             this.isSorted = true
         }
 

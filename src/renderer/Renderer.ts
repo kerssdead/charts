@@ -2,7 +2,7 @@ import Canvas from '@/helpers/Canvas'
 import CanvasWindow from '@/types/CanvasWindow'
 import ChartSettings from '@/types/ChartSettings'
 import Legend from '@/Legend'
-import Paddings from '@/types/Paddings'
+import Paddings, { NO_PADDINGS } from '@/types/Paddings'
 import Panel from '@/types/Panel'
 import Point from '@/types/Point'
 import Pointer from '@/renderer/Pointer'
@@ -11,11 +11,11 @@ import Queue from '@/render/Queue'
 import RenderItem from '@/types/RenderItem'
 import Transition from '@/renderer/Transition'
 import CustomTooltip from '@/renderer/CustomTooltip'
-import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import MenuButton from '@/renderer/MenuButton'
 import TooltipOverlay from '@/renderer/TooltipOverlay'
 import ContextMenuOverlay from '@/renderer/ContextMenuOverlay'
-import ButtonOptions from '@/types/ButtonOptions'
+import ButtonOptions, { DIVIDER } from '@/types/ButtonOptions'
 import Export from '@/Export'
 import Modal from '@/Modal'
 import Decomposition from '@/Decomposition'
@@ -34,8 +34,6 @@ export class Renderer {
     private static readonly panelTitleFont = 16
 
     private static readonly panelTitlePadding = 8
-
-    static timer: DOMHighResTimeStamp = 0
 
     private readonly canvas: HTMLCanvasElement
 
@@ -243,16 +241,21 @@ export class Renderer {
         const { title, charts } = this.settings
 
         return this.menuButtons ??= [
-            new ButtonOptions(TextResources.exportPNG, () => {
-                setTimeout(() => Export.asPng(this.canvas, this.ratio, title, this.menu?.bounds, this.settings.isDarkThemeFunction), ContextMenu.fadeDuration)
-            }),
-            new ButtonOptions(TextResources.exportCSV, () => {
-                Export.asCsv(charts, title)
-            }),
-            ButtonOptions.divider(),
-            new ButtonOptions(TextResources.decomposeToTable, () => {
-                new Modal(Decomposition.fromCharts(charts), undefined, title || TextResources.dataAsTable).open()
-            })
+            {
+                text: TextResources.exportPNG,
+                action: () => {
+                    setTimeout(() => Export.asPng(this.canvas, this.ratio, title, this.menu?.bounds, this.settings.isDarkThemeFunction), ContextMenu.fadeDuration)
+                }
+            },
+            {
+                text: TextResources.exportCSV,
+                action: () => Export.asCsv(charts, title)
+            },
+            DIVIDER,
+            {
+                text: TextResources.decomposeToTable,
+                action: () => new Modal(Decomposition.fromCharts(charts), undefined, title || TextResources.dataAsTable).open()
+            }
         ]
     }
 
@@ -269,10 +272,6 @@ export class Renderer {
         if (this.isSuspended)
             return
 
-        this.requestFrame()
-    }
-
-    private requestFrame() {
         this.frame ??= requestAnimationFrame(this.tick)
     }
 
@@ -287,13 +286,11 @@ export class Renderer {
     private draw(timestamp: DOMHighResTimeStamp) {
         this.frame = null
 
-        Renderer.timer = timestamp
-
         Theme.update(this.settings.isDarkThemeFunction)
 
         const { position, isContextOpen, contextPoint } = this.pointer
 
-        const isHovering = this.queue.animate(position && !this.contextMenu.isOver(position) ? position : null)
+        const isHovering = this.queue.animate(position && !this.contextMenu.isOver(position) ? position : null, timestamp)
 
         const isTooltipFading = this.tooltip.update(this.queue, this.window, this.settings.enableTooltip ? position : null, isContextOpen,
             this.customTooltip, timestamp)
@@ -311,14 +308,14 @@ export class Renderer {
         for (const panel of this.panels)
             panel.update(this.window)
 
-        const isAnimating = this.queue.render(this.window, this.screen)
+        const isAnimating = this.queue.render(timestamp, this.window, this.screen)
 
         if (isAnimating || isHovering || isTooltipFading || isMenuAnimating || isLegendAnimating || isButtonAnimating)
-            this.requestFrame()
+            this.render()
     }
 
     private buildChart(isInitialized: boolean) {
-        const add = (...actions: ((items: QueueItemsBuilder) => void)[]) => {
+        const add = (...actions: QueueAction[]) => {
             const items = QueueItemsBuilder.build(actions, isInitialized || this.settings.disableInitAnimation)
 
             this.queue.add(items)
@@ -418,7 +415,7 @@ export class Renderer {
 
     private getTitle() {
         const { title } = this.settings
-        const { width, height } = this
+        const { height } = this
 
         if (!title)
             return QueueItemsBuilder.empty
@@ -440,7 +437,7 @@ export class Renderer {
 
         this.screen = new CanvasWindow(this.width, this.height)
 
-        return this.fit(this.legend?.reserved ?? { left: 0, top: 0, right: 0, bottom: 0 })
+        return this.fit(this.legend?.reserved ?? NO_PADDINGS)
     }
 
     private fit({ left, top, right, bottom }: Paddings): boolean {

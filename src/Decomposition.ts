@@ -1,10 +1,8 @@
-import TableData, { getTotals } from '@/types/TableData'
+import TableData, { getTotals, getValueRows } from '@/types/TableData'
 import Formatter from '@/helpers/Formatter'
 import { ChartType, Tag } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import PlotData from '@/types/data/PlotData'
-import PieData from '@/types/data/PieData'
-import TreeData from '@/types/data/TreeData'
 import { escapeHtml } from '@/Helper'
 
 class Decomposition {
@@ -22,11 +20,8 @@ class Decomposition {
             case ChartType.Plot:
                 return PlotData.getRows(chart.data as PlotData)
 
-            case ChartType.TreeMap:
-                return TreeData.getRows(chart.data as TreeData)
-
             default:
-                return PieData.getRows(chart.data as PieData)
+                return getValueRows(chart.data.values)
         }
     }
 

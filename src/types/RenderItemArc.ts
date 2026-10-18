@@ -5,6 +5,7 @@ import { AnimationTiming, COORDS_MAX_X } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import Theme from '@/Theme'
 import { GradientCache } from '@/helpers/Canvas'
+import { lerp } from '@/Helper'
 
 const FULL_CIRCLE_EPSILON = 1e-6
 
@@ -38,6 +39,53 @@ type Shape = {
 
 export default class RenderItemArc
     extends RenderItemBase {
+    isFill: boolean = false
+
+    isGradient: boolean = false
+
+    absolute: Point = { x: 0, y: 0 }
+
+    canvas: ArcCanvas = {
+        x: 0,
+        y: 0,
+        radius: 10,
+        innerRadius: 0,
+        gap: 0,
+        cornerRadius: 0,
+        leaderGap: 0,
+        leaderLength: 0,
+        startAngle: 0,
+        endAngle: Math.PI * 2
+    }
+
+    radius: number = 10
+
+    innerRadius: number = 0
+
+    gap: number = 0
+
+    cornerRadius: number = 0
+
+    growOrigin: number | null = null
+
+    leaderGap: number = 0
+
+    leaderLength: number = 0
+
+    leaderOffset: number = 0
+
+    leaderLabel: RenderItem | null = null
+
+    hover: number = 0
+
+    readonly pop: Point = { x: 0, y: 0 }
+
+    private readonly gradient = new GradientCache()
+
+    startAngle: number = 0
+
+    endAngle: number = Math.PI * 2
+
     from: ArcGeometry | null = null
 
     current(morph: number = 1): ArcGeometry {
@@ -53,17 +101,13 @@ export default class RenderItemArc
         if (!this.from || morph >= 1)
             return result
 
-        const lerp = (from: number, to: number) => {
-            return from + (to - from) * morph
-        }
-
         return {
-            x: lerp(this.from.x, result.x),
-            y: lerp(this.from.y, result.y),
-            radius: lerp(this.from.radius, result.radius),
-            innerRadius: lerp(this.from.innerRadius, result.innerRadius),
-            startAngle: lerp(this.from.startAngle, result.startAngle),
-            endAngle: lerp(this.from.endAngle, result.endAngle)
+            x: lerp(this.from.x, result.x, morph),
+            y: lerp(this.from.y, result.y, morph),
+            radius: lerp(this.from.radius, result.radius, morph),
+            innerRadius: lerp(this.from.innerRadius, result.innerRadius, morph),
+            startAngle: lerp(this.from.startAngle, result.startAngle, morph),
+            endAngle: lerp(this.from.endAngle, result.endAngle, morph)
         }
     }
 
@@ -104,11 +148,11 @@ export default class RenderItemArc
         }
     }
 
-    render(ctx: CanvasRenderingContext2D, item?: RenderItem): void {
-        const shape = this.shape(item?.animation.init ?? 1)
+    render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
+        const shape = this.shape(item.animation.init)
 
-        if (this.isGradient && item)
-            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.activeColor,
+        if (this.isGradient)
+            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.color,
                 shape.y - this.canvas.radius, shape.y + this.canvas.radius)
 
         if (isFullCircle(shape.end - shape.start))
@@ -130,8 +174,8 @@ export default class RenderItemArc
         let end = this.canvas.endAngle
 
         if (this.growOrigin != null && progress < 1) {
-            start = this.growOrigin + (start - this.growOrigin) * progress
-            end = this.growOrigin + (end - this.growOrigin) * progress
+            start = lerp(this.growOrigin, start, progress)
+            end = lerp(this.growOrigin, end, progress)
         }
 
         const middle = (start + end) / 2
@@ -267,8 +311,8 @@ export default class RenderItemArc
         }
     }
 
-    animate(item: RenderItem, isBackward: boolean): void {
-        this.hover = item.hoverFactor(isBackward, AnimationTiming.hover)
+    animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp): void {
+        this.hover = item.hoverFactor(isBackward, now, AnimationTiming.hover)
     }
 
     isMouseOver(point: Point): boolean {
@@ -305,51 +349,4 @@ export default class RenderItemArc
                ? Math.hypot(dx, dy)
                : Math.abs(dy * cos - dx * sin)
     }
-
-    isFill: boolean = false
-
-    isGradient: boolean = false
-
-    absolute: Point = { x: 0, y: 0 }
-
-    canvas: ArcCanvas = {
-        x: 0,
-        y: 0,
-        radius: 10,
-        innerRadius: 0,
-        gap: 0,
-        cornerRadius: 0,
-        leaderGap: 0,
-        leaderLength: 0,
-        startAngle: 0,
-        endAngle: Math.PI * 2
-    }
-
-    radius: number = 10
-
-    innerRadius: number = 0
-
-    gap: number = 0
-
-    cornerRadius: number = 0
-
-    growOrigin: number | null = null
-
-    leaderGap: number = 0
-
-    leaderLength: number = 0
-
-    leaderOffset: number = 0
-
-    leaderLabel: RenderItem | null = null
-
-    hover: number = 0
-
-    readonly pop: Point = { x: 0, y: 0 }
-
-    private readonly gradient = new GradientCache()
-
-    startAngle: number = 0
-
-    endAngle: number = Math.PI * 2
 }

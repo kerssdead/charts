@@ -4,7 +4,7 @@ import Point from '@/types/Point'
 import RenderItem from '@/types/RenderItem'
 import { TextAlignment, TextBaseline } from '@/static/Enums'
 import RenderItemArc from '@/types/RenderItemArc'
-import { boxEdgeDistance, stringWidth } from '@/Helper'
+import { boxEdgeDistance, lerp, stringWidth } from '@/Helper'
 import { FONT_FAMILY } from '@/static/constants/Index'
 import Theme from '@/Theme'
 
@@ -63,7 +63,7 @@ export default class RenderItemText
         if (this.fromAngle == null || morph >= 1)
             return this.angle
 
-        return this.fromAngle + (this.angle - this.fromAngle) * morph
+        return lerp(this.fromAngle, this.angle, morph)
     }
 
     current(morph: number = 1): Point {
@@ -80,8 +80,8 @@ export default class RenderItemText
             return { x: this.absolute.x, y: this.absolute.y }
 
         return {
-            x: this.from.x + (this.absolute.x - this.from.x) * morph,
-            y: this.from.y + (this.absolute.y - this.from.y) * morph
+            x: lerp(this.from.x, this.absolute.x, morph),
+            y: lerp(this.from.y, this.absolute.y, morph)
         }
     }
 
@@ -149,12 +149,5 @@ export default class RenderItemText
         } else {
             ctx.fillText(this.value, this.canvas.x, this.canvas.y)
         }
-    }
-
-    animate(_item: RenderItem, _isBackward: boolean, _point: Point): void {
-    }
-
-    isMouseOver(_point: Point): boolean {
-        return false
     }
 }
