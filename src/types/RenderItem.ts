@@ -2,19 +2,19 @@ import { COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from '@/static/constan
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import Point from '@/types/Point'
-import AnimationData from '@/AnimationData'
+import AnimationData from '@/animation/AnimationData'
 import ItemData from '@/types/ItemData'
-import { ease } from '@/Animations'
+import ease from '@/animation/Animations'
 import HoverProgress from '@/types/HoverProgress'
 import Panel from '@/types/Panel'
-import { clamp } from '@/Helper'
+import { clamp } from '@/helpers/Geometry'
 
 export default class RenderItem {
-    isAnimate: boolean = false
+    isInteractive: boolean = false
 
     isTemp: boolean = false
 
-    isContextMenu: boolean = false
+    isMenuButton: boolean = false
 
     isFixed: boolean = false
 
@@ -101,8 +101,8 @@ export default class RenderItem {
         this.shape.render(ctx, this)
     }
 
-    animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string> = new Set()): boolean {
-        if (!this.isAnimate || this.isInitializing) {
+    animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>): boolean {
+        if (!this.isInteractive || this.isInitializing) {
             return false
         }
 

@@ -1,7 +1,7 @@
-export { AnimationTiming } from '@/static/constants/AnimationTiming'
-export { Layer } from '@/static/constants/Layer'
-export { ContextMenu } from '@/static/constants/ContextMenu'
-export { Tooltip } from '@/static/constants/Tooltip'
+export { default as AnimationTiming } from '@/static/constants/AnimationTiming'
+export { default as Layer } from '@/static/constants/Layer'
+export { default as ContextMenu } from '@/static/constants/ContextMenu'
+export { default as Tooltip } from '@/static/constants/Tooltip'
 
 export const COORDS_MAX_X = 5000
 export const COORDS_MAX_Y = 5000

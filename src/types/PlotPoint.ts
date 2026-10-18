@@ -1,9 +1,13 @@
-import Value from '@/types/base/Value'
+import ItemData from '@/types/ItemData'
 
-class PlotPoint extends Value {
+type PlotPoint = {
     x: number | Date | string
 
     y: number | Date | string
+
+    label?: string
+
+    data?: ItemData
 }
 
 export default PlotPoint

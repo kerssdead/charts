@@ -1,4 +1,5 @@
 import DropdownItem from '@/types/DropdownItem'
+import ItemData from '@/types/ItemData'
 
 type ButtonOptions = {
     text: string
@@ -10,7 +11,7 @@ type ButtonOptions = {
 
 export const DIVIDER: ButtonOptions = { text: '', action: () => { }, isDivider: true }
 
-export function fromDropdownItems(items: DropdownItem[] | undefined, data?: any): ButtonOptions[] {
+export function fromDropdownItems(items: DropdownItem[] | undefined, data?: ItemData): ButtonOptions[] {
     const buttons: ButtonOptions[] = []
 
     for (const item of items ?? []) {

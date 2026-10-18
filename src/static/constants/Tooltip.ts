@@ -1,4 +1,4 @@
-export class Tooltip {
+export default class Tooltip {
     static readonly offset = 12
 
     static readonly padding = 8

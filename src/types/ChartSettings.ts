@@ -38,5 +38,5 @@ export default interface ChartSettings {
 
     contextMenu?: DropdownItem[]
 
-    isDarkThemeFunction: Function | undefined
+    isDarkThemeFunction: (() => boolean) | undefined
 }

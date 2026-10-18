@@ -2,7 +2,8 @@ import Point from '@/types/Point'
 import Styles from '@/static/constants/Styles'
 import { Tag } from '@/static/Enums'
 import { Tooltip } from '@/static/constants/Index'
-import { escapeHtml, placeNear } from '@/Helper'
+import { escapeHtml } from '@/helpers/Text'
+import { placeNear } from '@/helpers/Geometry'
 import ItemData from '@/types/ItemData'
 
 const PLACEHOLDER = /\$\{\s*([^}\s]+)\s*}/g

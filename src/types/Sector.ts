@@ -1,7 +1,7 @@
 import Value from '@/types/base/Value'
 
 class Sector extends Value {
-    checkCondition(): boolean {
+    canToggle(): boolean {
         return this.value != 0 || !this.disabled
     }
 }

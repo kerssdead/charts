@@ -10,6 +10,8 @@ type Palette = {
     dropdownBorder: string
 
     canvasBackground: string
+
+    other: string
 }
 
 class ThemeOptions {
@@ -20,7 +22,8 @@ class ThemeOptions {
             line: '#000000',
             lineAxis: '#e0e0e0',
             dropdownBorder: '#bcbcbc',
-            canvasBackground: '#ffffff'
+            canvasBackground: '#ffffff',
+            other: '#9e9e9e'
         },
         {
             text: '#ffffff',
@@ -28,7 +31,8 @@ class ThemeOptions {
             line: '#eeeeee',
             lineAxis: '#434343',
             dropdownBorder: '#7e7e7e',
-            canvasBackground: '#222222'
+            canvasBackground: '#222222',
+            other: '#757575'
         }
     ]
 

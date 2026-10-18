@@ -1,4 +1,4 @@
-export class Layer {
+export default class Layer {
     static readonly Base = 200
 
     static readonly Data = 500

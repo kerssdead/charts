@@ -31,4 +31,14 @@ describe('Getting formatted values', () => {
         expect(Formatter.format('Title', PlotAxisType.Text, '.'))
             .toBe('Title.')
     })
+
+    it('Undefined text', () => {
+        expect(Formatter.format(undefined, PlotAxisType.Text))
+            .toBe('')
+    })
+
+    it('Not a number as text', () => {
+        expect(Formatter.format('Test string', PlotAxisType.Number))
+            .toBe('Test string')
+    })
 })

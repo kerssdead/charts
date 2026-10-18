@@ -1,5 +1,5 @@
-import { ease } from '@/Animations'
-import { clamp } from '@/Helper'
+import ease from '@/animation/Animations'
+import { clamp } from '@/helpers/Geometry'
 
 export default class HoverProgress {
     private progress: number = 0

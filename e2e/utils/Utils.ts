@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test'
 import Selectors from '@e2e/utils/Selectors'
-import { Screenshot } from '@e2e/utils/Screenshot'
+import Screenshot from '@e2e/utils/Screenshot'
 import Clip from '@e2e/utils/Clip'
 import Settings from '@e2e/utils/Settings'
 

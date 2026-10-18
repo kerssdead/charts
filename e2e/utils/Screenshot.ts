@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test'
 import Clip from '@e2e/utils/Clip'
 
-export class Screenshot {
+export default class Screenshot {
     static async get(page: Page, clip?: Clip) {
         const chart = page.locator('.chart-container')
 

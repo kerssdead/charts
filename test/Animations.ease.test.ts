@@ -1,4 +1,4 @@
-import { ease } from '@/Animations'
+import ease from '@/animation/Animations'
 
 describe('Getting calculated animations transition',()=>{
     it('Should be 0',()=>{

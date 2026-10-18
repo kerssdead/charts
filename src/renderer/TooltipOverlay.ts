@@ -3,6 +3,7 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import FadingOverlay from '@/renderer/FadingOverlay'
 import Units from '@/helpers/Units'
 import CanvasWindow from '@/types/CanvasWindow'
+import Frame from '@/types/Frame'
 import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import ItemData from '@/types/ItemData'
@@ -10,13 +11,19 @@ import CustomTooltip from '@/renderer/CustomTooltip'
 import Theme from '@/Theme'
 import { Layer, Tooltip } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
-import { copyRect, maxOf, placeNear, sameRect, samePoint, stringWidth } from '@/Helper'
+import { copyRect, placeNear, sameRect, samePoint } from '@/helpers/Geometry'
+import { maxOf } from '@/helpers/Collections'
+import { stringWidth } from '@/helpers/Text'
 
 type TooltipState = { point: Point, template: string }
 
 type TooltipBuilt = TooltipState & { window: RectangleDimensions }
 
 export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipBuilt> {
+    isEnabled: boolean = false
+
+    custom: CustomTooltip | null = null
+
     private readonly canvas: HTMLCanvasElement
 
     private scan: {
@@ -33,13 +40,11 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
         this.canvas = canvas
     }
 
-    update(queue: Queue,
-           window: CanvasWindow,
-           point: Point | null,
-           isContextMenuOpen: boolean,
-           custom: CustomTooltip | null,
-           now: DOMHighResTimeStamp): boolean {
-        const { template, data } = point && !isContextMenuOpen
+    update({ queue, window, mouse, context, now }: Frame): boolean {
+        const { custom } = this
+        const point = this.isEnabled ? mouse : null
+
+        const { template, data } = point && !context
                                    ? this.getTarget(queue, window, point)
                                    : { template: null, data: null }
 

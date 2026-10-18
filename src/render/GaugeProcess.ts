@@ -3,10 +3,12 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import Sector from '@/types/Sector'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
 import Point from '@/types/Point'
-import Formatter from '@/helpers/Formatter'
 import Theme from '@/Theme'
-import { clamp, stringWidth, sum } from '@/Helper'
-import Units from '@/helpers/Units'
+import { withAlpha } from '@/helpers/Color'
+import { clamp } from '@/helpers/Geometry'
+import { stringWidth } from '@/helpers/Text'
+import { sum } from '@/helpers/Collections'
+import ChartProcess from '@/render/ChartProcess'
 import { TextAlignment } from '@/static/Enums'
 
 const PADDING = 80
@@ -48,13 +50,7 @@ type Label = {
     width: number
 }
 
-export default class GaugeProcess {
-    private data: GaugeData
-
-    private readonly units: Units
-
-    private readonly valuePostfix: string | undefined
-
+export default class GaugeProcess extends ChartProcess<GaugeData> {
     private readonly lines: Label[][]
 
     private readonly labelSpace: number
@@ -68,9 +64,8 @@ export default class GaugeProcess {
     private readonly center: Point
 
     constructor(data: GaugeData, pixel: Point, valuePostfix: string | undefined) {
-        this.data = data
-        this.units = new Units(pixel)
-        this.valuePostfix = valuePostfix
+        super(data, pixel, valuePostfix)
+
         this.lines = this.getLines()
 
         const width = this.units.toPxX(COORDS_MAX_X)
@@ -96,6 +91,10 @@ export default class GaugeProcess {
 
     private get isSingle() {
         return this.data.values.length == 1
+    }
+
+    private get band() {
+        return this.radius * (1 + this.innerRatio) / 2
     }
 
     private get labelRows() {
@@ -149,7 +148,7 @@ export default class GaugeProcess {
                  .cornerRadius(CORNER_RADIUS)
                  .fill()
                  .gradient()
-                 .color(Theme.withAlpha(Theme.text, TRACK_ALPHA))
+                 .color(withAlpha(Theme.text, TRACK_ALPHA))
                  .layer(Layer.Base)
                  .key(`gauge-track-${ index }`)
                  .init(AnimationTiming.gaugeInit, 0, true)
@@ -182,50 +181,62 @@ export default class GaugeProcess {
     }
 
     private getLabels(sector: Sector) {
+        const rows = Array.from({ length: this.labelRows }, (_, index) => this.center.y + this.units.y(LABEL_GAP + LABEL_FONT * (index + .5)))
+
+        return [
+            ...this.getRangeLabels(rows[0]),
+            ...(this.isSingle ? this.getValueLabels(sector, rows) : this.getLegendLines(rows.slice(1)))
+        ]
+    }
+
+    private getRangeLabels(y: number) {
+        const { x } = this.center
+        const band = this.units.x(this.band)
+
+        return [
+            this.getText('gauge-min', this.formatValue(this.min), x - band, y, RANGE_FONT),
+            this.getText('gauge-max', this.formatValue(this.max), x + band, y, RANGE_FONT)
+        ]
+    }
+
+    private getLegendLines(rows: number[]) {
+        return this.lines.flatMap((line, index) => {
+            let left = (this.units.toPxX(COORDS_MAX_X) - sum(line, label => label.width)
+                        - LABEL_SPACING * (line.length - 1)) / 2
+
+            return line.flatMap(label => {
+                const items = [
+                    this.getMarker(label, this.units.x(left + MARKER_RADIUS), rows[index]),
+                    this.getText(label.key, label.text,
+                        this.units.x(left + MARKER_RADIUS + MARKER_SPACE + (label.width - MARKER_RADIUS - MARKER_SPACE) / 2),
+                        rows[index], LABEL_FONT)
+                ]
+
+                left += label.width + LABEL_SPACING
+
+                return items
+            })
+        })
+    }
+
+    private getValueLabels(sector: Sector, rows: number[]) {
         const { x, y } = this.center
 
-        const band = this.radius * (1 + this.innerRatio) / 2
-        const rows = Array.from({ length: this.labelRows }, (_, index) => y + this.units.y(LABEL_GAP + LABEL_FONT * (index + .5)))
-
-        const min = this.formatValue(this.min)
-        const max = this.formatValue(this.max)
         const value = this.formatValue(sector.value)
-
-        const slot = (band - Math.max(stringWidth(min, RANGE_FONT), stringWidth(max, RANGE_FONT)) / 2 - LABEL_GAP * 2) * 2
+        const rangeWidth = Math.max(stringWidth(this.formatValue(this.min), RANGE_FONT), stringWidth(this.formatValue(this.max), RANGE_FONT))
+        const slot = (this.band - rangeWidth / 2 - LABEL_GAP * 2) * 2
 
         const inner = this.radius * this.innerRatio * 2 * VALUE_PADDING
         const valueFont = Math.min(VALUE_FONT, inner / stringWidth(value, 1))
-        const isValueInside = this.isSingle && valueFont >= VALUE_MIN_FONT
+        const isValueInside = valueFont >= VALUE_MIN_FONT
 
-        const labels = [
-            this.getText('gauge-min', min, x - this.units.x(band), rows[0], RANGE_FONT),
-            this.getText('gauge-max', max, x + this.units.x(band), rows[0], RANGE_FONT)
-        ]
-
-        if (isValueInside)
-            labels.push(this.getText('gauge-value-label', value, x, y - this.units.y(valueFont / 2), valueFont))
-
-        if (!this.isSingle) {
-            this.lines.forEach((line, index) => {
-                let left = (this.units.toPxX(COORDS_MAX_X) - sum(line, label => label.width)
-                            - LABEL_SPACING * (line.length - 1)) / 2
-
-                for (const label of line) {
-                    labels.push(this.getMarker(label, this.units.x(left + MARKER_RADIUS), rows[index + 1]))
-                    labels.push(this.getText(label.key, label.text,
-                        this.units.x(left + MARKER_RADIUS + MARKER_SPACE + (label.width - MARKER_RADIUS - MARKER_SPACE) / 2),
-                        rows[index + 1], LABEL_FONT))
-
-                    left += label.width + LABEL_SPACING
-                }
-            })
-
-            return labels
-        }
+        const labels = isValueInside
+                       ? [this.getText('gauge-value-label', value, x, y - this.units.y(valueFont / 2), valueFont)]
+                       : []
 
         const below = [
             { key: 'gauge-value-label', text: isValueInside ? '' : value },
-            { key: 'gauge-label', text: sector.label ?? '' }
+            { key: 'gauge-label', text: sector.label }
         ].filter(label => label.text)
 
         let row = 0
@@ -297,16 +308,6 @@ export default class GaugeProcess {
     }
 
     private getTooltip(sector: Sector) {
-        const rows = [sector.label, `${ this.formatValue(sector.value) } (${ this.getPercent(sector.value) })`]
-
-        return rows.filter(row => row).join('\n')
-    }
-
-    private formatValue(value: number) {
-        return Formatter.value(value, this.valuePostfix)
-    }
-
-    private getPercent(value: number) {
-        return `${ +(this.getRatio(value) * 100).toFixed(1) }%`
+        return this.tooltip(sector.label, `${ this.formatValue(sector.value) } (${ this.percent(this.getRatio(sector.value)) })`)
     }
 }

@@ -456,7 +456,7 @@
                 if (element) {
                     if (element.type === 'checkbox')
                         element.checked = value
-                    else
+                    else if (element.tagName !== 'SELECT' || [...element.options].some(option => option.value === value))
                         element.value = value
                 }
             }

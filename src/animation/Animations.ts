@@ -1,4 +1,4 @@
-import { clamp } from '@/Helper'
+import { clamp } from '@/helpers/Geometry'
 
 const OFFSET = .23
 
@@ -12,7 +12,7 @@ const bezier = (t: number, p1: number, p2: number) => 3 * (1 - t) * (1 - t) * t 
 
 const slope = (t: number, p1: number, p2: number) => 3 * (1 - t) * (1 - t) * p1 + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (1 - p2)
 
-export function ease(value: number): number {
+export default function ease(value: number): number {
     if (value <= 0)
         return 0
 

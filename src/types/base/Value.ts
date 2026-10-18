@@ -19,7 +19,7 @@ class Value {
         Object.assign(this, obj)
     }
 
-    checkCondition(): boolean {
+    canToggle(): boolean {
         return false
     }
 

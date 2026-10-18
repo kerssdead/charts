@@ -5,7 +5,7 @@ import { AnimationTiming, COORDS_MAX_X } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import Theme from '@/Theme'
 import { GradientCache } from '@/helpers/Canvas'
-import { lerp } from '@/Helper'
+import { lerp } from '@/helpers/Geometry'
 
 const FULL_CIRCLE_EPSILON = 1e-6
 
@@ -45,19 +45,6 @@ export default class RenderItemArc
 
     absolute: Point = { x: 0, y: 0 }
 
-    canvas: ArcCanvas = {
-        x: 0,
-        y: 0,
-        radius: 10,
-        innerRadius: 0,
-        gap: 0,
-        cornerRadius: 0,
-        leaderGap: 0,
-        leaderLength: 0,
-        startAngle: 0,
-        endAngle: Math.PI * 2
-    }
-
     radius: number = 10
 
     innerRadius: number = 0
@@ -87,6 +74,14 @@ export default class RenderItemArc
     endAngle: number = Math.PI * 2
 
     from: ArcGeometry | null = null
+
+    canvas: ArcCanvas = {
+        ...this.current(),
+        gap: this.gap,
+        cornerRadius: this.cornerRadius,
+        leaderGap: this.leaderGap,
+        leaderLength: this.leaderLength
+    }
 
     current(morph: number = 1): ArcGeometry {
         const result = {

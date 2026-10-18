@@ -1,6 +1,10 @@
 import Value from '@/types/base/Value'
-import { clamp, contains, grayScale, lerp, maxOf, stringWidth, sum } from '@/Helper'
+import { clamp, contains, lerp } from '@/helpers/Geometry'
+import { grayScale, withAlpha } from '@/helpers/Color'
+import { maxOf, sum } from '@/helpers/Collections'
+import { stringWidth } from '@/helpers/Text'
 import Point from '@/types/Point'
+import Frame from '@/types/Frame'
 import Paddings, { NO_PADDINGS } from '@/types/Paddings'
 import RenderItem from '@/types/RenderItem'
 import Overlay from '@/renderer/Overlay'
@@ -13,8 +17,8 @@ import { AnimationTiming, Layer } from '@/static/constants/Index'
 import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import ChartItem from '@/types/ChartItem'
-import HoverProgress from '@/types/HoverProgress'
-import { ease } from '@/Animations'
+import HoverMap from '@/types/HoverMap'
+import ease from '@/animation/Animations'
 
 type LegendEntry = {
     value: Value
@@ -41,6 +45,13 @@ class Legend extends Overlay {
 
     private static readonly resetKey = 'reset'
 
+    private static readonly sides: { [key in LegendPlace]: keyof Paddings } = {
+        [LegendPlace.Bottom]: 'bottom',
+        [LegendPlace.Left]: 'left',
+        [LegendPlace.Top]: 'top',
+        [LegendPlace.Right]: 'right'
+    }
+
     settings: ChartSettings
 
     onChange: (() => void) | undefined
@@ -59,7 +70,7 @@ class Legend extends Overlay {
 
     private backgrounds: Map<string, RenderItem> = new Map()
 
-    private hover: Map<string, HoverProgress> = new Map()
+    private readonly hover = new HoverMap<string>()
 
     private toggles: Map<string, DOMHighResTimeStamp | null> = new Map()
 
@@ -76,8 +87,6 @@ class Legend extends Overlay {
     private leaving: LegendEntry[] = []
 
     private values: Value[] = []
-
-    private isHoverAnimating: boolean = false
 
     get reserved(): Paddings {
         return this.getReserved(this.area)
@@ -97,24 +106,9 @@ class Legend extends Overlay {
         if (!area)
             return reserved
 
-        switch (this.settings.legendPlace) {
-            case LegendPlace.Top:
-                reserved.top = area.height
-                break
+        const side = Legend.sides[this.settings.legendPlace] ?? 'bottom'
 
-            case LegendPlace.Left:
-                reserved.left = area.width
-                break
-
-            case LegendPlace.Right:
-                reserved.right = area.width
-                break
-
-            case LegendPlace.Bottom:
-            default:
-                reserved.bottom = area.height
-                break
-        }
+        reserved[side] = this.isVertical ? area.width : area.height
 
         return reserved
     }
@@ -166,12 +160,6 @@ class Legend extends Overlay {
         if (this.size)
             this.resize(this.size.width, this.size.height, this.top)
 
-        const ids = new Set(this.entries.map(entry => entry.value.id))
-
-        for (const key of this.hover.keys())
-            if (key != Legend.resetKey && !ids.has(key))
-                this.hover.delete(key)
-
         if (settings && previous.length > 0)
             this.move(previous, previousArea)
     }
@@ -196,7 +184,7 @@ class Legend extends Overlay {
         this.isDirty = true
     }
 
-    build(queue: Queue, mouse: Point | null, now: DOMHighResTimeStamp): boolean {
+    update({ queue, mouse, now }: Frame): boolean {
         if (!this.area || !this.size || this.size.width <= 0 || this.size.height <= 0) {
             this.clear(queue)
 
@@ -239,7 +227,7 @@ class Legend extends Overlay {
                    this.isDirty = true
                })
 
-        const resetBackground = this.button && this.buildButton(builder, this.button, this.getHover(Legend.resetKey))
+        const resetBackground = this.button && this.buildButton(builder, this.button, this.hover.value(Legend.resetKey))
         const added = builder.dispose()
 
         if (resetBackground)
@@ -256,7 +244,7 @@ class Legend extends Overlay {
                 }
                             : entry
 
-            const { items, background } = this.createEntry(current, this.getHover(entry.value.id), from ? 1 : progress)
+            const { items, background } = this.createEntry(current, this.hover.value(entry.value.id), from ? 1 : progress)
 
             this.backgrounds.set(entry.value.id, background)
 
@@ -281,7 +269,7 @@ class Legend extends Overlay {
     }
 
     private get isAnimating() {
-        return this.isHoverAnimating || this.isMoving || this.toggles.size > 0
+        return this.hover.isAnimating || this.isMoving || this.toggles.size > 0
     }
 
     private move(previous: LegendEntry[], previousArea: DOMRect | undefined) {
@@ -344,7 +332,7 @@ class Legend extends Overlay {
         const { value, label, x, y, width } = entry
         const centerY = y + Legend.itemHeight / 2
         const textX = x + 22
-        const textColor = value.disabled ? Theme.text + '7f' : Theme.text
+        const textColor = value.disabled ? withAlpha(Theme.text, .5) : Theme.text
 
         const background = items.rect()
              .position(this.units.x(x), this.units.y(y))
@@ -527,7 +515,7 @@ class Legend extends Overlay {
 
         const key = this.getKey(value)
 
-        if (this.toggles.has(key) || !value.checkCondition())
+        if (this.toggles.has(key) || !value.canToggle())
             return
 
         const disabled = value.disabled
@@ -561,47 +549,22 @@ class Legend extends Overlay {
     }
 
     private updateHover(mouse: Point | null, now: DOMHighResTimeStamp) {
-        let isChanged = false
-
-        this.isHoverAnimating = false
-
-        const step = (key: string, isOver: boolean) => {
-            let hover = this.hover.get(key)
-
-            if (!hover)
-                this.hover.set(key, hover = new HoverProgress())
-
-            isChanged = hover.step(isOver, now, AnimationTiming.button) || isChanged
-
-            this.isHoverAnimating ||= hover.isAnimating
-        }
-
-        for (const entry of this.entries) {
-            const isOver = this.isOver(mouse, entry.x, entry.y, entry.width)
-
-            step(entry.value.id, isOver)
-        }
+        const targets = this.entries.map((entry): [string, boolean] => {
+            return [entry.value.id, contains({ x: entry.x, y: entry.y, width: entry.width, height: Legend.itemHeight }, mouse)]
+        })
 
         if (this.button)
-            step(Legend.resetKey, contains(this.button, mouse))
+            targets.push([Legend.resetKey, contains(this.button, mouse)])
 
-        return isChanged
+        return this.hover.update(targets, now)
     }
 
     private updateBackgrounds() {
         for (const [key, item] of this.backgrounds)
-            item.color = Theme.hoverBackground(this.getHover(key))
+            item.color = Theme.hoverBackground(this.hover.value(key))
     }
 
-    private getHover(key: string) {
-        return this.hover.get(key)?.value ?? 0
-    }
-
-    private isOver(mouse: Point | null, x: number, y: number, width: number) {
-        return contains({ x, y, width, height: Legend.itemHeight }, mouse)
-    }
-
-    private static truncate(label: string, maxWidth: number) {
+    static truncate(label: string, maxWidth: number) {
         if (stringWidth(label) <= maxWidth)
             return label
 

@@ -11,7 +11,7 @@ export default class PlotSeries extends Value {
 
     dash: number[]
 
-    checkCondition(): boolean {
+    canToggle(): boolean {
         return true
     }
 }

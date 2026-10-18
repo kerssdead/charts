@@ -1,5 +1,5 @@
-import { contains } from '@/Helper'
-import Point from '@/types/Point'
+import { contains } from '@/helpers/Geometry'
+import Frame from '@/types/Frame'
 import Overlay from '@/renderer/Overlay'
 import Units from '@/helpers/Units'
 import Theme from '@/Theme'
@@ -36,7 +36,7 @@ export default class MenuButton extends Overlay {
         this.isDirty = true
     }
 
-    build(queue: Queue, mouse: Point | null, now: DOMHighResTimeStamp): boolean {
+    update({ queue, mouse, now }: Frame): boolean {
         if (!this.bounds || !this.size || this.size.width <= 0 || this.size.height <= 0) {
             this.clear(queue)
 

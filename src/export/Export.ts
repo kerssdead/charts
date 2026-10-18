@@ -1,9 +1,10 @@
 import Theme from '@/Theme'
-import Canvas from '@/helpers/Canvas'
+import { getContext, isPixelBusy } from '@/helpers/Canvas'
 import { Tag } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
-import Decomposition from '@/Decomposition'
+import Decomposition from '@/export/Decomposition'
 import { getTotals } from '@/types/TableData'
+import TextResources from '@/static/TextResources'
 
 const PNG_MARGIN = 4
 
@@ -12,7 +13,7 @@ const REVOKE_DELAY = 1000
 const CSV_FORMULA = /^[=+\-@\t\r]/
 
 export default class Export {
-    static asPng(canvas: HTMLCanvasElement, ratio: number, title: string, exclude?: DOMRect, isDark?: Function) {
+    static asPng(canvas: HTMLCanvasElement, ratio: number, title: string, exclude?: DOMRect, isDark?: () => boolean) {
         requestAnimationFrame(() => {
             Theme.update(isDark)
 
@@ -22,7 +23,7 @@ export default class Export {
             source.width = width
             source.height = height
 
-            const ctx = Canvas.getContext(source, true)
+            const ctx = getContext(source, true)
 
             ctx.drawImage(canvas, 0, 0)
 
@@ -36,7 +37,7 @@ export default class Export {
 
             const isEmptyColumn = (x: number) => {
                 for (let y = 0; y < height; y++)
-                    if (Canvas.isPixelBusy(imageData[x + y * width]))
+                    if (isPixelBusy(imageData[x + y * width]))
                         return false
 
                 return true
@@ -63,7 +64,7 @@ export default class Export {
             destination.width = width - trim * 2
             destination.height = height
 
-            const destCtx = Canvas.getContext(destination)
+            const destCtx = getContext(destination)
 
             destCtx.fillStyle = Theme.background
             destCtx.fillRect(0, 0, destination.width, destination.height)
@@ -72,7 +73,7 @@ export default class Export {
 
             destination.toBlob(blob => {
                 if (blob)
-                    Export.saveAs((title || 'chart') + '.png', blob, { accept: { 'image/png': '.png' } })
+                    Export.saveAs((title || TextResources.defaultImageName) + '.png', blob, { accept: { 'image/png': '.png' } })
             }, 'image/png')
         })
     }
@@ -100,7 +101,7 @@ export default class Export {
 
         const csv = blocks.join('\n\n')
 
-        Export.saveAs((title || 'table') + '.csv', new Blob([csv], { type: 'text/csv;charset=utf-8' }),
+        Export.saveAs((title || TextResources.defaultTableName) + '.csv', new Blob([csv], { type: 'text/csv;charset=utf-8' }),
             { accept: { 'text/csv': '.csv' } })
     }
 
@@ -119,7 +120,7 @@ export default class Export {
                 await writableStream.close()
             } catch (error) {
                 if (!(error instanceof DOMException && error.name == 'AbortError'))
-                    throw error
+                    console.error(error)
             }
 
             return

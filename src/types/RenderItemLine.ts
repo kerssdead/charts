@@ -3,7 +3,8 @@ import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming } from '@/static/constants/Index'
-import { lerp, sum } from '@/Helper'
+import { lerp } from '@/helpers/Geometry'
+import { sum } from '@/helpers/Collections'
 
 const ALPHA_DELTA = 0.5
 

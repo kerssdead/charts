@@ -3,7 +3,7 @@ import PlotProcess from '@/render/PlotProcess'
 import RenderItem from '@/types/RenderItem'
 import RenderItemArc from '@/types/RenderItemArc'
 import Panel from '@/types/Panel'
-import { groupBy } from '@/Helper'
+import { groupBy } from '@/helpers/Collections'
 
 export default class Transition {
     static snapshot(queue: Queue): Map<string, RenderItem> {

@@ -1,19 +1,26 @@
 import { Icon, Tag } from '@/static/Enums'
 
+enum ModalClasses {
+    Modal = 'o-modal',
+
+    Title = 'o-modal-title',
+
+    Close = 'o-modal-close',
+
+    Header = 'o-modal-header',
+
+    Content = 'o-modal-content'
+}
+
 class Modal {
     private readonly modal: HTMLDialogElement
 
     private isClosed: boolean = false
 
-    constructor(content?: HTMLElement, size?: DOMRect, title?: string) {
+    constructor(content?: HTMLElement, title?: string) {
         this.modal = document.createElement(Tag.Dialog)
 
-        this.modal.classList.add(ModalClasses.modal)
-
-        if (size) {
-            this.modal.style.width = `${ size.width }px`
-            this.modal.style.height = `${ size.height }px`
-        }
+        this.modal.classList.add(ModalClasses.Modal)
 
         this.modal.oncancel = () => this.close()
 
@@ -42,17 +49,17 @@ class Modal {
     private setHeader(title: string | undefined) {
         const titleSpan = document.createElement(Tag.Span)
 
-        titleSpan.classList.add(ModalClasses.title)
+        titleSpan.classList.add(ModalClasses.Title)
         titleSpan.textContent = title ?? ''
 
         const closeButton = document.createElement(Tag.Button)
 
-        closeButton.classList.add(ModalClasses.close)
+        closeButton.classList.add(ModalClasses.Close)
         closeButton.textContent = Icon.Close
 
         const header = document.createElement(Tag.Div)
 
-        header.classList.add(ModalClasses.header)
+        header.classList.add(ModalClasses.Header)
 
         header.appendChild(titleSpan)
         header.appendChild(closeButton)
@@ -65,7 +72,7 @@ class Modal {
     private setContent(content: HTMLElement | undefined) {
         const container = document.createElement(Tag.Div)
 
-        container.classList.add(ModalClasses.content)
+        container.classList.add(ModalClasses.Content)
 
         if (content != undefined)
             container.appendChild(content)
@@ -75,15 +82,3 @@ class Modal {
 }
 
 export default Modal
-
-class ModalClasses {
-    static readonly modal = 'o-modal'
-
-    static readonly title = 'o-modal-title'
-
-    static readonly close = 'o-modal-close'
-
-    static readonly header = 'o-modal-header'
-
-    static readonly content = 'o-modal-content'
-}

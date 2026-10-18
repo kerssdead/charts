@@ -4,7 +4,8 @@ import Point from '@/types/Point'
 import RenderItem from '@/types/RenderItem'
 import { TextAlignment, TextBaseline } from '@/static/Enums'
 import RenderItemArc from '@/types/RenderItemArc'
-import { boxEdgeDistance, lerp, stringWidth } from '@/Helper'
+import { boxEdgeDistance, lerp } from '@/helpers/Geometry'
+import { stringWidth } from '@/helpers/Text'
 import { FONT_FAMILY } from '@/static/constants/Index'
 import Theme from '@/Theme'
 
@@ -125,13 +126,13 @@ export default class RenderItemText
     render(ctx: CanvasRenderingContext2D): void {
         ctx.font = this.font
         ctx.textAlign = this.alignment
-        ctx.textBaseline = this.baseline as CanvasTextBaseline
+        ctx.textBaseline = this.baseline
 
         if (this.rotate != 0) {
             ctx.save()
 
             ctx.translate(this.canvas.x, this.canvas.y)
-            ctx.rotate(this.rotate * Math.PI / 180)
+            ctx.rotate(this.rotate)
 
             ctx.fillText(this.value, 0, this.baselineShift)
 
@@ -142,7 +143,7 @@ export default class RenderItemText
             const distance = boxEdgeDistance(this.canvas.angle, this.halfWidth, this.fontSize / 2)
 
             ctx.textAlign = TextAlignment.Center
-            ctx.textBaseline = TextBaseline.Middle as CanvasTextBaseline
+            ctx.textBaseline = TextBaseline.Middle
             ctx.fillText(this.value,
                 this.canvas.x + distance * Math.cos(this.canvas.angle),
                 this.canvas.y + distance * Math.sin(this.canvas.angle))

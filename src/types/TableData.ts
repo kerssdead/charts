@@ -1,7 +1,8 @@
 import TableValue from '@/types/TableValue'
 import TableHeaderValue from '@/types/TableHeaderValue'
 import Value from '@/types/base/Value'
-import { sum } from '@/Helper'
+import { sum } from '@/helpers/Collections'
+import TextResources from '@/static/TextResources'
 
 export default interface TableData {
     headers: TableHeaderValue[]
@@ -9,12 +10,12 @@ export default interface TableData {
     values: TableValue[]
 }
 
-export function getValueRows(values: Value[]): TableData {
-    const key = 'Value'
+export function getValueRows<T extends Value>(values: T[], getValue: (value: T) => number = value => value.value): TableData {
+    const key = TextResources.value
 
     return {
         headers: [{ value: key, display: key }],
-        values: values.map(value => ({ name: value.label, values: new Map([[key, value.value]]) }))
+        values: values.map(value => ({ name: value.label, values: new Map([[key, getValue(value)]]) }))
     }
 }
 

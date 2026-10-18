@@ -2,17 +2,22 @@ import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
+import Frame from '@/types/Frame'
 import Point from '@/types/Point'
 import ButtonOptions, { fromDropdownItems } from '@/types/ButtonOptions'
 import DropdownItem from '@/types/DropdownItem'
 import HoverProgress from '@/types/HoverProgress'
+import HoverMap from '@/types/HoverMap'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import FadingOverlay from '@/renderer/FadingOverlay'
 import Units from '@/helpers/Units'
 import Theme from '@/Theme'
-import { AnimationTiming, ContextMenu, Layer } from '@/static/constants/Index'
+import { withAlpha } from '@/helpers/Color'
+import { ContextMenu, Layer } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
-import { contains, copyRect, maxOf, placeNear, sameRect, samePoint, stringWidth, sum } from '@/Helper'
+import { contains, copyRect, placeNear, sameRect, samePoint } from '@/helpers/Geometry'
+import { maxOf, sum } from '@/helpers/Collections'
+import { stringWidth } from '@/helpers/Text'
 
 type MenuState = {
     point: Point
@@ -30,20 +35,21 @@ type MenuRow = RectangleDimensions & {
 }
 
 export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKey> {
-    private hover: HoverProgress[] = []
+    menu: DropdownItem[] | undefined
+
+    fixedButtons: (() => ButtonOptions[]) | undefined
+
+    private readonly hover = new HoverMap<number>()
 
     private bounds: RectangleDimensions | null = null
 
     private buttonRects: (RenderItem | null)[] = []
 
-    update(queue: Queue,
-           window: CanvasWindow,
-           point: Point | null,
-           mouse: Point | null,
-           isOpen: boolean,
-           menu: DropdownItem[] | undefined,
-           now: DOMHighResTimeStamp,
-           fixedButtons?: ButtonOptions[]): boolean {
+    update({ queue, window, mouse, context, now }: Frame): boolean {
+        const point = context?.point ?? null
+        const isOpen = context != null
+        const fixedButtons = context?.isMenu ? this.fixedButtons?.() : undefined
+
         let target: RenderItem | undefined
 
         if (isOpen && point && !fixedButtons)
@@ -57,12 +63,12 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         if (isOpen && fixedButtons)
             targetButtons = isSame ? previous.buttons : fixedButtons
         else if (target)
-            targetButtons = isSame ? previous.buttons : fromDropdownItems(menu, target.data)
+            targetButtons = isSame ? previous.buttons : fromDropdownItems(this.menu, target.data ?? undefined)
 
         const isVisible = point != null && targetButtons.length > 0
 
         if (isVisible && !isSame) {
-            this.hover = []
+            this.hover.clear()
             this.state = { point, buttons: targetButtons }
         }
 
@@ -72,7 +78,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
 
         if (!isVisible && alpha == 0) {
             this.state = null
-            this.hover = []
+            this.hover.clear()
         }
 
         if (!this.state) {
@@ -119,7 +125,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
     clear(queue: Queue) {
         super.clear(queue)
 
-        this.hover = []
+        this.hover.clear()
         this.bounds = null
     }
 
@@ -139,24 +145,18 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
     }
 
     private updateHover(bounds: RectangleDimensions, buttons: ButtonOptions[], mouse: Point | null, now: DOMHighResTimeStamp) {
-        let isAnimating = false
-
-        ContextMenuOverlay.getRows(bounds, buttons).forEach((row, index) => {
-            const rect = this.buttonRects[index]
-
-            if (row.isDivider || !rect)
-                return
-
-            const hover = this.hover[index] ??= new HoverProgress()
-
-            hover.step(contains(row, mouse), now, AnimationTiming.button)
-
-            rect.color = ContextMenuOverlay.getButtonColor(hover)
-
-            isAnimating ||= hover.isAnimating
+        const targets = ContextMenuOverlay.getRows(bounds, buttons).flatMap((row, index): [number, boolean][] => {
+            return row.isDivider || !this.buttonRects[index] ? [] : [[index, contains(row, mouse)]]
         })
 
-        return isAnimating
+        this.hover.update(targets, now)
+
+        this.buttonRects.forEach((rect, index) => {
+            if (rect)
+                rect.color = ContextMenuOverlay.getButtonColor(this.hover.get(index))
+        })
+
+        return this.hover.isAnimating
     }
 
     private getBounds(window: CanvasWindow, point: Point, buttons: ButtonOptions[]): RectangleDimensions {
@@ -188,7 +188,6 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
 
         const units = Units.fromWindow(window)
 
-        this.hover.length = buttons.length
         this.buttonRects = []
 
         items.rect()
@@ -222,11 +221,11 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
                               .round(units.x(buttonRadius))
                               .fill()
                               .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-                              .color(ContextMenuOverlay.getButtonColor(this.hover[index]))
+                              .color(ContextMenuOverlay.getButtonColor(this.hover.get(index)))
                               .layer(Layer.ContextMenu - 10)
 
             if (isInteractive)
-                rect.contextMenuButton()
+                rect.menuButton()
                     .onClick(buttons[index].action)
 
             this.buttonRects.push(rect.dispose())
@@ -243,7 +242,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
     private static getButtonColor(hover: HoverProgress | undefined) {
         return !hover || hover.isIdle
                ? Theme.contextMenuButton
-               : Theme.withAlpha(Theme.contextMenuButtonHover, hover.value)
+               : withAlpha(Theme.contextMenuButtonHover, hover.value)
     }
 
     private static getRows(bounds: RectangleDimensions, buttons: ButtonOptions[]): MenuRow[] {

@@ -3,7 +3,8 @@ import { Events } from '@/static/Enums'
 import { ZOOM_DEFAULT_STEP } from '@/static/constants/Index'
 import Styles from '@/static/constants/Styles'
 import CanvasWindow from '@/types/CanvasWindow'
-import { clamp, copyRect, sameRect, samePoint } from '@/Helper'
+import PointerContext from '@/types/PointerContext'
+import { clamp, copyRect, sameRect, samePoint } from '@/helpers/Geometry'
 
 type PointerHandlers = {
     onClick: (point: Point) => void
@@ -28,11 +29,7 @@ const WHEEL_LINE_HEIGHT = 16
 export default class Pointer {
     position: Point | null = null
 
-    contextPoint: Point | null = null
-
-    isContextOpen: boolean = false
-
-    isMenu: boolean = false
+    context: PointerContext | null = null
 
     private drag: DragState | null = null
 
@@ -76,7 +73,7 @@ export default class Pointer {
         this.listen(this.canvas, Events.PointerLeave, () => this.setPosition(null))
         this.listen(this.canvas, Events.ContextMenu, event => this.onContextMenu(event))
         this.listen(this.canvas, Events.Click, event => {
-            const isOpen = this.isContextOpen
+            const isOpen = this.context != null
 
             if (!this.isDragged)
                 this.handlers.onClick(this.toPoint(event))
@@ -98,29 +95,23 @@ export default class Pointer {
         this.canvas.style.touchAction = ''
 
         this.position = null
-        this.contextPoint = null
-        this.isContextOpen = false
-        this.isMenu = false
+        this.context = null
         this.drag = null
         this.isDragged = false
         this.isMoveEnabled = null
     }
 
     openMenu(point: Point) {
-        this.isContextOpen = true
-        this.isMenu = true
-        this.contextPoint = point
+        this.context = { point, isMenu: true }
 
         this.handlers.onChange()
     }
 
     closeContext() {
-        if (!this.isContextOpen)
+        if (!this.context)
             return
 
-        this.isContextOpen = false
-        this.isMenu = false
-        this.contextPoint = null
+        this.context = null
 
         this.handlers.onChange()
     }
@@ -221,9 +212,7 @@ export default class Pointer {
     private onContextMenu(event: MouseEvent) {
         event.preventDefault()
 
-        this.isContextOpen = true
-        this.isMenu = false
-        this.contextPoint = this.toPoint(event)
+        this.context = { point: this.toPoint(event), isMenu: false }
 
         this.handlers.onChange()
     }

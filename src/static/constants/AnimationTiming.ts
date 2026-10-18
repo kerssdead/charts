@@ -1,4 +1,4 @@
-export class AnimationTiming {
+export default class AnimationTiming {
     static readonly legend = 500
 
     static readonly rebuild = 500

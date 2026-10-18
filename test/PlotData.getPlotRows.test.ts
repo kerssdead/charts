@@ -1,4 +1,4 @@
-import PlotData from '@/types/data/PlotData'
+import PlotData, { getPlotRows } from '@/types/data/PlotData'
 
 describe('Getting plot rows for decomposition', () => {
     it('Should has 3 rows', () => {
@@ -58,7 +58,7 @@ describe('Getting plot rows for decomposition', () => {
             ]
         } as PlotData
 
-        expect(PlotData.getRows(data).values.length)
+        expect(getPlotRows(data).values.length)
             .toBe(3)
     })
 
@@ -102,7 +102,7 @@ describe('Getting plot rows for decomposition', () => {
             ]
         } as PlotData
 
-        expect(PlotData.getRows(data).headers.length)
+        expect(getPlotRows(data).headers.length)
             .toBe(6)
     })
 
@@ -153,7 +153,7 @@ describe('Getting plot rows for decomposition', () => {
             ]
         } as PlotData
 
-        expect(PlotData.getRows(data).headers.length)
+        expect(getPlotRows(data).headers.length)
             .toBe(6)
     })
 })

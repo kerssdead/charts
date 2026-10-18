@@ -1,53 +1,53 @@
-import * as Helper from '@/Helper'
+import { getRoundedValues } from '@/helpers/Numbers'
 
 describe('Calculating rounded values', () => {
     it('Should be 5 in (w/o zero value) and 5 out values with 200 diff', () => {
-        expect(Helper.getRoundedValues([111, 222, 333, 444, 555]))
+        expect(getRoundedValues([111, 222, 333, 444, 555]))
             .toStrictEqual([0, 150, 300, 450, 600])
     })
 
     it('Should be 5 in and 5 out values with 200 diff', () => {
-        expect(Helper.getRoundedValues([0, 165.44, 709.2, 444.32, 20.44]))
+        expect(getRoundedValues([0, 165.44, 709.2, 444.32, 20.44]))
             .toStrictEqual([0, 200, 400, 600, 800])
     })
 
     it('Should be 2 in (w/o zero value) and 3 out values with 700 diff', () => {
-        expect(Helper.getRoundedValues([33, 1287], 3))
+        expect(getRoundedValues([33, 1287], 3))
             .toStrictEqual([0, 800, 1600])
     })
 
     it('Should be 14 in (w/o zero value) and 5 out values with 1100 diff', () => {
-        expect(Helper.getRoundedValues([12, 14, 4221, 14, 12, 421, 4, 21, 4, 12, 4122, 2222, 1234, 2211]))
+        expect(getRoundedValues([12, 14, 4221, 14, 12, 421, 4, 21, 4, 12, 4122, 2222, 1234, 2211]))
             .toStrictEqual([0, 1250, 2500, 3750, 5000])
     })
 
     it('Should be 4 in (w/o zero value) and 5 out values with 300 diff', () => {
-        expect(Helper.getRoundedValues([-222, -76, 22, 344]))
+        expect(getRoundedValues([-222, -76, 22, 344]))
             .toStrictEqual([-400, -200, 0, 200, 400])
     })
 
     it('Should be 8 in (w/o zero value) and 5 values with 170 diff', () => {
-        expect(Helper.getRoundedValues([-12, -55, -211, -26, -99, -505, -123, 12]))
+        expect(getRoundedValues([-12, -55, -211, -26, -99, -505, -123, 12]))
             .toStrictEqual([-600, -400, -200, 0, 200])
     })
 
     it('Should be 5 in (w/o zero value) and 5 values with 1.1 diff', () => {
-        expect(Helper.getRoundedValues([1.2, 4.2, 0.5, 1.22, 3.4]))
+        expect(getRoundedValues([1.2, 4.2, 0.5, 1.22, 3.4]))
             .toStrictEqual([0, 1.25, 2.5, 3.75, 5])
     })
 
     it('Should be 4 in and 5 values with 2.5 diff', () => {
-        expect(Helper.getRoundedValues([2.4, 0, 3.3, 9.82]))
+        expect(getRoundedValues([2.4, 0, 3.3, 9.82]))
             .toStrictEqual([0, 2.5, 5, 7.5, 10])
     })
 
     it('Should be 5 in (w/o zero value) and 5 values with 4.4 diff', () => {
-        expect(Helper.getRoundedValues([-1.2, 4.5, 6.66, 2.5, -8.76]))
+        expect(getRoundedValues([-1.2, 4.5, 6.66, 2.5, -8.76]))
             .toStrictEqual([-10, -5, 0, 5, 10])
     })
 
     it('Should be 80 in (w/o zero value) and 5 values with 460,000 diff. Negative zero case', () => {
-        expect(Helper.getRoundedValues([-1.00,
+        expect(getRoundedValues([-1.00,
             736.00,
             648.00,
             2376.00,
@@ -131,7 +131,7 @@ describe('Calculating rounded values', () => {
     })
 
     it('Should be 80 in (w/o zero value) and 5 values with 456,030 diff. 78 positive values and only 1 positive small value', () => {
-        expect(Helper.getRoundedValues([1.00,
+        expect(getRoundedValues([1.00,
             -736.00,
             -648.00,
             -2376.00,

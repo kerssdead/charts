@@ -5,7 +5,7 @@ import Data from '@/types/interfaces/Data'
 import Formatter from '@/helpers/Formatter'
 import { PlotAxisType } from '@/static/Enums'
 
-export default class PlotData implements Data {
+export default interface PlotData extends Data {
     shortLabels: boolean
 
     simple: boolean
@@ -19,30 +19,30 @@ export default class PlotData implements Data {
     xType: PlotAxisType
 
     values: PlotSeries[]
+}
 
-    static getRows(data: PlotData): TableData {
-        const headers = new Map<string, TableHeaderValue>()
+export function getPlotRows(data: PlotData): TableData {
+    const headers = new Map<string, TableHeaderValue>()
 
-        const values = data.values.map(series => {
-            const seriesValues = new Map<string, any>()
+    const values = data.values.map(series => {
+        const seriesValues = new Map<string, number>()
 
-            for (const value of series.values) {
-                const key = value.x.toString()
+        for (const value of series.values) {
+            const key = value.x.toString()
 
-                seriesValues.set(key, value.y)
+            seriesValues.set(key, Number(value.y))
 
-                if (!headers.has(key))
-                    headers.set(key, { value: key, display: Formatter.axis(value.x, data.xType) })
-            }
+            if (!headers.has(key))
+                headers.set(key, { value: key, display: Formatter.axis(value.x, data.xType) })
+        }
 
-            return { name: series.label, values: seriesValues }
-        })
+        return { name: series.label, values: seriesValues }
+    })
 
-        const uniqueHeaders = [...headers.values()]
+    const uniqueHeaders = [...headers.values()]
 
-        if (data.xType == PlotAxisType.Date)
-            uniqueHeaders.sort((a, b) => Formatter.toDate(a.value).getTime() - Formatter.toDate(b.value).getTime())
+    if (data.xType == PlotAxisType.Date)
+        uniqueHeaders.sort((a, b) => Formatter.toDate(a.value).getTime() - Formatter.toDate(b.value).getTime())
 
-        return { headers: uniqueHeaders, values }
-    }
+    return { headers: uniqueHeaders, values }
 }

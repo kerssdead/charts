@@ -17,7 +17,7 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
     }
 
     interact(): this {
-        this.current.isAnimate = true
+        this.current.isInteractive = true
 
         return this
     }
@@ -89,7 +89,7 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         this.current.isGhost = value
 
         if (value) {
-            this.current.isAnimate = false
+            this.current.isInteractive = false
             this.current.tooltipTemplate = ''
             this.current.hasContextMenu = false
         }
@@ -109,8 +109,8 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         return this
     }
 
-    contextMenuButton() {
-        this.current.isContextMenu = true
+    menuButton() {
+        this.current.isMenuButton = true
 
         return this
     }

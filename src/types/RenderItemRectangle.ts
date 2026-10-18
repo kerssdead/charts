@@ -3,11 +3,11 @@ import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import RenderItem from '@/types/RenderItem'
 import Point from '@/types/Point'
-import { Alignment, DEFAULT_ALIGNMENT } from '@/types/Alignment'
+import Alignment, { DEFAULT_ALIGNMENT } from '@/types/Alignment'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { GradientCache } from '@/helpers/Canvas'
-import { lerp } from '@/Helper'
+import { lerp } from '@/helpers/Geometry'
 
 const SCALE_DELTA = 0.01
 const ALPHA_DELTA = 0.5

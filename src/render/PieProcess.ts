@@ -4,22 +4,17 @@ import Sector from '@/types/Sector'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import TextResources from '@/static/TextResources'
-import { boxEdgeDistance, clamp, stringWidth, sum } from '@/Helper'
-import Formatter from '@/helpers/Formatter'
-import Units from '@/helpers/Units'
+import { clamp } from '@/helpers/Geometry'
+import layoutLabels from '@/render/LabelLayout'
+import { stringWidth } from '@/helpers/Text'
+import { sum } from '@/helpers/Collections'
+import ChartProcess from '@/render/ChartProcess'
+import Theme from '@/Theme'
 import { TextAlignment } from '@/static/Enums'
 
 const LEADER_GAP = 20
 
 const LEADER_LENGTH = 60
-
-const LABEL_SPACING = 2
-
-const LABEL_STEP = .005
-
-const LABEL_ITERATIONS = 500
-
-const LABEL_MAX_DRIFT = Math.PI / 6
 
 const LABEL_SPACE = 36
 
@@ -33,8 +28,6 @@ const MIN_SECTOR_WIDTH = SECTOR_GAP + SECTOR_CORNER_RADIUS * 2
 
 const OTHER_KEY = 'other'
 
-const OTHER_COLOR = '#9e9e9e'
-
 const INNER_TITLE_FONT = 16
 
 const INNER_TITLE_MIN_FONT = 10
@@ -42,6 +35,8 @@ const INNER_TITLE_MIN_FONT = 10
 const INNER_TITLE_PADDING = .8
 
 const START_ANGLE = 0
+
+const CENTER = { x: COORDS_MAX_X / 2, y: COORDS_MAX_Y / 2 }
 
 const FULL_ANGLE = Math.PI * 2
 
@@ -58,14 +53,8 @@ type Label = {
     isVisible: boolean
 }
 
-export default class PieProcess {
-    private data: PieData
-
-    private readonly units: Units
-
+export default class PieProcess extends ChartProcess<PieData> {
     private readonly enableOther: boolean
-
-    private readonly valuePostfix: string | undefined
 
     private readonly radius: number
 
@@ -78,10 +67,9 @@ export default class PieProcess {
     private sum: number = 0
 
     constructor(data: PieData, pixel: Point, valuePostfix: string | undefined, enableOther: boolean) {
-        this.data = data
-        this.units = new Units(pixel)
+        super(data, pixel, valuePostfix)
+
         this.enableOther = enableOther
-        this.valuePostfix = valuePostfix
 
         const width = this.units.toPxX(COORDS_MAX_X)
         const height = this.units.toPxY(COORDS_MAX_Y)
@@ -123,92 +111,16 @@ export default class PieProcess {
             isVisible: slice.sector.disabled || PieProcess.isVisible(slice.sector)
         }))
 
-        const center = {
-            x: this.units.toPxX(COORDS_MAX_X / 2),
-            y: this.units.toPxY(COORDS_MAX_Y / 2)
-        }
+        const visible = slices.flatMap((slice, index) => PieProcess.isVisible(slice.sector) ? [index] : [])
 
-        const distance = this.labelDistance
+        const placements = layoutLabels(visible.map(index => ({
+            angle: result[index].angle,
+            value: slices[index].sector.value,
+            halfWidth: stringWidth(slices[index].sector.label, LABEL_FONT) / 2,
+            halfHeight: LABEL_FONT / 2
+        })), this.labelDistance)
 
-        const labels = slices.flatMap((slice, index) => {
-            if (!PieProcess.isVisible(slice.sector))
-                return []
-
-            const middle = result[index].angle
-
-            return [{
-                index,
-                middle,
-                angle: middle,
-                value: slice.sector.value,
-                halfWidth: stringWidth(slice.sector.label, LABEL_FONT) / 2,
-                halfHeight: LABEL_FONT / 2,
-                center: { x: 0, y: 0 }
-            }]
-        }).sort((a, b) => a.middle - b.middle)
-
-        type Box = typeof labels[number]
-
-        const getCenter = (label: Box, angle: number) => {
-            const push = distance + boxEdgeDistance(angle, label.halfWidth, label.halfHeight)
-
-            return {
-                x: center.x + push * Math.cos(angle),
-                y: center.y + push * Math.sin(angle)
-            }
-        }
-
-        const isOverlap = (a: Box, b: Box) => {
-            return Math.abs(a.center.x - b.center.x) < a.halfWidth + b.halfWidth + LABEL_SPACING
-                   && Math.abs(a.center.y - b.center.y) < a.halfHeight + b.halfHeight + LABEL_SPACING
-        }
-
-        const clampLabel = (label: Box) => {
-            label.angle = clamp(label.angle, label.middle - LABEL_MAX_DRIFT, label.middle + LABEL_MAX_DRIFT)
-            label.center = getCenter(label, label.angle)
-        }
-
-        for (const label of labels)
-            label.center = getCenter(label, label.angle)
-
-        for (let iteration = 0; iteration < LABEL_ITERATIONS; iteration++) {
-            let isMoved = false
-
-            for (let i = 0; i < labels.length; i++) {
-                const isLast = i == labels.length - 1
-
-                if (isLast && labels.length < 3)
-                    break
-
-                const current = labels[i]
-                const next = labels[isLast ? 0 : i + 1]
-
-                if (!isOverlap(current, next))
-                    continue
-
-                current.angle -= LABEL_STEP
-                next.angle += LABEL_STEP
-
-                clampLabel(current)
-                clampLabel(next)
-
-                isMoved = true
-            }
-
-            if (!isMoved)
-                break
-        }
-
-        const kept: Box[] = []
-
-        for (const label of [...labels].sort((a, b) => b.value - a.value)) {
-            const isVisible = kept.every(other => !isOverlap(label, other))
-
-            if (isVisible)
-                kept.push(label)
-
-            result[label.index] = { angle: label.angle, isVisible }
-        }
+        visible.forEach((index, i) => result[index] = placements[i])
 
         return result
     }
@@ -227,7 +139,7 @@ export default class PieProcess {
 
         return (items: QueueItemsBuilder) => {
             items.text(title)
-                 .position(COORDS_MAX_X / 2, COORDS_MAX_Y / 2)
+                 .position(CENTER.x, CENTER.y)
                  .size(fontSize)
                  .align(TextAlignment.Center)
                  .key('inner-title')
@@ -252,7 +164,7 @@ export default class PieProcess {
         const other = new Sector({
             label: TextResources.other,
             value: sum(tiny, s => s.value),
-            color: OTHER_COLOR
+            color: Theme.other
         })
 
         return [
@@ -265,23 +177,18 @@ export default class PieProcess {
         const endAngle = startAngle + angle
         const labelOffset = label.angle - (startAngle + angle / 2)
 
-        const center = {
-            x: COORDS_MAX_X / 2,
-            y: COORDS_MAX_Y / 2
-        }
-
         const radius = this.units.x(this.radius)
         const innerRadius = radius * this.innerRatio
 
         const orbit = {
-            ...center,
+            ...CENTER,
             radiusX: this.units.x(this.labelDistance),
             radiusY: this.units.y(this.labelDistance)
         }
 
         return (items: QueueItemsBuilder) => {
             const arc = items.arc()
-                .position(center.x, center.y)
+                .position(CENTER.x, CENTER.y)
                 .startAngle(startAngle)
                 .endAngle(endAngle)
                 .radius(radius)
@@ -330,14 +237,10 @@ export default class PieProcess {
         for (const child of children ?? [])
             rows.push(`${ child.label }: ${ this.formatValue(child.value) } (${ this.getPercent(child.value) })`)
 
-        return rows.join('\n')
-    }
-
-    private formatValue(value: number) {
-        return Formatter.value(value, this.valuePostfix)
+        return this.tooltip(...rows)
     }
 
     private getPercent(value: number) {
-        return this.sum == 0 ? '0%' : `${ +(value / this.sum * 100).toFixed(1) }%`
+        return this.percent(this.sum == 0 ? 0 : value / this.sum)
     }
 }

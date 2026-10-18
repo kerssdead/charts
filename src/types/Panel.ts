@@ -2,7 +2,7 @@ import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
 import type PlotProcess from '@/render/PlotProcess'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import { clamp } from '@/Helper'
+import { clamp } from '@/helpers/Geometry'
 
 const GAP = 16
 

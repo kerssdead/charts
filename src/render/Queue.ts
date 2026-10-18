@@ -65,7 +65,7 @@ export default class Queue {
         hoveredGroups.clear()
 
         for (const item of this.queue) {
-            if (item.hoverGroup != null && item.isAnimate && !item.isInitializing && item.in(point))
+            if (item.hoverGroup != null && item.isInteractive && !item.isInitializing && item.in(point))
                 hoveredGroups.add(item.hoverGroup)
         }
 
@@ -83,8 +83,7 @@ export default class Queue {
         if (items.length == 0)
             return
 
-        for (const item of items)
-            this.queue.push(item)
+        this.queue.push(...items)
 
         this.isSorted = false
         this.version++

@@ -1,7 +1,7 @@
 import { COORDS_MAX_X, COORDS_MAX_Y, PAN_MIN_VISIBLE, ZOOM_MAX, ZOOM_MIN } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import { clamp } from '@/Helper'
+import { clamp } from '@/helpers/Geometry'
 
 export default class CanvasWindow {
     x: number = 0

@@ -1,4 +1,4 @@
-import { adjustColor, clamp, hexToRgb } from '@/Helper'
+import { adjustColor, hexToRgb, withAlpha } from '@/helpers/Color'
 import ThemeOptions from '@/static/ThemeOptions'
 import { Events } from '@/static/Enums'
 
@@ -8,7 +8,7 @@ export enum ColorTheme {
 }
 
 class Theme {
-    static currentTheme = 0
+    static currentTheme = ColorTheme.light
 
     static text: string
 
@@ -24,6 +24,8 @@ class Theme {
 
     static canvasBackground: string
 
+    static other: string
+
     static canvasBackgroundInt: number
 
     static contextMenuBackground: string
@@ -34,9 +36,9 @@ class Theme {
 
     static media: MediaQueryList | undefined
 
-    static listeners: Map<Function, (event: MediaQueryListEvent) => void> = new Map()
+    static listeners: Map<() => void, (event: MediaQueryListEvent) => void> = new Map()
 
-    static initialize(callback: Function, isDark?: Function) {
+    static initialize(callback: () => void, isDark?: () => boolean) {
         Theme.media ??= window.matchMedia('(prefers-color-scheme: dark)')
 
         Theme.update(isDark)
@@ -51,7 +53,7 @@ class Theme {
         Theme.listeners.set(callback, listener)
     }
 
-    static detach(callback: Function) {
+    static detach(callback: () => void) {
         const listener = Theme.listeners.get(callback)
 
         if (!listener)
@@ -73,22 +75,16 @@ class Theme {
 
         const { r, g, b } = hexToRgb(Theme.canvasBackground)!
         Theme.canvasBackgroundInt = new Uint32Array(new Uint8ClampedArray([r, g, b, 255]).buffer)[0]
-        Theme.contextMenuBackground = Theme.withAlpha(Theme.background, ThemeOptions.contextMenuOpacity)
-        Theme.contextMenuButton = Theme.withAlpha(Theme.dropdownItemHoverColor, 0)
-        Theme.contextMenuButtonHover = Theme.withAlpha(Theme.dropdownItemHoverColor, 1)
-    }
-
-    static withAlpha(color: string, alpha: number) {
-        const value = Math.round(clamp(alpha, 0, 1) * 255)
-
-        return color.slice(0, 7) + value.toString(16).padStart(2, '0')
+        Theme.contextMenuBackground = withAlpha(Theme.background, ThemeOptions.contextMenuOpacity)
+        Theme.contextMenuButton = withAlpha(Theme.dropdownItemHoverColor, 0)
+        Theme.contextMenuButtonHover = withAlpha(Theme.dropdownItemHoverColor, 1)
     }
 
     static hoverBackground(hover: number) {
         return adjustColor(Theme.canvasBackground, Math.round(-25 * hover))
     }
 
-    static update(isDark?: Function) {
+    static update(isDark?: () => boolean) {
         const isDarkTheme = isDark ? isDark() : Theme.media?.matches
 
         Theme.setTheme(isDarkTheme ? ColorTheme.dark : ColorTheme.light)

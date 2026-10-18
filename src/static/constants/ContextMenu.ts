@@ -1,4 +1,4 @@
-export class ContextMenu {
+export default class ContextMenu {
     static readonly offset = 2
 
     static readonly padding = 5

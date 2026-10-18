@@ -12,6 +12,14 @@ class TextResources {
     static readonly noLabel = 'No Label'
 
     static readonly dataAsTable = 'Data as table'
+
+    static readonly total = 'Total'
+
+    static readonly value = 'Value'
+
+    static readonly defaultImageName = 'chart'
+
+    static readonly defaultTableName = 'table'
 }
 
 export default TextResources

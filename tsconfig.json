@@ -16,10 +16,6 @@
       "@e2e/*": ["./e2e/*"]
     }
   },
-  "files": [
-    "src/types/base/Value.ts",
-    "src/types/interfaces/Data.ts"
-  ],
   "include": [
     "src/**/*.ts"
   ],

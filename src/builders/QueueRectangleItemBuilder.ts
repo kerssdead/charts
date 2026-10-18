@@ -33,17 +33,14 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<Rend
         return this
     }
 
-    round(radii?: number | number[] | null) {
-        this.shape.radii = typeof radii == 'number' ? Array(4).fill(radii) : radii ?? [16, 16, 16, 16]
+    round(radii: number | number[]) {
+        this.shape.radii = typeof radii == 'number' ? Array(4).fill(radii) : radii
 
         return this
     }
 
-    align(x: HorizontalAlignment | null, y: VerticalAlignment | null) {
-        this.shape.align = {
-            x: x ?? HorizontalAlignment.Center,
-            y: y ?? VerticalAlignment.Center
-        }
+    align(x: HorizontalAlignment, y: VerticalAlignment) {
+        this.shape.align = { x, y }
 
         return this
     }
