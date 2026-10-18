@@ -109,22 +109,22 @@ describe('Parsing string to number', () => {
 
     it('US, fractional with long number after delimiter', () => {
         expect(Helper.parseNumber('14428822.674915052135873742887'))
-            .toStrictEqual(14428822.67491505)
+            .toStrictEqual(14428822.674915053)
     })
 
     it('EU, fractional with long number after delimiter', () => {
         expect(Helper.parseNumber('14428822,674915052135873742887'))
-            .toStrictEqual(14428822.67491505)
+            .toStrictEqual(14428822.674915053)
     })
 
     it ('US, fractional with long number after delimiter 2', () => {
         expect(Helper.parseNumber('202136.25625008223359376756160'))
-            .toStrictEqual(202136.25625008)
+            .toStrictEqual(202136.25625008222)
     })
 
     it ('EU, fractional with long number after delimiter 2', () => {
         expect(Helper.parseNumber('202136,25625008223359376756160'))
-            .toStrictEqual(202136.25625008)
+            .toStrictEqual(202136.25625008222)
     })
 
     it('US, fractional with long number with trailing zeros', () => {
@@ -144,6 +144,46 @@ describe('Parsing string to number', () => {
 
     it('space as thousands separator', () => {
         expect(Helper.parseNumber('1 000'))
+            .toStrictEqual(1000)
+    })
+
+    it('FR, non-breaking spaces as thousands separator', () => {
+        expect(Helper.parseNumber('1\u202f234\u00a0567,89'))
+            .toStrictEqual(1234567.89)
+    })
+
+    it('CH, apostrophe as thousands separator', () => {
+        expect(Helper.parseNumber("1'234'567.89"))
+            .toStrictEqual(1234567.89)
+    })
+
+    it('IN, lakh grouping', () => {
+        expect(Helper.parseNumber('12,34,567.89'))
+            .toStrictEqual(1234567.89)
+    })
+
+    it('EU, thousands without fraction', () => {
+        expect(Helper.parseNumber('1.234.567'))
+            .toStrictEqual(1234567)
+    })
+
+    it('leading zero is never grouping', () => {
+        expect(Helper.parseNumber('0,123'))
+            .toStrictEqual(.123)
+    })
+
+    it('unicode minus', () => {
+        expect(Helper.parseNumber('\u22121.234,5'))
+            .toStrictEqual(-1234.5)
+    })
+
+    it('exponent', () => {
+        expect(Helper.parseNumber('1.5e-7'))
+            .toStrictEqual(1.5e-7)
+    })
+
+    it('trailing garbage', () => {
+        expect(Helper.parseNumber('12abc'))
             .toStrictEqual(NaN)
     })
 })

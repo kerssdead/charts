@@ -3,9 +3,11 @@ import ChartSettings from '@/types/ChartSettings'
 import Theme from '@/Theme'
 import { ChartType, Events } from '@/static/Enums'
 import { Renderer } from '@/renderer/Renderer'
-import { adjustColor, deepClone, randomColor } from '@/Helper'
+import { adjustColor, deepClone, parseNumber, randomColor } from '@/Helper'
 import Legend from '@/Legend'
 import Value from '@/types/base/Value'
+import PlotSeries from '@/types/PlotSeries'
+import { TreeValue } from '@/types/data/TreeData'
 import Debug from '@/Debug'
 
 const BASE_COLOR_RANGE = 67
@@ -183,12 +185,28 @@ export default class Chart {
 
         settings = { ...settings, charts }
 
+        for (const chart of charts)
+            Chart.parseNumbers(chart.data?.values)
+
         Chart.applyBaseColor(settings, fallbackColor)
 
         return {
             ...settings,
             enableTooltip: !settings.disableInteractions && settings.enableTooltip,
             enableLegend: charts.some(Legend.isSupported) && settings.enableLegend
+        }
+    }
+
+    private static parseNumbers(values: Value[] | undefined) {
+        const toNumber = <T>(value: T) => typeof value == 'string' ? parseNumber(value) : value
+
+        for (const value of values ?? []) {
+            value.value = toNumber(value.value)
+
+            for (const point of (value as PlotSeries).values ?? [])
+                point.y = toNumber(point.y)
+
+            Chart.parseNumbers((value as TreeValue).sectors)
         }
     }
 

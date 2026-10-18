@@ -222,84 +222,59 @@ export function getRoundedValues(
     return ticks
 }
 
-export function parseNumber(value: string | null | number, decimalSeparator: string = '.') {
-    const simplify = (v: string) => {
-        return !v
-            ? 0
-            : +(v.replace(',', '')
-                .replace('.', '')
-                .replace('-', ''))
-    }
+const NUMBER_PATTERN = /^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i
 
-    const removeExtraZeros = (v: number) => {
-        while (v % 10 == 0 && v != 0)
-            v /= 10
-        return v
-    }
+const GROUP_SPACES = /[\s\u00a0\u202f'\u2019_]/g
 
-    const countLeadingZeros = (v: string) => {
-        let count = 0
-        while (v.length > 0 && v.slice(0, 1) == '0') {
-            v = v.slice(1)
-            count++
-        }
-        return v.length == 0 || count == 0 ? 0 : count
-    }
+const MINUS = /^[-\u2212]/
 
-    const getDividerForFractional = (v: string) => {
-        let trimmed = v
+let localeGroup: string | undefined
 
-        while (trimmed.length > 0 && trimmed[0] == '0')
-            trimmed = trimmed.slice(1)
+function isGrouping(text: string, separator: string) {
+    localeGroup ??= new Intl.NumberFormat().formatToParts(1000).find(part => part.type == 'group')?.value ?? ','
 
-        while (trimmed.length > 0 && trimmed[trimmed.length - 1] == '0')
-            trimmed = trimmed.slice(0, trimmed.length - 1)
+    const [integer, fraction] = text.split(separator)
 
-        return Math.pow(10, countLeadingZeros(v) + trimmed.length)
-    }
+    return separator == localeGroup && /^[1-9]\d{0,2}$/.test(integer) && /^\d{3}$/.test(fraction)
+}
 
-    if (!value)
+export function parseNumber(value: string | number | null | undefined): number {
+    if (value == null || value === '')
         return 0
 
     if (typeof value == 'number')
         return value
 
-    let split = value.split(decimalSeparator),
-        left = simplify(split[0]),
-        right = split.length > 1
-            ? removeExtraZeros(simplify(split[1])) / getDividerForFractional(split[1])
-            : 0
+    let text = String(value).replace(GROUP_SPACES, '')
+    let sign = 1
 
-    if (split.length > 1 && split[1].length > 9) {
-        const slice = split[1].slice(0, 8)
-
-        right = removeExtraZeros(simplify(slice)) / getDividerForFractional(slice)
+    if (MINUS.test(text)) {
+        sign = -1
+        text = text.slice(1)
+    } else if (text.startsWith('+')) {
+        text = text.slice(1)
     }
 
-    const negative = value.slice(0, 1) == '-' ? -1 : 1
+    const lastDot = text.lastIndexOf('.')
+    const lastComma = text.lastIndexOf(',')
 
-    const result = (left + right / (right >= 1 ? Math.pow(10, `${right}`.length) : 1))
-        * negative
+    let decimal: string | null = null
 
-    const localeString = result.toLocaleString()
+    if (lastDot >= 0 && lastComma >= 0) {
+        decimal = lastDot > lastComma ? '.' : ','
+    } else if (lastDot >= 0 || lastComma >= 0) {
+        const separator = lastDot >= 0 ? '.' : ','
+        const isSingle = text.indexOf(separator) == text.lastIndexOf(separator)
 
-    if (value.startsWith(localeString))
-        return result
-    else if (value.startsWith(localeString.replace(',', '!')
-        .replace('.', ',')
-        .replace('!', '.')))
-        return result
-    else if (value.startsWith(result.toString()))
-        return result
-    else if (value.startsWith(result.toString().replace(',', '!')
-        .replace('.', ',')
-        .replace('!', '.')))
-        return result
+        decimal = isSingle && !isGrouping(text, separator) ? separator : null
+    }
 
-    if (decimalSeparator == ',')
-        return NaN
+    let normalized = text.replace(decimal == '.' ? /,/g : decimal == ',' ? /\./g : /[.,]/g, '')
 
-    return parseNumber(value, ',')
+    if (decimal == ',')
+        normalized = normalized.replace(',', '.')
+
+    return NUMBER_PATTERN.test(normalized) ? sign * Number(normalized) : NaN
 }
 
 export function sum<T>(values: T[], selector: (value: T) => number) {
