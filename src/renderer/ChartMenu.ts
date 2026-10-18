@@ -52,19 +52,15 @@ export default class ChartMenu {
         this.button = undefined
     }
 
-    private static afterMenuClosed(action: () => void) {
-        setTimeout(action, ContextMenu.fadeDuration)
-    }
-
     getButtons() {
         const { title, charts } = this.settings
 
         return this.buttons ??= [
             {
                 text: TextResources.exportPNG,
-                action: () => ChartMenu.afterMenuClosed(() => {
+                action: () => setTimeout(() => {
                     Export.asPng(this.canvas, this.ratio, title, this.button?.bounds, this.settings.isDarkThemeFunction)
-                })
+                }, ContextMenu.fadeDuration)
             },
             {
                 text: TextResources.exportCSV,

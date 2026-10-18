@@ -2,10 +2,9 @@ import TreeData, { getTreeSum, TreeValue } from '@/types/data/TreeData'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
-import { adjustColor, contrastText } from '@/helpers/Color'
+import { contrastText, spreadColor } from '@/helpers/Color'
 import { stringWidth } from '@/helpers/Text'
 import { sum } from '@/helpers/Collections'
-import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import ChartProcess from '@/render/ChartProcess'
 
@@ -31,10 +30,6 @@ type Block = {
 }
 
 export default class TreeProcess extends ChartProcess<TreeData> {
-    constructor(data: TreeData, pixel: Point, valuePostfix: string | undefined) {
-        super(data, pixel, valuePostfix)
-    }
-
     getData() {
         const box = {
             x: this.data.padding,
@@ -60,8 +55,7 @@ export default class TreeProcess extends ChartProcess<TreeData> {
         const sectors = TreeProcess.prepare(group.sectors ?? [], value => value.value)
 
         return this.layout(sectors, box, value => value.value).map(({ value, box }, index) => {
-            const ratio = sectors.length == 1 ? .5 : index / (sectors.length - 1)
-            const color = adjustColor(group.color, Math.round((ratio * 2 - 1) * COLOR_RANGE))
+            const color = spreadColor(group.color, index, sectors.length, COLOR_RANGE)
 
             return { color, value, key: `tree-${ groupIndex }-${ index }`, box, group }
         })

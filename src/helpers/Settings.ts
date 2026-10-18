@@ -1,6 +1,6 @@
 import ChartSettings from '@/types/ChartSettings'
 import { ChartType } from '@/static/Enums'
-import { adjustColor, normalizeColor } from '@/helpers/Color'
+import { normalizeColor, spreadColor } from '@/helpers/Color'
 import { deepClone, groupBy } from '@/helpers/Collections'
 import { parseNumber } from '@/helpers/Numbers'
 import Legend from '@/Legend'
@@ -119,8 +119,7 @@ export function applyBaseColor(settings: ChartSettings, fallbackColor: string) {
     const base = settings.baseColor ? normalizeColor(settings.baseColor) : fallbackColor
 
     uncolored.forEach((values, index) => {
-        const ratio = uncolored.length == 1 ? .5 : index / (uncolored.length - 1)
-        const color = adjustColor(base, Math.round((ratio * 2 - 1) * BASE_COLOR_RANGE))
+        const color = spreadColor(base, index, uncolored.length, BASE_COLOR_RANGE)
 
         for (const value of values)
             value.color = color

@@ -1,13 +1,13 @@
 namespace Styles {
-    export enum Position {
+    export const enum Position {
         Absolute = 'absolute'
     }
 
-    export enum TouchAction {
+    export const enum TouchAction {
         None = 'none'
     }
 
-    export enum PointerEvents {
+    export const enum PointerEvents {
         None = 'none'
     }
 }

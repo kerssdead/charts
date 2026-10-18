@@ -10,7 +10,7 @@ export default abstract class ChartProcess<TData> {
 
     protected readonly valuePostfix: string | undefined
 
-    protected constructor(data: TData, pixel: Point, valuePostfix: string | undefined) {
+    constructor(data: TData, pixel: Point, valuePostfix: string | undefined) {
         this.data = data
         this.units = new Units(pixel)
         this.valuePostfix = valuePostfix
@@ -28,5 +28,9 @@ export default abstract class ChartProcess<TData> {
 
     protected percent(ratio: number) {
         return `${ +(ratio * 100).toFixed(1) }%`
+    }
+
+    protected share(value: number, ratio: number) {
+        return `${ this.formatValue(value) } (${ this.percent(ratio) })`
     }
 }

@@ -1,7 +1,7 @@
 import Value from '@/types/base/Value'
 import { clamp, contains, lerp } from '@/helpers/Geometry'
 import { grayScale, withAlpha } from '@/helpers/Color'
-import { maxOf, sum } from '@/helpers/Collections'
+import { groupBy, maxOf, sum } from '@/helpers/Collections'
 import { stringWidth } from '@/helpers/Text'
 import Point from '@/types/Point'
 import Frame from '@/types/Frame'
@@ -14,11 +14,34 @@ import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import TextResources from '@/static/TextResources'
 import { AnimationTiming, Layer } from '@/static/constants/Index'
-import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from '@/static/Enums'
+import { ChartType, LegendPlace, TextAlignment } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import ChartItem from '@/types/ChartItem'
 import HoverMap from '@/types/HoverMap'
 import ease from '@/animation/Animations'
+
+const PADDING_X = 12
+
+const PADDING_Y = 4
+
+const ITEM_HEIGHT = 20
+
+const ROW_GAP = 4
+
+const ITEM_GAP = 12
+
+const ITEM_EXTRA_WIDTH = 30
+
+const FONT_SIZE = 14
+
+const RESET_KEY = 'reset'
+
+const SIDES: { [key in LegendPlace]: keyof Paddings } = {
+    [LegendPlace.Bottom]: 'bottom',
+    [LegendPlace.Left]: 'left',
+    [LegendPlace.Top]: 'top',
+    [LegendPlace.Right]: 'right'
+}
 
 type LegendEntry = {
     value: Value
@@ -29,29 +52,6 @@ type LegendEntry = {
 }
 
 class Legend extends Overlay {
-    private static readonly paddingX = 12
-
-    private static readonly paddingY = 4
-
-    private static readonly itemHeight = 20
-
-    private static readonly rowGap = 4
-
-    private static readonly itemGap = 12
-
-    private static readonly itemExtraWidth = 30
-
-    private static readonly fontSize = 14
-
-    private static readonly resetKey = 'reset'
-
-    private static readonly sides: { [key in LegendPlace]: keyof Paddings } = {
-        [LegendPlace.Bottom]: 'bottom',
-        [LegendPlace.Left]: 'left',
-        [LegendPlace.Top]: 'top',
-        [LegendPlace.Right]: 'right'
-    }
-
     settings: ChartSettings
 
     onChange: (() => void) | undefined
@@ -106,7 +106,7 @@ class Legend extends Overlay {
         if (!area)
             return reserved
 
-        const side = Legend.sides[this.settings.legendPlace] ?? 'bottom'
+        const side = SIDES[this.settings.legendPlace] ?? 'bottom'
 
         reserved[side] = this.isVertical ? area.width : area.height
 
@@ -176,10 +176,10 @@ class Legend extends Overlay {
 
         this.button = this.settings.disableInteractions
                       ? undefined
-                      : new DOMRect(this.area!.x + this.area!.width - Legend.paddingX - this.buttonWidth,
-                          this.area!.y + Legend.paddingY,
+                      : new DOMRect(this.area!.x + this.area!.width - PADDING_X - this.buttonWidth,
+                          this.area!.y + PADDING_Y,
                           this.buttonWidth,
-                          Legend.itemHeight)
+                          ITEM_HEIGHT)
 
         this.isDirty = true
     }
@@ -216,10 +216,8 @@ class Legend extends Overlay {
         const area = this.getArea(progress)
 
         builder.rect()
-               .position(this.units.x(area.x), this.units.y(area.y))
-               .size(this.units.x(area.width), this.units.y(area.height))
+               .box(this.units, area)
                .fill()
-               .align(HorizontalAlignment.Left, VerticalAlignment.Top)
                .color(Theme.canvasBackground)
                .layer(Layer.Legend)
                .fixed()
@@ -227,11 +225,11 @@ class Legend extends Overlay {
                    this.isDirty = true
                })
 
-        const resetBackground = this.button && this.buildButton(builder, this.button, this.hover.value(Legend.resetKey))
+        const resetBackground = this.button && this.buildButton(builder, this.button, this.hover.value(RESET_KEY))
         const added = builder.dispose()
 
         if (resetBackground)
-            this.backgrounds.set(Legend.resetKey, resetBackground)
+            this.backgrounds.set(RESET_KEY, resetBackground)
 
         this.entries.forEach(entry => {
             const from = this.from.get(this.getKey(entry.value))
@@ -330,22 +328,11 @@ class Legend extends Overlay {
 
     private buildEntry(items: QueueItemsBuilder, entry: LegendEntry, hover: number) {
         const { value, label, x, y, width } = entry
-        const centerY = y + Legend.itemHeight / 2
+        const centerY = y + ITEM_HEIGHT / 2
         const textX = x + 22
         const textColor = value.disabled ? withAlpha(Theme.text, .5) : Theme.text
 
-        const background = items.rect()
-             .position(this.units.x(x), this.units.y(y))
-             .size(this.units.x(width), this.units.y(Legend.itemHeight))
-             .round(this.units.x(6))
-             .fill()
-             .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-             .color(Theme.hoverBackground(hover))
-             .layer(Layer.Legend + 1)
-             .fixed()
-             .onClick(() => {
-                 this.toggle(value)
-             })
+        const background = this.buttonRect(items, this.units, { x, y, width, height: ITEM_HEIGHT }, 6, hover, () => this.toggle(value))
 
         items.arc()
              .position(this.units.x(x + 11), this.units.y(centerY))
@@ -357,7 +344,7 @@ class Legend extends Overlay {
 
         items.text(label)
              .position(this.units.x(textX), this.units.y(centerY))
-             .size(Legend.fontSize)
+             .size(FONT_SIZE)
              .align(TextAlignment.Left)
              .color(textColor)
              .layer(Layer.Legend + 2)
@@ -375,46 +362,27 @@ class Legend extends Overlay {
     }
 
     private buildButton(items: QueueItemsBuilder, button: DOMRect, hover: number) {
-        const background = items.rect()
-             .position(this.units.x(button.x), this.units.y(button.y))
-             .size(this.units.x(button.width), this.units.y(button.height))
-             .round(this.units.x(4))
-             .fill()
-             .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-             .color(Theme.hoverBackground(hover))
-             .layer(Layer.Legend + 1)
-             .fixed()
-             .onClick(() => {
-                 this.reset()
-             })
+        const background = this.buttonRect(items, this.units, button, 4, hover, () => this.reset())
 
-        items.text(TextResources.reset)
-             .position(this.units.x(button.x + button.width / 2), this.units.y(button.y + button.height / 2))
-             .size(Legend.fontSize)
-             .align(TextAlignment.Center)
-             .color(Theme.text)
-             .layer(Layer.Legend + 2)
-             .fixed()
+        this.buttonText(items, this.units, button, TextResources.reset, FONT_SIZE)
 
         return background.dispose()
     }
 
     private calculateHorizontal(width: number, height: number) {
-        const { paddingX, paddingY, itemHeight, rowGap, itemGap } = Legend
-
-        const buttonSpace = this.buttonWidth > 0 ? this.buttonWidth + itemGap : 0
-        const available = Math.max(width - (paddingX + buttonSpace) * 2, 0)
-        const maxRows = Math.max(Math.floor((height / 4 - paddingY * 2 + rowGap) / (itemHeight + rowGap)), 1)
+        const buttonSpace = this.buttonWidth > 0 ? this.buttonWidth + ITEM_GAP : 0
+        const available = Math.max(width - (PADDING_X + buttonSpace) * 2, 0)
+        const maxRows = Math.max(Math.floor((height / 4 - PADDING_Y * 2 + ROW_GAP) / (ITEM_HEIGHT + ROW_GAP)), 1)
 
         const rows: LegendEntry[][] = []
         let row: LegendEntry[] = []
         let rowWidth = 0
 
         for (const value of this.visibleValues()) {
-            const label = Legend.truncate(value.label, available - Legend.itemExtraWidth)
-            const itemWidth = stringWidth(label) + Legend.itemExtraWidth
+            const label = Legend.truncate(value.label, available - ITEM_EXTRA_WIDTH)
+            const itemWidth = stringWidth(label) + ITEM_EXTRA_WIDTH
 
-            if (row.length > 0 && rowWidth + itemGap + itemWidth > available) {
+            if (row.length > 0 && rowWidth + ITEM_GAP + itemWidth > available) {
                 rows.push(row)
 
                 row = []
@@ -424,7 +392,7 @@ class Legend extends Overlay {
             if (rows.length == maxRows)
                 break
 
-            rowWidth += (row.length > 0 ? itemGap : 0) + itemWidth
+            rowWidth += (row.length > 0 ? ITEM_GAP : 0) + itemWidth
 
             row.push({ value, label, x: 0, y: 0, width: itemWidth })
         }
@@ -433,7 +401,7 @@ class Legend extends Overlay {
             rows.push(row)
 
         const rowsCount = Math.max(rows.length, 1)
-        const areaHeight = paddingY * 2 + rowsCount * itemHeight + (rowsCount - 1) * rowGap
+        const areaHeight = PADDING_Y * 2 + rowsCount * ITEM_HEIGHT + (rowsCount - 1) * ROW_GAP
         const areaY = this.settings.legendPlace == LegendPlace.Top ? this.top : height - areaHeight
 
         this.area = new DOMRect(0, areaY, width, areaHeight)
@@ -441,15 +409,15 @@ class Legend extends Overlay {
         this.entries = []
 
         rows.forEach((items, index) => {
-            const total = sum(items, item => item.width) + (items.length - 1) * itemGap
+            const total = sum(items, item => item.width) + (items.length - 1) * ITEM_GAP
 
             let x = (width - total) / 2
 
             for (const item of items) {
                 item.x = x
-                item.y = areaY + paddingY + index * (itemHeight + rowGap)
+                item.y = areaY + PADDING_Y + index * (ITEM_HEIGHT + ROW_GAP)
 
-                x += item.width + itemGap
+                x += item.width + ITEM_GAP
 
                 this.entries.push(item)
             }
@@ -457,31 +425,29 @@ class Legend extends Overlay {
     }
 
     private calculateVertical(width: number, height: number) {
-        const { paddingX, paddingY, itemHeight, rowGap } = Legend
-
         const values = this.visibleValues()
-        const widest = maxOf(values, value => stringWidth(value.label)) + Legend.itemExtraWidth
-        const areaWidth = Math.min(Math.max(widest, this.buttonWidth) + paddingX * 2, width / 4)
-        const available = areaWidth - paddingX * 2
+        const widest = maxOf(values, value => stringWidth(value.label)) + ITEM_EXTRA_WIDTH
+        const areaWidth = Math.min(Math.max(widest, this.buttonWidth) + PADDING_X * 2, width / 4)
+        const available = areaWidth - PADDING_X * 2
         const areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
 
         this.area = new DOMRect(areaX, this.top, areaWidth, height - this.top)
 
-        const buttonSpace = this.buttonWidth > 0 ? itemHeight + rowGap : 0
-        const availableHeight = height - this.top - paddingY * 2 - buttonSpace
-        const count = clamp(Math.floor((availableHeight + rowGap) / (itemHeight + rowGap)), 0, values.length)
-        const blockHeight = count * itemHeight + Math.max(count - 1, 0) * rowGap
-        const startY = this.top + paddingY + buttonSpace + Math.max((availableHeight - blockHeight) / 2, 0)
+        const buttonSpace = this.buttonWidth > 0 ? ITEM_HEIGHT + ROW_GAP : 0
+        const availableHeight = height - this.top - PADDING_Y * 2 - buttonSpace
+        const count = clamp(Math.floor((availableHeight + ROW_GAP) / (ITEM_HEIGHT + ROW_GAP)), 0, values.length)
+        const blockHeight = count * ITEM_HEIGHT + Math.max(count - 1, 0) * ROW_GAP
+        const startY = this.top + PADDING_Y + buttonSpace + Math.max((availableHeight - blockHeight) / 2, 0)
 
         this.entries = values.slice(0, count).map((value, index) => {
-            const label = Legend.truncate(value.label, available - Legend.itemExtraWidth)
+            const label = Legend.truncate(value.label, available - ITEM_EXTRA_WIDTH)
 
             return {
                 value,
                 label,
                 x: 0,
-                y: startY + index * (itemHeight + rowGap),
-                width: Math.min(stringWidth(label) + Legend.itemExtraWidth, available)
+                y: startY + index * (ITEM_HEIGHT + ROW_GAP),
+                width: Math.min(stringWidth(label) + ITEM_EXTRA_WIDTH, available)
             }
         })
 
@@ -492,18 +458,9 @@ class Legend extends Overlay {
     }
 
     private visibleValues(): Value[] {
-        const keys = new Set<string>()
+        const groups = groupBy(this.values.filter(value => !value.hideInLegend), value => this.getKey(value))
 
-        return this.values.filter(value => {
-            const key = this.getKey(value)
-
-            if (value.hideInLegend || keys.has(key))
-                return false
-
-            keys.add(key)
-
-            return true
-        })
+        return Array.from(groups.values(), group => group[0])
     }
 
     private getKey(value: Value) {
@@ -550,11 +507,11 @@ class Legend extends Overlay {
 
     private updateHover(mouse: Point | null, now: DOMHighResTimeStamp) {
         const targets = this.entries.map((entry): [string, boolean] => {
-            return [entry.value.id, contains({ x: entry.x, y: entry.y, width: entry.width, height: Legend.itemHeight }, mouse)]
+            return [entry.value.id, contains({ x: entry.x, y: entry.y, width: entry.width, height: ITEM_HEIGHT }, mouse)]
         })
 
         if (this.button)
-            targets.push([Legend.resetKey, contains(this.button, mouse)])
+            targets.push([RESET_KEY, contains(this.button, mouse)])
 
         return this.hover.update(targets, now)
     }

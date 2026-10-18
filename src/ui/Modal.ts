@@ -1,6 +1,6 @@
 import { Icon, Tag } from '@/static/Enums'
 
-enum ModalClasses {
+const enum ModalClasses {
     Modal = 'o-modal',
 
     Title = 'o-modal-title',

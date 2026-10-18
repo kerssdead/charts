@@ -1,21 +1,23 @@
-export default class ContextMenu {
-    static readonly offset = 2
+const enum ContextMenu {
+    offset = 2,
 
-    static readonly padding = 5
+    padding = 5,
 
-    static readonly buttonHeight = 22
+    buttonHeight = 22,
 
-    static readonly dividerHeight = 9
+    dividerHeight = 9,
 
-    static readonly textPadding = 10
+    textPadding = 10,
 
-    static readonly fontSize = 13
+    fontSize = 13,
 
-    static readonly minWidth = 120
+    minWidth = 120,
 
-    static readonly menuRadius = 6
+    menuRadius = 6,
 
-    static readonly buttonRadius = 4
+    buttonRadius = 4,
 
-    static readonly fadeDuration = 150
+    fadeDuration = 150
 }
+
+export default ContextMenu

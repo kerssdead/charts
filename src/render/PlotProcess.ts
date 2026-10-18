@@ -11,6 +11,7 @@ import Point from '@/types/Point'
 import Theme from '@/Theme'
 import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
+import QueueLineItemBuilder from '@/builders/QueueLineItemBuilder'
 import PlotPoint from '@/types/PlotPoint'
 import Formatter from '@/helpers/Formatter'
 import ChartProcess from '@/render/ChartProcess'
@@ -51,6 +52,8 @@ const GRID_DASH = [1, 20]
 
 const LINE_LAYER = Layer.Data + 1
 
+const GHOST_TYPES = [PlotType.Column, PlotType.Bar, PlotType.StackingColumn]
+
 const AXIS_LAYER = Layer.Data + 50
 
 type Band = {
@@ -69,8 +72,6 @@ type Slots = {
 }
 
 export default class PlotProcess extends ChartProcess<PlotData> {
-    private static readonly ghostTypes = [PlotType.Column, PlotType.Bar, PlotType.StackingColumn]
-
     private readonly series: PlotSeries[]
 
     private readonly margin: Paddings
@@ -190,7 +191,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
     getData() {
         const series = this.data.values.flatMap(series => {
-            if (series.disabled && !PlotProcess.ghostTypes.includes(series.type))
+            if (series.disabled && !GHOST_TYPES.includes(series.type))
                 return []
 
             return [this.getSeries(series)]
@@ -473,7 +474,6 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
     private getColumns(series: PlotSeries) {
         const baseY = this.getAxisY(0)
-        const color = series.color
 
         const step = this.getMainStep()
         const index = this.indexOf(series)
@@ -495,29 +495,22 @@ export default class PlotProcess extends ChartProcess<PlotData> {
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                      .grow('y', baseY)
 
-                this.dataRect(column, series, value, i, color, this.getValueTooltip(series, value))
+                this.dataRect(column, series, value, i)
             })
         }
     }
 
-    private dataRect(rect: QueueRectangleItemBuilder,
-                     series: PlotSeries,
-                     value: PlotPoint,
-                     index: number,
-                     color: string,
-                     tooltip?: string) {
+    private dataRect(rect: QueueRectangleItemBuilder, series: PlotSeries, value: PlotPoint, index: number) {
         const item = rect.fill()
                          .gradient()
-                         .color(color)
+                         .color(series.color)
                          .layer(Layer.Data)
                          .key(this.getKey(series, 'rect', index))
                          .interact()
                          .init(AnimationTiming.plotInit, index * AnimationTiming.plotInitStagger)
+                         .tooltip(this.getValueTooltip(series, value))
                          .data(value.data)
                          .contextMenu()
-
-        if (tooltip)
-            item.tooltip(tooltip)
 
         this.groupHover(item, series)
 
@@ -545,16 +538,21 @@ export default class PlotProcess extends ChartProcess<PlotData> {
                 )
             })
 
-            line.width(series.width)
-                .dash(Array.isArray(series.dash) ? series.dash : [])
-                .color(series.color)
-                .layer(LINE_LAYER)
-                .key(this.getKey(series, 'line'))
-                .interact()
-                .init(AnimationTiming.plotLineInit)
+            line.dash(Array.isArray(series.dash) ? series.dash : [])
 
-            this.groupHover(line, series)
+            this.dataLine(line, series, 'line')
         }
+    }
+
+    private dataLine(line: QueueLineItemBuilder, series: PlotSeries, suffix: string) {
+        line.width(series.width)
+            .color(series.color)
+            .layer(LINE_LAYER)
+            .key(this.getKey(series, suffix))
+            .interact()
+            .init(AnimationTiming.plotLineInit)
+
+        this.groupHover(line, series)
     }
 
     private getBars(series: PlotSeries) {
@@ -566,7 +564,6 @@ export default class PlotProcess extends ChartProcess<PlotData> {
             const height = series.disabled ? 0 : heightInStep
 
             const baseY = this.barBand.bottom - visibleBefore * heightInStep
-            const color = series.color
 
             series.values.forEach(value => {
                 const i = PlotProcess.getSlot(this.barSlots, value)
@@ -580,14 +577,13 @@ export default class PlotProcess extends ChartProcess<PlotData> {
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', x)
 
-                this.dataRect(bar, series, value, i, color, this.getValueTooltip(series, value))
+                this.dataRect(bar, series, value, i)
             })
         }
     }
 
     private getStackedColumns(series: PlotSeries) {
         const baseY = this.getAxisY(0)
-        const color = series.color
 
         const step = this.getMainStep()
 
@@ -625,7 +621,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('y', baseY)
 
-                this.dataRect(column, series, value, i, color, this.getValueTooltip(series, value))
+                this.dataRect(column, series, value, i)
                     .fade(false)
             }
         }
@@ -655,20 +651,8 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         const x1 = this.margin.left
         const x2 = COORDS_MAX_X - this.margin.right
 
-        const color = series.color
-
         return (items: QueueItemsBuilder) => {
-            const line = items.line()
-                              .stop(x1, y)
-                              .stop(x2, y)
-                              .width(series.width)
-                              .color(color)
-                              .layer(LINE_LAYER)
-                              .key(this.getKey(series, 'attention'))
-                              .interact()
-                              .init(AnimationTiming.plotLineInit)
-
-            this.groupHover(line, series)
+            this.dataLine(items.line().stop(x1, y).stop(x2, y), series, 'attention')
         }
     }
 }

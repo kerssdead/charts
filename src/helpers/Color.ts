@@ -13,6 +13,12 @@ export function adjustColor(color: string, amount: number) {
     return '#' + [rgb.r, rgb.g, rgb.b].map(channel => toHex(channel + amount)).join('')
 }
 
+export function spreadColor(base: string, index: number, count: number, range: number) {
+    const ratio = count == 1 ? .5 : index / (count - 1)
+
+    return adjustColor(base, Math.round((ratio * 2 - 1) * range))
+}
+
 function toHex(channel: number) {
     return Math.round(clamp(channel, 0, 255)).toString(16).padStart(2, '0')
 }

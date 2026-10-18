@@ -1,6 +1,6 @@
 {
   "name": "charts",
-  "version": "2.0.286",
+  "version": "2.0.291",
   "description": "Typescript Canvas Charts",
   "jsdelivr": "./dist/ocharts.js",
   "repository": "https://github.com/kerssdead/charts",
@@ -22,7 +22,7 @@
     "e2e": "npx playwright test",
     "e2e-ui": "npx playwright test --ui",
     "test-all": "jest && npx playwright test",
-    "sass": "sass src/styles/index.scss dist/main.css"
+    "sass": "sass --style=compressed src/styles/index.scss dist/main.css"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

@@ -9,15 +9,17 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import { TextAlignment } from '@/static/Enums'
 
+const TITLE_FONT = 20
+
+const TITLE_PADDING = 12
+
+const PANEL_TITLE_FONT = 16
+
+const PANEL_TITLE_PADDING = 8
+
+const PANEL_TITLE_HEIGHT = PANEL_TITLE_FONT + PANEL_TITLE_PADDING * 2
+
 export default class Layout {
-    private static readonly titleFont = 20
-
-    private static readonly titlePadding = 12
-
-    private static readonly panelTitleFont = 16
-
-    private static readonly panelTitlePadding = 8
-
     width: number = 0
 
     height: number = 0
@@ -35,11 +37,7 @@ export default class Layout {
     }
 
     private get titleHeight() {
-        return this.title || this.hasMenu ? Layout.titleFont + Layout.titlePadding * 2 : 0
-    }
-
-    private get panelTitleHeight() {
-        return Layout.panelTitleFont + Layout.panelTitlePadding * 2
+        return this.title || this.hasMenu ? TITLE_FONT + TITLE_PADDING * 2 : 0
     }
 
     reset() {
@@ -69,7 +67,7 @@ export default class Layout {
     }
 
     getPanels(charts: ChartItem[], columns?: number) {
-        const titles = charts.map(chart => chart.title ? this.panelTitleHeight : 0)
+        const titles = charts.map(chart => chart.title ? PANEL_TITLE_HEIGHT : 0)
 
         const panels = Panel.grid(titles, this.window.baseWidth, this.window.baseHeight, columns)
 
@@ -88,7 +86,7 @@ export default class Layout {
         return (items: QueueItemsBuilder) => {
             items.text(title)
                  .position(COORDS_MAX_X / 2, this.titleHeight / 2 * COORDS_MAX_Y / height)
-                 .size(Layout.titleFont)
+                 .size(TITLE_FONT)
                  .align(TextAlignment.Center)
                  .fixed()
                  .key('title')
@@ -102,8 +100,8 @@ export default class Layout {
 
         return (items: QueueItemsBuilder) => {
             items.text(title)
-                 .position(COORDS_MAX_X / 2, -this.panelTitleHeight / 2 * pixel.y)
-                 .size(Layout.panelTitleFont)
+                 .position(COORDS_MAX_X / 2, -PANEL_TITLE_HEIGHT / 2 * pixel.y)
+                 .size(PANEL_TITLE_FONT)
                  .align(TextAlignment.Center)
                  .key('panel-title')
                  .init(AnimationTiming.title, 0, true)

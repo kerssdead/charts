@@ -1,11 +1,13 @@
-export default class Layer {
-    static readonly Base = 200
+const enum Layer {
+    Base = 200,
 
-    static readonly Data = 500
+    Data = 500,
 
-    static readonly Legend = 700
+    Legend = 700,
 
-    static readonly Tooltip = 800
+    Tooltip = 800,
 
-    static readonly ContextMenu = 1000
+    ContextMenu = 1000
 }
+
+export default Layer

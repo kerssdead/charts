@@ -10,7 +10,7 @@ import ItemData from '@/types/ItemData'
 import CustomTooltip from '@/renderer/CustomTooltip'
 import Theme from '@/Theme'
 import { Layer, Tooltip } from '@/static/constants/Index'
-import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
+import { TextAlignment } from '@/static/Enums'
 import { copyRect, placeNear, sameRect, samePoint } from '@/helpers/Geometry'
 import { maxOf } from '@/helpers/Collections'
 import { stringWidth } from '@/helpers/Text'
@@ -77,8 +77,11 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
 
         const state = this.state
 
-        if (!this.isBuilt(state.point, state.template, window))
-            this.add(queue, window, state.point, state.template)
+        if (!this.isBuilt(state.point, state.template, window)) {
+            this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => this.build(builder, window, state.point, state.template)))
+
+            this.built = { point: state.point, template: state.template, window: copyRect(window) }
+        }
 
         this.setAlpha(alpha)
 
@@ -113,40 +116,31 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
                && sameRect(built.window, window)
     }
 
-    private add(queue: Queue, window: CanvasWindow, point: Point, template: string) {
-        this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => this.build(builder, window, point, template)))
-
-        this.built = { point, template, window: copyRect(window) }
-    }
-
     private build(items: QueueItemsBuilder, window: CanvasWindow, point: Point, template: string) {
-        const { offset, padding, rowHeight, fontSize, radius } = Tooltip
         const { clientWidth: canvasWidth, clientHeight: canvasHeight } = this.canvas
 
         const rows = template.split('\n')
 
-        const width = maxOf(rows, row => stringWidth(row, fontSize)) + padding * 2
-        const height = rows.length * rowHeight + padding * 2
+        const width = maxOf(rows, row => stringWidth(row, Tooltip.fontSize)) + Tooltip.padding * 2
+        const height = rows.length * Tooltip.rowHeight + Tooltip.padding * 2
 
-        const { x: left, y: top } = placeNear(point, width, height, offset,
+        const { x: left, y: top } = placeNear(point, width, height, Tooltip.offset,
             { x: 0, y: 0, width: canvasWidth, height: canvasHeight })
 
         const units = Units.fromWindow(window)
 
         items.rect()
-             .position(units.positionX(left), units.positionY(top))
-             .size(units.x(width), units.y(height))
+             .box(units, { x: left, y: top, width, height })
              .fill()
-             .round(units.x(radius))
-             .align(HorizontalAlignment.Left, VerticalAlignment.Top)
+             .round(units.x(Tooltip.radius))
              .color(Theme.background)
              .stroke(Theme.dropdownBorder)
              .layer(Layer.Tooltip)
 
         rows.forEach((row, index) => {
             items.text(row)
-                 .position(units.positionX(left + padding), units.positionY(top + padding + (index + .5) * rowHeight))
-                 .size(fontSize)
+                 .position(units.positionX(left + Tooltip.padding), units.positionY(top + Tooltip.padding + (index + .5) * Tooltip.rowHeight))
+                 .size(Tooltip.fontSize)
                  .align(TextAlignment.Left)
                  .color(Theme.text)
                  .layer(Layer.Tooltip)

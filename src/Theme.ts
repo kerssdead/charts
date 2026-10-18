@@ -36,31 +36,16 @@ class Theme {
 
     static media: MediaQueryList | undefined
 
-    static listeners: Map<() => void, (event: MediaQueryListEvent) => void> = new Map()
-
     static initialize(callback: () => void, isDark?: () => boolean) {
         Theme.media ??= window.matchMedia('(prefers-color-scheme: dark)')
 
         Theme.update(isDark)
 
-        if (Theme.listeners.has(callback))
-            return
-
-        const listener = () => callback()
-
-        Theme.media.addEventListener(Events.Change, listener)
-
-        Theme.listeners.set(callback, listener)
+        Theme.media.addEventListener(Events.Change, callback)
     }
 
     static detach(callback: () => void) {
-        const listener = Theme.listeners.get(callback)
-
-        if (!listener)
-            return
-
-        Theme.media?.removeEventListener(Events.Change, listener)
-        Theme.listeners.delete(callback)
+        Theme.media?.removeEventListener(Events.Change, callback)
     }
 
     static setTheme(index: ColorTheme) {

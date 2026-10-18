@@ -1,4 +1,4 @@
-export enum ChartType {
+export const enum ChartType {
     Plot,
 
     Pie,
@@ -8,11 +8,11 @@ export enum ChartType {
     TreeMap
 }
 
-export enum ErrorType {
+export const enum ErrorType {
     NullContext = 'Can\'t find context'
 }
 
-export enum Events {
+export const enum Events {
     Blur = 'blur',
 
     Click = 'click',
@@ -32,7 +32,7 @@ export enum Events {
     Wheel = 'wheel'
 }
 
-export enum LegendPlace {
+export const enum LegendPlace {
     Bottom,
 
     Left,
@@ -42,7 +42,7 @@ export enum LegendPlace {
     Right
 }
 
-export enum PlotAxisType {
+export const enum PlotAxisType {
     Number,
 
     Date,
@@ -50,7 +50,7 @@ export enum PlotAxisType {
     Text
 }
 
-export enum PlotType {
+export const enum PlotType {
     Line,
 
     AttentionLine,
@@ -62,7 +62,7 @@ export enum PlotType {
     StackingColumn
 }
 
-export enum Tag {
+export const enum Tag {
     Canvas = 'canvas',
 
     A = 'a',
@@ -76,13 +76,13 @@ export enum Tag {
     Span = 'span'
 }
 
-export enum Icon {
+export const enum Icon {
     ThreeDots = '⋯',
 
     Close = '×'
 }
 
-export enum TextAlignment {
+export const enum TextAlignment {
     Left = 'start',
 
     Center = 'center',
@@ -90,7 +90,7 @@ export enum TextAlignment {
     Right = 'end'
 }
 
-export enum TextBaseline {
+export const enum TextBaseline {
     Alphabetic = 'alphabetic',
 
     Top = 'top',
@@ -98,7 +98,7 @@ export enum TextBaseline {
     Middle = 'middle'
 }
 
-export enum HorizontalAlignment {
+export const enum HorizontalAlignment {
     Left = 'left',
 
     Center = 'center',
@@ -106,7 +106,7 @@ export enum HorizontalAlignment {
     Right = 'right'
 }
 
-export enum VerticalAlignment {
+export const enum VerticalAlignment {
     Top = 'top',
 
     Center = 'center',

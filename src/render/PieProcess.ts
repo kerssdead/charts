@@ -232,15 +232,15 @@ export default class PieProcess extends ChartProcess<PieData> {
     }
 
     private getTooltip(sector: Sector, children?: Sector[]) {
-        const rows = [sector.label, `${ this.formatValue(sector.value) } (${ this.getPercent(sector.value) })`]
+        const rows = [sector.label, this.getShare(sector.value)]
 
         for (const child of children ?? [])
-            rows.push(`${ child.label }: ${ this.formatValue(child.value) } (${ this.getPercent(child.value) })`)
+            rows.push(`${ child.label }: ${ this.getShare(child.value) }`)
 
         return this.tooltip(...rows)
     }
 
-    private getPercent(value: number) {
-        return this.percent(this.sum == 0 ? 0 : value / this.sum)
+    private getShare(value: number) {
+        return this.share(value, this.sum == 0 ? 0 : value / this.sum)
     }
 }

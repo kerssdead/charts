@@ -116,13 +116,19 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         ]
     }
 
-    private getRing(index: number) {
+    private ring(items: QueueItemsBuilder, index: number, endAngle: number) {
         const radius = this.radius - this.thickness * index
 
-        return {
-            radius: this.units.x(radius),
-            innerRadius: this.units.x(radius - this.thickness)
-        }
+        return items.arc()
+                    .position(this.center.x, this.center.y)
+                    .startAngle(START_ANGLE)
+                    .endAngle(endAngle)
+                    .radius(this.units.x(radius))
+                    .innerRadius(this.units.x(radius - this.thickness))
+                    .gap(GAP)
+                    .cornerRadius(CORNER_RADIUS)
+                    .fill()
+                    .gradient()
     }
 
     private getRatio(value: number) {
@@ -135,48 +141,26 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         if (!this.data.enableTrack)
             return QueueItemsBuilder.empty
 
-        const { radius, innerRadius } = this.getRing(index)
-
         return (items: QueueItemsBuilder) => {
-            items.arc()
-                 .position(this.center.x, this.center.y)
-                 .startAngle(START_ANGLE)
-                 .endAngle(START_ANGLE + SWEEP)
-                 .radius(radius)
-                 .innerRadius(innerRadius)
-                 .gap(GAP)
-                 .cornerRadius(CORNER_RADIUS)
-                 .fill()
-                 .gradient()
-                 .color(withAlpha(Theme.text, TRACK_ALPHA))
-                 .layer(Layer.Base)
-                 .key(`gauge-track-${ index }`)
-                 .init(AnimationTiming.gaugeInit, 0, true)
+            this.ring(items, index, START_ANGLE + SWEEP)
+                .color(withAlpha(Theme.text, TRACK_ALPHA))
+                .layer(Layer.Base)
+                .key(`gauge-track-${ index }`)
+                .init(AnimationTiming.gaugeInit, 0, true)
         }
     }
 
     private getValue(sector: Sector, index: number) {
-        const { radius, innerRadius } = this.getRing(index)
-
         return (items: QueueItemsBuilder) => {
-            items.arc()
-                 .position(this.center.x, this.center.y)
-                 .startAngle(START_ANGLE)
-                 .endAngle(START_ANGLE + SWEEP * this.getRatio(sector.value))
-                 .radius(radius)
-                 .innerRadius(innerRadius)
-                 .gap(GAP)
-                 .cornerRadius(CORNER_RADIUS)
-                 .grow(START_ANGLE)
-                 .fill()
-                 .gradient()
-                 .color(sector.color)
-                 .layer(Layer.Data)
-                 .key(`gauge-value-${ index }`)
-                 .init(AnimationTiming.gaugeInit)
-                 .tooltip(this.getTooltip(sector))
-                 .data(sector.data)
-                 .contextMenu()
+            this.ring(items, index, START_ANGLE + SWEEP * this.getRatio(sector.value))
+                .grow(START_ANGLE)
+                .color(sector.color)
+                .layer(Layer.Data)
+                .key(`gauge-value-${ index }`)
+                .init(AnimationTiming.gaugeInit)
+                .tooltip(this.getTooltip(sector))
+                .data(sector.data)
+                .contextMenu()
         }
     }
 
@@ -308,6 +292,6 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     }
 
     private getTooltip(sector: Sector) {
-        return this.tooltip(sector.label, `${ this.formatValue(sector.value) } (${ this.percent(this.getRatio(sector.value)) })`)
+        return this.tooltip(sector.label, this.share(sector.value, this.getRatio(sector.value)))
     }
 }

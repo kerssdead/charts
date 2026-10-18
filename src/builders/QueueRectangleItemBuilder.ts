@@ -1,6 +1,8 @@
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
+import RectangleDimensions from '@/types/RectangleDimensions'
+import Units from '@/helpers/Units'
 
 export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<RenderItemRectangle> {
     constructor() {
@@ -19,6 +21,12 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<Rend
         this.shape.absolute.height = height
 
         return this
+    }
+
+    box(units: Units, { x, y, width, height }: RectangleDimensions) {
+        return this.position(units.positionX(x), units.positionY(y))
+                   .size(units.x(width), units.y(height))
+                   .align(HorizontalAlignment.Left, VerticalAlignment.Top)
     }
 
     fill() {

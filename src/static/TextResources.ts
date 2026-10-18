@@ -1,25 +1,25 @@
-class TextResources {
-    static readonly exportPNG = 'Save as image...'
+const enum TextResources {
+    exportPNG = 'Save as image...',
 
-    static readonly decomposeToTable = 'Show as table...'
+    decomposeToTable = 'Show as table...',
 
-    static readonly reset = 'Reset'
+    reset = 'Reset',
 
-    static readonly exportCSV = 'Save as table...'
+    exportCSV = 'Save as table...',
 
-    static readonly other = 'Other'
+    other = 'Other',
 
-    static readonly noLabel = 'No Label'
+    noLabel = 'No Label',
 
-    static readonly dataAsTable = 'Data as table'
+    dataAsTable = 'Data as table',
 
-    static readonly total = 'Total'
+    total = 'Total',
 
-    static readonly value = 'Value'
+    value = 'Value',
 
-    static readonly defaultImageName = 'chart'
+    defaultImageName = 'chart',
 
-    static readonly defaultTableName = 'table'
+    defaultTableName = 'table'
 }
 
 export default TextResources

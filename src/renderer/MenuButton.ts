@@ -2,22 +2,21 @@ import { contains } from '@/helpers/Geometry'
 import Frame from '@/types/Frame'
 import Overlay from '@/renderer/Overlay'
 import Units from '@/helpers/Units'
-import Theme from '@/Theme'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import HoverProgress from '@/types/HoverProgress'
-import { AnimationTiming, Layer } from '@/static/constants/Index'
-import { HorizontalAlignment, Icon, TextAlignment, VerticalAlignment } from '@/static/Enums'
+import { AnimationTiming } from '@/static/constants/Index'
+import { Icon } from '@/static/Enums'
+
+const WIDTH = 28
+
+const HEIGHT = 24
+
+const PADDING = 8
+
+const FONT_SIZE = 20
 
 export default class MenuButton extends Overlay {
-    private static readonly width = 28
-
-    private static readonly height = 24
-
-    private static readonly padding = 8
-
-    private static readonly fontSize = 20
-
     onClick: (() => void) | undefined
 
     bounds: DOMRect | undefined
@@ -29,10 +28,8 @@ export default class MenuButton extends Overlay {
     private isDirty: boolean = true
 
     resize(width: number, height: number, top: number) {
-        const { width: buttonWidth, height: buttonHeight, padding } = MenuButton
-
         this.size = { width, height }
-        this.bounds = new DOMRect(width - padding - buttonWidth, Math.max((top - buttonHeight) / 2, padding), buttonWidth, buttonHeight)
+        this.bounds = new DOMRect(width - PADDING - WIDTH, Math.max((top - HEIGHT) / 2, PADDING), WIDTH, HEIGHT)
         this.isDirty = true
     }
 
@@ -43,9 +40,9 @@ export default class MenuButton extends Overlay {
             return false
         }
 
-        const { x, y, width, height } = this.bounds
+        const bounds = this.bounds
 
-        const isHoverChanged = this.hover.step(contains(this.bounds, mouse), now, AnimationTiming.button)
+        const isHoverChanged = this.hover.step(contains(bounds, mouse), now, AnimationTiming.button)
 
         if (!this.isDirty && !isHoverChanged)
             return this.hover.isAnimating
@@ -53,24 +50,8 @@ export default class MenuButton extends Overlay {
         const units = Units.fromSize(this.size.width, this.size.height)
 
         this.show(queue, QueueItemsBuilder.build((items: QueueItemsBuilder) => {
-            items.rect()
-                 .position(units.x(x), units.y(y))
-                 .size(units.x(width), units.y(height))
-                 .round(units.x(4))
-                 .fill()
-                 .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-                 .color(Theme.hoverBackground(this.hover.value))
-                 .layer(Layer.Legend + 1)
-                 .fixed()
-                 .onClick(() => this.onClick?.())
-
-            items.text(Icon.ThreeDots)
-                 .position(units.x(x + width / 2), units.y(y + height / 2))
-                 .size(MenuButton.fontSize)
-                 .align(TextAlignment.Center)
-                 .color(Theme.text)
-                 .layer(Layer.Legend + 2)
-                 .fixed()
+            this.buttonRect(items, units, bounds, 4, this.hover.value, () => this.onClick?.())
+            this.buttonText(items, units, bounds, Icon.ThreeDots, FONT_SIZE)
         }))
 
         this.isDirty = false

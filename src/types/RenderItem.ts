@@ -30,10 +30,6 @@ export default class RenderItem {
 
     panel: Panel | null = null
 
-    get hasTooltip() {
-        return !!this.tooltipTemplate
-    }
-
     get isInitializing() {
         return this.animation.isInitializing
     }
@@ -76,7 +72,7 @@ export default class RenderItem {
             return
         }
 
-        this.adjust(this.panel?.window ?? window)
+        this.shape.adjust(this.panel?.window ?? window, this.animation.morph)
 
         if (!this.isOnCanvas(screen)) {
             return
@@ -106,11 +102,20 @@ export default class RenderItem {
             return false
         }
 
-        return this.continueAnimate(point, now, hoveredGroups)
+        const isOver = this.hoverGroup == null
+                       ? this.shape.isMouseOver(point)
+                       : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
+
+        if (!isOver && this.hover.isIdle)
+            return false
+
+        this.shape.animate(this, !isOver, now)
+
+        return this.hover.isAnimating
     }
 
     hasTooltipAt(point: Point) {
-        return this.hasTooltip && !this.isInitializing && this.in(point)
+        return !!this.tooltipTemplate && !this.isInitializing && this.in(point)
     }
 
     hasContextMenuAt(point: Point) {
@@ -194,10 +199,6 @@ export default class RenderItem {
             this.animation.visibility = 0
     }
 
-    private adjust(window: CanvasWindow): void {
-        this.shape.adjust(window, this.animation.morph)
-    }
-
     private isOnCanvas(screen: CanvasWindow): boolean {
         const bounds = this.shape.getBounds()
 
@@ -277,19 +278,6 @@ export default class RenderItem {
             animation.visibility = 1 - animation.morph
         else
             animation.visibility = 1
-    }
-
-    private continueAnimate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>): boolean {
-        const isOver = this.hoverGroup == null
-                       ? this.shape.isMouseOver(point)
-                       : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
-
-        if (!isOver && this.hover.isIdle)
-            return false
-
-        this.shape.animate(this, !isOver, now)
-
-        return this.hover.isAnimating
     }
 
     static adjustX(window: CanvasWindow, x: number) {

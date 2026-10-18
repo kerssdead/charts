@@ -43,56 +43,43 @@ export function getRoundedValues(
                                  ? normalizedStep
                                  : niceSteps.find(nice => nice >= normalizedStep && isFit(nice * magnitude)) ?? 10
 
+    const countsFor = (step: number) => {
+        const { neg, pos } = intervalsFor(step)
+
+        return { neg, pos: maxVal > 0 ? Math.max(pos, 1) : pos }
+    }
+
     let step = prettyNormalizedStep * magnitude
+    let counts = countsFor(step)
 
-    let negIntervals = 0
-    let posIntervals = 0
-
-    while (true) {
-        const counts = intervalsFor(step)
-
-        negIntervals = counts.neg
-        posIntervals = counts.pos
-
-        if (maxVal > 0 && posIntervals === 0) {
-            posIntervals = 1
-        }
-
-        if (negIntervals + posIntervals <= intervals) {
-            const remaining = intervals - (negIntervals + posIntervals)
-            if (remaining > 0) {
-                if (minVal === 0) {
-                    posIntervals += remaining
-                } else if (maxVal === 0) {
-                    negIntervals += remaining
-                } else {
-                    for (let i = 0; i < remaining; i++) {
-                        const negDeficit = negIntervals * step - Math.abs(minVal)
-                        const posDeficit = posIntervals * step - maxVal
-                        if (negDeficit < posDeficit) {
-                            negIntervals++
-                        } else {
-                            posIntervals++
-                        }
-                    }
-                }
-            }
-            break
-        }
-
+    while (counts.neg + counts.pos > intervals) {
         step *= 1.25
+        counts = countsFor(step)
+    }
+
+    let { neg: negIntervals, pos: posIntervals } = counts
+
+    const remaining = intervals - negIntervals - posIntervals
+
+    if (minVal === 0) {
+        posIntervals += remaining
+    } else if (maxVal === 0) {
+        negIntervals += remaining
+    } else {
+        for (let i = 0; i < remaining; i++) {
+            const negDeficit = negIntervals * step - Math.abs(minVal)
+            const posDeficit = posIntervals * step - maxVal
+
+            if (negDeficit < posDeficit)
+                negIntervals++
+            else
+                posIntervals++
+        }
     }
 
     const startTick = -negIntervals * step
-    const ticks = []
 
-    for (let i = 0; i < targetTicks; i++) {
-        const val = startTick + i * step
-
-        ticks.push(Number(val.toFixed(12)) || 0)
-    }
-
-    return ticks
+    return Array.from({ length: targetTicks }, (_, i) => Number((startTick + i * step).toFixed(12)) || 0)
 }
 
 const NUMBER_PATTERN = /^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i
