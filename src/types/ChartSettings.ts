@@ -3,7 +3,7 @@ import DropdownItem from '@/types/DropdownItem'
 import { ChartType, LegendPlace } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 
-export default class ChartSettings {
+export default interface ChartSettings {
     enableLegend: boolean
 
     enableTooltip: boolean
@@ -30,7 +30,7 @@ export default class ChartSettings {
 
     data: Data
 
-    type: ChartType = ChartType.Plot
+    type: ChartType
 
     charts: ChartItem[]
 

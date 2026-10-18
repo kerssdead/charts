@@ -46,10 +46,10 @@ export default class PlotData implements Data {
         }
 
         const unique = new Set(),
-            uniqueHeaders = headers.filter(v => !unique.has(v.display) && unique.add(v.display))
+            uniqueHeaders = headers.filter(v => !unique.has(v.value) && unique.add(v.value))
 
         if (data.xType == PlotAxisType.Date)
-            uniqueHeaders.sort((a, b) => new Date(a.value).getTime() - new Date(b.value).getTime())
+            uniqueHeaders.sort((a, b) => Formatter.toDate(a.value).getTime() - Formatter.toDate(b.value).getTime())
 
         return {
             headers: uniqueHeaders,

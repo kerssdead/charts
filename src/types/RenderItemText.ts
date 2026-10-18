@@ -6,6 +6,7 @@ import { TextAlignment, TextBaseline } from '@/static/Enums'
 import RenderItemArc from '@/types/RenderItemArc'
 import { boxEdgeDistance, stringWidth } from '@/Helper'
 import { FONT_FAMILY } from '@/static/constants/Index'
+import Theme from '@/Theme'
 
 export type Orbit = {
     x: number
@@ -49,6 +50,10 @@ export default class RenderItemText
     follow: RenderItemArc | null = null
 
     private halfWidth: number | null = null
+
+    get defaultColor(): string {
+        return Theme.text
+    }
 
     private get baselineShift(): number {
         return this.orbit ? 0 : this.fontSize * 0.3
@@ -108,7 +113,7 @@ export default class RenderItemText
 
         this.canvas.angle = this.currentAngle(morph)
 
-        this.canvas.x = RenderItem.adjustX(window, position.x) - (this.orbit ? 0 : this.fontSize / 2)
+        this.canvas.x = RenderItem.adjustX(window, position.x)
         this.canvas.y = RenderItem.adjustY(window, position.y) + (this.rotate == 0 ? this.baselineShift : 0)
 
         if (this.follow) {

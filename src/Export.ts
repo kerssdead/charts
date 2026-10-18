@@ -3,12 +3,19 @@ import Canvas from '@/helpers/Canvas'
 import { Tag } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import Decomposition from '@/Decomposition'
+import { getTotals } from '@/types/TableData'
 
 const PNG_MARGIN = 4
 
+const REVOKE_DELAY = 1000
+
+const CSV_FORMULA = /^[=+\-@\t\r]/
+
 export default class Export {
-    static asPng(canvas: HTMLCanvasElement, ratio: number, title: string, exclude?: DOMRect) {
+    static asPng(canvas: HTMLCanvasElement, ratio: number, title: string, exclude?: DOMRect, isDark?: Function) {
         requestAnimationFrame(() => {
+            Theme.update(isDark)
+
             const { width, height } = canvas
 
             const source = document.createElement(Tag.Canvas)
@@ -71,16 +78,22 @@ export default class Export {
     }
 
     static asCsv(charts: ChartItem[], title: string) {
-        const escape = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"'
+        const escape = (value: unknown) => {
+            let text = String(value ?? '')
+
+            if (typeof value == 'string' && CSV_FORMULA.test(text) && isNaN(Number(text)))
+                text = '\'' + text
+
+            return '"' + text.replace(/"/g, '""') + '"'
+        }
 
         const blocks = charts.map(chart => {
-            const { headers, values } = Decomposition.getRows(chart)
+            const table = Decomposition.getRows(chart)
+            const { headers, values } = table
 
             const rows = values.map(row => [row.name, ...headers.map(header => Number(row.values.get(header.value) ?? 0))])
 
-            const totals = headers.map((_, index) => rows.reduce((acc, row) => acc + (row[index + 1] as number), 0))
-
-            return [['', ...headers.map(header => header.display)], ...rows, ['', ...totals]]
+            return [['', ...headers.map(header => header.display)], ...rows, ['', ...getTotals(table)]]
                 .map(row => row.map(escape).join(','))
                 .join('\n')
         })
@@ -119,6 +132,6 @@ export default class Export {
         download.download = name
         download.click()
 
-        setTimeout(() => URL.revokeObjectURL(url))
+        setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY)
     }
 }

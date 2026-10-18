@@ -6,6 +6,8 @@ import { AnimationTiming } from '@/static/constants/Index'
 
 const ALPHA_DELTA = 0.5
 
+const POINT_MIN_RADIUS = 2
+
 export default class RenderItemLine
     extends RenderItemBase {
     absolute: Point[] = []
@@ -55,7 +57,15 @@ export default class RenderItemLine
     }
 
     adjust(window: CanvasWindow, morph: number = 1): void {
-        this.canvas = this.current(morph).map(stop => ({ x: RenderItem.adjustX(window, stop.x), y: RenderItem.adjustY(window, stop.y) }))
+        const stops = this.from && morph < 1 ? this.current(morph) : this.absolute
+
+        if (this.canvas.length != stops.length)
+            this.canvas = stops.map(() => ({ x: 0, y: 0 }))
+
+        for (let i = 0; i < stops.length; i++) {
+            this.canvas[i].x = RenderItem.adjustX(window, stops[i].x)
+            this.canvas[i].y = RenderItem.adjustY(window, stops[i].y)
+        }
     }
 
     render(ctx: CanvasRenderingContext2D, item?: RenderItem): void {
@@ -72,10 +82,17 @@ export default class RenderItemLine
                       ? this.partial(progress)
                       : this.canvas
 
+        if (stops.length == 1) {
+            ctx.arc(stops[0].x, stops[0].y, Math.max(this.width, POINT_MIN_RADIUS), 0, Math.PI * 2)
+            ctx.fill()
+
+            return
+        }
+
         ctx.moveTo(stops[0].x, stops[0].y)
 
-        for (const stop of stops.slice(1)) {
-            ctx.lineTo(stop.x, stop.y)
+        for (let i = 1; i < stops.length; i++) {
+            ctx.lineTo(stops[i].x, stops[i].y)
         }
 
         ctx.stroke()

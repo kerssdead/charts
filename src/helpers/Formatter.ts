@@ -1,15 +1,28 @@
 import { PlotAxisType } from '@/static/Enums'
 
+let numberFormat: Intl.NumberFormat | undefined
+
 abstract class Formatter {
     static number(value: number | undefined) {
-        return value?.toLocaleString(undefined, {
+        if (typeof value != 'number')
+            return value == undefined ? '' : String(value)
+
+        numberFormat ??= new Intl.NumberFormat(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
-        }) ?? ''
+        })
+
+        return numberFormat.format(value)
     }
 
     static date(value: Date | undefined) {
         return value?.toLocaleDateString() ?? ''
+    }
+
+    static toDate(value: number | Date | string) {
+        const match = typeof value == 'string' ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null
+
+        return match ? new Date(+match[1], +match[2] - 1, +match[3]) : new Date(value)
     }
 
     static text(value: string | undefined) {
@@ -17,7 +30,7 @@ abstract class Formatter {
     }
 
     static axis(value: number | Date | string, type: PlotAxisType) {
-        return type == PlotAxisType.Date ? Formatter.date(new Date(value)) : value.toString()
+        return type == PlotAxisType.Date ? Formatter.date(Formatter.toDate(value)) : value.toString()
     }
 
     static format(value: any | undefined, type: PlotAxisType, postfix?: string | undefined) {
@@ -32,7 +45,7 @@ abstract class Formatter {
                 break
 
             case PlotAxisType.Date:
-                result = Formatter.date(new Date(value))
+                result = Formatter.date(Formatter.toDate(value))
                 break
 
             case PlotAxisType.Text:

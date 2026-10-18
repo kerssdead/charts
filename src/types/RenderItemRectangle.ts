@@ -6,7 +6,7 @@ import Point from '@/types/Point'
 import { Alignment } from '@/types/Alignment'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import Canvas from '@/helpers/Canvas'
+import { GradientCache } from '@/helpers/Canvas'
 
 const SCALE_DELTA = 0.01
 const ALPHA_DELTA = 0.5
@@ -36,7 +36,7 @@ export default class RenderItemRectangle
 
     fromRadii: number[] | null = null
 
-    absolute: RectangleDimensions = new RectangleDimensions()
+    absolute: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
 
     canvas: RectangleCanvas = { x: 0, y: 0, width: 0, height: 0, radii: 0 }
 
@@ -52,8 +52,10 @@ export default class RenderItemRectangle
 
     private canvasGrowOrigin: number = 0
 
+    private readonly gradient = new GradientCache()
+
     current(morph: number = 1): RectangleDimensions {
-        const result = Object.assign(new RectangleDimensions(), this.absolute)
+        const result = { ...this.absolute }
 
         if (!this.from || morph >= 1)
             return result
@@ -149,7 +151,7 @@ export default class RenderItemRectangle
         ctx.roundRect(left, top, width, height, this.canvas.radii)
 
         if (this.isGradient && item && height != 0) {
-            ctx.fillStyle = ctx.strokeStyle = Canvas.verticalGradient(ctx, item.activeColor, top, top + height)
+            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.activeColor, top, top + height)
         }
 
         if (this.isFill) {

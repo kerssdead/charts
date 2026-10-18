@@ -1,7 +1,7 @@
 import Data from '@/types/interfaces/Data'
 import { ChartType } from '@/static/Enums'
 
-export default class ChartItem {
+export default interface ChartItem {
     type: ChartType
 
     data: Data

@@ -102,13 +102,32 @@ export default class Transition {
             return Transition.isArc(item)
         })
 
+        const key = (item: RenderItem, angle: number) => `${ item.panel?.index }|${ Math.round(angle / epsilon) }`
+
+        const index = (items: RenderItem[], getEnd: (item: RenderItem) => number) => {
+            const result = new Map<string, RenderItem[]>()
+
+            for (const item of items) {
+                const itemKey = key(item, getEnd(item))
+                const group = result.get(itemKey)
+
+                if (group)
+                    group.push(item)
+                else
+                    result.set(itemKey, [item])
+            }
+
+            return result
+        }
+
+        const newByEnd = index(newArcs, item => arc(item).endAngle)
+        const oldByEnd = index(oldArcs, item => arc(item).current(item.animation.morph).endAngle)
+
         const previousEnd = (item: RenderItem, visited: Set<RenderItem>): number => {
             visited.add(item)
 
-            const before = newArcs.filter(other => {
+            const before = (newByEnd.get(key(item, arc(item).startAngle)) ?? []).filter(other => {
                 return !visited.has(other)
-                       && Transition.isSamePanel(other, item)
-                       && Math.abs(arc(other).endAngle - arc(item).startAngle) < epsilon
             })
 
             const matched = before.find(other => {
@@ -131,10 +150,8 @@ export default class Transition {
 
             const start = arc(item).current(item.animation.morph).startAngle
 
-            const before = oldArcs.filter(other => {
+            const before = (oldByEnd.get(key(item, start)) ?? []).filter(other => {
                 return !visited.has(other)
-                       && Transition.isSamePanel(other, item)
-                       && Math.abs(arc(other).current(other.animation.morph).endAngle - start) < epsilon
             })
 
             const matched = before.find(other => {
@@ -174,9 +191,5 @@ export default class Transition {
 
     private static isArc(item: RenderItem) {
         return item.shape instanceof RenderItemArc
-    }
-
-    private static isSamePanel(a: RenderItem, b: RenderItem) {
-        return a.panel?.index === b.panel?.index
     }
 }

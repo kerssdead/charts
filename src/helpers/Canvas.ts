@@ -5,6 +5,23 @@ import * as Helper from '@/Helper'
 
 const GRADIENT_DELTA = 20
 
+export class GradientCache {
+    private key: string | null = null
+
+    private gradient: CanvasGradient | null = null
+
+    get(ctx: CanvasRenderingContext2D, color: string, y1: number, y2: number) {
+        const key = `${ color }|${ y1 }|${ y2 }`
+
+        if (key != this.key || !this.gradient) {
+            this.key = key
+            this.gradient = Canvas.verticalGradient(ctx, color, y1, y2)
+        }
+
+        return this.gradient
+    }
+}
+
 abstract class Canvas {
     private static readonly gradientStops = new Map<string, [string, string]>()
 

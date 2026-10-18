@@ -1,4 +1,4 @@
-export default class RectangleDimensions {
+export default interface RectangleDimensions {
     x: number
 
     y: number

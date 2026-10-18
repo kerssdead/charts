@@ -95,7 +95,7 @@ export default class PieProcess {
     }
 
     getData() {
-        this.sum = sum(this.data.values.filter(s => !s.disabled), s => s.value)
+        this.sum = sum(this.data.values.filter(PieProcess.isVisible), s => s.value)
         this.scale = this.sum == 0 ? 0 : FULL_ANGLE / this.sum
 
         const slices = this.getSlices()
@@ -111,7 +111,7 @@ export default class PieProcess {
         let acc = START_ANGLE
 
         return this.groupTiny().map(({ sector, key, children }) => {
-            const angle = sector.disabled ? 0 : sector.value * this.scale
+            const angle = PieProcess.isVisible(sector) ? sector.value * this.scale : 0
             const slice = { sector, key, children, startAngle: acc, angle }
 
             acc += angle
@@ -121,7 +121,10 @@ export default class PieProcess {
     }
 
     private getLabels(slices: Slice[]): Label[] {
-        const result: Label[] = slices.map(slice => ({ angle: slice.startAngle + slice.angle / 2, isVisible: true }))
+        const result: Label[] = slices.map(slice => ({
+            angle: slice.startAngle + slice.angle / 2,
+            isVisible: slice.sector.disabled || PieProcess.isVisible(slice.sector)
+        }))
 
         const center = {
             x: this.units.toPxX(COORDS_MAX_X / 2),
@@ -131,7 +134,7 @@ export default class PieProcess {
         const distance = this.labelDistance
 
         const labels = slices.flatMap((slice, index) => {
-            if (slice.sector.disabled)
+            if (!PieProcess.isVisible(slice.sector))
                 return []
 
             const middle = result[index].angle
@@ -142,7 +145,8 @@ export default class PieProcess {
                 angle: middle,
                 value: slice.sector.value,
                 halfWidth: stringWidth(slice.sector.label, LABEL_FONT) / 2,
-                halfHeight: LABEL_FONT / 2
+                halfHeight: LABEL_FONT / 2,
+                center: { x: 0, y: 0 }
             }]
         }).sort((a, b) => a.middle - b.middle)
 
@@ -157,17 +161,18 @@ export default class PieProcess {
             }
         }
 
-        const isOverlap = (a: Box, aAngle: number, b: Box, bAngle: number) => {
-            const first = getCenter(a, aAngle)
-            const second = getCenter(b, bAngle)
-
-            return Math.abs(first.x - second.x) < a.halfWidth + b.halfWidth + LABEL_SPACING
-                   && Math.abs(first.y - second.y) < a.halfHeight + b.halfHeight + LABEL_SPACING
+        const isOverlap = (a: Box, b: Box) => {
+            return Math.abs(a.center.x - b.center.x) < a.halfWidth + b.halfWidth + LABEL_SPACING
+                   && Math.abs(a.center.y - b.center.y) < a.halfHeight + b.halfHeight + LABEL_SPACING
         }
 
         const clamp = (label: Box) => {
             label.angle = Math.min(Math.max(label.angle, label.middle - LABEL_MAX_DRIFT), label.middle + LABEL_MAX_DRIFT)
+            label.center = getCenter(label, label.angle)
         }
+
+        for (const label of labels)
+            label.center = getCenter(label, label.angle)
 
         for (let iteration = 0; iteration < LABEL_ITERATIONS; iteration++) {
             let isMoved = false
@@ -180,9 +185,8 @@ export default class PieProcess {
 
                 const current = labels[i]
                 const next = labels[isLast ? 0 : i + 1]
-                const nextAngle = next.angle + (isLast ? FULL_ANGLE : 0)
 
-                if (!isOverlap(current, current.angle, next, nextAngle))
+                if (!isOverlap(current, next))
                     continue
 
                 current.angle -= LABEL_STEP
@@ -201,7 +205,7 @@ export default class PieProcess {
         const kept: Box[] = []
 
         for (const label of [...labels].sort((a, b) => b.value - a.value)) {
-            const isVisible = kept.every(other => !isOverlap(label, label.angle, other, other.angle))
+            const isVisible = kept.every(other => !isOverlap(label, other))
 
             if (isVisible)
                 kept.push(label)
@@ -226,7 +230,7 @@ export default class PieProcess {
 
         return (items: QueueItemsBuilder) => {
             items.text(title)
-                 .position(COORDS_MAX_X / 2 + this.units.x(fontSize / 2), COORDS_MAX_Y / 2)
+                 .position(COORDS_MAX_X / 2, COORDS_MAX_Y / 2)
                  .size(fontSize)
                  .align(TextAlignment.Center)
                  .key('inner-title')
@@ -242,7 +246,7 @@ export default class PieProcess {
             return items
 
         const tiny = this.data.values.filter(sector => {
-            return !sector.disabled && sector.value * this.scale * this.radius < this.units.toPxX(MIN_SECTOR_WIDTH)
+            return PieProcess.isVisible(sector) && sector.value * this.scale * this.radius < this.units.toPxX(MIN_SECTOR_WIDTH)
         })
 
         if (tiny.length < 2)
@@ -317,6 +321,10 @@ export default class PieProcess {
             if (sector.disabled)
                 text.ghost()
         }
+    }
+
+    private static isVisible(sector: Sector) {
+        return !sector.disabled && sector.value > 0
     }
 
     private getTooltip(sector: Sector, children?: Sector[]) {

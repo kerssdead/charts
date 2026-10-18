@@ -18,8 +18,6 @@ export default class PlotSeries extends Value {
     }
 
     checkCondition(): boolean {
-        super.checkCondition()
-
         return true
     }
 }

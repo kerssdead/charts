@@ -1,12 +1,6 @@
 import { COORDS_MAX_X, COORDS_MAX_Y, PAN_MIN_VISIBLE, ZOOM_MAX, ZOOM_MIN } from '@/static/constants/Index'
 import Point from '@/types/Point'
-
-type Rect = {
-    x: number
-    y: number
-    width: number
-    height: number
-}
+import RectangleDimensions from '@/types/RectangleDimensions'
 
 export default class CanvasWindow {
     x: number = 0
@@ -19,7 +13,15 @@ export default class CanvasWindow {
 
     private scale: number = 1
 
-    private base: Rect
+    private base: RectangleDimensions
+
+    get baseWidth() {
+        return this.base.width
+    }
+
+    get baseHeight() {
+        return this.base.height
+    }
 
     get pixel(): Point {
         return {

@@ -38,8 +38,4 @@ export default class AnimationData {
     get isMorphing() {
         return this.morphDuration > 0
     }
-
-    static get default() {
-        return new AnimationData()
-    }
 }

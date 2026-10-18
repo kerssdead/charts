@@ -1,4 +1,4 @@
-import TableData from '@/types/TableData'
+import TableData, { getTotals } from '@/types/TableData'
 import Formatter from '@/helpers/Formatter'
 import { ChartType, Tag } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
@@ -30,94 +30,38 @@ class Decomposition {
         }
     }
 
-    static toTable(values: TableData) {
-        let table = document.createElement(Tag.Div)
+    static toTable(data: TableData) {
+        const table = document.createElement(Tag.Div)
 
         table.classList.add('o-table')
 
-        let totals = new Map<string, number>()
-        let rows = '',
-            headers = ''
+        const cell = (text: string, title: string = text) => `<div title="${ title }">${ text }</div>`
 
-        const tableRows = values.values.map(tableValue => {
-            let allColumns = new Map<string, any>()
+        const headers = data.headers.map(header => `<div>${ escapeHtml(header.display) }</div>`).join('')
 
-            for (const header of values.headers)
-                allColumns.set(header.value, 0)
+        const rows = data.values.map(row => {
+            const columns = data.headers.map(header => cell(Formatter.number(row.values.get(header.value) ?? 0))).join('')
 
-            for (const [key, value] of tableValue.values)
-                allColumns.set(key, value)
+            return `<div class="o-table-row">${ cell(escapeHtml(row.name)) }${ columns }</div>`
+        }).join('')
 
-            return { name: tableValue.name, columns: allColumns }
-        })
+        const totals = getTotals(data).map(value => {
+            const total = Formatter.number(value)
 
-        for (const tableHeader of values.headers)
-            headers += `
-                <div>
-                    ${ escapeHtml(tableHeader.display) }
-                </div>
-            `
-
-        for (const { name, columns: value } of tableRows) {
-            let columns = ''
-
-            for (const [vKey, vValue] of value) {
-                const text = vValue == undefined ? '' : Formatter.number(vValue)
-
-                columns += `
-                    <div title="${ text }">
-                        ${ text }
-                    </div>
-                `
-
-                if (totals.has(vKey)) {
-                    let totalValue = +(totals.get(vKey) ?? 0)
-                    totals.set(vKey, totalValue + +vValue)
-                } else {
-                    totals.set(vKey, vValue)
-                }
-            }
-
-            const k = escapeHtml(name)
-
-            rows += `
-                <div class="o-table-row">
-                    <div title="${ k }">
-                        ${ k }
-                    </div>
-                    
-                    ${ columns }
-                </div>
-            `
-        }
-
-        let totalColumns = ''
-
-        for (const [, value] of totals) {
-            const total = value == undefined ? '' : Formatter.number(value)
-
-            totalColumns += `
-                <div title="${ value == undefined ? '' : `Total: ${ total }` }">
-                    ${ total }
-                </div>
-            `
-        }
+            return cell(total, `Total: ${ total }`)
+        }).join('')
 
         table.innerHTML = `
             <div class="o-table-header">
                 <div></div>
-
                 ${ headers }
             </div>
-        
             <div class="o-table-body">
                 ${ rows }
             </div>
-            
             <div class="o-table-footer">
                 <div></div>
-
-                ${ totalColumns }
+                ${ totals }
             </div>
         `
 

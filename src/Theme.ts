@@ -34,8 +34,6 @@ class Theme {
 
     static contextMenuButtonHover: string
 
-    static function: Function | undefined
-
     static media: MediaQueryList | undefined
 
     static listeners: Map<Function, (event: MediaQueryListEvent) => void> = new Map()
@@ -48,10 +46,7 @@ class Theme {
         if (Theme.listeners.has(callback))
             return
 
-        const listener = () => {
-            Theme.update()
-            callback()
-        }
+        const listener = () => callback()
 
         Theme.media.addEventListener(Events.Change, listener)
 
@@ -69,6 +64,9 @@ class Theme {
     }
 
     static setTheme(index: ColorTheme) {
+        if (Theme.text != undefined && index == Theme.currentTheme)
+            return
+
         Theme.currentTheme = index
 
         Theme.text = ThemeOptions.colors[index]
@@ -79,7 +77,8 @@ class Theme {
         Theme.dropdownItemHoverColor = Helper.adjustColor(Theme.background, index == ColorTheme.light ? -50 : 50)
         Theme.dropdownBorder = ThemeOptions.dropdownBorders[index]
         Theme.canvasBackground = ThemeOptions.canvasBackgrounds[index]
-        Theme.canvasBackgroundInt = Number(`0xff${ Theme.canvasBackground.slice(1) }`)
+        const { r, g, b } = Helper.hexToRgb(Theme.canvasBackground)!
+        Theme.canvasBackgroundInt = new Uint32Array(new Uint8ClampedArray([r, g, b, 255]).buffer)[0]
         Theme.contextMenuBackground = Theme.withAlpha(Theme.background, ThemeOptions.contextMenuOpacities[index])
         Theme.contextMenuButton = Theme.withAlpha(Theme.dropdownItemHoverColor, 0)
         Theme.contextMenuButtonHover = Theme.withAlpha(Theme.dropdownItemHoverColor, 1)
@@ -92,10 +91,7 @@ class Theme {
     }
 
     static update(isDark?: Function) {
-        if (isDark)
-            Theme.function = isDark
-
-        const isDarkTheme = Theme.function ? Theme.function() : Theme.media?.matches
+        const isDarkTheme = isDark ? isDark() : Theme.media?.matches
 
         Theme.setTheme(isDarkTheme ? ColorTheme.dark : ColorTheme.light)
     }

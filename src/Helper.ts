@@ -1,11 +1,47 @@
 import Color from '@/types/Color'
 import Point from '@/types/Point'
+import RectangleDimensions from '@/types/RectangleDimensions'
 import Errors from '@/helpers/Errors'
 import { ErrorType, Tag } from '@/static/Enums'
 import { FONT_FAMILY } from '@/static/constants/Index'
 
 export function adjustColor(color: string, amount: number) {
-    return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).slice(-2))
+    const rgb = hexToRgb(color)
+
+    if (!rgb)
+        return color
+
+    return '#' + [rgb.r, rgb.g, rgb.b].map(channel => toHex(channel + amount)).join('')
+}
+
+function toHex(channel: number) {
+    return Math.round(Math.min(255, Math.max(0, channel))).toString(16).padStart(2, '0')
+}
+
+let colorContext: CanvasRenderingContext2D | null = null
+
+export function normalizeColor(color: string) {
+    if (color.startsWith('#')) {
+        const short = getShortHexValues(color)
+
+        if (short)
+            return '#' + short.slice(1).filter(Boolean).map(value => value + value).join('')
+
+        if (getHexValues(color))
+            return color
+    }
+
+    colorContext ??= document.createElement(Tag.Canvas).getContext('2d') ?? Errors.throw(ErrorType.NullContext)
+    colorContext.fillStyle = '#000000'
+    colorContext.fillStyle = color
+
+    const style = String(colorContext.fillStyle)
+    const rgba = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(style)
+
+    if (!rgba)
+        return style
+
+    return '#' + toHex(+rgba[1]) + toHex(+rgba[2]) + toHex(+rgba[3]) + (rgba[4] == undefined ? '' : toHex(+rgba[4] * 255))
 }
 
 export function boxEdgeDistance(angle: number, halfWidth: number, halfHeight: number) {
@@ -19,7 +55,7 @@ export function placeNear(point: Point,
                           width: number,
                           height: number,
                           offset: number,
-                          bounds: { x: number, y: number, width: number, height: number }): Point {
+                          bounds: RectangleDimensions): Point {
     let x = point.x + offset
     let y = point.y + offset
 
@@ -32,8 +68,19 @@ export function placeNear(point: Point,
     return { x: Math.max(x, bounds.x), y: Math.max(y, bounds.y) }
 }
 
+export function contains(rect: RectangleDimensions, point: Point | null) {
+    return !!point
+           && rect.x <= point.x && point.x <= rect.x + rect.width
+           && rect.y <= point.y && point.y <= rect.y + rect.height
+}
+
 export function grayScale(color: string) {
-    return '#' + Array(4).join(Math.round([.3, .59, .11].reduce((a, v, i) => a + v * parseInt(color[2 * i + 1] + color[2 * i + 2], 16), 0) / 3).toString(16).padStart(2, '0'))
+    const rgb = hexToRgb(color)
+
+    if (!rgb)
+        return color
+
+    return '#' + toHex(.3 * rgb.r + .59 * rgb.g + .11 * rgb.b).repeat(3)
 }
 
 export function randomColor() {
@@ -67,8 +114,16 @@ export function stringWidth(str: any | undefined, font?: number) {
             measureContext.font = `${ MEASURE_FONT_SIZE }px ${ FONT_FAMILY }`
         }
 
-        if (textWidths.size >= MEASURE_CACHE_LIMIT)
-            textWidths.clear()
+        if (textWidths.size >= MEASURE_CACHE_LIMIT) {
+            let count = MEASURE_CACHE_LIMIT / 2
+
+            for (const key of textWidths.keys()) {
+                textWidths.delete(key)
+
+                if (--count == 0)
+                    break
+            }
+        }
 
         width = measureContext.measureText(text).width / MEASURE_FONT_SIZE
 
@@ -78,13 +133,8 @@ export function stringWidth(str: any | undefined, font?: number) {
     return width * (font || 14)
 }
 
-export function guid() {
-    const S4 = () => (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1)
-    return (S4() + S4() + '-' + S4() + '-4' + S4().slice(0, 3) + '-' + S4() + '-' + S4() + S4() + S4()).toLowerCase()
-}
-
 export function contrastText(background: string) {
-    const { r, g, b } = hexToRgb(background)
+    const { r, g, b } = hexToRgb(background) ?? { r: 0, g: 0, b: 0 }
 
     const channel = (value: number) => {
         const c = value / 255
@@ -97,38 +147,36 @@ export function contrastText(background: string) {
     return (luminance + .05) / .05 > 1.05 / (luminance + .05) ? '#000000' : '#ffffff'
 }
 
-export function getColor(red: string, green: string, blue: string) {
+function getColor(red: string, green: string, blue: string): Color {
     return {
         r: parseInt(red, 16),
         g: parseInt(green, 16),
         b: parseInt(blue, 16)
-    } as Color
-}
-
-export function hexToRgb(hex: string): Color {
-    if (hex.length > 4) {
-        const value = getHexValues(hex)
-        if (value)
-            return getColor(value[1], value[2], value[3])
-    } else {
-        const value = getShortHexValues(hex)
-        if (value)
-            return getColor(
-                value[1] + value[1],
-                value[2] + value[2],
-                value[3] + value[3]
-            )
     }
-
-    return new Color()
 }
 
-export function getHexValues(str: string) {
-    return /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(str)
+export function hexToRgb(hex: string): Color | null {
+    const value = getHexValues(hex)
+    if (value)
+        return getColor(value[1], value[2], value[3])
+
+    const short = getShortHexValues(hex)
+    if (short)
+        return getColor(
+            short[1] + short[1],
+            short[2] + short[2],
+            short[3] + short[3]
+        )
+
+    return null
 }
 
-export function getShortHexValues(str: string) {
-    return /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(str)
+function getHexValues(str: string) {
+    return /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(str)
+}
+
+function getShortHexValues(str: string) {
+    return /^#?([a-f\d])([a-f\d])([a-f\d])([a-f\d])?$/i.exec(str)
 }
 
 export function getRoundedValues(
@@ -136,14 +184,15 @@ export function getRoundedValues(
     targetTicks: number = 5,
     max?: number
 ) {
-    if (!Array.isArray(all) || all.length === 0) {
+    if (!Array.isArray(all) || all.length === 0 || targetTicks < 2) {
         return []
     }
 
-    const minVal = Math.min(0, ...all)
-    const maxVal = max == undefined ? Math.max(0, ...all) : Math.min(max, Math.max(0, ...all))
+    const dataMax = maxOf(all, value => value)
+    const minVal = all.reduce((acc, value) => Math.min(acc, value), 0)
+    const maxVal = max == undefined ? dataMax : Math.min(max, dataMax)
 
-    if (minVal === 0 && maxVal === 0) {
+    if (!Number.isFinite(minVal) || !Number.isFinite(maxVal) || minVal === 0 && maxVal === 0) {
         return []
     }
 
@@ -281,6 +330,10 @@ export function sum<T>(values: T[], selector: (value: T) => number) {
     return values.reduce((acc, value) => acc + selector(value), 0)
 }
 
+export function maxOf<T>(values: T[], selector: (value: T) => number) {
+    return values.reduce((acc, value) => Math.max(acc, selector(value)), 0)
+}
+
 export function deepClone<T>(value: T): T {
     if (Array.isArray(value))
         return value.map(deepClone) as T
@@ -311,16 +364,18 @@ export function escapeHtml(value: unknown) {
     return String(value ?? '').replace(/[&<>"']/g, char => HTML_ESCAPES[char])
 }
 
+let shortFormat: Intl.NumberFormat | undefined
+
 export function short(value: any, isShort: boolean) {
     if (!isShort) {
-        return value.toString()
+        return String(value ?? '')
     }
 
-    const parsed = parseNumber(value)
-
-    return new Intl.NumberFormat(undefined, {
+    shortFormat ??= new Intl.NumberFormat(undefined, {
         notation: 'compact',
         compactDisplay: 'short',
         maximumFractionDigits: 1
-    }).format(parsed)
+    })
+
+    return shortFormat.format(parseNumber(value))
 }

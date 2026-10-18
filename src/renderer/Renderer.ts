@@ -22,12 +22,11 @@ import Decomposition from '@/Decomposition'
 import TextResources from '@/static/TextResources'
 import { AnimationTiming, ContextMenu, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import { TextAlignment } from '@/static/Enums'
+import Theme from '@/Theme'
 
 // todo: split class
 
 export class Renderer {
-    private static readonly idleDelay = 1000
-
     private static readonly titleFont = 20
 
     private static readonly titlePadding = 12
@@ -51,8 +50,6 @@ export class Renderer {
     private readonly tick = (timestamp: DOMHighResTimeStamp) => {
         this.draw(timestamp)
     }
-
-    private activeUntil: DOMHighResTimeStamp = 0
 
     private width: number = 0
 
@@ -121,6 +118,8 @@ export class Renderer {
     }
 
     private rebuild(isInitialized: boolean) {
+        Theme.update(this.settings.isDarkThemeFunction)
+
         this.queue.clear()
 
         this.tooltip.clear(this.queue)
@@ -130,7 +129,10 @@ export class Renderer {
 
         this.pointer.closeContext()
 
-        this.buildChart(isInitialized)
+        if (this.hasArea)
+            this.buildChart(isInitialized)
+        else
+            this.panels = []
 
         this.render()
     }
@@ -155,14 +157,12 @@ export class Renderer {
 
         const isResized = this.layout(width, height)
 
-        const hasArea = this.window.width > 0 && this.window.height > 0
-
-        if (isResized && hasArea)
+        if (isResized && this.hasArea)
             this.rebuild(this.isLaidOut)
         else
             this.render()
 
-        this.isLaidOut ||= hasArea
+        this.isLaidOut ||= this.hasArea
 
         this.cancelFrame()
         this.draw(performance.now())
@@ -244,7 +244,7 @@ export class Renderer {
 
         return this.menuButtons ??= [
             new ButtonOptions(TextResources.exportPNG, () => {
-                setTimeout(() => Export.asPng(this.canvas, this.ratio, title, this.menu?.bounds), ContextMenu.fadeDuration)
+                setTimeout(() => Export.asPng(this.canvas, this.ratio, title, this.menu?.bounds, this.settings.isDarkThemeFunction), ContextMenu.fadeDuration)
             }),
             new ButtonOptions(TextResources.exportCSV, () => {
                 Export.asCsv(charts, title)
@@ -269,8 +269,6 @@ export class Renderer {
         if (this.isSuspended)
             return
 
-        this.activeUntil = performance.now() + Renderer.idleDelay
-
         this.requestFrame()
     }
 
@@ -291,28 +289,31 @@ export class Renderer {
 
         Renderer.timer = timestamp
 
+        Theme.update(this.settings.isDarkThemeFunction)
+
         const { position, isContextOpen, contextPoint } = this.pointer
 
-        this.queue.animate(position && !this.contextMenu.isOver(position) ? position : null)
+        const isHovering = this.queue.animate(position && !this.contextMenu.isOver(position) ? position : null)
 
-        this.tooltip.update(this.queue, this.window, this.settings.enableTooltip ? position : null, isContextOpen, this.customTooltip)
-        this.contextMenu.update(this.queue, this.window, contextPoint, position, isContextOpen, this.settings.contextMenu,
-            this.pointer.isMenu ? this.getMenuButtons() : undefined)
+        const isTooltipFading = this.tooltip.update(this.queue, this.window, this.settings.enableTooltip ? position : null, isContextOpen,
+            this.customTooltip, timestamp)
+        const isMenuAnimating = this.contextMenu.update(this.queue, this.window, contextPoint, position, isContextOpen,
+            this.settings.contextMenu, timestamp, this.pointer.isMenu ? this.getMenuButtons() : undefined)
 
         const isLegendMoving = this.legend?.isMoving
 
-        this.legend?.build(this.queue, position)
-        this.menu?.build(this.queue, position)
+        const isLegendAnimating = this.legend?.build(this.queue, position, timestamp) ?? false
+        const isButtonAnimating = this.menu?.build(this.queue, position, timestamp) ?? false
 
         if (isLegendMoving)
-            this.fit(this.legend!.currentReserved)
+            this.fit(this.legend!.getCurrentReserved(timestamp))
 
         for (const panel of this.panels)
             panel.update(this.window)
 
         const isAnimating = this.queue.render(this.window, this.screen)
 
-        if (timestamp < this.activeUntil || isAnimating)
+        if (isAnimating || isHovering || isTooltipFading || isMenuAnimating || isLegendAnimating || isButtonAnimating)
             this.requestFrame()
     }
 
@@ -354,10 +355,9 @@ export class Renderer {
 
     private getPanels() {
         const { charts, columns } = this.settings
-        const { x, y } = this.window.pixel
 
-        const width = COORDS_MAX_X / x
-        const height = COORDS_MAX_Y / y
+        const width = this.window.baseWidth
+        const height = this.window.baseHeight
 
         const titles = charts.map(chart => chart.title ? this.panelTitleHeight : 0)
 
@@ -379,7 +379,7 @@ export class Renderer {
 
         return (items: QueueItemsBuilder) => {
             items.text(title)
-                 .position(COORDS_MAX_X / 2 + Renderer.panelTitleFont / 2 * pixel.x, -this.panelTitleHeight / 2 * pixel.y)
+                 .position(COORDS_MAX_X / 2, -this.panelTitleHeight / 2 * pixel.y)
                  .size(Renderer.panelTitleFont)
                  .align(TextAlignment.Center)
                  .key('panel-title')
@@ -408,6 +408,10 @@ export class Renderer {
         this.render()
     }
 
+    private get hasArea() {
+        return this.window.width > 0 && this.window.height > 0
+    }
+
     private get titleHeight() {
         return this.settings.title || this.menu ? Renderer.titleFont + Renderer.titlePadding * 2 : 0
     }
@@ -421,7 +425,7 @@ export class Renderer {
 
         return (items: QueueItemsBuilder) => {
             items.text(title)
-                 .position((width + Renderer.titleFont) / 2 * COORDS_MAX_X / width, this.titleHeight / 2 * COORDS_MAX_Y / height)
+                 .position(COORDS_MAX_X / 2, this.titleHeight / 2 * COORDS_MAX_Y / height)
                  .size(Renderer.titleFont)
                  .align(TextAlignment.Center)
                  .fixed()

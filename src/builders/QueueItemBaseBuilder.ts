@@ -75,12 +75,6 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         return this
     }
 
-    temp(value: boolean = true): this {
-        this.current.isTemp = value
-
-        return this
-    }
-
     fixed(value: boolean = true): this {
         this.current.isFixed = value
 

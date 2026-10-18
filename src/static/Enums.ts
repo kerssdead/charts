@@ -9,9 +9,7 @@ export enum ChartType {
 }
 
 export enum ErrorType {
-    NullContext = 'Can\'t find context',
-
-    ElementNotExist = 'Element does not exist'
+    NullContext = 'Can\'t find context'
 }
 
 export enum Events {

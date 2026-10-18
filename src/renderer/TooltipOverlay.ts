@@ -1,6 +1,7 @@
 import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
-import RenderItem from '@/types/RenderItem'
+import Overlay from '@/renderer/Overlay'
+import Units from '@/helpers/Units'
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
 import ItemData from '@/types/ItemData'
@@ -11,35 +12,38 @@ import { Layer, Tooltip } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
 import { placeNear, stringWidth } from '@/Helper'
 
-export default class TooltipOverlay {
+export default class TooltipOverlay extends Overlay {
     private readonly canvas: HTMLCanvasElement
 
     private state: { point: Point, template: string } | null = null
 
     private fade = new HoverProgress()
 
-    private items: Set<RenderItem> = new Set()
-
     private built: { point: Point, template: string, window: Pick<CanvasWindow, 'x' | 'y' | 'width' | 'height'> } | null = null
 
+    private scan: {
+        point: Point
+        version: number
+        window: Pick<CanvasWindow, 'x' | 'y' | 'width' | 'height'>
+        template: string | null
+        data: ItemData | null
+    } | null = null
+
     constructor(canvas: HTMLCanvasElement) {
+        super()
+
         this.canvas = canvas
     }
 
-    update(queue: Queue, window: CanvasWindow, point: Point | null, isContextMenuOpen: boolean, custom: CustomTooltip | null) {
-        let template: string | null = null
-        let data: ItemData | null = null
-
-        if (point && !isContextMenuOpen) {
-            for (const item of queue.items) {
-                item.tooltip(point)
-
-                if (template == null && item.showTooltip) {
-                    template = item.tooltipTemplate
-                    data = item.data
-                }
-            }
-        }
+    update(queue: Queue,
+           window: CanvasWindow,
+           point: Point | null,
+           isContextMenuOpen: boolean,
+           custom: CustomTooltip | null,
+           now: DOMHighResTimeStamp): boolean {
+        const { template, data } = point && !isContextMenuOpen
+                                   ? this.getTarget(queue, window, point)
+                                   : { template: null, data: null }
 
         if (custom && point && data)
             custom.show(data, point)
@@ -54,7 +58,7 @@ export default class TooltipOverlay {
             this.state.point = point
         }
 
-        this.fade.step(isVisible, performance.now(), Tooltip.fadeDuration)
+        this.fade.step(isVisible, now, Tooltip.fadeDuration)
 
         const alpha = this.fade.value
 
@@ -65,19 +69,19 @@ export default class TooltipOverlay {
         if (!this.state || alpha == 0) {
             this.remove(queue)
 
-            return
+            return false
         }
 
         const state = this.state
 
-        if (!this.isBuilt(state.point, state.template, window)) {
-            this.remove(queue)
+        if (!this.isBuilt(state.point, state.template, window))
             this.add(queue, window, state.point, state.template)
-        }
 
         for (const item of this.items) {
             item.animation.alpha = alpha
         }
+
+        return this.fade.isAnimating
     }
 
     clear(queue: Queue) {
@@ -85,6 +89,38 @@ export default class TooltipOverlay {
 
         this.state = null
         this.fade = new HoverProgress()
+    }
+
+    private getTarget(queue: Queue, window: CanvasWindow, point: Point) {
+        const scan = this.scan
+
+        if (scan != null && !queue.isAnimating && scan.version == queue.version
+            && scan.point.x == point.x && scan.point.y == point.y
+            && scan.window.x == window.x && scan.window.y == window.y
+            && scan.window.width == window.width && scan.window.height == window.height)
+            return scan
+
+        let template: string | null = null
+        let data: ItemData | null = null
+
+        for (const item of queue.items) {
+            item.tooltip(point)
+
+            if (template == null && item.showTooltip) {
+                template = item.tooltipTemplate
+                data = item.data
+            }
+        }
+
+        this.scan = {
+            point,
+            version: queue.version,
+            window: { x: window.x, y: window.y, width: window.width, height: window.height },
+            template,
+            data
+        }
+
+        return this.scan
     }
 
     private isBuilt(point: Point, template: string, window: CanvasWindow) {
@@ -96,21 +132,17 @@ export default class TooltipOverlay {
                && built.window.width == window.width && built.window.height == window.height
     }
 
-    private remove(queue: Queue) {
-        queue.remove(this.items)
+    protected remove(queue: Queue) {
+        super.remove(queue)
 
-        this.items.clear()
         this.built = null
     }
 
     private add(queue: Queue, window: CanvasWindow, point: Point, template: string) {
-        const items = QueueItemsBuilder.build([
+        this.show(queue, QueueItemsBuilder.build([
             (builder: QueueItemsBuilder) => this.build(builder, window, point, template)
-        ])
+        ]))
 
-        queue.add(items)
-
-        this.items = new Set(items)
         this.built = { point, template, window: { x: window.x, y: window.y, width: window.width, height: window.height } }
     }
 
@@ -126,14 +158,13 @@ export default class TooltipOverlay {
         const { x: left, y: top } = placeNear(point, width, height, offset,
             { x: 0, y: 0, width: canvasWidth, height: canvasHeight })
 
-        const toX = (x: number) => RenderItem.reAdjustX(window, x)
-        const toY = (y: number) => RenderItem.reAdjustY(window, y)
+        const units = Units.fromWindow(window)
 
         items.rect()
-             .position(toX(left), toY(top))
-             .size(RenderItem.reAdjustWidth(window, width), RenderItem.reAdjustHeight(window, height))
+             .position(units.positionX(left), units.positionY(top))
+             .size(units.x(width), units.y(height))
              .fill()
-             .round(Array(4).fill(RenderItem.reAdjustWidth(window, radius)))
+             .round(Array(4).fill(units.x(radius)))
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
              .color(Theme.background)
              .stroke(Theme.dropdownBorder)
@@ -141,7 +172,7 @@ export default class TooltipOverlay {
 
         rows.forEach((row, index) => {
             items.text(row)
-                 .position(toX(left + padding + fontSize / 2), toY(top + padding + (index + .5) * rowHeight))
+                 .position(units.positionX(left + padding), units.positionY(top + padding + (index + .5) * rowHeight))
                  .size(fontSize)
                  .align(TextAlignment.Left)
                  .color(Theme.text)

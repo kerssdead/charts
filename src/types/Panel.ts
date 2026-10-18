@@ -1,26 +1,20 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
 import type PlotProcess from '@/render/PlotProcess'
+import RectangleDimensions from '@/types/RectangleDimensions'
 
 const GAP = 16
-
-type Rect = {
-    x: number
-    y: number
-    width: number
-    height: number
-}
 
 export default class Panel {
     readonly index: number
 
-    readonly rect: Rect
+    readonly rect: RectangleDimensions
 
     readonly window: CanvasWindow = new CanvasWindow(0, 0)
 
     plot: PlotProcess | null = null
 
-    constructor(index: number, rect: Rect) {
+    constructor(index: number, rect: RectangleDimensions) {
         this.index = index
         this.rect = rect
     }

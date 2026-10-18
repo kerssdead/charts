@@ -2,8 +2,8 @@ import PlotData from '@/types/data/PlotData'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
 import { HorizontalAlignment, PlotAxisType, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from '@/static/Enums'
-import { getRoundedValues, short, stringWidth } from '@/Helper'
-import Margin from '@/types/Margin'
+import { getRoundedValues, maxOf, short, stringWidth } from '@/Helper'
+import Paddings from '@/types/Paddings'
 import PlotSeries from '@/types/PlotSeries'
 import Point from '@/types/Point'
 import Theme from '@/Theme'
@@ -58,7 +58,7 @@ export default class PlotProcess {
 
     private readonly series: PlotSeries[]
 
-    private margin: Margin
+    private margin: Paddings
 
     private stacks: Map<string, number>
 
@@ -80,6 +80,10 @@ export default class PlotProcess {
 
     private readonly valuePostfix: string | undefined
 
+    private readonly indexes: Map<PlotSeries, number>
+
+    private scale: Point = { x: 0, y: 0 }
+
     private get available() {
         return {
             x: COORDS_MAX_X - this.margin.left - this.margin.right,
@@ -87,7 +91,7 @@ export default class PlotProcess {
         }
     }
 
-    private get scale() {
+    private getScale(): Point {
         const { top, bottom } = this.mainBand
 
         return {
@@ -138,6 +142,7 @@ export default class PlotProcess {
         this.series = data.values.filter(series => !series.disabled)
         this.yMax = this.data.yMax == 0 ? undefined : this.data.yMax
         this.units = new Units(pixel)
+        this.indexes = new Map(data.values.map((series, index) => [series, index]))
 
         this.stacks = new Map<string, number>()
 
@@ -164,21 +169,11 @@ export default class PlotProcess {
 
         this.calculateLabels()
 
-        this.margin = {
-            top: 200,
-            right: 100,
-            bottom: this.getBottomMargin(),
-            left: this.getLeftMargin()
-        }
+        this.margin = this.data.simple
+                      ? { top: 50, right: 50, bottom: 50, left: 50 }
+                      : { top: 200, right: 100, bottom: this.getBottomMargin(), left: this.getLeftMargin() }
 
-        if (this.data.simple) {
-            this.margin = {
-                top: 50,
-                right: 50,
-                bottom: 50,
-                left: 50
-            }
-        }
+        this.scale = this.getScale()
     }
 
     private getLeftMargin() {
@@ -189,9 +184,7 @@ export default class PlotProcess {
             ...(this.isHorizontal ? [] : this.values.map(value => short(value, this.data.shortLabels)))
         ]
 
-        const labelsWidth = Math.max(0, ...labels.map(label => {
-            return stringWidth(label, AXIS_LABEL_FONT)
-        }))
+        const labelsWidth = maxOf(labels, label => stringWidth(label, AXIS_LABEL_FONT))
 
         return this.units.x(LEFT_PADDING + titleWidth + labelsWidth + LEFT_GAP)
     }
@@ -236,7 +229,7 @@ export default class PlotProcess {
 
         const values = Array.from(unique.values())
 
-        const order = (x: number | Date | string) => this.data.xType == PlotAxisType.Date ? new Date(x).getTime() : Number(x)
+        const order = (x: number | Date | string) => this.data.xType == PlotAxisType.Date ? Formatter.toDate(x).getTime() : Number(x)
 
         if (this.data.xType != PlotAxisType.Text && values.every(x => !isNaN(order(x))))
             values.sort((a, b) => order(a) - order(b))
@@ -297,7 +290,7 @@ export default class PlotProcess {
     }
 
     private getBaseLabels(items: QueueItemsBuilder) {
-        const x1 = this.margin.left + this.units.x(AXIS_LABEL_FONT / 2 - LEFT_GAP)
+        const x1 = this.margin.left - this.units.x(LEFT_GAP)
 
         if (this.hasBars)
             this.getHorizontalLabels(items, x1)
@@ -324,7 +317,7 @@ export default class PlotProcess {
             const labels = this.mainSlots.values.map(x => this.formatX(x))
 
             const slot = this.units.toPxX(stepX + GAP)
-            const widest = Math.max(0, ...labels.map(label => stringWidth(label, X_LABEL_FONT)))
+            const widest = maxOf(labels, label => stringWidth(label, X_LABEL_FONT))
             const every = Math.max(1, Math.ceil((widest + X_LABEL_SPACING) / slot))
 
             labels.forEach((label, i) => {
@@ -334,7 +327,7 @@ export default class PlotProcess {
                 const x = this.margin.left + i * stepX + (i + 1) * GAP
 
                 items.text(label)
-                     .position(x + stepX / 2 + this.units.x(X_LABEL_FONT / 2), y)
+                     .position(x + stepX / 2, y)
                      .align(TextAlignment.Center)
                      .baseline(TextBaseline.Top)
                      .size(X_LABEL_FONT)
@@ -349,7 +342,7 @@ export default class PlotProcess {
         // Bottom labels
         for (const label of this.barValues) {
             items.text(short(label, this.data.shortLabels))
-                 .position(this.getAxisX(label) + this.units.x(X_LABEL_FONT / 2), bottom)
+                 .position(this.getAxisX(label), bottom)
                  .align(TextAlignment.Center)
                  .baseline(TextBaseline.Top)
                  .size(X_LABEL_FONT)
@@ -468,7 +461,7 @@ export default class PlotProcess {
         return (items: QueueItemsBuilder) => {
             if (this.data.xTitle) {
                 items.text(this.data.xTitle)
-                     .position(this.units.x(LEFT_PADDING + AXIS_TITLE_FONT / 2), COORDS_MAX_Y / 2)
+                     .position(this.units.x(LEFT_PADDING), COORDS_MAX_Y / 2)
                      .baseline(TextBaseline.Top)
                      .size(AXIS_TITLE_FONT)
                      .rotate(270)
@@ -477,7 +470,7 @@ export default class PlotProcess {
 
             if (this.data.yTitle) {
                 items.text(this.data.yTitle)
-                     .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.units.y(BOTTOM_PADDING + AXIS_TITLE_FONT / 2))
+                     .position(COORDS_MAX_X / 2 - this.units.x(AXIS_TITLE_FONT / 2), COORDS_MAX_Y - this.units.y(BOTTOM_PADDING + AXIS_TITLE_FONT / 2))
                      .size(AXIS_TITLE_FONT)
                      .key('axis-title-y')
             }
@@ -500,8 +493,12 @@ export default class PlotProcess {
             item.hoverGroup(this.getKey(series))
     }
 
+    private indexOf(series: PlotSeries) {
+        return this.indexes.get(series) ?? -1
+    }
+
     private getKey(series: PlotSeries, ...parts: (string | number)[]) {
-        return [this.data.values.indexOf(series), ...parts].join('-')
+        return [this.indexOf(series), ...parts].join('-')
     }
 
     getData() {
@@ -524,14 +521,14 @@ export default class PlotProcess {
         const color = series.color
 
         const step = this.getMainStep()
-        const index = this.data.values.indexOf(series)
+        const index = this.indexOf(series)
 
         return (items: QueueItemsBuilder) => {
             series.values.forEach(value => {
                 const i = PlotProcess.getSlot(this.mainSlots, value)
 
                 const { columns, slots } = this.getColumnGroup(value)
-                const visibleBefore = columns.filter(s => this.data.values.indexOf(s) < index).length
+                const visibleBefore = columns.filter(s => this.indexOf(s) < index).length
                 const widthInStep = step / slots
                 const width = series.disabled ? 0 : widthInStep
                 const offset = visibleBefore * widthInStep
@@ -640,37 +637,43 @@ export default class PlotProcess {
 
         const step = this.getMainStep()
 
+        const stacked = series.values.map(value => {
+            const i = PlotProcess.getSlot(this.mainSlots, value)
+
+            const { columns, slots } = this.getColumnGroup(value)
+            const width = step / slots
+            const offset = columns.length * width
+
+            const key = PlotProcess.getStackKey(value)
+            const stack = this.stacks.get(key) ?? 0
+            const height = series.disabled ? 0 : Number(value.y) * this.scale.y
+
+            this.stacks.set(key, stack - height)
+
+            return {
+                value,
+                i,
+                x: this.margin.left + i * step + (i + 1) * GAP + offset,
+                y: baseY + stack,
+                width,
+                height,
+                isTop: this.stackTops.get(key) === series
+            }
+        })
+
         return (items: QueueItemsBuilder) => {
-            series.values.forEach(value => {
-                const i = PlotProcess.getSlot(this.mainSlots, value)
-
-                const { columns, slots } = this.getColumnGroup(value)
-                const width = step / slots
-                const offset = columns.length * width
-
-                const key = PlotProcess.getStackKey(value)
-                const stack = this.stacks.get(key) ?? 0
-                const height = series.disabled ? 0 : Number(value.y) * this.scale.y
-
-                this.stacks.set(key, stack - height)
-
-                const x = this.margin.left
-                          + i * step
-                          + (i + 1) * GAP
-                          + offset
-                const y = baseY + stack
-
+            for (const { value, i, x, y, width, height, isTop } of stacked) {
                 const column = items.rect()
                      .position(x, y)
                      .size(width, height)
                      .collapse(false, true)
-                     .round(this.stackTops.get(key) === series ? [CORNER_RADIUS, CORNER_RADIUS, 0, 0] : [0, 0, 0, 0])
+                     .round(isTop ? [CORNER_RADIUS, CORNER_RADIUS, 0, 0] : [0, 0, 0, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('y', baseY)
 
                 this.dataRect(column, series, value, i, color, this.getValueTooltip(series, value))
                     .fade(false)
-            })
+            }
         }
     }
 
@@ -691,6 +694,9 @@ export default class PlotProcess {
     }
 
     private getAttentionLine(series: PlotSeries) {
+        if (series.values.length == 0)
+            return QueueItemsBuilder.empty
+
         const y = this.getAxisY(0)
                   - Number(series.values[0].y) * this.scale.y
 

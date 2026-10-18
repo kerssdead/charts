@@ -4,7 +4,7 @@ import RenderItem from '@/types/RenderItem'
 import { AnimationTiming, COORDS_MAX_X } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import Theme from '@/Theme'
-import Canvas from '@/helpers/Canvas'
+import { GradientCache } from '@/helpers/Canvas'
 
 const FULL_CIRCLE_EPSILON = 1e-6
 
@@ -108,7 +108,7 @@ export default class RenderItemArc
         const shape = this.shape(item?.animation.init ?? 1)
 
         if (this.isGradient && item)
-            ctx.fillStyle = ctx.strokeStyle = Canvas.verticalGradient(ctx, item.activeColor,
+            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.activeColor,
                 shape.y - this.canvas.radius, shape.y + this.canvas.radius)
 
         if (isFullCircle(shape.end - shape.start))
@@ -288,7 +288,22 @@ export default class RenderItemArc
         const full = Math.PI * 2
         const angle = ((Math.atan2(dy, dx) - this.canvas.startAngle) % full + full) % full
 
-        return angle <= sweep
+        if (angle > sweep)
+            return false
+
+        const half = this.canvas.gap / 2
+
+        return RenderItemArc.rayDistance(dx, dy, this.canvas.startAngle) >= half
+               && RenderItemArc.rayDistance(dx, dy, this.canvas.endAngle) >= half
+    }
+
+    private static rayDistance(dx: number, dy: number, angle: number) {
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+
+        return dx * cos + dy * sin <= 0
+               ? Math.hypot(dx, dy)
+               : Math.abs(dy * cos - dx * sin)
     }
 
     isFill: boolean = false
@@ -331,6 +346,8 @@ export default class RenderItemArc
     hover: number = 0
 
     readonly pop: Point = { x: 0, y: 0 }
+
+    private readonly gradient = new GradientCache()
 
     startAngle: number = 0
 

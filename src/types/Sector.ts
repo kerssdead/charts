@@ -8,8 +8,6 @@ class Sector extends Value {
     }
 
     checkCondition(): boolean {
-        super.checkCondition()
-
         return this.value != 0 || !this.disabled
     }
 }

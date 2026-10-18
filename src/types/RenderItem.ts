@@ -44,7 +44,7 @@ export default class RenderItem {
 
     color: string
 
-    animation: AnimationData = AnimationData.default
+    animation: AnimationData = new AnimationData()
 
     activeColor: string
 
@@ -70,7 +70,7 @@ export default class RenderItem {
         this.shape = shape
     }
 
-    render(ctx: CanvasRenderingContext2D, window: CanvasWindow) {
+    render(ctx: CanvasRenderingContext2D, window: CanvasWindow, screen: CanvasWindow) {
         this.updateInit()
         this.updateMorph()
 
@@ -86,7 +86,7 @@ export default class RenderItem {
 
         this.adjust(this.panel?.window ?? window)
 
-        if (!this.isOnCanvas(ctx.canvas)) {
+        if (!this.isOnCanvas(screen)) {
             return
         }
 
@@ -97,18 +97,24 @@ export default class RenderItem {
         ctx.lineWidth = DEFAULT_LINE_WIDTH
         ctx.setLineDash([])
 
-        ctx.fillStyle = this.activeColor
-        ctx.strokeStyle = this.activeStroke ?? this.activeColor
+        const fill = this.activeColor ?? this.shape.defaultColor
+        const stroke = this.activeStroke ?? fill
+
+        if (fill)
+            ctx.fillStyle = fill
+
+        if (stroke)
+            ctx.strokeStyle = stroke
 
         this.shape.render(ctx, this)
     }
 
-    animate(point: Point, hoveredGroups: Set<string> = new Set()) {
+    animate(point: Point, hoveredGroups: Set<string> = new Set()): boolean {
         if (!this.isAnimate || this.isInitializing) {
-            return
+            return false
         }
 
-        this.continueAnimate(point, hoveredGroups)
+        return this.continueAnimate(point, hoveredGroups)
     }
 
     tooltip(point: Point) {
@@ -214,7 +220,7 @@ export default class RenderItem {
         this.shape.adjust(window, this.animation.morph)
     }
 
-    private isOnCanvas(canvas: HTMLCanvasElement): boolean {
+    private isOnCanvas(screen: CanvasWindow): boolean {
         const bounds = this.shape.getBounds()
 
         if (!bounds) {
@@ -223,8 +229,8 @@ export default class RenderItem {
 
         const margin = DEFAULT_LINE_WIDTH
 
-        return bounds.right >= -margin && bounds.left <= canvas.clientWidth + margin
-               && bounds.bottom >= -margin && bounds.top <= canvas.clientHeight + margin
+        return bounds.right >= -margin && bounds.left <= screen.width + margin
+               && bounds.bottom >= -margin && bounds.top <= screen.height + margin
     }
 
     private updateInit() {
@@ -293,15 +299,17 @@ export default class RenderItem {
             animation.visibility = 1
     }
 
-    private continueAnimate(point: Point, hoveredGroups: Set<string>) {
+    private continueAnimate(point: Point, hoveredGroups: Set<string>): boolean {
         const isOver = this.hoverGroup == null
                        ? this.shape.isMouseOver(point)
                        : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
 
         if (!isOver && this.hover.isIdle)
-            return
+            return false
 
         this.shape.animate(this, !isOver, point)
+
+        return this.hover.isAnimating
     }
 
     static adjustX(window: CanvasWindow, x: number) {
@@ -310,21 +318,5 @@ export default class RenderItem {
 
     static adjustY(window: CanvasWindow, y: number) {
         return Math.round(y / COORDS_MAX_Y * window.height + window.y)
-    }
-
-    static reAdjustX(window: CanvasWindow, x: number): number {
-        return ((x - window.x) * COORDS_MAX_X) / window.width
-    }
-
-    static reAdjustY(window: CanvasWindow, y: number): number {
-        return ((y - window.y) * COORDS_MAX_Y) / window.height
-    }
-
-    static reAdjustWidth(window: CanvasWindow, width: number): number {
-        return width * COORDS_MAX_X / window.width
-    }
-
-    static reAdjustHeight(window: CanvasWindow, height: number): number {
-        return height * COORDS_MAX_Y / window.height
     }
 }

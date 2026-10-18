@@ -1,5 +1,4 @@
 import RenderItem from '@/types/RenderItem'
-import RenderItemText from '@/types/RenderItemText'
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
 import Theme from '@/Theme'
@@ -16,6 +15,10 @@ export default class Queue {
     private readonly hoveredGroups = new Set<string>()
 
     ratio: number = 1
+
+    version: number = 0
+
+    isAnimating: boolean = false
 
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx
@@ -36,18 +39,11 @@ export default class Queue {
         let hasTemp = false
 
         for (const step of this.getSorted()) {
-            this.ctx.save()
             this.ctx.beginPath()
 
             this.ctx.globalAlpha = step.animation.alpha
 
-            if (step.shape instanceof RenderItemText && !step.color) {
-                this.ctx.fillStyle = Theme.text
-            }
-
-            step.render(this.ctx, step.isFixed ? screen : window)
-
-            this.ctx.restore()
+            step.render(this.ctx, step.isFixed ? screen : window, screen)
 
             if (step.isTemp)
                 hasTemp = true
@@ -58,10 +54,12 @@ export default class Queue {
         if (hasTemp)
             this.removeWhere(item => item.isTemp)
 
+        this.isAnimating = isAnimating
+
         return isAnimating
     }
 
-    animate(point: Point | null) {
+    animate(point: Point | null): boolean {
         point ??= OUTSIDE
 
         const hoveredGroups = this.hoveredGroups
@@ -73,9 +71,14 @@ export default class Queue {
                 hoveredGroups.add(item.hoverGroup)
         }
 
+        let isAnimating = false
+
         for (const item of this.queue) {
-            item.animate(point, hoveredGroups)
+            if (item.animate(point, hoveredGroups))
+                isAnimating = true
         }
+
+        return isAnimating
     }
 
     add(items: RenderItem[]) {
@@ -86,6 +89,7 @@ export default class Queue {
             this.queue.push(item)
 
         this.isSorted = false
+        this.version++
     }
 
     remove(items: ReadonlySet<RenderItem>) {
@@ -98,6 +102,7 @@ export default class Queue {
     clear() {
         this.queue = []
         this.isSorted = true
+        this.version++
     }
 
     private removeWhere(predicate: (item: RenderItem) => boolean) {
@@ -106,6 +111,9 @@ export default class Queue {
         for (const item of this.queue)
             if (!predicate(item))
                 this.queue[count++] = item
+
+        if (count != this.queue.length)
+            this.version++
 
         this.queue.length = count
     }

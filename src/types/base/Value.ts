@@ -15,11 +15,6 @@ class Value {
 
     value: number
 
-    toggle(transition: number) {
-        if (transition == 0)
-            this.disabled = !this.disabled
-    }
-
     checkCondition(): boolean {
         return false
     }

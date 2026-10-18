@@ -3,12 +3,15 @@ import ChartSettings from '@/types/ChartSettings'
 import Theme from '@/Theme'
 import { ChartType, Events } from '@/static/Enums'
 import { Renderer } from '@/renderer/Renderer'
-import { adjustColor, deepClone, parseNumber, randomColor } from '@/Helper'
+import { adjustColor, deepClone, normalizeColor, parseNumber, randomColor } from '@/Helper'
 import Legend from '@/Legend'
 import Value from '@/types/base/Value'
 import PlotSeries from '@/types/PlotSeries'
 import { TreeValue } from '@/types/data/TreeData'
 import Debug from '@/Debug'
+import ChartItem from '@/types/ChartItem'
+import Sector from '@/types/Sector'
+import TextResources from '@/static/TextResources'
 
 const BASE_COLOR_RANGE = 67
 
@@ -91,8 +94,12 @@ export default class Chart {
         if (this.isDestroyed)
             return
 
+        const previous = this.settings
+
         this.source = settings
         this.settings = Chart.normalize(settings, this.fallbackColor)
+
+        Chart.keepDisabled(previous, this.settings)
 
         Theme.update(this.settings.isDarkThemeFunction)
         this.renderer.apply(this.settings)
@@ -157,6 +164,8 @@ export default class Chart {
             return
 
         this.isSuspended = true
+
+        Theme.update(this.settings.isDarkThemeFunction)
         this.suspendedTheme = Theme.currentTheme
 
         Theme.detach(this.onThemeChange)
@@ -181,12 +190,14 @@ export default class Chart {
 
         const charts = settings.charts?.length
                        ? settings.charts.map(chart => ({ ...chart, type: chart.type ?? ChartType.Plot }))
-                       : [{ type: settings.type, data: settings.data }]
+                       : [{ type: settings.type ?? ChartType.Plot, data: settings.data }]
 
         settings = { ...settings, charts }
 
-        for (const chart of charts)
-            Chart.parseNumbers(chart.data?.values)
+        for (const chart of charts) {
+            Chart.prepareValues(chart)
+            Chart.normalizeValues(chart.data?.values)
+        }
 
         Chart.applyBaseColor(settings, fallbackColor)
 
@@ -197,16 +208,65 @@ export default class Chart {
         }
     }
 
-    private static parseNumbers(values: Value[] | undefined) {
-        const toNumber = <T>(value: T) => typeof value == 'string' ? parseNumber(value) : value
+    private static prepareValues(chart: ChartItem) {
+        if (!chart.data?.values || !Legend.isSupported(chart))
+            return
+
+        const counts = new Map<string, number>()
+
+        chart.data.values = chart.data.values.map(value => {
+            if (!(value instanceof Value))
+                value = chart.type == ChartType.Plot
+                        ? new PlotSeries(value)
+                        : new Sector(value)
+
+            value.label ??= TextResources.noLabel
+
+            const count = counts.get(value.label) ?? 0
+
+            counts.set(value.label, count + 1)
+
+            value.id ??= `${ value.label }-${ count }`
+
+            return value
+        })
+    }
+
+    private static keepDisabled(previous: ChartSettings, next: ChartSettings) {
+        const getValues = (settings: ChartSettings) => settings.charts.flatMap(chart => chart.data?.values ?? [])
+        const getKey = (settings: ChartSettings, value: Value) => Legend.getGroupKey(value, settings.charts.length > 1)
+
+        const disabled = new Map<string, boolean>()
+
+        for (const value of getValues(previous))
+            if (value.disabled)
+                disabled.set(getKey(previous, value), true)
+
+        for (const value of getValues(next))
+            if (value.disabled == undefined && disabled.has(getKey(next, value)))
+                value.disabled = true
+    }
+
+    private static normalizeValues(values: Value[] | undefined) {
+        const toNumber = <T>(value: T) => {
+            if (typeof value != 'string' && typeof value != 'number')
+                return value
+
+            const number = parseNumber(value)
+
+            return Number.isFinite(number) ? number : 0
+        }
 
         for (const value of values ?? []) {
             value.value = toNumber(value.value)
 
+            if (value.color)
+                value.color = normalizeColor(value.color)
+
             for (const point of (value as PlotSeries).values ?? [])
                 point.y = toNumber(point.y)
 
-            Chart.parseNumbers((value as TreeValue).sectors)
+            Chart.normalizeValues((value as TreeValue).sectors)
         }
     }
 
@@ -218,7 +278,12 @@ export default class Chart {
             for (const value of chart.data?.values ?? []) {
                 const key = isShared ? value.label : value
 
-                groups.set(key, [...groups.get(key) ?? [], value])
+                const group = groups.get(key)
+
+                if (group)
+                    group.push(value)
+                else
+                    groups.set(key, [value])
             }
         }
 
@@ -237,7 +302,7 @@ export default class Chart {
         if (uncolored.length == 0)
             return
 
-        const base = settings.baseColor || fallbackColor
+        const base = settings.baseColor ? normalizeColor(settings.baseColor) : fallbackColor
 
         uncolored.forEach((values, index) => {
             const ratio = uncolored.length == 1 ? .5 : index / (uncolored.length - 1)

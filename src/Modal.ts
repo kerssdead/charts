@@ -1,8 +1,9 @@
-import Errors from '@/helpers/Errors'
-import { ErrorType, Icon, Tag } from '@/static/Enums'
+import { Icon, Tag } from '@/static/Enums'
 
 class Modal {
-    modal: HTMLDialogElement | undefined
+    private readonly modal: HTMLDialogElement
+
+    private isClosed: boolean = false
 
     #content: HTMLDivElement | undefined
 
@@ -26,24 +27,21 @@ class Modal {
     }
 
     open() {
-        Errors.throwIsUndefined(this.modal, ErrorType.ElementNotExist)
-
-        this.modal!.showModal()
+        this.modal.showModal()
     }
 
     close() {
-        Errors.throwIsUndefined(this.modal, ErrorType.ElementNotExist)
+        if (this.isClosed)
+            return
 
-        this.modal!.close()
+        this.isClosed = true
 
-        this.modal!.remove()
+        this.modal.close()
 
-        this.modal = undefined
+        this.modal.remove()
     }
 
     #setHeader(title: string | undefined) {
-        Errors.throwIsUndefined(this.modal, ErrorType.ElementNotExist)
-
         let titleSpan = document.createElement(Tag.Span)
 
         titleSpan.classList.add(ModalClasses.title)
@@ -61,7 +59,7 @@ class Modal {
         header.appendChild(titleSpan)
         header.appendChild(closeButton)
 
-        this.modal!.appendChild(header)
+        this.modal.appendChild(header)
 
         closeButton.onclick = () => this.close()
     }
@@ -72,7 +70,7 @@ class Modal {
 
             this.#content.classList.add(ModalClasses.content)
 
-            this.modal?.appendChild(this.#content)
+            this.modal.appendChild(this.#content)
         }
 
         if (content != undefined)

@@ -296,7 +296,7 @@ export default class GaugeProcess {
     private getText(key: string, value: string, x: number, y: number, size: number) {
         return (items: QueueItemsBuilder) => {
             items.text(value)
-                 .position(x + this.units.x(size / 2), y)
+                 .position(x, y)
                  .size(size)
                  .align(TextAlignment.Center)
                  .key(key)

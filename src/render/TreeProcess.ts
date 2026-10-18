@@ -143,7 +143,7 @@ export default class TreeProcess {
 
             if (isLabelVisible)
                 items.text(label)
-                     .position(box.x + box.width / 2 + this.units.x(LABEL_FONT / 2), box.y + box.height / 2)
+                     .position(box.x + box.width / 2, box.y + box.height / 2)
                      .size(LABEL_FONT)
                      .align(TextAlignment.Center)
                      .color(contrastText(color))

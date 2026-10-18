@@ -59,9 +59,7 @@ export default class QueueItemsBuilder {
         return builder.dispose()
     }
 
-    static get empty() {
-        return (items: QueueItemsBuilder) => { }
-    }
+    static readonly empty = (_items: QueueItemsBuilder) => { }
 
     private add() {
         if (this.current == null) {

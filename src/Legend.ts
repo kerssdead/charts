@@ -1,16 +1,16 @@
 import Value from '@/types/base/Value'
 import * as Helper from '@/Helper'
-import Sector from '@/types/Sector'
-import PlotSeries from '@/types/PlotSeries'
 import Point from '@/types/Point'
 import Paddings from '@/types/Paddings'
 import RenderItem from '@/types/RenderItem'
+import Overlay from '@/renderer/Overlay'
+import Units from '@/helpers/Units'
 import Theme from '@/Theme'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import TextResources from '@/static/TextResources'
 import * as Constants from '@/static/constants/Index'
-import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
+import { Layer } from '@/static/constants/Index'
 import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import ChartItem from '@/types/ChartItem'
@@ -25,7 +25,7 @@ type LegendEntry = {
     width: number
 }
 
-class Legend {
+class Legend extends Overlay {
     private static readonly paddingX = 12
 
     private static readonly paddingY = 4
@@ -54,21 +54,23 @@ class Legend {
 
     private size: { width: number, height: number } | undefined
 
-    private top: number = 0
+    private units: Units = Units.fromSize(1, 1)
 
-    private items: Set<RenderItem> = new Set()
+    private top: number = 0
 
     private backgrounds: Map<string, RenderItem> = new Map()
 
     private hover: Map<string, HoverProgress> = new Map()
 
-    private toggles: Map<string, number> = new Map()
+    private toggles: Map<string, DOMHighResTimeStamp | null> = new Map()
 
     private isDirty: boolean = true
 
     private moveStart: DOMHighResTimeStamp | null = null
 
-    private from: Map<number, Point> = new Map()
+    private isMovePending: boolean = false
+
+    private from: Map<string, Point> = new Map()
 
     private fromArea: DOMRect | undefined
 
@@ -78,12 +80,12 @@ class Legend {
         return this.getReserved(this.area)
     }
 
-    get currentReserved(): Paddings {
-        return this.getReserved(this.area && this.getArea(this.getMoveProgress(performance.now())))
+    getCurrentReserved(now: DOMHighResTimeStamp): Paddings {
+        return this.getReserved(this.area && this.getArea(this.getMoveProgress(now)))
     }
 
     get isMoving() {
-        return this.moveStart != null
+        return this.isMovePending || this.moveStart != null
     }
 
     private getReserved(area: DOMRect | undefined): Paddings {
@@ -118,9 +120,9 @@ class Legend {
         return this.settings.charts.length > 1
     }
 
-    private get values(): Value[] {
-        return this.settings.charts.filter(Legend.isSupported).flatMap(chart => chart.data.values)
-    }
+    private values: Value[] = []
+
+    private isHoverAnimating: boolean = false
 
     static isSupported(chart: ChartItem) {
         return chart.type != ChartType.Gauge
@@ -143,22 +145,33 @@ class Legend {
     }
 
     constructor(settings: ChartSettings) {
-        this.settings = settings
+        super()
 
-        this.prepareValues()
+        this.settings = settings
+        this.values = Legend.getValues(settings)
+    }
+
+    private static getValues(settings: ChartSettings): Value[] {
+        return settings.charts.filter(Legend.isSupported).flatMap(chart => chart.data.values)
     }
 
     applySettings(settings?: ChartSettings) {
         const previous = this.entries
         const previousArea = this.area
 
-        if (settings)
+        if (settings) {
             this.settings = settings
-
-        this.prepareValues()
+            this.values = Legend.getValues(settings)
+        }
 
         if (this.size)
             this.resize(this.size.width, this.size.height, this.top)
+
+        const ids = new Set(this.entries.map(entry => entry.value.id))
+
+        for (const key of this.hover.keys())
+            if (key != Legend.resetKey && !ids.has(key))
+                this.hover.delete(key)
 
         if (settings && previous.length > 0)
             this.move(previous, previousArea)
@@ -166,6 +179,7 @@ class Legend {
 
     resize(width: number, height: number, top: number = 0) {
         this.size = { width, height }
+        this.units = Units.fromSize(width, height)
         this.top = top
 
         if (this.isVertical)
@@ -183,36 +197,42 @@ class Legend {
         this.isDirty = true
     }
 
-    build(queue: Queue, mouse: Point | null) {
+    build(queue: Queue, mouse: Point | null, now: DOMHighResTimeStamp): boolean {
         if (!this.area || !this.size || this.size.width <= 0 || this.size.height <= 0) {
             this.clear(queue)
 
-            return
+            return false
         }
 
-        const now = performance.now()
+        if (this.isMovePending) {
+            this.moveStart = now
+            this.isMovePending = false
+        }
 
-        const isToggling = this.updateToggles(now)
+        this.updateToggles(now)
+
         const isHoverChanged = this.updateHover(mouse, now)
         const isMoving = this.moveStart != null
 
-        if (!this.isDirty && !isToggling && !isMoving) {
+        if (!this.isDirty && !isMoving) {
             if (isHoverChanged)
                 this.updateBackgrounds()
 
-            return
+            return this.isAnimating
         }
 
         const progress = this.getMoveProgress(now)
 
         this.clear(queue)
 
+        let resetBackground: RenderItem | undefined
+
         const added = QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
             const area = this.getArea(progress)
 
             items.rect()
-                 .position(this.x(area.x), this.y(area.y))
-                 .size(this.width(area.width), this.height(area.height))
+                 .position(this.units.x(area.x), this.units.y(area.y))
+                 .size(this.units.x(area.width), this.units.y(area.height))
                  .fill()
                  .align(HorizontalAlignment.Left, VerticalAlignment.Top)
                  .color(Theme.canvasBackground)
@@ -223,14 +243,14 @@ class Legend {
                  })
 
             if (this.button)
-                this.buildButton(items, this.button, this.getHover(Legend.resetKey))
+                resetBackground = this.buildButton(items, this.button, this.getHover(Legend.resetKey))
         }])
 
-        if (this.button)
-            this.backgrounds.set(Legend.resetKey, added[1])
+        if (resetBackground)
+            this.backgrounds.set(Legend.resetKey, resetBackground)
 
-        this.entries.forEach((entry, index) => {
-            const from = this.from.get(index)
+        this.entries.forEach(entry => {
+            const from = this.from.get(this.getKey(entry.value))
 
             const current = from
                             ? {
@@ -240,15 +260,15 @@ class Legend {
                 }
                             : entry
 
-            const entryItems = this.createEntry(current, this.getHover(entry.value.id), from ? 1 : progress)
+            const { items, background } = this.createEntry(current, this.getHover(entry.value.id), from ? 1 : progress)
 
-            this.backgrounds.set(entry.value.id, entryItems[0])
+            this.backgrounds.set(entry.value.id, background)
 
-            added.push(...entryItems)
+            added.push(...items)
         })
 
         for (const entry of this.leaving)
-            added.push(...this.createEntry(entry, 0, 1 - progress))
+            added.push(...this.createEntry(entry, 0, 1 - progress).items)
 
         if (progress == 1) {
             this.moveStart = null
@@ -257,17 +277,25 @@ class Legend {
             this.leaving = []
         }
 
-        queue.add(added)
+        this.show(queue, added)
 
-        this.items = new Set(added)
         this.isDirty = false
+
+        return this.isAnimating
+    }
+
+    private get isAnimating() {
+        return this.isHoverAnimating || this.isMoving || this.toggles.size > 0
     }
 
     private move(previous: LegendEntry[], previousArea: DOMRect | undefined) {
         this.fromArea = previousArea
-        this.from = new Map(previous.map((entry, index) => [index, { x: entry.x, y: entry.y }]))
-        this.leaving = previous.slice(this.entries.length)
-        this.moveStart = performance.now()
+        const keys = new Set(this.entries.map(entry => this.getKey(entry.value)))
+
+        this.from = new Map(previous.map(entry => [this.getKey(entry.value), { x: entry.x, y: entry.y }]))
+        this.leaving = previous.filter(entry => !keys.has(this.getKey(entry.value)))
+        this.moveStart = null
+        this.isMovePending = true
         this.isDirty = true
     }
 
@@ -294,26 +322,23 @@ class Legend {
     }
 
     private createEntry(entry: LegendEntry, hover: number, alpha: number) {
-        const added = QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
-            this.buildEntry(items, entry, hover)
+        let background: RenderItem | undefined
+
+        const items = QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
+            background = this.buildEntry(items, entry, hover)
         }])
 
-        for (const item of added)
+        for (const item of items)
             item.animation.alpha = alpha
 
-        return added
+        return { items, background: background! }
     }
 
     clear(queue: Queue) {
         this.isDirty = true
         this.backgrounds.clear()
 
-        if (this.items.size == 0)
-            return
-
-        queue.remove(this.items)
-
-        this.items.clear()
+        this.remove(queue)
     }
 
     destroy() {
@@ -329,10 +354,10 @@ class Legend {
             textX = x + 22,
             textColor = value.disabled ? Theme.text + '7f' : Theme.text
 
-        items.rect()
-             .position(this.x(x), this.y(y))
-             .size(this.width(width), this.height(Legend.itemHeight))
-             .round(Array(4).fill(this.width(6)))
+        const background = items.rect()
+             .position(this.units.x(x), this.units.y(y))
+             .size(this.units.x(width), this.units.y(Legend.itemHeight))
+             .round(Array(4).fill(this.units.x(6)))
              .fill()
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
              .color(Legend.hoverColor(hover))
@@ -343,15 +368,15 @@ class Legend {
              })
 
         items.arc()
-             .position(this.x(x + 11), this.y(centerY))
-             .radius(this.width(3))
+             .position(this.units.x(x + 11), this.units.y(centerY))
+             .radius(this.units.x(3))
              .fill()
              .color(value.disabled ? Helper.grayScale(value.color) : value.color)
              .layer(Layer.Legend + 2)
              .fixed()
 
         items.text(label)
-             .position(this.x(textX + Legend.fontSize / 2), this.y(centerY))
+             .position(this.units.x(textX), this.units.y(centerY))
              .size(Legend.fontSize)
              .align(TextAlignment.Left)
              .color(textColor)
@@ -360,18 +385,20 @@ class Legend {
 
         if (value.disabled)
             items.line()
-                 .stop(this.x(textX), this.y(centerY + 1))
-                 .stop(this.x(textX + Helper.stringWidth(label)), this.y(centerY + 1))
+                 .stop(this.units.x(textX), this.units.y(centerY + 1))
+                 .stop(this.units.x(textX + Helper.stringWidth(label)), this.units.y(centerY + 1))
                  .color(textColor)
                  .layer(Layer.Legend + 2)
                  .fixed()
+
+        return background.dispose()
     }
 
     private buildButton(items: QueueItemsBuilder, button: DOMRect, hover: number) {
-        items.rect()
-             .position(this.x(button.x), this.y(button.y))
-             .size(this.width(button.width), this.height(button.height))
-             .round(Array(4).fill(this.width(4)))
+        const background = items.rect()
+             .position(this.units.x(button.x), this.units.y(button.y))
+             .size(this.units.x(button.width), this.units.y(button.height))
+             .round(Array(4).fill(this.units.x(4)))
              .fill()
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
              .color(Legend.hoverColor(hover))
@@ -382,12 +409,14 @@ class Legend {
              })
 
         items.text(TextResources.reset)
-             .position(this.x(button.x + button.width / 2 + Legend.fontSize / 2), this.y(button.y + button.height / 2))
+             .position(this.units.x(button.x + button.width / 2), this.units.y(button.y + button.height / 2))
              .size(Legend.fontSize)
              .align(TextAlignment.Center)
              .color(Theme.text)
              .layer(Layer.Legend + 2)
              .fixed()
+
+        return background.dispose()
     }
 
     private calculateHorizontal(width: number, height: number) {
@@ -451,7 +480,7 @@ class Legend {
         const { paddingX, paddingY, itemHeight, rowGap } = Legend
 
         const values = this.visibleValues(),
-            widest = Math.max(0, ...values.map(value => Helper.stringWidth(value.label))) + Legend.itemExtraWidth,
+            widest = Helper.maxOf(values, value => Helper.stringWidth(value.label)) + Legend.itemExtraWidth,
             areaWidth = Math.min(Math.max(widest, this.buttonWidth) + paddingX * 2, width / 4),
             available = areaWidth - paddingX * 2,
             areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
@@ -476,7 +505,7 @@ class Legend {
             }
         })
 
-        const blockWidth = Math.max(0, ...this.entries.map(entry => entry.width))
+        const blockWidth = Helper.maxOf(this.entries, entry => entry.width)
 
         for (const entry of this.entries)
             entry.x = areaX + (areaWidth - blockWidth) / 2
@@ -513,9 +542,9 @@ class Legend {
 
         for (const item of this.values)
             if (this.getKey(item) == key && item.disabled == disabled)
-                item.toggle(0)
+                item.disabled = !disabled
 
-        this.toggles.set(key, performance.now())
+        this.toggles.set(key, null)
 
         this.onChange?.()
     }
@@ -531,33 +560,18 @@ class Legend {
     }
 
     private updateToggles(now: DOMHighResTimeStamp) {
-        const isToggling = this.toggles.size > 0
-        const finished = new Set<string>()
-
-        for (const value of this.values) {
-            const key = this.getKey(value)
-            const start = this.toggles.get(key)
-
-            if (start == undefined)
-                continue
-
-            const transition = Math.min((now - start) / Constants.AnimationTiming.legend, 1)
-
-            if (transition > 0)
-                value.toggle(transition)
-
-            if (transition == 1)
-                finished.add(key)
+        for (const [key, start] of this.toggles) {
+            if (start == null)
+                this.toggles.set(key, now)
+            else if (now - start >= Constants.AnimationTiming.legend)
+                this.toggles.delete(key)
         }
-
-        for (const key of finished)
-            this.toggles.delete(key)
-
-        return isToggling
     }
 
     private updateHover(mouse: Point | null, now: DOMHighResTimeStamp) {
         let isChanged = false
+
+        this.isHoverAnimating = false
 
         const step = (key: string, isOver: boolean) => {
             let hover = this.hover.get(key)
@@ -566,6 +580,8 @@ class Legend {
                 this.hover.set(key, hover = new HoverProgress())
 
             isChanged = hover.step(isOver, now, Constants.AnimationTiming.button) || isChanged
+
+            this.isHoverAnimating ||= hover.isAnimating
         }
 
         for (const entry of this.entries) {
@@ -594,53 +610,26 @@ class Legend {
     }
 
     private isOver(mouse: Point | null, x: number, y: number, width: number) {
-        return !!mouse
-               && x <= mouse.x && mouse.x <= x + width
-               && y <= mouse.y && mouse.y <= y + Legend.itemHeight
-    }
-
-    private prepareValues() {
-        for (const chart of this.settings.charts.filter(Legend.isSupported)) {
-            chart.data.values = chart.data.values.map(value => {
-                if (!(value instanceof Value))
-                    value = chart.type == ChartType.Plot
-                            ? new PlotSeries(value)
-                            : new Sector(value)
-
-                value.id ??= Helper.guid()
-                value.label ??= TextResources.noLabel
-
-                return value
-            })
-        }
-    }
-
-    private x(value: number) {
-        return value * COORDS_MAX_X / this.size!.width
-    }
-
-    private y(value: number) {
-        return value * COORDS_MAX_Y / this.size!.height
-    }
-
-    private width(value: number) {
-        return this.x(value)
-    }
-
-    private height(value: number) {
-        return this.y(value)
+        return Helper.contains({ x, y, width, height: Legend.itemHeight }, mouse)
     }
 
     private static truncate(label: string, maxWidth: number) {
         if (Helper.stringWidth(label) <= maxWidth)
             return label
 
-        let result = label
+        let low = 0
+        let high = label.length - 1
 
-        while (result.length > 0 && Helper.stringWidth(result + '…') > maxWidth)
-            result = result.slice(0, -1)
+        while (low < high) {
+            const middle = Math.ceil((low + high) / 2)
 
-        return result + '…'
+            if (Helper.stringWidth(label.slice(0, middle) + '…') <= maxWidth)
+                low = middle
+            else
+                high = middle - 1
+        }
+
+        return label.slice(0, low) + '…'
     }
 }
 

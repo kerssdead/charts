@@ -19,6 +19,10 @@ export default abstract class RenderItemBase {
 
     abstract isMouseOver(point: Point): boolean
 
+    get defaultColor(): string | undefined {
+        return undefined
+    }
+
     getBounds(): Bounds | null {
         return null
     }

@@ -1,15 +1,16 @@
 import * as Helper from '@/Helper'
 import Point from '@/types/Point'
-import RenderItem from '@/types/RenderItem'
+import Overlay from '@/renderer/Overlay'
+import Units from '@/helpers/Units'
 import Theme from '@/Theme'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import HoverProgress from '@/types/HoverProgress'
 import * as Constants from '@/static/constants/Index'
-import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
+import { Layer } from '@/static/constants/Index'
 import { HorizontalAlignment, Icon, TextAlignment, VerticalAlignment } from '@/static/Enums'
 
-export default class MenuButton {
+export default class MenuButton extends Overlay {
     private static readonly width = 28
 
     private static readonly height = 24
@@ -24,8 +25,6 @@ export default class MenuButton {
 
     private size: { width: number, height: number } | undefined
 
-    private items: Set<RenderItem> = new Set()
-
     private hover = new HoverProgress()
 
     private isDirty: boolean = true
@@ -38,28 +37,27 @@ export default class MenuButton {
         this.isDirty = true
     }
 
-    build(queue: Queue, mouse: Point | null) {
+    build(queue: Queue, mouse: Point | null, now: DOMHighResTimeStamp): boolean {
         if (!this.bounds || !this.size || this.size.width <= 0 || this.size.height <= 0) {
             this.clear(queue)
 
-            return
+            return false
         }
 
         const { x, y, width, height } = this.bounds
 
-        const isOver = !!mouse && x <= mouse.x && mouse.x <= x + width && y <= mouse.y && mouse.y <= y + height
-        const isHoverChanged = this.hover.step(isOver, performance.now(), Constants.AnimationTiming.button)
+        const isHoverChanged = this.hover.step(Helper.contains(this.bounds, mouse), now, Constants.AnimationTiming.button)
 
         if (!this.isDirty && !isHoverChanged)
-            return
+            return this.hover.isAnimating
 
-        this.clear(queue)
+        const units = Units.fromSize(this.size.width, this.size.height)
 
-        const added = QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
+        this.show(queue, QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
             items.rect()
-                 .position(this.x(x), this.y(y))
-                 .size(this.x(width), this.y(height))
-                 .round(Array(4).fill(this.x(4)))
+                 .position(units.x(x), units.y(y))
+                 .size(units.x(width), units.y(height))
+                 .round(Array(4).fill(units.x(4)))
                  .fill()
                  .align(HorizontalAlignment.Left, VerticalAlignment.Top)
                  .color(Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * this.hover.value)))
@@ -68,36 +66,22 @@ export default class MenuButton {
                  .onClick(() => this.onClick?.())
 
             items.text(Icon.ThreeDots)
-                 .position(this.x(x + width / 2 + MenuButton.fontSize / 2), this.y(y + height / 2))
+                 .position(units.x(x + width / 2), units.y(y + height / 2))
                  .size(MenuButton.fontSize)
                  .align(TextAlignment.Center)
                  .color(Theme.text)
                  .layer(Layer.Legend + 2)
                  .fixed()
-        }])
+        }]))
 
-        queue.add(added)
-
-        this.items = new Set(added)
         this.isDirty = false
+
+        return this.hover.isAnimating
     }
 
     clear(queue: Queue) {
         this.isDirty = true
 
-        if (this.items.size == 0)
-            return
-
-        queue.remove(this.items)
-
-        this.items.clear()
-    }
-
-    private x(value: number) {
-        return value * COORDS_MAX_X / this.size!.width
-    }
-
-    private y(value: number) {
-        return value * COORDS_MAX_Y / this.size!.height
+        this.remove(queue)
     }
 }
