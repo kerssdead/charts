@@ -1,6 +1,6 @@
-import CanvasWindow from 'types/CanvasWindow'
-import Point from 'types/Point'
-import type PlotProcess from 'render/PlotProcess'
+import CanvasWindow from '@/types/CanvasWindow'
+import Point from '@/types/Point'
+import type PlotProcess from '@/render/PlotProcess'
 
 const GAP = 16
 

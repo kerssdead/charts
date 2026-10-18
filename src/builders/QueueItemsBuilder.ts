@@ -1,17 +1,16 @@
-import QueueItemBuilder from './QueueItemBuilder'
-import RenderItem from '../types/RenderItem'
-import QueueLineItemBuilder from './QueueLineItemBuilder'
-import QueueRectangleItemBuilder from './QueueRectangleItemBuilder'
-import QueueGroupItemBuilder from './QueueGroupItemBuilder'
-import QueueArcItemBuilder from './QueueArcItemBuilder'
-import QueueTextItemBuilder from './QueueTextItemBuilder'
+import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
+import RenderItem from '@/types/RenderItem'
+import QueueLineItemBuilder from '@/builders/QueueLineItemBuilder'
+import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
+import QueueArcItemBuilder from '@/builders/QueueArcItemBuilder'
+import QueueTextItemBuilder from '@/builders/QueueTextItemBuilder'
 
-type BuilderConstructor<T extends QueueItemBuilder> = new (...args: any[]) => T
+type BuilderConstructor<T extends QueueItemBaseBuilder> = new (...args: any[]) => T
 
 export default class QueueItemsBuilder {
     private items: RenderItem[] = []
 
-    private current: QueueItemBuilder | null = null
+    private current: QueueItemBaseBuilder | null = null
 
     private readonly isInitialized: boolean
 
@@ -25,7 +24,7 @@ export default class QueueItemsBuilder {
         return this.items
     }
 
-    private getBuilder<T extends QueueItemBuilder>(BuilderClass: BuilderConstructor<T>, ...args: any[]): T {
+    private getBuilder<T extends QueueItemBaseBuilder>(BuilderClass: BuilderConstructor<T>, ...args: any[]): T {
         this.add()
 
         const builder = new BuilderClass(...args)
@@ -51,8 +50,13 @@ export default class QueueItemsBuilder {
         return this.getBuilder(QueueTextItemBuilder, text)
     }
 
-    group(): QueueGroupItemBuilder {
-        return this.getBuilder(QueueGroupItemBuilder)
+    static build(actions: ((builder: QueueItemsBuilder) => void)[], isInitialized: boolean = false) {
+        const builder = new QueueItemsBuilder(isInitialized)
+
+        for (const action of actions)
+            action(builder)
+
+        return builder.dispose()
     }
 
     static get empty() {

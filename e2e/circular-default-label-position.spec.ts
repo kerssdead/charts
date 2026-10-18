@@ -4,10 +4,10 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
-import Clip from './utils/Clip'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
+import Clip from '@e2e/utils/Clip'
 
 test('Pie chart tooltip should not be in default position when mouse leave canvas', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
@@ -15,7 +15,7 @@ test('Pie chart tooltip should not be in default position when mouse leave canva
     await Settings.enableInitAnimation(false)
 
     await Settings.valuesCount(2)
-    await Settings.chartType(ChartType.Circular)
+    await Settings.chartType(ChartType.Pie)
     await Settings.enableLegend()
     await Settings.enableTooltip()
 

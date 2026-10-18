@@ -4,9 +4,9 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
 
 test(
     'Circular chart should not be rendered without any exceptions in console',
@@ -18,7 +18,7 @@ test(
         await Settings.height(1)
         await Settings.valuesCount(2)
         await Settings.customLabel('custom label')
-        await Settings.chartType(ChartType.Circular)
+        await Settings.chartType(ChartType.Pie)
         await Settings.innerRadius(0)
 
         await Utils.checkForErrors()

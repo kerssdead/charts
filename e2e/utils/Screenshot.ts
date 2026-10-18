@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test'
-import Clip from './Clip'
+import Clip from '@e2e/utils/Clip'
 
 export class Screenshot {
     static async get(page: Page, clip?: Clip) {

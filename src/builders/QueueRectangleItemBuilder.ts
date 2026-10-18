@@ -1,48 +1,46 @@
-import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
-import { HorizontalAlignment, VerticalAlignment } from 'static/Enums'
-import RenderItemRectangle from 'types/RenderItemRectangle'
+import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
+import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import RenderItemRectangle from '@/types/RenderItemRectangle'
 
-export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
+export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<RenderItemRectangle> {
     constructor() {
-        super()
-
-        this.current.rect = new RenderItemRectangle()
+        super(new RenderItemRectangle())
     }
 
     position(x: number, y: number): QueueRectangleItemBuilder {
-        this.current.rect.absolute.x = x
-        this.current.rect.absolute.y = y
+        this.shape.absolute.x = x
+        this.shape.absolute.y = y
 
         return this
     }
 
     size(width: number, height: number): QueueRectangleItemBuilder {
-        this.current.rect.absolute.width = width
-        this.current.rect.absolute.height = height
+        this.shape.absolute.width = width
+        this.shape.absolute.height = height
 
         return this
     }
 
     fill(): QueueRectangleItemBuilder {
-        this.current.rect.isFill = true
+        this.shape.isFill = true
 
         return this
     }
 
     gradient(): QueueRectangleItemBuilder {
-        this.current.rect.isGradient = true
+        this.shape.isGradient = true
 
         return this
     }
 
     round(radii?: number[] | null): QueueRectangleItemBuilder {
-        this.current.rect.radii = radii ?? [16, 16, 16, 16]
+        this.shape.radii = radii ?? [16, 16, 16, 16]
 
         return this
     }
 
     align(x: HorizontalAlignment | null, y: VerticalAlignment | null) {
-        this.current.rect.align = {
+        this.shape.align = {
             x: x ?? HorizontalAlignment.Center,
             y: y ?? VerticalAlignment.Center
         }
@@ -51,14 +49,14 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder {
     }
 
     collapse(width: boolean, height: boolean): QueueRectangleItemBuilder {
-        this.current.rect.collapse = { width, height }
+        this.shape.collapse = { width, height }
 
         return this
     }
 
     grow(axis: 'x' | 'y', origin: number): QueueRectangleItemBuilder {
-        this.current.rect.growAxis = axis
-        this.current.rect.growOrigin = origin
+        this.shape.growAxis = axis
+        this.shape.growOrigin = origin
 
         return this
     }

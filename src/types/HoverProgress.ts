@@ -1,4 +1,4 @@
-import Animations from 'Animations'
+import Animations from '@/Animations'
 
 export default class HoverProgress {
     private progress: number = 0

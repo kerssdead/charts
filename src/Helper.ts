@@ -1,5 +1,8 @@
-import Color from 'types/Color'
-import Point from 'types/Point'
+import Color from '@/types/Color'
+import Point from '@/types/Point'
+import Errors from '@/helpers/Errors'
+import { ErrorType, Tag } from '@/static/Enums'
+import { FONT_FAMILY } from '@/static/constants/Index'
 
 export function adjustColor(color: string, amount: number) {
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).slice(-2))
@@ -42,18 +45,35 @@ export function randomColor() {
     return color
 }
 
-const CHAR_WIDTHS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.559375, 0.2765625, 0.3546875, 0.5546875, 0.5546875, 0.8890625, 0.665625, 0.190625, 0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125, 0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.2765625, 0.2765625, 0.584375, 0.5828125, 0.584375, 0.5546875, 1.0140625, 0.665625, 0.665625, 0.721875, 0.721875, 0.665625, 0.609375, 0.7765625, 0.721875, 0.2765625, 0.5, 0.665625, 0.5546875, 0.8328125, 0.721875, 0.7765625, 0.665625, 0.7765625, 0.721875, 0.665625, 0.609375, 0.721875, 0.665625, 0.94375, 0.665625, 0.665625, 0.609375, 0.2765625, 0.3546875, 0.2765625, 0.4765625, 0.5546875, 0.3328125, 0.5546875, 0.5546875, 0.5, 0.5546875, 0.5546875, 0.2765625, 0.5546875, 0.5546875, 0.221875, 0.240625, 0.5, 0.221875, 0.8328125, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.3328125, 0.5, 0.2765625, 0.5546875, 0.5, 0.721875, 0.5, 0.5, 0.5, 0.3546875, 0.259375, 0.353125, 0.5890625]
+const MEASURE_FONT_SIZE = 100
 
-const CHAR_WIDTH_AVERAGE = 0.5279276315789471
+const MEASURE_CACHE_LIMIT = 10000
+
+const textWidths = new Map<string, number>()
+
+let measureContext: CanvasRenderingContext2D | null = null
 
 export function stringWidth(str: any | undefined, font?: number) {
     if (!str)
         return 0
 
-    let width = 0
+    const text = String(str)
 
-    for (const char of String(str))
-        width += CHAR_WIDTHS[char.charCodeAt(0)] ?? CHAR_WIDTH_AVERAGE
+    let width = textWidths.get(text)
+
+    if (width == undefined) {
+        if (!measureContext) {
+            measureContext = document.createElement(Tag.Canvas).getContext('2d') ?? Errors.throw(ErrorType.NullContext)
+            measureContext.font = `${ MEASURE_FONT_SIZE }px ${ FONT_FAMILY }`
+        }
+
+        if (textWidths.size >= MEASURE_CACHE_LIMIT)
+            textWidths.clear()
+
+        width = measureContext.measureText(text).width / MEASURE_FONT_SIZE
+
+        textWidths.set(text, width)
+    }
 
     return width * (font || 14)
 }
@@ -114,7 +134,7 @@ export function getShortHexValues(str: string) {
 export function getRoundedValues(
     all: number[],
     targetTicks: number = 5,
-    max: number | undefined
+    max?: number
 ) {
     if (!Array.isArray(all) || all.length === 0) {
         return []
@@ -276,7 +296,44 @@ export function parseNumber(value: string | null | number, decimalSeparator: str
         .replace('!', '.')))
         return result
 
+    if (decimalSeparator == ',')
+        return NaN
+
     return parseNumber(value, ',')
+}
+
+export function sum<T>(values: T[], selector: (value: T) => number) {
+    return values.reduce((acc, value) => acc + selector(value), 0)
+}
+
+export function deepClone<T>(value: T): T {
+    if (Array.isArray(value))
+        return value.map(deepClone) as T
+
+    if (value instanceof Date)
+        return new Date(value) as T
+
+    if (value === null || typeof value != 'object')
+        return value
+
+    const copy = Object.create(Object.getPrototypeOf(value))
+
+    for (const [key, item] of Object.entries(value))
+        copy[key] = deepClone(item)
+
+    return copy
+}
+
+const HTML_ESCAPES: { [key: string]: string } = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    '\'': '&#39;'
+}
+
+export function escapeHtml(value: unknown) {
+    return String(value ?? '').replace(/[&<>"']/g, char => HTML_ESCAPES[char])
 }
 
 export function short(value: any, isShort: boolean) {

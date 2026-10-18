@@ -1,12 +1,12 @@
-import CanvasWindow from 'types/CanvasWindow'
-import RenderItemBase from 'types/interfaces/RenderItemBase'
-import { Animations, COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
-import RenderItem from 'types/RenderItem'
-import Point from 'types/Point'
-import { Alignment } from 'types/Alignment'
-import { HorizontalAlignment, VerticalAlignment } from 'static/Enums'
-import RectangleDimensions from 'types/RectangleDimensions'
-import Canvas from 'helpers/Canvas'
+import CanvasWindow from '@/types/CanvasWindow'
+import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
+import RenderItem from '@/types/RenderItem'
+import Point from '@/types/Point'
+import { Alignment } from '@/types/Alignment'
+import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import RectangleDimensions from '@/types/RectangleDimensions'
+import Canvas from '@/helpers/Canvas'
 
 const SCALE_DELTA = 0.01
 const ALPHA_DELTA = 0.5
@@ -27,7 +27,7 @@ type RectangleCanvas = RectangleDimensions & {
 }
 
 export default class RenderItemRectangle
-    implements RenderItemBase {
+    extends RenderItemBase {
     isFill: boolean
 
     isGradient: boolean = false
@@ -86,10 +86,52 @@ export default class RenderItemRectangle
         })
     }
 
+    morphFrom(previous: RenderItemBase, morph: number): boolean {
+        if (!(previous instanceof RenderItemRectangle))
+            return false
+
+        this.from = previous.current(morph)
+        this.fromRadii = previous.currentRadii(morph)
+
+        return true
+    }
+
+    appear(mapY?: (y: number) => number): boolean {
+        const from = this.current()
+
+        if (mapY)
+            from.y = mapY(from.y)
+
+        if (this.collapse.width)
+            from.width = 0
+
+        if (this.collapse.height)
+            from.height = 0
+
+        this.from = from
+
+        return true
+    }
+
+    disappear(morph: number, mapY?: (y: number) => number): boolean {
+        this.from = this.current(morph)
+
+        if (mapY)
+            this.absolute.y = mapY(this.from.y)
+
+        if (this.collapse.width)
+            this.absolute.width = 0
+
+        if (this.collapse.height)
+            this.absolute.height = 0
+
+        return true
+    }
+
     adjust(window: CanvasWindow, morph: number = 1): void {
         const absolute = this.current(morph)
 
-        this.canvas.radii = this.currentRadii(morph)
+        this.canvas.radii = this.currentRadii(morph).map(radius => radius / COORDS_MAX_X * window.width)
 
         this.canvas.x = RenderItem.adjustX(window, absolute.x)
         this.canvas.y = RenderItem.adjustY(window, absolute.y)
@@ -136,7 +178,7 @@ export default class RenderItemRectangle
     }
 
     animate(item: RenderItem, isBackward = false) {
-        const k = item.hoverFactor(isBackward, Animations.hover)
+        const k = item.hoverFactor(isBackward, AnimationTiming.hover)
 
         item.animation.scale = 1 - SCALE_DELTA * k
         item.animation.alpha = 1 - ALPHA_DELTA * k

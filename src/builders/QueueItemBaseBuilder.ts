@@ -1,24 +1,28 @@
-import RenderItem from 'types/RenderItem'
-import ItemData from 'types/ItemData'
+import RenderItem from '@/types/RenderItem'
+import ItemData from '@/types/ItemData'
+import RenderItemBase from '@/types/interfaces/RenderItemBase'
 
-export default class QueueItemBaseBuilder {
+export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemBase> {
+    readonly shape: S
+
     protected current: RenderItem
 
-    constructor() {
-        this.current = new RenderItem()
+    constructor(shape: S) {
+        this.shape = shape
+        this.current = new RenderItem(shape)
     }
 
     dispose(): RenderItem {
         return this.current
     }
 
-    interact(): QueueItemBaseBuilder {
+    interact(): this {
         this.current.isAnimate = true
 
         return this
     }
 
-    init(duration: number, delay: number = 0, fade: boolean = false): QueueItemBaseBuilder {
+    init(duration: number, delay: number = 0, fade: boolean = false): this {
         this.current.animation.init = 0
         this.current.animation.initDuration = duration
         this.current.animation.initDelay = delay
@@ -27,69 +31,69 @@ export default class QueueItemBaseBuilder {
         return this
     }
 
-    appearDelay(delay: number): QueueItemBaseBuilder {
+    appearDelay(delay: number): this {
         this.current.animation.appearDelay = delay
 
         return this
     }
 
-    hoverGroup(group: string): QueueItemBaseBuilder {
+    hoverGroup(group: string): this {
         this.current.hoverGroup = group
 
         return this
     }
 
-    tooltip(template: string): QueueItemBaseBuilder {
+    tooltip(template: string): this {
         this.current.tooltipTemplate = template
 
         return this
     }
 
-    data(data: ItemData | undefined): QueueItemBaseBuilder {
+    data(data: ItemData | undefined): this {
         this.current.data = data ?? null
 
         return this
     }
 
-    color(color: string): QueueItemBaseBuilder {
+    color(color: string): this {
         this.current.color = color
         this.current.activeColor = color
 
         return this
     }
 
-    stroke(color: string): QueueItemBaseBuilder {
+    stroke(color: string): this {
         this.current.stroke = color
         this.current.activeStroke = color
 
         return this
     }
 
-    layer(layer: number) : QueueItemBaseBuilder {
+    layer(layer: number): this {
         this.current.layer = layer
 
         return this
     }
 
-    temp(value: boolean = true) : QueueItemBaseBuilder {
+    temp(value: boolean = true): this {
         this.current.isTemp = value
 
         return this
     }
 
-    fixed(value: boolean = true) : QueueItemBaseBuilder {
+    fixed(value: boolean = true): this {
         this.current.isFixed = value
 
         return this
     }
 
-    key(value: string) : QueueItemBaseBuilder {
+    key(value: string): this {
         this.current.key = value
 
         return this
     }
 
-    ghost(value: boolean = true) : QueueItemBaseBuilder {
+    ghost(value: boolean = true): this {
         this.current.isGhost = value
 
         if (value) {
@@ -101,20 +105,14 @@ export default class QueueItemBaseBuilder {
         return this
     }
 
-    axisValue(value: number) : QueueItemBaseBuilder {
+    axisValue(value: number): this {
         this.current.axisValue = value
 
         return this
     }
 
-    fade(value: boolean) : QueueItemBaseBuilder {
+    fade(value: boolean): this {
         this.current.isFading = value
-
-        return this
-    }
-
-    debug() {
-        this.current.isDebug = true
 
         return this
     }

@@ -1,5 +1,5 @@
-import Value from 'types/base/Value'
-import { ChartType } from 'static/Enums'
+import Value from '@/types/base/Value'
+import { ChartType } from '@/static/Enums'
 
 interface Data {
     type: ChartType

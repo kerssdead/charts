@@ -1,4 +1,4 @@
-import Formatter from '../src/helpers/Formatter'
+import Formatter from '@/helpers/Formatter'
 
 describe('Getting formatted date', () => {
     it('Date', () => {

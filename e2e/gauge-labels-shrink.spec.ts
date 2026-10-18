@@ -4,10 +4,10 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
-import Clip from './utils/Clip'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
+import Clip from '@e2e/utils/Clip'
 
 test('Gauge labels should not be shrunk when width is half of 100%', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)

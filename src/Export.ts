@@ -1,149 +1,124 @@
-import Theme from 'Theme'
-import Canvas from 'helpers/Canvas'
-import { Tag } from 'static/Enums'
+import Theme from '@/Theme'
+import Canvas from '@/helpers/Canvas'
+import { Tag } from '@/static/Enums'
+import ChartItem from '@/types/ChartItem'
+import Decomposition from '@/Decomposition'
 
-class Export {
-    static asPng(canvas: HTMLCanvasElement, title: string, exclude?: DOMRect) {
+const PNG_MARGIN = 4
+
+export default class Export {
+    static asPng(canvas: HTMLCanvasElement, ratio: number, title: string, exclude?: DOMRect) {
         requestAnimationFrame(() => {
-            const ctx = Canvas.getContext(canvas)
+            const { width, height } = canvas
+
+            const source = document.createElement(Tag.Canvas)
+            source.width = width
+            source.height = height
+
+            const ctx = Canvas.getContext(source, true)
+
+            ctx.drawImage(canvas, 0, 0)
 
             if (exclude) {
+                ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
                 ctx.fillStyle = Theme.canvasBackground
                 ctx.fillRect(exclude.x, exclude.y, exclude.width, exclude.height)
             }
 
-            let leftEmpty = 0,
-                rightEmpty = 0
+            const imageData = new Uint32Array(ctx.getImageData(0, 0, width, height).data.buffer)
 
-            const imageData = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer)
+            const isEmptyColumn = (x: number) => {
+                for (let y = 0; y < height; y++)
+                    if (Canvas.isPixelBusy(imageData[x + y * width]))
+                        return false
 
-            let isBusy = false
+                return true
+            }
 
-            for (let i = 0; i < canvas.width; i++) {
-                for (let j = 0; j < canvas.height; j++) {
-                    if (Canvas.isPixelBusy(imageData[i + j * canvas.width])) {
-                        isBusy = true
-                        break
-                    }
-                }
+            let leftEmpty = 0
 
-                if (isBusy)
-                    break
-
+            while (leftEmpty < width && isEmptyColumn(leftEmpty))
                 leftEmpty++
-            }
 
-            isBusy = false
+            let rightEmpty = 0
 
-            for (let i = canvas.width; i >= 0; i--) {
-                for (let j = 0; j < canvas.height; j++) {
-                    if (Canvas.isPixelBusy(imageData[i + j * canvas.width])) {
-                        isBusy = true
-                        break
-                    }
-                }
-
-                if (isBusy)
-                    break
-
+            while (rightEmpty < width - leftEmpty && isEmptyColumn(width - 1 - rightEmpty))
                 rightEmpty++
-            }
 
-            if (leftEmpty > 4)
-                leftEmpty -= 4
-            if (rightEmpty > 4)
-                rightEmpty -= 4
+            let trim = Math.min(leftEmpty, rightEmpty)
 
-            if (leftEmpty > rightEmpty)
-                leftEmpty = rightEmpty
-            if (rightEmpty > leftEmpty)
-                rightEmpty = leftEmpty
+            const margin = Math.round(PNG_MARGIN * ratio)
 
-            let destinationCanvas = document.createElement(Tag.Canvas)
-            destinationCanvas.width = canvas.width - leftEmpty - rightEmpty
-            destinationCanvas.height = canvas.height
+            if (trim > margin)
+                trim -= margin
 
-            const destCtx = Canvas.getContext(destinationCanvas)
+            const destination = document.createElement(Tag.Canvas)
+            destination.width = width - trim * 2
+            destination.height = height
+
+            const destCtx = Canvas.getContext(destination)
 
             destCtx.fillStyle = Theme.background
-            destCtx.fillRect(0, 0, canvas.width, canvas.height)
+            destCtx.fillRect(0, 0, destination.width, destination.height)
 
-            destCtx.drawImage(canvas, -leftEmpty, 0)
+            destCtx.drawImage(source, -trim, 0)
 
-            Export.saveAs((title ?? 'chart') + '.png',
-                destinationCanvas.toDataURL('image/png'))
+            destination.toBlob(blob => {
+                if (blob)
+                    Export.saveAs((title || 'chart') + '.png', blob, { accept: { 'image/png': '.png' } })
+            }, 'image/png')
         })
     }
 
-    static asCsv(table: HTMLElement, title: string) {
-        let rows = table.querySelectorAll('.o-table-header, .o-table-row, .o-table-footer'),
-            csv = []
+    static asCsv(charts: ChartItem[], title: string) {
+        const escape = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"'
 
-        for (let i = 0; i < rows.length; i++) {
-            let row = [],
-                cols = rows[i].querySelectorAll(':scope > div')
+        const blocks = charts.map(chart => {
+            const { headers, values } = Decomposition.getRows(chart)
 
-            for (let j = 0; j < cols.length; j++) {
-                let data = (cols[j].textContent ?? '').trim()
+            const rows = values.map(row => [row.name, ...headers.map(header => Number(row.values.get(header.value) ?? 0))])
 
-                data = data.replace(/"/g, '""')
-                row.push('"' + data + '"')
-            }
+            const totals = headers.map((_, index) => rows.reduce((acc, row) => acc + (row[index + 1] as number), 0))
 
-            csv.push(row.join(','))
-        }
+            return [['', ...headers.map(header => header.display)], ...rows, ['', ...totals]]
+                .map(row => row.map(escape).join(','))
+                .join('\n')
+        })
 
-        Export.saveAs((title ?? 'table') + '.csv',
-            csv.join('\n'),
-            'data:text/csv;charset=utf-8,' + encodeURIComponent(csv.join('\n')),
-            true)
+        const csv = blocks.join('\n\n')
+
+        Export.saveAs((title || 'table') + '.csv', new Blob([csv], { type: 'text/csv;charset=utf-8' }),
+            { accept: { 'text/csv': '.csv' } })
     }
 
-    static saveAs(name: string, dataURL: string, href?: string | undefined, isText?: boolean) {
+    static async saveAs(name: string, blob: Blob, type: FilePickerAcceptType) {
         if (window.showSaveFilePicker != undefined) {
-            const accept = isText
-                           ? { 'text/csv': '.csv' } as FilePickerAcceptType
-                           : { 'image/*': '.png' } as FilePickerAcceptType
+            try {
+                const fileHandle = await window.showSaveFilePicker({
+                    suggestedName: name,
+                    types: [type],
+                    excludeAcceptAllOption: true
+                })
 
-            const options = {
-                suggestedName: name,
-                types: [
-                    {
-                        accept: accept
-                    }
-                ],
-                excludeAcceptAllOption: true
-            } as SaveFilePickerOptions
+                const writableStream = await fileHandle.createWritable()
 
-            function toBlob(dataURI: string) {
-                const byteString = atob(dataURI.split(',')[1]),
-                    mimeString = dataURI.split(',')[0]
-                        .split(':')[1]
-                        .split(';')[0],
-                    buffer = new ArrayBuffer(byteString.length),
-                    imageArray = new Uint8Array(buffer)
-
-                for (let i = 0; i < byteString.length; i++)
-                    imageArray[i] = byteString.charCodeAt(i)
-
-                return new Blob([buffer], { type: mimeString })
+                await writableStream.write(blob)
+                await writableStream.close()
+            } catch (error) {
+                if (!(error instanceof DOMException && error.name == 'AbortError'))
+                    throw error
             }
 
-            window.showSaveFilePicker(options)
-                  .then(fileHandle => {
-                      fileHandle.createWritable()
-                                .then(writableStream => {
-                                    writableStream.write(isText ? dataURL : toBlob(dataURL))
-                                                  .then(() => writableStream.close())
-                                })
-                  })
-        } else {
-            let download = document.createElement(Tag.A)
-            download.href = href ?? dataURL
-            download.download = name
-            download.click()
+            return
         }
+
+        const url = URL.createObjectURL(blob)
+
+        const download = document.createElement(Tag.A)
+        download.href = url
+        download.download = name
+        download.click()
+
+        setTimeout(() => URL.revokeObjectURL(url))
     }
 }
-
-export default Export

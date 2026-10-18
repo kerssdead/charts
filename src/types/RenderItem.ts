@@ -1,32 +1,18 @@
-import { COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from 'static/constants/Index'
-import CanvasWindow from 'types/CanvasWindow'
-import RenderItemLine from 'types/RenderItemLine'
-import RenderItemRectangle from 'types/RenderItemRectangle'
-import RenderItemArc from 'types/RenderItemArc'
-import RenderItemGroup from 'types/RenderItemGroup'
-import RenderItemBase from 'types/interfaces/RenderItemBase'
-import Point from 'types/Point'
-import { Renderer } from 'renderer/Renderer'
-import RenderItemText from 'types/RenderItemText'
-import AnimationData from 'AnimationData'
-import ItemData from 'types/ItemData'
-import Animations from 'Animations'
-import HoverProgress from 'types/HoverProgress'
-import Panel from 'types/Panel'
-
-type Bounds = {
-    left: number
-    top: number
-    right: number
-    bottom: number
-}
+import { COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from '@/static/constants/Index'
+import CanvasWindow from '@/types/CanvasWindow'
+import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import Point from '@/types/Point'
+import { Renderer } from '@/renderer/Renderer'
+import AnimationData from '@/AnimationData'
+import ItemData from '@/types/ItemData'
+import Animations from '@/Animations'
+import HoverProgress from '@/types/HoverProgress'
+import Panel from '@/types/Panel'
 
 export default class RenderItem {
     isAnimate: boolean = false
 
     isTemp: boolean = false
-
-    isDebug: boolean = false
 
     isContextMenu: boolean = false
 
@@ -76,20 +62,12 @@ export default class RenderItem {
 
     onClick?: () => void
 
-    line: RenderItemLine
-
-    rect: RenderItemRectangle
-
-    arc: RenderItemArc
-
-    text: RenderItemText
-
-    group: RenderItemGroup
+    readonly shape: RenderItemBase
 
     private readonly hover = new HoverProgress()
 
-    private items(): RenderItemBase[] {
-        return [this.line, this.rect, this.arc, this.text, this.group]
+    constructor(shape: RenderItemBase) {
+        this.shape = shape
     }
 
     render(ctx: CanvasRenderingContext2D, window: CanvasWindow) {
@@ -122,11 +100,7 @@ export default class RenderItem {
         ctx.fillStyle = this.activeColor
         ctx.strokeStyle = this.activeStroke ?? this.activeColor
 
-        for (const item of this.items()) {
-            item?.render(ctx, this)
-            if (item)
-                return
-        }
+        this.shape.render(ctx, this)
     }
 
     animate(point: Point, hoveredGroups: Set<string> = new Set()) {
@@ -134,12 +108,7 @@ export default class RenderItem {
             return
         }
 
-        for (const item of this.items()) {
-            if (item) {
-                this.continueAnimate(point, item, hoveredGroups)
-                return
-            }
-        }
+        this.continueAnimate(point, hoveredGroups)
     }
 
     tooltip(point: Point) {
@@ -151,16 +120,7 @@ export default class RenderItem {
     }
 
     contextMenu(point: Point) {
-        if (!this.hasContextMenu && !this.group) {
-            return
-        }
-
-        if (this.isInitializing) {
-            return
-        }
-
-        if (this.group) {
-            this.group.contextMenu(point)
+        if (!this.hasContextMenu || this.isInitializing) {
             return
         }
 
@@ -168,31 +128,11 @@ export default class RenderItem {
     }
 
     in(point: Point) {
-        for (const item of this.items()) {
-            if (item) {
-                return item.isMouseOver(point)
-            }
-        }
-
-        return false
+        return this.shape.isMouseOver(point)
     }
 
     morphFrom(previous: RenderItem, duration: number) {
-        const morph = previous.animation.morph
-
-        if (this.rect && previous.rect) {
-            this.rect.from = previous.rect.current(morph)
-            this.rect.fromRadii = previous.rect.currentRadii(morph)
-        }
-        else if (this.line && previous.line)
-            this.line.from = previous.line.current(morph)
-        else if (this.text && previous.text) {
-            this.text.from = previous.text.current(morph)
-            this.text.fromAngle = previous.text.orbit ? previous.text.currentAngle(morph) : null
-        }
-        else if (this.arc && previous.arc)
-            this.arc.from = previous.arc.current(morph)
-        else
+        if (!this.shape.morphFrom(previous.shape, previous.animation.morph))
             return
 
         this.startMorph(previous.isGhost ? 'in' : this.isGhost ? 'out' : null, duration)
@@ -208,91 +148,38 @@ export default class RenderItem {
     }
 
     appear(duration: number, mapY?: (y: number) => number) {
-        if (!this.rect)
+        if (!this.shape.appear(mapY))
             return this.enter(duration)
 
-        const from = this.rect.current()
-
-        if (mapY)
-            from.y = mapY(from.y)
-
-        if (this.rect.collapse.width)
-            from.width = 0
-
-        if (this.rect.collapse.height)
-            from.height = 0
-
-        this.rect.from = from
-
-        this.startMorph('in', duration, this.animation.appearDelay)
+        this.morphIn(duration, this.animation.appearDelay)
     }
 
     disappear(duration: number, mapY?: (y: number) => number) {
-        if (!this.rect)
+        if (!this.shape.disappear(this.animation.morph, mapY))
             return this.leave(duration)
 
-        this.rect.from = this.rect.current(this.animation.morph)
-
-        if (mapY)
-            this.rect.absolute.y = mapY(this.rect.from.y)
-
-        if (this.rect.collapse.width)
-            this.rect.absolute.width = 0
-
-        if (this.rect.collapse.height)
-            this.rect.absolute.height = 0
-
-        this.animation.removeAfterMorph = true
-
-        this.startMorph('out', duration)
-    }
-
-    appearFromAngle(angle: number, duration: number) {
-        if (!this.arc)
-            return this.enter(duration)
-
-        this.arc.from = Object.assign(this.arc.current(), { startAngle: angle, endAngle: angle })
-
-        this.startMorph('in', duration)
-    }
-
-    disappearToAngle(angle: number, duration: number) {
-        if (!this.arc)
-            return this.leave(duration)
-
-        this.arc.from = this.arc.current(this.animation.morph)
-        this.arc.startAngle = angle
-        this.arc.endAngle = angle
-
-        this.animation.removeAfterMorph = true
-
-        this.startMorph('out', duration)
+        this.morphOut(duration)
     }
 
     enterFromAxis(y: number, duration: number) {
-        if (this.text)
-            this.text.from = { x: this.text.absolute.x, y }
-        else if (this.line)
-            this.line.from = this.line.absolute.map(stop => ({ x: stop.x, y }))
-        else
+        if (!this.shape.enterFromAxis(y))
             return this.enter(duration)
 
-        this.startMorph('in', duration)
+        this.morphIn(duration)
     }
 
     leaveToAxis(y: number, duration: number) {
-        const morph = this.animation.morph
-
-        if (this.text) {
-            this.text.from = this.text.current(morph)
-            this.text.absolute.y = y
-        } else if (this.line) {
-            this.line.from = this.line.current(morph)
-            this.line.absolute = this.line.absolute.map(stop => ({ x: stop.x, y }))
-        } else {
+        if (!this.shape.leaveToAxis(y, this.animation.morph))
             return this.leave(duration)
-        }
 
+        this.morphOut(duration)
+    }
+
+    morphIn(duration: number, delay: number = 0) {
+        this.startMorph('in', duration, delay)
+    }
+
+    morphOut(duration: number) {
         this.animation.removeAfterMorph = true
 
         this.startMorph('out', duration)
@@ -324,15 +211,11 @@ export default class RenderItem {
     }
 
     private adjust(window: CanvasWindow): void {
-        for (const item of this.items()) {
-            item?.adjust(window, this.animation.morph)
-            if (item)
-                return
-        }
+        this.shape.adjust(window, this.animation.morph)
     }
 
     private isOnCanvas(canvas: HTMLCanvasElement): boolean {
-        const bounds = this.getBounds()
+        const bounds = this.shape.getBounds()
 
         if (!bounds) {
             return true
@@ -340,19 +223,8 @@ export default class RenderItem {
 
         const margin = DEFAULT_LINE_WIDTH
 
-        return bounds.right >= -margin && bounds.left <= canvas.width + margin
-               && bounds.bottom >= -margin && bounds.top <= canvas.height + margin
-    }
-
-    private getBounds(): Bounds | null {
-        if (this.line)
-            return this.line.getBounds()
-        else if (this.rect)
-            return this.rect.getBounds()
-        else if (this.arc)
-            return this.arc.getBounds()
-        else
-            return null
+        return bounds.right >= -margin && bounds.left <= canvas.clientWidth + margin
+               && bounds.bottom >= -margin && bounds.top <= canvas.clientHeight + margin
     }
 
     private updateInit() {
@@ -421,15 +293,15 @@ export default class RenderItem {
             animation.visibility = 1
     }
 
-    private continueAnimate(point: Point, item: RenderItemBase, hoveredGroups: Set<string>) {
+    private continueAnimate(point: Point, hoveredGroups: Set<string>) {
         const isOver = this.hoverGroup == null
-                       ? item.isMouseOver(point)
+                       ? this.shape.isMouseOver(point)
                        : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
 
         if (!isOver && this.hover.isIdle)
             return
 
-        item.animate(this, !isOver, point)
+        this.shape.animate(this, !isOver, point)
     }
 
     static adjustX(window: CanvasWindow, x: number) {

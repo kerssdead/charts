@@ -1,4 +1,4 @@
-import { HorizontalAlignment, VerticalAlignment } from '../static/Enums'
+import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 
 export class Alignment {
     x: HorizontalAlignment = HorizontalAlignment.Center

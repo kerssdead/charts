@@ -1,17 +1,18 @@
-import PieData from "types/data/PieData"
-import QueueItemsBuilder from "builders/QueueItemsBuilder"
-import Sector from "types/Sector"
-import { Animations, COORDS_MAX_X, COORDS_MAX_Y } from "static/constants/Index"
-import Point from "types/Point"
-import TextResources from "static/TextResources"
-import { boxEdgeDistance, stringWidth } from "Helper"
-import Formatter from "helpers/Formatter"
-import ChartSettings from "types/ChartSettings"
-import { PlotAxisType, TextAlignment } from "static/Enums"
+import PieData from '@/types/data/PieData'
+import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import Sector from '@/types/Sector'
+import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
+import Point from '@/types/Point'
+import TextResources from '@/static/TextResources'
+import { boxEdgeDistance, stringWidth, sum } from '@/Helper'
+import Formatter from '@/helpers/Formatter'
+import ChartSettings from '@/types/ChartSettings'
+import Units from '@/helpers/Units'
+import { PlotAxisType, TextAlignment } from '@/static/Enums'
 
-const LEADER_GAP = 4
+const LEADER_GAP = 20
 
-const LEADER_LENGTH = 12
+const LEADER_LENGTH = 60
 
 const LABEL_SPACING = 2
 
@@ -25,9 +26,9 @@ const LABEL_SPACE = 36
 
 const LABEL_FONT = 14
 
-const SECTOR_GAP = 4
+const SECTOR_GAP = 20
 
-const SECTOR_CORNER_RADIUS = 6
+const SECTOR_CORNER_RADIUS = 30
 
 const MIN_SECTOR_WIDTH = SECTOR_GAP + SECTOR_CORNER_RADIUS * 2
 
@@ -61,7 +62,7 @@ type Label = {
 export default class PieProcess {
     private data: PieData
 
-    private readonly pixel: Point
+    private readonly units: Units
 
     private readonly enableOther: boolean
 
@@ -73,14 +74,14 @@ export default class PieProcess {
 
     constructor(data: PieData, pixel: Point, settings: ChartSettings) {
         this.data = data
-        this.pixel = pixel
+        this.units = new Units(pixel)
         this.enableOther = settings.enableOther
         this.valuePostfix = settings.valuePostfix
     }
 
     private get radius() {
-        const width = COORDS_MAX_X / this.pixel.x
-        const height = COORDS_MAX_Y / this.pixel.y
+        const width = this.units.toPxX(COORDS_MAX_X)
+        const height = this.units.toPxY(COORDS_MAX_Y)
 
         return Math.max(Math.min(width / 5, height / 2 - LABEL_SPACE), 0)
     }
@@ -90,11 +91,11 @@ export default class PieProcess {
     }
 
     private get labelDistance() {
-        return this.radius + LEADER_GAP + LEADER_LENGTH + LEADER_GAP
+        return this.radius + this.units.toPxX(LEADER_GAP + LEADER_LENGTH + LEADER_GAP)
     }
 
     getData() {
-        this.sum = this.data.values.filter(s => !s.disabled).sumByField(s => s.value)
+        this.sum = sum(this.data.values.filter(s => !s.disabled), s => s.value)
         this.scale = this.sum == 0 ? 0 : FULL_ANGLE / this.sum
 
         const slices = this.getSlices()
@@ -123,8 +124,8 @@ export default class PieProcess {
         const result: Label[] = slices.map(slice => ({ angle: slice.startAngle + slice.angle / 2, isVisible: true }))
 
         const center = {
-            x: COORDS_MAX_X / 2 / this.pixel.x,
-            y: COORDS_MAX_Y / 2 / this.pixel.y
+            x: this.units.toPxX(COORDS_MAX_X / 2),
+            y: this.units.toPxY(COORDS_MAX_Y / 2)
         }
 
         const distance = this.labelDistance
@@ -225,11 +226,11 @@ export default class PieProcess {
 
         return (items: QueueItemsBuilder) => {
             items.text(title)
-                 .position(COORDS_MAX_X / 2 + fontSize / 2 * this.pixel.x, COORDS_MAX_Y / 2)
+                 .position(COORDS_MAX_X / 2 + this.units.x(fontSize / 2), COORDS_MAX_Y / 2)
                  .size(fontSize)
                  .align(TextAlignment.Center)
                  .key('inner-title')
-                 .init(Animations.pieInit, 0, true)
+                 .init(AnimationTiming.pieInit, 0, true)
         }
     }
 
@@ -241,7 +242,7 @@ export default class PieProcess {
             return items
 
         const tiny = this.data.values.filter(sector => {
-            return !sector.disabled && sector.value * this.scale * this.radius < MIN_SECTOR_WIDTH
+            return !sector.disabled && sector.value * this.scale * this.radius < this.units.toPxX(MIN_SECTOR_WIDTH)
         })
 
         if (tiny.length < 2)
@@ -249,7 +250,7 @@ export default class PieProcess {
 
         const other = new Sector({
             label: TextResources.other,
-            value: tiny.sumByField(s => s.value),
+            value: sum(tiny, s => s.value),
             color: OTHER_COLOR
         })
 
@@ -268,13 +269,13 @@ export default class PieProcess {
             y: COORDS_MAX_Y / 2
         }
 
-        const radius = this.radius * this.pixel.x
+        const radius = this.units.x(this.radius)
         const innerRadius = radius * this.innerRatio
 
         const orbit = {
             ...center,
-            radiusX: this.labelDistance * this.pixel.x,
-            radiusY: this.labelDistance * this.pixel.y
+            radiusX: this.units.x(this.labelDistance),
+            radiusY: this.units.y(this.labelDistance)
         }
 
         return (items: QueueItemsBuilder) => {
@@ -284,21 +285,19 @@ export default class PieProcess {
                 .endAngle(endAngle)
                 .radius(radius)
                 .innerRadius(innerRadius)
-                .gap(SECTOR_GAP * this.pixel.x)
-                .cornerRadius(SECTOR_CORNER_RADIUS * this.pixel.x)
+                .gap(SECTOR_GAP)
+                .cornerRadius(SECTOR_CORNER_RADIUS)
                 .grow(START_ANGLE)
-                .leader(LEADER_GAP * this.pixel.x, LEADER_LENGTH * this.pixel.x, labelOffset)
+                .leader(LEADER_GAP, LEADER_LENGTH, labelOffset)
                 .fill()
                 .gradient()
                 .color(sector.color)
                 .key(`sector-${ key }`)
-                .init(Animations.pieInit)
+                .init(AnimationTiming.pieInit)
                 .interact()
                 .tooltip(this.getTooltip(sector, children))
                 .data(sector.data)
                 .contextMenu()
-
-            const sectorItem = arc.dispose()
 
             if (sector.disabled)
                 arc.ghost()
@@ -309,11 +308,11 @@ export default class PieProcess {
             const text = items.text(sector.label)
                 .orbit(label.angle, orbit)
                 .size(LABEL_FONT)
-                .follow(sectorItem.arc)
+                .follow(arc.shape)
                 .key(`sector-label-${ key }`)
-                .init(Animations.pieLabelInit, Animations.pieInit, true)
+                .init(AnimationTiming.pieLabelInit, AnimationTiming.pieInit, true)
 
-            sectorItem.arc.leaderLabel = text.dispose()
+            arc.shape.leaderLabel = text.dispose()
 
             if (sector.disabled)
                 text.ghost()

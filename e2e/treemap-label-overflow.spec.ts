@@ -4,10 +4,10 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
-import Clip from './utils/Clip'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
+import Clip from '@e2e/utils/Clip'
 
 test('Tree Map label with spaces should not overflow cell', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)

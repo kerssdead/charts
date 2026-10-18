@@ -1,4 +1,4 @@
-export class Animations {
+export class AnimationTiming {
     static legend = 500
 
     static rebuild = 500

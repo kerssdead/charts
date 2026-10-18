@@ -1,8 +1,8 @@
 import { expect, Page } from '@playwright/test'
-import Selectors from './Selectors'
-import { Screenshot } from './Screenshot'
-import Clip from './Clip'
-import Settings from './Settings'
+import Selectors from '@e2e/utils/Selectors'
+import { Screenshot } from '@e2e/utils/Screenshot'
+import Clip from '@e2e/utils/Clip'
+import Settings from '@e2e/utils/Settings'
 
 type BrowserName = 'chromium' | 'firefox' | 'webkit'
 
@@ -51,7 +51,7 @@ class Utils {
         Settings.initialize(page)
 
         page.addListener(
-            "pageerror",
+            'pageerror',
             error => this.errors.push(error)
         )
 

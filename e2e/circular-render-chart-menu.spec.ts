@@ -4,10 +4,10 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
-import Clip from './utils/Clip'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
+import Clip from '@e2e/utils/Clip'
 
 test('Chart menu for circular chart type should be rendered correct', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
@@ -15,7 +15,7 @@ test('Chart menu for circular chart type should be rendered correct', async ({ p
     await Settings.enableInitAnimation(false)
 
     await Settings.valuesCount(2)
-    await Settings.chartType(ChartType.Circular)
+    await Settings.chartType(ChartType.Pie)
 
     await Utils.scrollToCanvas()
     await Utils.wait(50)

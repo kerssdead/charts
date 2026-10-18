@@ -44,14 +44,6 @@ export enum LegendPlace {
     Right
 }
 
-export enum LineType {
-    Solid,
-
-    Dash,
-
-    Dotted
-}
-
 export enum PlotAxisType {
     Number,
 
@@ -90,16 +82,6 @@ export enum Icon {
     ThreeDots = '⋯',
 
     Close = '×'
-}
-
-export enum RenderGroupDirection {
-    Row,
-
-    Column,
-
-    RowReversed,
-
-    ColumnReversed
 }
 
 export enum TextAlignment {

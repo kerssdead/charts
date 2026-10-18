@@ -1,10 +1,10 @@
-import CanvasWindow from 'types/CanvasWindow'
-import RenderItemBase from 'types/interfaces/RenderItemBase'
-import RenderItem from 'types/RenderItem'
-import { Animations, COORDS_MAX_X } from 'static/constants/Index'
-import Point from 'types/Point'
-import Theme from 'Theme'
-import Canvas from 'helpers/Canvas'
+import CanvasWindow from '@/types/CanvasWindow'
+import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import RenderItem from '@/types/RenderItem'
+import { AnimationTiming, COORDS_MAX_X } from '@/static/constants/Index'
+import Point from '@/types/Point'
+import Theme from '@/Theme'
+import Canvas from '@/helpers/Canvas'
 
 const FULL_CIRCLE_EPSILON = 1e-6
 
@@ -36,7 +36,8 @@ type Shape = {
     middle: number
 }
 
-export default class RenderItemArc implements RenderItemBase {
+export default class RenderItemArc
+    extends RenderItemBase {
     from: ArcGeometry | null = null
 
     current(morph: number = 1): ArcGeometry {
@@ -64,6 +65,25 @@ export default class RenderItemArc implements RenderItemBase {
             startAngle: lerp(this.from.startAngle, result.startAngle),
             endAngle: lerp(this.from.endAngle, result.endAngle)
         }
+    }
+
+    morphFrom(previous: RenderItemBase, morph: number): boolean {
+        if (!(previous instanceof RenderItemArc))
+            return false
+
+        this.from = previous.current(morph)
+
+        return true
+    }
+
+    appearFromAngle(angle: number) {
+        this.from = Object.assign(this.current(), { startAngle: angle, endAngle: angle })
+    }
+
+    disappearToAngle(angle: number, morph: number) {
+        this.from = this.current(morph)
+        this.startAngle = angle
+        this.endAngle = angle
     }
 
     adjust(window: CanvasWindow, morph: number = 1): void {
@@ -248,7 +268,7 @@ export default class RenderItemArc implements RenderItemBase {
     }
 
     animate(item: RenderItem, isBackward: boolean): void {
-        this.hover = item.hoverFactor(isBackward, Animations.hover)
+        this.hover = item.hoverFactor(isBackward, AnimationTiming.hover)
     }
 
     isMouseOver(point: Point): boolean {

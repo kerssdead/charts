@@ -1,37 +1,50 @@
+const OFFSET = .23
+
+const X1 = 1 - OFFSET, Y1 = OFFSET, X2 = OFFSET, Y2 = 1 - OFFSET
+
+const EPSILON = 1e-6
+
+const NEWTON_ITERATIONS = 8
+
+const bezier = (t: number, p1: number, p2: number) => 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t
+
+const slope = (t: number, p1: number, p2: number) => 3 * (1 - t) * (1 - t) * p1 + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (1 - p2)
+
 class Animations {
-    static transitionCurve: Map<number, number> = new Map()
+    static getTransition(value: number): number {
+        if (value <= 0)
+            return 0
 
-    static initializeTransitions() {
-        if (Animations.transitionCurve.size > 0)
-            return
+        if (value >= 1)
+            return 1
 
-        const valuesCount = 22820,
-            offset = .23,
-            p0 = { x: 0, y: 0 },
-            p1 = { x: 1 - offset, y: offset },
-            p2 = { x: offset, y: 1 - offset },
-            p3 = { x: 1, y: 1 }
-
-        for (let i = 0; i < valuesCount; i++) {
-            const t = (i + 1) / valuesCount
-
-            let x = Math.pow(1 - t, 3) * p0.x
-                    + 3 * Math.pow(1 - t, 2) * p1.x * t
-                    + 3 * (1 - t) * Math.pow(t, 2) * p2.x
-                    + Math.pow(t, 3) * p3.x,
-                y = Math.pow(1 - t, 3) * p0.y
-                    + 3 * Math.pow(1 - t, 2) * p1.y * t
-                    + 3 * (1 - t) * Math.pow(t, 2) * p2.y
-                    + Math.pow(t, 3) * p3.y
-
-            Animations.transitionCurve.set(+x.toFixed(4), y)
-        }
-
-        Animations.transitionCurve.set(0, 0)
+        return bezier(Animations.solve(value), Y1, Y2)
     }
 
-    static getTransition(value: number): number {
-        return Animations.transitionCurve.get(+value.toFixed(4)) ?? 0
+    private static solve(x: number): number {
+        let t = x
+
+        for (let i = 0; i < NEWTON_ITERATIONS; i++) {
+            const error = bezier(t, X1, X2) - x
+
+            if (Math.abs(error) < EPSILON)
+                return t
+
+            t = Math.min(Math.max(t - error / slope(t, X1, X2), 0), 1)
+        }
+
+        let low = 0, high = 1
+
+        while (high - low > EPSILON) {
+            t = (low + high) / 2
+
+            if (bezier(t, X1, X2) < x)
+                low = t
+            else
+                high = t
+        }
+
+        return (low + high) / 2
     }
 }
 

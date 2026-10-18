@@ -1,4 +1,4 @@
-import * as Helper from 'Helper'
+import * as Helper from '@/Helper'
 
 describe('Calculating rounded values', () => {
     it('Should be 5 in (w/o zero value) and 5 out values with 200 diff', () => {

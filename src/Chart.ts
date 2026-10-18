@@ -1,25 +1,43 @@
-import Animations from 'Animations'
-import Canvas from 'helpers/Canvas'
-import ChartSettings from 'types/ChartSettings'
-import Theme from 'Theme'
-import { ChartType } from 'static/Enums'
-import { Renderer } from 'renderer/Renderer'
-import { adjustColor, randomColor } from 'Helper'
-import Legend from 'Legend'
-import Value from 'types/base/Value'
+import Canvas from '@/helpers/Canvas'
+import ChartSettings from '@/types/ChartSettings'
+import Theme from '@/Theme'
+import { ChartType, Events } from '@/static/Enums'
+import { Renderer } from '@/renderer/Renderer'
+import { adjustColor, deepClone, randomColor } from '@/Helper'
+import Legend from '@/Legend'
+import Value from '@/types/base/Value'
+import Debug from '@/Debug'
 
 const BASE_COLOR_RANGE = 67
+
+// todo: add public api
 
 export default class Chart {
     private isDestroyed: boolean = false
 
+    private isSuspended: boolean = false
+
+    private suspendedTheme: number = 0
+
+    private source: ChartSettings
+
     private settings: ChartSettings
+
+    private readonly fallbackColor = randomColor()
 
     private readonly canvas: HTMLCanvasElement
 
     private readonly renderer: Renderer
 
     private readonly observer: ResizeObserver
+
+    private readonly ratioWatcher = new AbortController()
+
+    private width: number = 0
+
+    private height: number = 0
+
+    private ratio: number = 0
 
     private readonly onThemeChange = () => {
         this.renderer.apply(this.settings)
@@ -29,15 +47,21 @@ export default class Chart {
         this.canvas = Canvas.new()
         element.appendChild(this.canvas)
 
-        this.settings = Chart.normalize(settings)
+        this.source = settings
+        this.settings = Chart.normalize(settings, this.fallbackColor)
 
         Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
-        Animations.initializeTransitions()
 
         this.renderer = new Renderer(this.canvas)
         this.renderer.apply(this.settings)
 
+        Debug.log(this.source, this.settings, this.canvas)
+
         this.observer = this.createObserver(element)
+        this.watchRatio()
+
+        if (!this.canvas.isConnected)
+            this.suspend()
     }
 
     render() {
@@ -54,6 +78,7 @@ export default class Chart {
         this.isDestroyed = true
 
         this.observer.disconnect()
+        this.ratioWatcher.abort()
         this.renderer.destroy()
 
         Theme.detach(this.onThemeChange)
@@ -64,10 +89,13 @@ export default class Chart {
         if (this.isDestroyed)
             return
 
-        this.settings = Chart.normalize(settings)
+        this.source = settings
+        this.settings = Chart.normalize(settings, this.fallbackColor)
 
         Theme.update(this.settings.isDarkThemeFunction)
         this.renderer.apply(this.settings)
+
+        Debug.log(this.source, this.settings, this.canvas)
     }
 
     private resize(width: number, height: number) {
@@ -77,24 +105,40 @@ export default class Chart {
         if (width == 0 || height == 0)
             return
 
-        if (this.canvas.width == width && this.canvas.height == height)
+        const ratio = window.devicePixelRatio || 1
+
+        if (this.width == width && this.height == height && this.ratio == ratio)
             return
 
-        this.canvas.width = width
-        this.canvas.height = height
+        this.width = width
+        this.height = height
+        this.ratio = ratio
 
-        this.renderer.resize(width, height)
+        this.canvas.width = Math.round(width * ratio)
+        this.canvas.height = Math.round(height * ratio)
+        this.canvas.style.width = `${ width }px`
+        this.canvas.style.height = `${ height }px`
+
+        this.renderer.resize(width, height, ratio)
         this.renderer.render()
+    }
+
+    private watchRatio() {
+        matchMedia(`(resolution: ${ window.devicePixelRatio }dppx)`).addEventListener(Events.Change, () => {
+            this.resize(this.width, this.height)
+            this.watchRatio()
+        }, { once: true, signal: this.ratioWatcher.signal })
     }
 
     private createObserver(node: HTMLElement) {
         const observer = new ResizeObserver(entries => {
             if (!this.canvas.isConnected) {
-                if (this.canvas.width > 0)
-                    this.destroy()
+                this.suspend()
 
                 return
             }
+
+            this.resume()
 
             const { width, height } = entries[0].contentRect
 
@@ -106,14 +150,40 @@ export default class Chart {
         return observer
     }
 
-    private static normalize(settings: ChartSettings): ChartSettings {
+    private suspend() {
+        if (this.isSuspended || this.isDestroyed)
+            return
+
+        this.isSuspended = true
+        this.suspendedTheme = Theme.currentTheme
+
+        Theme.detach(this.onThemeChange)
+        this.renderer.suspend()
+    }
+
+    private resume() {
+        if (!this.isSuspended || this.isDestroyed)
+            return
+
+        this.isSuspended = false
+
+        Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
+        this.renderer.resume()
+
+        if (Theme.currentTheme != this.suspendedTheme)
+            this.onThemeChange()
+    }
+
+    private static normalize(source: ChartSettings, fallbackColor: string): ChartSettings {
+        let settings = deepClone(source)
+
         const charts = settings.charts?.length
                        ? settings.charts.map(chart => ({ ...chart, type: chart.type ?? ChartType.Plot }))
                        : [{ type: settings.type, data: settings.data }]
 
         settings = { ...settings, charts }
 
-        Chart.applyBaseColor(settings)
+        Chart.applyBaseColor(settings, fallbackColor)
 
         return {
             ...settings,
@@ -122,7 +192,7 @@ export default class Chart {
         }
     }
 
-    private static applyBaseColor(settings: ChartSettings) {
+    private static applyBaseColor(settings: ChartSettings, fallbackColor: string) {
         const isShared = settings.charts.length > 1
         const groups = new Map<string | Value, Value[]>()
 
@@ -134,7 +204,7 @@ export default class Chart {
             }
         }
 
-        const needsColor = (value: Value) => !value.color || (!!settings.baseColor && !!value.isColorGenerated)
+        const needsColor = (value: Value) => !value.color
 
         const uncolored = Array.from(groups.values()).filter(values => values.every(needsColor))
 
@@ -149,16 +219,14 @@ export default class Chart {
         if (uncolored.length == 0)
             return
 
-        const base = settings.baseColor || randomColor()
+        const base = settings.baseColor || fallbackColor
 
         uncolored.forEach((values, index) => {
             const ratio = uncolored.length == 1 ? .5 : index / (uncolored.length - 1)
             const color = adjustColor(base, Math.round((ratio * 2 - 1) * BASE_COLOR_RANGE))
 
-            for (const value of values) {
+            for (const value of values)
                 value.color = color
-                value.isColorGenerated = true
-            }
         })
     }
 }

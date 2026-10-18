@@ -1,4 +1,4 @@
-import PieData from '../src/types/data/PieData'
+import PieData from '@/types/data/PieData'
 
 describe('Getting circular rows for decomposition', () => {
     it('Should has 3 rows', () => {

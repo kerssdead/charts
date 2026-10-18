@@ -1,13 +1,14 @@
-import Queue from 'render/Queue'
-import PlotProcess from 'render/PlotProcess'
-import RenderItem from 'types/RenderItem'
-import Panel from 'types/Panel'
+import Queue from '@/render/Queue'
+import PlotProcess from '@/render/PlotProcess'
+import RenderItem from '@/types/RenderItem'
+import RenderItemArc from '@/types/RenderItemArc'
+import Panel from '@/types/Panel'
 
 export default class Transition {
     static snapshot(queue: Queue): Map<string, RenderItem> {
         const previous = new Map<string, RenderItem>()
 
-        for (const item of queue.queue)
+        for (const item of queue.items)
             if (item.key != null && !item.animation.isLeaving && !item.animation.removeAfterMorph)
                 previous.set(item.key, item)
 
@@ -35,7 +36,7 @@ export default class Transition {
 
         const appearedArcs: RenderItem[] = []
 
-        for (const item of queue.queue) {
+        for (const item of queue.items) {
             if (item.key == null)
                 continue
 
@@ -55,7 +56,7 @@ export default class Transition {
                 item.morphFrom(old, duration)
             else if (item.axisValue != null && verticalPrevious)
                 item.enterFromAxis(verticalPrevious.getAxisY(item.axisValue), duration)
-            else if (item.arc && !item.isGhost)
+            else if (Transition.isArc(item) && !item.isGhost)
                 appearedArcs.push(item)
             else if (!item.isGhost)
                 item.appear(duration, mapY(verticalPrevious, vertical(panels, item)))
@@ -66,7 +67,7 @@ export default class Transition {
         Transition.animateArcs(queue, appearedArcs, removed, matches, duration)
 
         for (const item of removed) {
-            if (item.isGhost || item.arc)
+            if (item.isGhost || Transition.isArc(item))
                 continue
 
             const verticalNext = vertical(panels, item)
@@ -76,7 +77,7 @@ export default class Transition {
             else
                 item.disappear(duration, mapY(verticalNext, vertical(previousPanels, item)))
 
-            queue.queue.push(item)
+            queue.add([item])
         }
     }
 
@@ -87,8 +88,10 @@ export default class Transition {
                                duration: number) {
         const epsilon = 1e-9
 
-        const newArcs = queue.queue.filter(item => {
-            return item.arc != null
+        const arc = (item: RenderItem) => item.shape as RenderItemArc
+
+        const newArcs = queue.items.filter(item => {
+            return Transition.isArc(item)
         })
         const newByOld = new Map<RenderItem, RenderItem>()
 
@@ -96,7 +99,7 @@ export default class Transition {
             newByOld.set(old, item)
 
         const oldArcs = [...matches.values(), ...removed].filter(item => {
-            return item.arc != null
+            return Transition.isArc(item)
         })
 
         const previousEnd = (item: RenderItem, visited: Set<RenderItem>): number => {
@@ -105,7 +108,7 @@ export default class Transition {
             const before = newArcs.filter(other => {
                 return !visited.has(other)
                        && Transition.isSamePanel(other, item)
-                       && Math.abs(other.arc.endAngle - item.arc.startAngle) < epsilon
+                       && Math.abs(arc(other).endAngle - arc(item).startAngle) < epsilon
             })
 
             const matched = before.find(other => {
@@ -115,23 +118,23 @@ export default class Transition {
             if (matched) {
                 const old = matches.get(matched)!
 
-                return old.arc.current(old.animation.morph).endAngle
+                return arc(old).current(old.animation.morph).endAngle
             }
 
             return before.length > 0
                    ? previousEnd(before[0], visited)
-                   : item.arc.startAngle
+                   : arc(item).startAngle
         }
 
         const nextEnd = (item: RenderItem, visited: Set<RenderItem>): number => {
             visited.add(item)
 
-            const start = item.arc.current(item.animation.morph).startAngle
+            const start = arc(item).current(item.animation.morph).startAngle
 
             const before = oldArcs.filter(other => {
                 return !visited.has(other)
                        && Transition.isSamePanel(other, item)
-                       && Math.abs(other.arc.current(other.animation.morph).endAngle - start) < epsilon
+                       && Math.abs(arc(other).current(other.animation.morph).endAngle - start) < epsilon
             })
 
             const matched = before.find(other => {
@@ -139,7 +142,7 @@ export default class Transition {
             })
 
             if (matched)
-                return newByOld.get(matched)!.arc.endAngle
+                return arc(newByOld.get(matched)!).endAngle
 
             return before.length > 0
                    ? nextEnd(before[0], visited)
@@ -150,21 +153,27 @@ export default class Transition {
             return previousEnd(item, new Set())
         })
         const removeAngles = removed.map(item => {
-            return item.arc && !item.isGhost ? nextEnd(item, new Set()) : 0
+            return Transition.isArc(item) && !item.isGhost ? nextEnd(item, new Set()) : 0
         })
 
         appeared.forEach((item, i) => {
-            item.appearFromAngle(appearAngles[i], duration)
+            arc(item).appearFromAngle(appearAngles[i])
+            item.morphIn(duration)
         })
 
         removed.forEach((item, i) => {
-            if (!item.arc || item.isGhost)
+            if (!Transition.isArc(item) || item.isGhost)
                 return
 
-            item.disappearToAngle(removeAngles[i], duration)
+            arc(item).disappearToAngle(removeAngles[i], item.animation.morph)
+            item.morphOut(duration)
 
-            queue.queue.push(item)
+            queue.add([item])
         })
+    }
+
+    private static isArc(item: RenderItem) {
+        return item.shape instanceof RenderItemArc
     }
 
     private static isSamePanel(a: RenderItem, b: RenderItem) {

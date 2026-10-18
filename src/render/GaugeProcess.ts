@@ -1,15 +1,16 @@
-import GaugeData from "types/data/GaugeData"
-import QueueItemsBuilder from "builders/QueueItemsBuilder"
-import Sector from "types/Sector"
-import { Animations, COORDS_MAX_X, COORDS_MAX_Y, Layer } from "static/constants/Index"
-import Point from "types/Point"
-import ChartSettings from "types/ChartSettings"
-import Formatter from "helpers/Formatter"
-import Theme from "Theme"
-import { stringWidth } from "Helper"
-import { PlotAxisType, TextAlignment } from "static/Enums"
+import GaugeData from '@/types/data/GaugeData'
+import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import Sector from '@/types/Sector'
+import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
+import Point from '@/types/Point'
+import ChartSettings from '@/types/ChartSettings'
+import Formatter from '@/helpers/Formatter'
+import Theme from '@/Theme'
+import { stringWidth, sum } from '@/Helper'
+import Units from '@/helpers/Units'
+import { PlotAxisType, TextAlignment } from '@/static/Enums'
 
-const PADDING = 16
+const PADDING = 80
 
 const LABEL_FONT = 16
 
@@ -31,9 +32,9 @@ const VALUE_PADDING = .8
 
 const DEFAULT_INNER_RADIUS = 70
 
-const GAP = 4
+const GAP = 20
 
-const CORNER_RADIUS = 6
+const CORNER_RADIUS = 30
 
 const TRACK_ALPHA = .15
 
@@ -51,7 +52,7 @@ type Label = {
 export default class GaugeProcess {
     private data: GaugeData
 
-    private readonly pixel: Point
+    private readonly units: Units
 
     private readonly valuePostfix: string | undefined
 
@@ -59,7 +60,7 @@ export default class GaugeProcess {
 
     constructor(data: GaugeData, pixel: Point, settings: ChartSettings) {
         this.data = data
-        this.pixel = pixel
+        this.units = new Units(pixel)
         this.valuePostfix = settings.valuePostfix
         this.lines = this.getLines()
     }
@@ -73,10 +74,10 @@ export default class GaugeProcess {
     }
 
     private get radius() {
-        const width = COORDS_MAX_X / this.pixel.x
-        const height = COORDS_MAX_Y / this.pixel.y
+        const width = this.units.toPxX(COORDS_MAX_X)
+        const height = this.units.toPxY(COORDS_MAX_Y)
 
-        return Math.max(Math.min(width / 2 - PADDING, height - this.labelSpace - PADDING * 2), 0)
+        return Math.max(Math.min(width / 2 - this.units.toPxX(PADDING), height - this.labelSpace - this.units.toPxY(PADDING) * 2), 0)
     }
 
     private get isSingle() {
@@ -100,12 +101,12 @@ export default class GaugeProcess {
     }
 
     private get center(): Point {
-        const height = COORDS_MAX_Y / this.pixel.y
+        const height = this.units.toPxY(COORDS_MAX_Y)
         const top = (height - this.radius - this.labelSpace) / 2
 
         return {
             x: COORDS_MAX_X / 2,
-            y: (top + this.radius) * this.pixel.y
+            y: this.units.y(top + this.radius)
         }
     }
 
@@ -128,8 +129,8 @@ export default class GaugeProcess {
         const radius = this.radius - this.thickness * index
 
         return {
-            radius: radius * this.pixel.x,
-            innerRadius: (radius - this.thickness) * this.pixel.x
+            radius: this.units.x(radius),
+            innerRadius: this.units.x(radius - this.thickness)
         }
     }
 
@@ -152,14 +153,14 @@ export default class GaugeProcess {
                  .endAngle(START_ANGLE + SWEEP)
                  .radius(radius)
                  .innerRadius(innerRadius)
-                 .gap(GAP * this.pixel.x)
-                 .cornerRadius(CORNER_RADIUS * this.pixel.x)
+                 .gap(GAP)
+                 .cornerRadius(CORNER_RADIUS)
                  .fill()
                  .gradient()
                  .color(Theme.withAlpha(Theme.text, TRACK_ALPHA))
                  .layer(Layer.Base)
                  .key(`gauge-track-${ index }`)
-                 .init(Animations.gaugeInit, 0, true)
+                 .init(AnimationTiming.gaugeInit, 0, true)
         }
     }
 
@@ -173,15 +174,15 @@ export default class GaugeProcess {
                  .endAngle(START_ANGLE + SWEEP * this.getRatio(sector.value))
                  .radius(radius)
                  .innerRadius(innerRadius)
-                 .gap(GAP * this.pixel.x)
-                 .cornerRadius(CORNER_RADIUS * this.pixel.x)
+                 .gap(GAP)
+                 .cornerRadius(CORNER_RADIUS)
                  .grow(START_ANGLE)
                  .fill()
                  .gradient()
                  .color(sector.color)
                  .layer(Layer.Data)
                  .key(`gauge-value-${ index }`)
-                 .init(Animations.gaugeInit)
+                 .init(AnimationTiming.gaugeInit)
                  .tooltip(this.getTooltip(sector))
                  .data(sector.data)
                  .contextMenu()
@@ -192,7 +193,7 @@ export default class GaugeProcess {
         const { x, y } = this.center
 
         const band = this.radius * (1 + this.innerRatio) / 2
-        const rows = Array.from({ length: this.labelRows }, (_, index) => y + (LABEL_GAP + LABEL_FONT * (index + .5)) * this.pixel.y)
+        const rows = Array.from({ length: this.labelRows }, (_, index) => y + this.units.y(LABEL_GAP + LABEL_FONT * (index + .5)))
 
         const min = this.formatValue(this.min)
         const max = this.formatValue(this.max)
@@ -205,22 +206,22 @@ export default class GaugeProcess {
         const isValueInside = this.isSingle && valueFont >= VALUE_MIN_FONT
 
         const labels = [
-            this.getText('gauge-min', min, x - band * this.pixel.x, rows[0], RANGE_FONT),
-            this.getText('gauge-max', max, x + band * this.pixel.x, rows[0], RANGE_FONT)
+            this.getText('gauge-min', min, x - this.units.x(band), rows[0], RANGE_FONT),
+            this.getText('gauge-max', max, x + this.units.x(band), rows[0], RANGE_FONT)
         ]
 
         if (isValueInside)
-            labels.push(this.getText('gauge-value-label', value, x, y - valueFont / 2 * this.pixel.y, valueFont))
+            labels.push(this.getText('gauge-value-label', value, x, y - this.units.y(valueFont / 2), valueFont))
 
         if (!this.isSingle) {
             this.lines.forEach((line, index) => {
-                let left = (COORDS_MAX_X / this.pixel.x - line.sumByField(label => label.width)
+                let left = (this.units.toPxX(COORDS_MAX_X) - sum(line, label => label.width)
                             - LABEL_SPACING * (line.length - 1)) / 2
 
                 for (const label of line) {
-                    labels.push(this.getMarker(label, (left + MARKER_RADIUS) * this.pixel.x, rows[index + 1]))
+                    labels.push(this.getMarker(label, this.units.x(left + MARKER_RADIUS), rows[index + 1]))
                     labels.push(this.getText(label.key, label.text,
-                        (left + MARKER_RADIUS + MARKER_SPACE + (label.width - MARKER_RADIUS - MARKER_SPACE) / 2) * this.pixel.x,
+                        this.units.x(left + MARKER_RADIUS + MARKER_SPACE + (label.width - MARKER_RADIUS - MARKER_SPACE) / 2),
                         rows[index + 1], LABEL_FONT))
 
                     left += label.width + LABEL_SPACING
@@ -251,7 +252,7 @@ export default class GaugeProcess {
     }
 
     private getLines() {
-        const available = COORDS_MAX_X / this.pixel.x - PADDING * 2
+        const available = this.units.toPxX(COORDS_MAX_X) - this.units.toPxX(PADDING) * 2
 
         const lines: Label[][] = []
 
@@ -284,22 +285,22 @@ export default class GaugeProcess {
         return (items: QueueItemsBuilder) => {
             items.arc()
                  .position(x, y)
-                 .radius(MARKER_RADIUS * this.pixel.x)
+                 .radius(this.units.x(MARKER_RADIUS))
                  .fill()
                  .color(label.color)
                  .key(`${ label.key }-marker`)
-                 .init(Animations.gaugeLabelInit, Animations.gaugeInit, true)
+                 .init(AnimationTiming.gaugeLabelInit, AnimationTiming.gaugeInit, true)
         }
     }
 
     private getText(key: string, value: string, x: number, y: number, size: number) {
         return (items: QueueItemsBuilder) => {
             items.text(value)
-                 .position(x + size / 2 * this.pixel.x, y)
+                 .position(x + this.units.x(size / 2), y)
                  .size(size)
                  .align(TextAlignment.Center)
                  .key(key)
-                 .init(Animations.gaugeLabelInit, Animations.gaugeInit, true)
+                 .init(AnimationTiming.gaugeLabelInit, AnimationTiming.gaugeInit, true)
         }
     }
 

@@ -1,27 +1,25 @@
-import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
-import RenderItemLine from 'types/RenderItemLine'
+import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
+import RenderItemLine from '@/types/RenderItemLine'
 
-export default class QueueLineItemBuilder extends QueueItemBaseBuilder {
+export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderItemLine> {
     constructor() {
-        super()
-
-        this.current.line = new RenderItemLine()
+        super(new RenderItemLine())
     }
 
     stop(x: number, y: number) : QueueLineItemBuilder {
-        this.current.line.absolute.push({ x: x, y: y })
+        this.shape.absolute.push({ x: x, y: y })
 
         return this
     }
 
     width(width: number) {
-        this.current.line.width = width
+        this.shape.width = width
 
         return this
     }
 
     dash(segments: number[]) {
-        this.current.line.dash = segments
+        this.shape.dash = segments
 
         return this
     }

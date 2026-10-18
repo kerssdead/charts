@@ -1,9 +1,7 @@
-import ItemData from 'types/ItemData'
+import ItemData from '@/types/ItemData'
 
 class Value {
     id: string
-
-    isColorGenerated?: boolean
 
     color: string
 

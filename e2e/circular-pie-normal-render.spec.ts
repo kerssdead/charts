@@ -4,9 +4,9 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
 
 test('Circular pie chart should be rendered without any issues', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
@@ -14,7 +14,7 @@ test('Circular pie chart should be rendered without any issues', async ({ page, 
     await Settings.enableInitAnimation(false)
 
     await Settings.valuesCount(2)
-    await Settings.chartType(ChartType.Circular)
+    await Settings.chartType(ChartType.Pie)
     await Settings.innerRadius(0)
 
     await Utils.checkScreenshot(

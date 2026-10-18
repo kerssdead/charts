@@ -1,13 +1,13 @@
-import Point from 'types/Point'
-import RenderItemBase from 'types/interfaces/RenderItemBase'
-import CanvasWindow from 'types/CanvasWindow'
-import RenderItem from 'types/RenderItem'
-import { Animations } from 'static/constants/Index'
+import Point from '@/types/Point'
+import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import CanvasWindow from '@/types/CanvasWindow'
+import RenderItem from '@/types/RenderItem'
+import { AnimationTiming } from '@/static/constants/Index'
 
 const ALPHA_DELTA = 0.5
 
 export default class RenderItemLine
-    implements RenderItemBase {
+    extends RenderItemBase {
     absolute: Point[] = []
 
     canvas: Point[] = []
@@ -30,6 +30,28 @@ export default class RenderItemLine
                 y: from.y + (stop.y - from.y) * morph
             }
         })
+    }
+
+    morphFrom(previous: RenderItemBase, morph: number): boolean {
+        if (!(previous instanceof RenderItemLine))
+            return false
+
+        this.from = previous.current(morph)
+
+        return true
+    }
+
+    enterFromAxis(y: number): boolean {
+        this.from = this.absolute.map(stop => ({ x: stop.x, y }))
+
+        return true
+    }
+
+    leaveToAxis(y: number, morph: number): boolean {
+        this.from = this.current(morph)
+        this.absolute = this.absolute.map(stop => ({ x: stop.x, y }))
+
+        return true
     }
 
     adjust(window: CanvasWindow, morph: number = 1): void {
@@ -87,7 +109,7 @@ export default class RenderItemLine
     }
 
     animate(item: RenderItem, isBackward: boolean): void {
-        item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, Animations.hover)
+        item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, AnimationTiming.hover)
     }
 
     isMouseOver(_point: Point): boolean {

@@ -1,18 +1,18 @@
-import PlotData from 'types/data/PlotData'
-import QueueItemsBuilder from 'builders/QueueItemsBuilder'
-import { Animations, COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
-import { HorizontalAlignment, PlotAxisType, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from 'static/Enums'
-import { getRoundedValues, short, stringWidth } from 'Helper'
-import Margin from 'types/Margin'
-import PlotSeries from 'types/PlotSeries'
-import Debug from 'Debug'
-import Point from 'types/Point'
-import Theme from 'Theme'
-import QueueRectangleItemBuilder from 'builders/QueueRectangleItemBuilder'
-import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
-import PlotPoint from 'types/PlotPoint'
-import Formatter from 'helpers/Formatter'
-import ChartSettings from 'types/ChartSettings'
+import PlotData from '@/types/data/PlotData'
+import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
+import { HorizontalAlignment, PlotAxisType, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from '@/static/Enums'
+import { getRoundedValues, short, stringWidth } from '@/Helper'
+import Margin from '@/types/Margin'
+import PlotSeries from '@/types/PlotSeries'
+import Point from '@/types/Point'
+import Theme from '@/Theme'
+import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
+import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
+import PlotPoint from '@/types/PlotPoint'
+import Formatter from '@/helpers/Formatter'
+import ChartSettings from '@/types/ChartSettings'
+import Units from '@/helpers/Units'
 
 const GAP = 30
 
@@ -35,6 +35,8 @@ const X_LABEL_SPACING = 8
 const BAND_SPACING = 24
 
 const BAR_BAND_RATIO = 0.35
+
+const CORNER_RADIUS = 80
 
 type Band = {
     top: number
@@ -72,7 +74,7 @@ export default class PlotProcess {
 
     private readonly barSlots: Slots
 
-    private readonly pixel: Point
+    private readonly units: Units
 
     private readonly yMax: number | undefined
 
@@ -107,7 +109,7 @@ export default class PlotProcess {
     }
 
     private get bandGap() {
-        return (X_LABEL_FONT * 1.3 + BAND_SPACING) * this.pixel.y
+        return this.units.y(X_LABEL_FONT * 1.3 + BAND_SPACING)
     }
 
     private get barBand(): Band {
@@ -135,7 +137,7 @@ export default class PlotProcess {
         this.valuePostfix = settings.valuePostfix
         this.series = data.values.filter(series => !series.disabled)
         this.yMax = this.data.yMax == 0 ? undefined : this.data.yMax
-        this.pixel = pixel
+        this.units = new Units(pixel)
 
         this.stacks = new Map<string, number>()
 
@@ -191,14 +193,14 @@ export default class PlotProcess {
             return stringWidth(label, AXIS_LABEL_FONT)
         }))
 
-        return (LEFT_PADDING + titleWidth + labelsWidth + LEFT_GAP) * this.pixel.x
+        return this.units.x(LEFT_PADDING + titleWidth + labelsWidth + LEFT_GAP)
     }
 
     private getBottomMargin() {
         const labelsHeight = X_LABEL_FONT * 1.3
         const titleHeight = this.data.yTitle ? BOTTOM_GAP + AXIS_TITLE_FONT : 0
 
-        return (labelsHeight + titleHeight + BOTTOM_PADDING) * this.pixel.y
+        return this.units.y(labelsHeight + titleHeight + BOTTOM_PADDING)
     }
 
     getAxisY(value: number) {
@@ -295,7 +297,7 @@ export default class PlotProcess {
     }
 
     private getBaseLabels(items: QueueItemsBuilder) {
-        const x1 = this.margin.left + (AXIS_LABEL_FONT / 2 - LEFT_GAP) * this.pixel.x
+        const x1 = this.margin.left + this.units.x(AXIS_LABEL_FONT / 2 - LEFT_GAP)
 
         if (this.hasBars)
             this.getHorizontalLabels(items, x1)
@@ -321,7 +323,7 @@ export default class PlotProcess {
 
             const labels = this.mainSlots.values.map(x => this.formatX(x))
 
-            const slot = (stepX + GAP) / this.pixel.x
+            const slot = this.units.toPxX(stepX + GAP)
             const widest = Math.max(0, ...labels.map(label => stringWidth(label, X_LABEL_FONT)))
             const every = Math.max(1, Math.ceil((widest + X_LABEL_SPACING) / slot))
 
@@ -332,7 +334,7 @@ export default class PlotProcess {
                 const x = this.margin.left + i * stepX + (i + 1) * GAP
 
                 items.text(label)
-                     .position(x + stepX / 2 + X_LABEL_FONT / 2 * this.pixel.x, y)
+                     .position(x + stepX / 2 + this.units.x(X_LABEL_FONT / 2), y)
                      .align(TextAlignment.Center)
                      .baseline(TextBaseline.Top)
                      .size(X_LABEL_FONT)
@@ -347,7 +349,7 @@ export default class PlotProcess {
         // Bottom labels
         for (const label of this.barValues) {
             items.text(short(label, this.data.shortLabels))
-                 .position(this.getAxisX(label) + X_LABEL_FONT / 2 * this.pixel.x, bottom)
+                 .position(this.getAxisX(label) + this.units.x(X_LABEL_FONT / 2), bottom)
                  .align(TextAlignment.Center)
                  .baseline(TextBaseline.Top)
                  .size(X_LABEL_FONT)
@@ -466,7 +468,7 @@ export default class PlotProcess {
         return (items: QueueItemsBuilder) => {
             if (this.data.xTitle) {
                 items.text(this.data.xTitle)
-                     .position((LEFT_PADDING + AXIS_TITLE_FONT / 2) * this.pixel.x, COORDS_MAX_Y / 2)
+                     .position(this.units.x(LEFT_PADDING + AXIS_TITLE_FONT / 2), COORDS_MAX_Y / 2)
                      .baseline(TextBaseline.Top)
                      .size(AXIS_TITLE_FONT)
                      .rotate(270)
@@ -474,9 +476,8 @@ export default class PlotProcess {
             }
 
             if (this.data.yTitle) {
-                // space is reserved in margin.bottom under x-axis labels
                 items.text(this.data.yTitle)
-                     .position(COORDS_MAX_X / 2, COORDS_MAX_Y - (BOTTOM_PADDING + AXIS_TITLE_FONT / 2) * this.pixel.y)
+                     .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.units.y(BOTTOM_PADDING + AXIS_TITLE_FONT / 2))
                      .size(AXIS_TITLE_FONT)
                      .key('axis-title-y')
             }
@@ -514,15 +515,13 @@ export default class PlotProcess {
                 return [func(series)]
             }
 
-            Debug.error(`This (${ series.type }) plot type is not implemented`)
-
             return []
         })
     }
 
     private getColumns(series: PlotSeries) {
         const baseY = this.getAxisY(0)
-        const color = series.color ?? '#ffa500'
+        const color = series.color
 
         const step = this.getMainStep()
         const index = this.data.values.indexOf(series)
@@ -540,7 +539,7 @@ export default class PlotProcess {
                 const column = items.rect()
                      .position(this.margin.left + i * step + (i + 1) * GAP + offset + width / 2, baseY)
                      .size(width, series.disabled ? 0 : Number(value.y) * this.scale.y)
-                     .round([16, 16, 0, 0])
+                     .round([CORNER_RADIUS, CORNER_RADIUS, 0, 0])
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                      .grow('y', baseY)
 
@@ -561,7 +560,7 @@ export default class PlotProcess {
                          .layer(Layer.Data)
                          .key(this.getKey(series, 'rect', index))
                          .interact()
-                         .init(Animations.plotInit, index * Animations.plotInitStagger)
+                         .init(AnimationTiming.plotInit, index * AnimationTiming.plotInitStagger)
                          .data(value.data)
                          .contextMenu()
 
@@ -595,12 +594,12 @@ export default class PlotProcess {
             })
 
             line.width(series.width)
-                .dash(JSON.parse(series.dash || '[]'))
-                .color(series.color ?? '#00ff00')
+                .dash(Array.isArray(series.dash) ? series.dash : [])
+                .color(series.color)
                 .layer(Layer.Data + 1)
                 .key(this.getKey(series, 'line'))
                 .interact()
-                .init(Animations.plotLineInit)
+                .init(AnimationTiming.plotLineInit)
 
             this.groupHover(line, series)
         }
@@ -616,7 +615,7 @@ export default class PlotProcess {
             const height = series.disabled ? 0 : heightInStep
 
             const baseY = this.barBand.bottom - visibleBefore * heightInStep
-            const color = series.color ?? '#0000ff'
+            const color = series.color
 
             series.values.forEach(value => {
                 const i = PlotProcess.getSlot(this.barSlots, value)
@@ -626,7 +625,7 @@ export default class PlotProcess {
                 const bar = items.rect()
                      .position(x, y)
                      .size(series.disabled ? 0 : Number(value.y) * this.scale.x, height)
-                     .round([0, 16, 16, 0])
+                     .round([0, CORNER_RADIUS, CORNER_RADIUS, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', x)
 
@@ -637,7 +636,7 @@ export default class PlotProcess {
 
     private getStackedColumns(series: PlotSeries) {
         const baseY = this.getAxisY(0)
-        const color = series.color ?? '#a6f022'
+        const color = series.color
 
         const step = this.getMainStep()
 
@@ -665,7 +664,7 @@ export default class PlotProcess {
                      .position(x, y)
                      .size(width, height)
                      .collapse(false, true)
-                     .round(this.stackTops.get(key) === series ? [16, 16, 0, 0] : [0, 0, 0, 0])
+                     .round(this.stackTops.get(key) === series ? [CORNER_RADIUS, CORNER_RADIUS, 0, 0] : [0, 0, 0, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('y', baseY)
 
@@ -698,7 +697,7 @@ export default class PlotProcess {
         const x1 = this.margin.left
         const x2 = COORDS_MAX_X - this.margin.right
 
-        const color = series.color ?? '#aa5533'
+        const color = series.color
 
         return (items: QueueItemsBuilder) => {
             const line = items.line()
@@ -709,7 +708,7 @@ export default class PlotProcess {
                               .layer(Layer.Data + 1)
                               .key(this.getKey(series, 'attention'))
                               .interact()
-                              .init(Animations.plotLineInit)
+                              .init(AnimationTiming.plotLineInit)
 
             this.groupHover(line, series)
         }

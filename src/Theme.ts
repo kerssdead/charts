@@ -1,8 +1,8 @@
-import * as Helper from 'Helper'
-import ThemeOptions from 'static/ThemeOptions'
-import { Events } from 'static/Enums'
+import * as Helper from '@/Helper'
+import ThemeOptions from '@/static/ThemeOptions'
+import { Events } from '@/static/Enums'
 
-enum ColorTheme {
+export enum ColorTheme {
     light = 0,
     dark = 1
 }
@@ -41,25 +41,18 @@ class Theme {
     static listeners: Map<Function, (event: MediaQueryListEvent) => void> = new Map()
 
     static initialize(callback: Function, isDark?: Function) {
-        if (!Theme.function && isDark)
-            Theme.function = isDark
-
-        if (!Theme.function || Theme.function())
-            Theme.setTheme(ColorTheme.dark)
-        else
-            Theme.setTheme(ColorTheme.light)
+        Theme.media ??= window.matchMedia('(prefers-color-scheme: dark)')
 
         Theme.update(isDark)
 
         if (Theme.listeners.has(callback))
             return
 
-        const listener = (event: MediaQueryListEvent) => {
-            Theme.setTheme(event.matches && (!Theme.function || Theme.function()) ? ColorTheme.dark : ColorTheme.light)
+        const listener = () => {
+            Theme.update()
             callback()
         }
 
-        Theme.media ??= window.matchMedia('(prefers-color-scheme: dark)')
         Theme.media.addEventListener(Events.Change, listener)
 
         Theme.listeners.set(callback, listener)
@@ -102,7 +95,9 @@ class Theme {
         if (isDark)
             Theme.function = isDark
 
-        Theme.setTheme(!Theme.function || Theme.function() ? ColorTheme.dark : ColorTheme.light)
+        const isDarkTheme = Theme.function ? Theme.function() : Theme.media?.matches
+
+        Theme.setTheme(isDarkTheme ? ColorTheme.dark : ColorTheme.light)
     }
 }
 

@@ -1,40 +1,27 @@
+import ChartSettings from '@/types/ChartSettings'
+import Theme, { ColorTheme } from '@/Theme'
+
 export default class Debug {
-    static isEnabled: boolean = false
+    static log(input: ChartSettings, settings: ChartSettings, canvas: HTMLCanvasElement) {
+        if (!settings.enableDebugMode)
+            return
 
-    static initialize(enabled: boolean) {
-        Debug.isEnabled = enabled
+        console.log('OCharts:', {
+            input: Debug.copy(input),
+            settings: Debug.copy(settings),
+            size: {
+                width: canvas.parentElement?.clientWidth,
+                height: canvas.parentElement?.clientHeight
+            },
+            theme: ColorTheme[Theme.currentTheme]
+        })
     }
 
-    static log(...msg: any[]) {
-        if (Debug.isEnabled)
-            console.log('DEBUG:', ...msg)
-    }
-
-    static warn(...msg: any[]) {
-        if (Debug.isEnabled)
-            console.warn('WARNING:', ...msg)
-    }
-
-    static error(...msg: any[]) {
-        if (Debug.isEnabled)
-            console.error('ERROR:', ...msg)
-    }
-
-    static text(ctx: CanvasRenderingContext2D, ...msg: any[]) {
-        if (Debug.isEnabled) {
-            ctx.save()
-
-            ctx.strokeStyle = 'black'
-
-            let y = 0
-
-            for (const m in msg) {
-                ctx.fillText(m.toString(), 0, y)
-
-                y += 20
-            }
-
-            ctx.restore()
+    private static copy(value: ChartSettings) {
+        try {
+            return JSON.parse(JSON.stringify(value))
+        } catch {
+            return value
         }
     }
 }

@@ -4,9 +4,9 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
 
 test('Pie chart sector should not be pinned when mouse click not on sector and then mouse moved to sector', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
@@ -14,7 +14,7 @@ test('Pie chart sector should not be pinned when mouse click not on sector and t
     await Settings.enableInitAnimation(false)
 
     await Settings.valuesCount(2)
-    await Settings.chartType(ChartType.Circular)
+    await Settings.chartType(ChartType.Pie)
 
     await Utils.scrollToCanvas()
     await Utils.wait(50)

@@ -1,10 +1,6 @@
-import DropdownItem from 'types/DropdownItem'
+import DropdownItem from '@/types/DropdownItem'
 
 class ButtonOptions {
-    x: number
-
-    y: number
-
     text: string
 
     action: () => void

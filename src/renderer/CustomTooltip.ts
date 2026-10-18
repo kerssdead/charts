@@ -1,19 +1,11 @@
-import Point from 'types/Point'
-import Styles from 'static/constants/Styles'
-import { Tag } from 'static/Enums'
-import { Tooltip } from 'static/constants/Index'
-import { placeNear } from 'Helper'
-import ItemData from 'types/ItemData'
+import Point from '@/types/Point'
+import Styles from '@/static/constants/Styles'
+import { Tag } from '@/static/Enums'
+import { Tooltip } from '@/static/constants/Index'
+import { escapeHtml, placeNear } from '@/Helper'
+import ItemData from '@/types/ItemData'
 
 const PLACEHOLDER = /\$\{\s*([^}\s]+)\s*}/g
-
-const ESCAPES: { [key: string]: string } = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    '\'': '&#39;'
-}
 
 export default class CustomTooltip {
     private readonly canvas: HTMLCanvasElement
@@ -61,7 +53,7 @@ export default class CustomTooltip {
         const element = document.createElement(Tag.Div)
 
         element.innerHTML = this.template.innerHTML.replace(PLACEHOLDER, (_, key: string) => {
-            return String(data[key] ?? '').replace(/[&<>"']/g, char => ESCAPES[char])
+            return escapeHtml(data[key])
         })
 
         element.style.position = Styles.Position.Absolute

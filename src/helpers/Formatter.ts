@@ -1,4 +1,4 @@
-import { PlotAxisType } from 'static/Enums'
+import { PlotAxisType } from '@/static/Enums'
 
 abstract class Formatter {
     static number(value: number | undefined) {

@@ -1,8 +1,8 @@
-import Point from 'types/Point'
-import { Events } from 'static/Enums'
-import { ZOOM_DEFAULT_STEP } from 'static/constants/Index'
-import Styles from 'static/constants/Styles'
-import CanvasWindow from 'types/CanvasWindow'
+import Point from '@/types/Point'
+import { Events } from '@/static/Enums'
+import { ZOOM_DEFAULT_STEP } from '@/static/constants/Index'
+import Styles from '@/static/constants/Styles'
+import CanvasWindow from '@/types/CanvasWindow'
 
 type PointerHandlers = {
     onClick: (point: Point) => void

@@ -1,8 +1,8 @@
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { PlotType } from '../src/static/Enums'
-import Clip from './utils/Clip'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { PlotType } from '@/static/Enums'
+import Clip from '@e2e/utils/Clip'
 
 test('Plot chart with solid lines should be rendered without any issues', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)

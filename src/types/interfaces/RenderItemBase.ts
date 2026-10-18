@@ -1,14 +1,45 @@
-import CanvasWindow from '../CanvasWindow'
-import Point from '../Point'
-import RenderItem from '../RenderItem'
+import CanvasWindow from '@/types/CanvasWindow'
+import Point from '@/types/Point'
+import RenderItem from '@/types/RenderItem'
 
-export default interface RenderItemBase {
-    adjust(window: CanvasWindow, morph?: number): void
+export type Bounds = {
+    left: number
+    top: number
+    right: number
+    bottom: number
+}
 
-    render(ctx: CanvasRenderingContext2D, item?: RenderItem): void
+export default abstract class RenderItemBase {
+    abstract adjust(window: CanvasWindow, morph?: number): void
+
+    abstract render(ctx: CanvasRenderingContext2D, item: RenderItem): void
 
     // todo: add animation builder
-    animate(item: RenderItem, isBackward: boolean, point: Point): void
+    abstract animate(item: RenderItem, isBackward: boolean, point: Point): void
 
-    isMouseOver(point: Point): boolean
+    abstract isMouseOver(point: Point): boolean
+
+    getBounds(): Bounds | null {
+        return null
+    }
+
+    morphFrom(_previous: RenderItemBase, _morph: number): boolean {
+        return false
+    }
+
+    appear(_mapY?: (y: number) => number): boolean {
+        return false
+    }
+
+    disappear(_morph: number, _mapY?: (y: number) => number): boolean {
+        return false
+    }
+
+    enterFromAxis(_y: number): boolean {
+        return false
+    }
+
+    leaveToAxis(_y: number, _morph: number): boolean {
+        return false
+    }
 }

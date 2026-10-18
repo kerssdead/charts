@@ -1,17 +1,20 @@
-import TreeData, { TreeValue } from "types/data/TreeData"
-import QueueItemsBuilder from "builders/QueueItemsBuilder"
-import { Animations, COORDS_MAX_X, COORDS_MAX_Y } from "static/constants/Index"
-import { HorizontalAlignment, PlotAxisType, TextAlignment, VerticalAlignment } from "static/Enums"
-import { adjustColor, contrastText, stringWidth } from "Helper"
-import Point from "types/Point"
-import ChartSettings from "types/ChartSettings"
-import Formatter from "helpers/Formatter"
+import TreeData, { TreeValue } from '@/types/data/TreeData'
+import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
+import { HorizontalAlignment, PlotAxisType, TextAlignment, VerticalAlignment } from '@/static/Enums'
+import { adjustColor, contrastText, stringWidth, sum } from '@/Helper'
+import Point from '@/types/Point'
+import ChartSettings from '@/types/ChartSettings'
+import Formatter from '@/helpers/Formatter'
+import Units from '@/helpers/Units'
 
 const COLOR_RANGE = 40
 
 const LABEL_FONT = 14
 
 const LABEL_PADDING = 8
+
+const CORNER_RADIUS = 80
 
 type Box = {
     x: number
@@ -32,7 +35,7 @@ export default class TreeProcess {
 
     private readonly gap: number
 
-    private readonly pixel: Point
+    private readonly units: Units
 
     private readonly valuePostfix: string | undefined
 
@@ -40,7 +43,7 @@ export default class TreeProcess {
 
     constructor(data: TreeData, pixel: Point, settings: ChartSettings) {
         this.data = data
-        this.pixel = pixel
+        this.units = new Units(pixel)
         this.valuePostfix = settings.valuePostfix
 
         this.padding = this.data.padding
@@ -84,7 +87,7 @@ export default class TreeProcess {
         const right = box.x + box.width
         const bottom = box.y + box.height
 
-        const unit = box.width * box.height / values.sumByField(getValue)
+        const unit = box.width * box.height / sum(values, getValue)
 
         const position = { x: box.x, y: box.y }
 
@@ -105,33 +108,33 @@ export default class TreeProcess {
                 position.y += h
             }
 
-            const widthGap = isVertical && !isLast ? this.gap / 2 * this.pixel.x : 0
-            const heightGap = isVertical || isLast ? 0 : this.gap / 2 * this.pixel.y
+            const widthGap = isVertical && !isLast ? this.gap / 2 : 0
+            const heightGap = isVertical || isLast ? 0 : this.gap / 2
 
             return { value, box: { x, y, width: w - widthGap, height: h - heightGap } }
         })
     }
 
     private getBlock(color: string, value: TreeValue, key: string, box: Box, group?: TreeValue) {
-        const delay = this.order++ * Animations.treeInitStagger
+        const delay = this.order++ * AnimationTiming.treeInitStagger
 
         const label = value.label
 
         const isLabelVisible = !!label
-                               && stringWidth(label, LABEL_FONT) + LABEL_PADDING * 2 <= box.width / this.pixel.x
-                               && LABEL_FONT + LABEL_PADDING * 2 <= box.height / this.pixel.y
+                               && stringWidth(label, LABEL_FONT) + LABEL_PADDING * 2 <= this.units.toPxX(box.width)
+                               && LABEL_FONT + LABEL_PADDING * 2 <= this.units.toPxY(box.height)
 
         return (items: QueueItemsBuilder) => {
             items.rect()
                  .position(box.x + box.width / 2, box.y + box.height / 2)
                  .size(box.width, box.height)
                  .align(HorizontalAlignment.Center, VerticalAlignment.Center)
-                 .round([16, 16, 16, 16])
+                 .round(Array(4).fill(CORNER_RADIUS))
                  .fill()
                  .gradient()
                  .color(color)
                  .key(key)
-                 .init(Animations.treeInit, delay, true)
+                 .init(AnimationTiming.treeInit, delay, true)
                  .appearDelay(delay)
                  .interact()
                  .tooltip(this.getTooltip(value, group))
@@ -140,12 +143,12 @@ export default class TreeProcess {
 
             if (isLabelVisible)
                 items.text(label)
-                     .position(box.x + box.width / 2 + LABEL_FONT / 2 * this.pixel.x, box.y + box.height / 2)
+                     .position(box.x + box.width / 2 + this.units.x(LABEL_FONT / 2), box.y + box.height / 2)
                      .size(LABEL_FONT)
                      .align(TextAlignment.Center)
                      .color(contrastText(color))
                      .key(`${ key }-label`)
-                     .init(Animations.treeInit, delay, true)
+                     .init(AnimationTiming.treeInit, delay, true)
         }
     }
 
@@ -162,7 +165,7 @@ export default class TreeProcess {
 
     private static getSum(value: TreeValue) {
         return value.sectors?.length
-               ? value.sectors.filter(sector => sector.value > 0).sumByField(sector => sector.value)
+               ? sum(value.sectors.filter(sector => sector.value > 0), sector => sector.value)
                : value.value
     }
 }

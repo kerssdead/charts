@@ -1,56 +1,55 @@
-import QueueItemBaseBuilder from 'builders/QueueItemBaseBuilder'
-import { TextAlignment, TextBaseline } from 'static/Enums'
-import RenderItemText, { Orbit } from 'types/RenderItemText'
-import RenderItemArc from 'types/RenderItemArc'
+import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
+import { TextAlignment, TextBaseline } from '@/static/Enums'
+import RenderItemText, { Orbit } from '@/types/RenderItemText'
+import RenderItemArc from '@/types/RenderItemArc'
 
 export default class QueueTextItemBuilder
-    extends QueueItemBaseBuilder {
+    extends QueueItemBaseBuilder<RenderItemText> {
     constructor(text: string) {
-        super()
+        super(new RenderItemText())
 
-        this.current.text = new RenderItemText()
-        this.current.text.value = text
+        this.shape.value = text
     }
 
     position(x: number, y: number) {
-        this.current.text.absolute = { x: x, y: y }
+        this.shape.absolute = { x: x, y: y }
 
         return this
     }
 
     orbit(angle: number, orbit: Orbit) {
-        this.current.text.angle = angle
-        this.current.text.orbit = orbit
+        this.shape.angle = angle
+        this.shape.orbit = orbit
 
         return this
     }
 
     follow(arc: RenderItemArc) {
-        this.current.text.follow = arc
+        this.shape.follow = arc
 
         return this
     }
 
     size(value: number) {
-        this.current.text.fontSize = value
+        this.shape.fontSize = value
 
         return this
     }
 
     align(value: TextAlignment) {
-        this.current.text.alignment = value
+        this.shape.alignment = value
 
         return this
     }
 
     baseline(value: TextBaseline) {
-        this.current.text.baseline = value
+        this.shape.baseline = value
 
         return this
     }
 
     rotate(angle: number) {
-        this.current.text.rotate = angle
+        this.shape.rotate = angle
 
         return this
     }

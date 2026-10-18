@@ -1,8 +1,8 @@
-import TableValue from 'types/TableValue'
-import Sector from 'types/Sector'
-import TableData from 'types/TableData'
-import Data from 'types/interfaces/Data'
-import { ChartType } from "static/Enums"
+import TableValue from '@/types/TableValue'
+import Sector from '@/types/Sector'
+import TableData from '@/types/TableData'
+import Data from '@/types/interfaces/Data'
+import { ChartType } from '@/static/Enums'
 
 export default class PieData implements Data {
     values: Sector[]

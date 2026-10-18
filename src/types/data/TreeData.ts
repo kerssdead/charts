@@ -1,8 +1,8 @@
-import Value from 'types/base/Value'
-import TableValue from 'types/TableValue'
-import TableData from 'types/TableData'
-import Data from 'types/interfaces/Data'
-import { ChartType } from "static/Enums"
+import Value from '@/types/base/Value'
+import TableValue from '@/types/TableValue'
+import TableData from '@/types/TableData'
+import Data from '@/types/interfaces/Data'
+import { ChartType } from '@/static/Enums'
 
 export type TreeValue = Value & {
     sectors?: Value[]

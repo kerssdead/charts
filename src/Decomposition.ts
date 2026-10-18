@@ -1,10 +1,11 @@
-import TableData from 'types/TableData'
-import Formatter from 'helpers/Formatter'
-import { ChartType, Tag } from 'static/Enums'
-import ChartItem from 'types/ChartItem'
-import PlotData from 'types/data/PlotData'
-import PieData from 'types/data/PieData'
-import TreeData from 'types/data/TreeData'
+import TableData from '@/types/TableData'
+import Formatter from '@/helpers/Formatter'
+import { ChartType, Tag } from '@/static/Enums'
+import ChartItem from '@/types/ChartItem'
+import PlotData from '@/types/data/PlotData'
+import PieData from '@/types/data/PieData'
+import TreeData from '@/types/data/TreeData'
+import { escapeHtml } from '@/Helper'
 
 class Decomposition {
     static fromCharts(charts: ChartItem[]) {
@@ -16,7 +17,7 @@ class Decomposition {
         return container
     }
 
-    private static getRows(chart: ChartItem): TableData {
+    static getRows(chart: ChartItem): TableData {
         switch (chart.type) {
             case ChartType.Plot:
                 return PlotData.getRows(chart.data as PlotData)
@@ -36,12 +37,9 @@ class Decomposition {
 
         let totals = new Map<string, number>()
         let rows = '',
-            headers = '',
-            index = 0
+            headers = ''
 
-        let valuesMap = new Map<string, Map<string, any>>()
-
-        for (const tableValue of values.values) {
+        const tableRows = values.values.map(tableValue => {
             let allColumns = new Map<string, any>()
 
             for (const header of values.headers)
@@ -50,23 +48,17 @@ class Decomposition {
             for (const [key, value] of tableValue.values)
                 allColumns.set(key, value)
 
-            let indexSpaces = ''
-            for (let i = 0; i < index; i++)
-                indexSpaces += ' '
-
-            valuesMap.set(tableValue.name + indexSpaces, allColumns)
-
-            index++
-        }
+            return { name: tableValue.name, columns: allColumns }
+        })
 
         for (const tableHeader of values.headers)
             headers += `
                 <div>
-                    ${ tableHeader.display }
+                    ${ escapeHtml(tableHeader.display) }
                 </div>
             `
 
-        for (const [key, value] of valuesMap) {
+        for (const { name, columns: value } of tableRows) {
             let columns = ''
 
             for (const [vKey, vValue] of value) {
@@ -86,7 +78,7 @@ class Decomposition {
                 }
             }
 
-            const k = key.trim()
+            const k = escapeHtml(name)
 
             rows += `
                 <div class="o-table-row">

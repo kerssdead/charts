@@ -1,6 +1,6 @@
 {
   "name": "charts",
-  "version": "2.0.245",
+  "version": "2.0.256",
   "description": "Typescript Canvas Charts",
   "jsdelivr": "./dist/ocharts.js",
   "repository": "https://github.com/kerssdead/charts",
@@ -27,7 +27,7 @@
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@playwright/test": "^1.56.0",
-    "@types/jest": "^30.0.0",
+    "@types/jest": "^29.5.14",
     "@types/node": "^24.7.0",
     "@types/wicg-file-system-access": "^2023.10.6",
     "baseline-browser-mapping": "^2.9.7",

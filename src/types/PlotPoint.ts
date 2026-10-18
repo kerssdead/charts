@@ -1,4 +1,4 @@
-import Value from 'types/base/Value'
+import Value from '@/types/base/Value'
 
 class PlotPoint extends Value {
     x: number | Date | string

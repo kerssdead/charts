@@ -1,10 +1,10 @@
-import TableValue from 'types/TableValue'
-import PlotSeries from 'types/PlotSeries'
-import TableHeaderValue from 'types/TableHeaderValue'
-import TableData from 'types/TableData'
-import Data from 'types/interfaces/Data'
-import Formatter from 'helpers/Formatter'
-import { ChartType, PlotAxisType } from 'static/Enums'
+import TableValue from '@/types/TableValue'
+import PlotSeries from '@/types/PlotSeries'
+import TableHeaderValue from '@/types/TableHeaderValue'
+import TableData from '@/types/TableData'
+import Data from '@/types/interfaces/Data'
+import Formatter from '@/helpers/Formatter'
+import { ChartType, PlotAxisType } from '@/static/Enums'
 
 export default class PlotData implements Data {
     type: ChartType

@@ -1,5 +1,5 @@
-import Data from 'types/interfaces/Data'
-import { ChartType } from 'static/Enums'
+import Data from '@/types/interfaces/Data'
+import { ChartType } from '@/static/Enums'
 
 export default class ChartItem {
     type: ChartType

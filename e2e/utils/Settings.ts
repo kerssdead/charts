@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test'
-import Selectors from './Selectors'
-import { ChartType, LineType, PlotAxisType, PlotType } from '../../src/static/Enums'
+import Selectors from '@e2e/utils/Selectors'
+import { ChartType, PlotAxisType, PlotType } from '@/static/Enums'
 
 class Settings {
     private static page: Page
@@ -116,6 +116,14 @@ class Settings {
     static enableDarkTheme(value: boolean = true) {
         return Settings.check(Selectors.darkTheme, value)
     }
+}
+
+export enum LineType {
+    Solid = 'Solid',
+
+    Dash = 'Dash',
+
+    Dotted = 'Dotted'
 }
 
 export default Settings

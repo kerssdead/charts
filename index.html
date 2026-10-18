@@ -10,6 +10,8 @@
     <script src="./dist/ocharts.js"></script>
 </head>
 
+<!-- todo: add displaying multiple charts on the single canvas -->
+
 <body>
     <div class="base">
         <div class="chart-container">
@@ -593,7 +595,7 @@
                                 : customLabel
                             : `Series ${i}`,
                         data: getData(i),
-                        dash: lineType,
+                        dash: JSON.parse(lineType),
                         color: getColor()
                     })
                 }

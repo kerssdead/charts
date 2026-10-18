@@ -4,17 +4,17 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
-import { Animations } from '../src/static/constants'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
+import { AnimationTiming } from '@/static/constants/Index'
 
 test('Pie chart sector tooltip and context menu should not render at the same time', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
     await Settings.enableInitAnimation(false)
 
-    await Settings.chartType(ChartType.Circular)
+    await Settings.chartType(ChartType.Pie)
     await Settings.enableTooltip()
     await Settings.enableContextMenu()
     await Settings.valuesCount(2)

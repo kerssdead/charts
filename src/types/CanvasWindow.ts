@@ -1,5 +1,5 @@
-import { COORDS_MAX_X, COORDS_MAX_Y, PAN_MIN_VISIBLE, ZOOM_MAX, ZOOM_MIN } from 'static/constants/Index'
-import Point from 'types/Point'
+import { COORDS_MAX_X, COORDS_MAX_Y, PAN_MIN_VISIBLE, ZOOM_MAX, ZOOM_MIN } from '@/static/constants/Index'
+import Point from '@/types/Point'
 
 type Rect = {
     x: number

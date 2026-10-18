@@ -1,7 +1,7 @@
-import Errors from 'helpers/Errors'
-import { ErrorType, Tag } from 'static/Enums'
-import Theme from 'Theme'
-import * as Helper from 'Helper'
+import Errors from '@/helpers/Errors'
+import { ErrorType, Tag } from '@/static/Enums'
+import Theme from '@/Theme'
+import * as Helper from '@/Helper'
 
 const GRADIENT_DELTA = 20
 
@@ -28,8 +28,8 @@ abstract class Canvas {
         return gradient
     }
 
-    static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
-        return canvas.getContext('2d', { willReadFrequently: true })
+    static getContext(canvas: HTMLCanvasElement, willReadFrequently: boolean = false): CanvasRenderingContext2D {
+        return canvas.getContext('2d', { willReadFrequently })
                ?? Errors.throw(ErrorType.NullContext)
     }
 

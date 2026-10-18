@@ -1,21 +1,21 @@
-import Value from 'types/base/Value'
-import * as Helper from 'Helper'
-import Sector from 'types/Sector'
-import PlotSeries from 'types/PlotSeries'
-import Point from 'types/Point'
-import Paddings from 'types/Paddings'
-import RenderItem from 'types/RenderItem'
-import Theme from 'Theme'
-import Queue from 'render/Queue'
-import QueueItemsBuilder from 'builders/QueueItemsBuilder'
-import TextResources from 'static/TextResources'
-import * as Constants from 'static/constants/Index'
-import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
-import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from 'static/Enums'
-import ChartSettings from './types/ChartSettings'
-import ChartItem from 'types/ChartItem'
-import HoverProgress from 'types/HoverProgress'
-import Animations from 'Animations'
+import Value from '@/types/base/Value'
+import * as Helper from '@/Helper'
+import Sector from '@/types/Sector'
+import PlotSeries from '@/types/PlotSeries'
+import Point from '@/types/Point'
+import Paddings from '@/types/Paddings'
+import RenderItem from '@/types/RenderItem'
+import Theme from '@/Theme'
+import Queue from '@/render/Queue'
+import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import TextResources from '@/static/TextResources'
+import * as Constants from '@/static/constants/Index'
+import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
+import { ChartType, HorizontalAlignment, LegendPlace, TextAlignment, VerticalAlignment } from '@/static/Enums'
+import ChartSettings from '@/types/ChartSettings'
+import ChartItem from '@/types/ChartItem'
+import HoverProgress from '@/types/HoverProgress'
+import Animations from '@/Animations'
 
 type LegendEntry = {
     value: Value
@@ -57,6 +57,8 @@ class Legend {
     private top: number = 0
 
     private items: Set<RenderItem> = new Set()
+
+    private backgrounds: Map<string, RenderItem> = new Map()
 
     private hover: Map<string, HoverProgress> = new Map()
 
@@ -194,14 +196,18 @@ class Legend {
         const isHoverChanged = this.updateHover(mouse, now)
         const isMoving = this.moveStart != null
 
-        if (!this.isDirty && !isToggling && !isHoverChanged && !isMoving)
+        if (!this.isDirty && !isToggling && !isMoving) {
+            if (isHoverChanged)
+                this.updateBackgrounds()
+
             return
+        }
 
         const progress = this.getMoveProgress(now)
 
         this.clear(queue)
 
-        const added = queue.add((items: QueueItemsBuilder) => {
+        const added = QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
             const area = this.getArea(progress)
 
             items.rect()
@@ -218,7 +224,10 @@ class Legend {
 
             if (this.button)
                 this.buildButton(items, this.button, this.getHover(Legend.resetKey))
-        })
+        }])
+
+        if (this.button)
+            this.backgrounds.set(Legend.resetKey, added[1])
 
         this.entries.forEach((entry, index) => {
             const from = this.from.get(index)
@@ -231,11 +240,15 @@ class Legend {
                 }
                             : entry
 
-            added.push(...this.addEntry(queue, current, this.getHover(entry.value.id), from ? 1 : progress))
+            const entryItems = this.createEntry(current, this.getHover(entry.value.id), from ? 1 : progress)
+
+            this.backgrounds.set(entry.value.id, entryItems[0])
+
+            added.push(...entryItems)
         })
 
         for (const entry of this.leaving)
-            added.push(...this.addEntry(queue, entry, 0, 1 - progress))
+            added.push(...this.createEntry(entry, 0, 1 - progress))
 
         if (progress == 1) {
             this.moveStart = null
@@ -243,6 +256,8 @@ class Legend {
             this.fromArea = undefined
             this.leaving = []
         }
+
+        queue.add(added)
 
         this.items = new Set(added)
         this.isDirty = false
@@ -273,15 +288,15 @@ class Legend {
         if (this.moveStart == null)
             return 1
 
-        const progress = Math.min((now - this.moveStart) / Constants.Animations.legend, 1)
+        const progress = Math.min((now - this.moveStart) / Constants.AnimationTiming.legend, 1)
 
         return progress == 1 ? 1 : Animations.getTransition(progress)
     }
 
-    private addEntry(queue: Queue, entry: LegendEntry, hover: number, alpha: number) {
-        const added = queue.add((items: QueueItemsBuilder) => {
+    private createEntry(entry: LegendEntry, hover: number, alpha: number) {
+        const added = QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
             this.buildEntry(items, entry, hover)
-        })
+        }])
 
         for (const item of added)
             item.animation.alpha = alpha
@@ -291,11 +306,12 @@ class Legend {
 
     clear(queue: Queue) {
         this.isDirty = true
+        this.backgrounds.clear()
 
         if (this.items.size == 0)
             return
 
-        queue.queue = queue.queue.filter(item => !this.items.has(item))
+        queue.remove(this.items)
 
         this.items.clear()
     }
@@ -316,10 +332,10 @@ class Legend {
         items.rect()
              .position(this.x(x), this.y(y))
              .size(this.width(width), this.height(Legend.itemHeight))
-             .round([6, 6, 6, 6])
+             .round(Array(4).fill(this.width(6)))
              .fill()
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-             .color(Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * hover)))
+             .color(Legend.hoverColor(hover))
              .layer(Layer.Legend + 1)
              .fixed()
              .onClick(() => {
@@ -355,10 +371,10 @@ class Legend {
         items.rect()
              .position(this.x(button.x), this.y(button.y))
              .size(this.width(button.width), this.height(button.height))
-             .round([4, 4, 4, 4])
+             .round(Array(4).fill(this.width(4)))
              .fill()
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-             .color(Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * hover)))
+             .color(Legend.hoverColor(hover))
              .layer(Layer.Legend + 1)
              .fixed()
              .onClick(() => {
@@ -525,7 +541,7 @@ class Legend {
             if (start == undefined)
                 continue
 
-            const transition = Math.min((now - start) / Constants.Animations.legend, 1)
+            const transition = Math.min((now - start) / Constants.AnimationTiming.legend, 1)
 
             if (transition > 0)
                 value.toggle(transition)
@@ -549,7 +565,7 @@ class Legend {
             if (!hover)
                 this.hover.set(key, hover = new HoverProgress())
 
-            isChanged = hover.step(isOver, now, Constants.Animations.button) || isChanged
+            isChanged = hover.step(isOver, now, Constants.AnimationTiming.button) || isChanged
         }
 
         for (const entry of this.entries) {
@@ -562,6 +578,15 @@ class Legend {
             step(Legend.resetKey, this.isOver(mouse, this.button.x, this.button.y, this.button.width))
 
         return isChanged
+    }
+
+    private updateBackgrounds() {
+        for (const [key, item] of this.backgrounds)
+            item.color = item.activeColor = Legend.hoverColor(this.getHover(key))
+    }
+
+    private static hoverColor(hover: number) {
+        return Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * hover))
     }
 
     private getHover(key: string) {
@@ -584,9 +609,6 @@ class Legend {
 
                 value.id ??= Helper.guid()
                 value.label ??= TextResources.noLabel
-
-                if (value instanceof Sector)
-                    value.current ??= value.value
 
                 return value
             })

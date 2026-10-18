@@ -1,5 +1,5 @@
-import Errors from 'helpers/Errors'
-import { ErrorType, Icon, Tag } from 'static/Enums'
+import Errors from '@/helpers/Errors'
+import { ErrorType, Icon, Tag } from '@/static/Enums'
 
 class Modal {
     modal: HTMLDialogElement | undefined
@@ -47,7 +47,7 @@ class Modal {
         let titleSpan = document.createElement(Tag.Span)
 
         titleSpan.classList.add(ModalClasses.title)
-        titleSpan.innerHTML = title ?? ''
+        titleSpan.textContent = title ?? ''
 
         let closeButton = document.createElement(Tag.Button)
 

@@ -1,26 +1,29 @@
-import Canvas from 'helpers/Canvas'
-import CanvasWindow from 'types/CanvasWindow'
-import ChartSettings from 'types/ChartSettings'
-import Debug from 'Debug'
-import Legend from 'Legend'
-import Paddings from 'types/Paddings'
-import Panel from 'types/Panel'
-import Point from 'types/Point'
-import Pointer from 'renderer/Pointer'
-import ProcessFactory from 'render/ProcessFactory'
-import Queue from 'render/Queue'
-import RenderItem from 'types/RenderItem'
-import Transition from 'renderer/Transition'
-import CustomTooltip from 'renderer/CustomTooltip'
-import QueueItemsBuilder from 'builders/QueueItemsBuilder'
-import MenuButton from 'renderer/MenuButton'
-import ButtonOptions from 'types/ButtonOptions'
-import Export from 'Export'
-import Modal from 'Modal'
-import Decomposition from 'Decomposition'
-import TextResources from 'static/TextResources'
-import { Animations, ContextMenu, COORDS_MAX_X, COORDS_MAX_Y } from 'static/constants/Index'
-import { TextAlignment } from 'static/Enums'
+import Canvas from '@/helpers/Canvas'
+import CanvasWindow from '@/types/CanvasWindow'
+import ChartSettings from '@/types/ChartSettings'
+import Legend from '@/Legend'
+import Paddings from '@/types/Paddings'
+import Panel from '@/types/Panel'
+import Point from '@/types/Point'
+import Pointer from '@/renderer/Pointer'
+import ProcessFactory from '@/render/ProcessFactory'
+import Queue from '@/render/Queue'
+import RenderItem from '@/types/RenderItem'
+import Transition from '@/renderer/Transition'
+import CustomTooltip from '@/renderer/CustomTooltip'
+import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import MenuButton from '@/renderer/MenuButton'
+import TooltipOverlay from '@/renderer/TooltipOverlay'
+import ContextMenuOverlay from '@/renderer/ContextMenuOverlay'
+import ButtonOptions from '@/types/ButtonOptions'
+import Export from '@/Export'
+import Modal from '@/Modal'
+import Decomposition from '@/Decomposition'
+import TextResources from '@/static/TextResources'
+import { AnimationTiming, ContextMenu, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
+import { TextAlignment } from '@/static/Enums'
+
+// todo: split class
 
 export class Renderer {
     private static readonly idleDelay = 1000
@@ -41,11 +44,21 @@ export class Renderer {
 
     private readonly queue: Queue
 
+    private readonly tooltip: TooltipOverlay
+
+    private readonly contextMenu = new ContextMenuOverlay()
+
     private readonly tick = (timestamp: DOMHighResTimeStamp) => {
         this.draw(timestamp)
     }
 
     private activeUntil: DOMHighResTimeStamp = 0
+
+    private width: number = 0
+
+    private height: number = 0
+
+    private ratio: number = 1
 
     private frame: number | null = null
 
@@ -53,11 +66,15 @@ export class Renderer {
 
     private isLaidOut: boolean = false
 
+    private isSuspended: boolean = false
+
     private legend: Legend | undefined
 
     private menu: MenuButton | undefined
 
     private customTooltip: CustomTooltip | null = null
+
+    private menuButtons: ButtonOptions[] | undefined
 
     private panels: Panel[] = []
 
@@ -70,7 +87,8 @@ export class Renderer {
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
         this.queue = new Queue(Canvas.getContext(this.canvas))
-        this.window = new CanvasWindow(this.canvas.width, this.canvas.height)
+        this.tooltip = new TooltipOverlay(this.canvas)
+        this.window = new CanvasWindow(this.width, this.height)
 
         this.pointer = new Pointer(this.canvas, () => this.window, {
             onClick: (point: Point) => this.onClick(point),
@@ -80,9 +98,8 @@ export class Renderer {
     }
 
     apply(settings: ChartSettings) {
-        Debug.initialize(settings.enableDebugMode)
-
         this.settings = settings
+        this.menuButtons = undefined
 
         this.syncMenu()
         this.syncLegend()
@@ -92,7 +109,8 @@ export class Renderer {
                              ? CustomTooltip.create(this.canvas, settings.templateId)
                              : null
 
-        this.pointer.attach(this.settings.enableMove)
+        if (!this.isSuspended)
+            this.pointer.attach(this.settings.enableMove)
 
         if (this.isApplied)
             this.rebuildAnimated()
@@ -103,8 +121,10 @@ export class Renderer {
     }
 
     private rebuild(isInitialized: boolean) {
-        this.queue.destroy()
+        this.queue.clear()
 
+        this.tooltip.clear(this.queue)
+        this.contextMenu.clear(this.queue)
         this.legend?.clear(this.queue)
         this.menu?.clear(this.queue)
 
@@ -121,10 +141,15 @@ export class Renderer {
 
         this.rebuild(true)
 
-        Transition.apply(this.queue, previous, previousPanels, this.panels, Animations.rebuild)
+        Transition.apply(this.queue, previous, previousPanels, this.panels, AnimationTiming.rebuild)
     }
 
-    resize(width: number, height: number) {
+    resize(width: number, height: number, ratio: number) {
+        this.width = width
+        this.height = height
+        this.ratio = ratio
+        this.queue.ratio = ratio
+
         if (!this.isApplied)
             return
 
@@ -152,14 +177,34 @@ export class Renderer {
         this.customTooltip?.hide()
         this.customTooltip = null
 
-        this.queue.destroy()
+        this.tooltip.clear(this.queue)
+        this.contextMenu.clear(this.queue)
+        this.queue.clear()
 
         this.cancelFrame()
 
         this.panels = []
-        this.window = new CanvasWindow(this.canvas.width, this.canvas.height)
+        this.window = new CanvasWindow(this.width, this.height)
         this.isApplied = false
         this.isLaidOut = false
+    }
+
+    suspend() {
+        this.isSuspended = true
+
+        this.pointer.detach()
+
+        this.customTooltip?.hide()
+
+        this.cancelFrame()
+    }
+
+    resume() {
+        this.isSuspended = false
+
+        this.pointer.attach(this.settings.enableMove)
+
+        this.render()
     }
 
     private syncLegend() {
@@ -172,7 +217,7 @@ export class Renderer {
             this.legend.onChange = () => this.rebuildAnimated()
         }
 
-        this.layout(this.canvas.width, this.canvas.height)
+        this.layout(this.width, this.height)
     }
 
     private syncMenu() {
@@ -197,12 +242,12 @@ export class Renderer {
     private getMenuButtons() {
         const { title, charts } = this.settings
 
-        return [
+        return this.menuButtons ??= [
             new ButtonOptions(TextResources.exportPNG, () => {
-                setTimeout(() => Export.asPng(this.canvas, title, this.menu?.bounds), ContextMenu.fadeDuration)
+                setTimeout(() => Export.asPng(this.canvas, this.ratio, title, this.menu?.bounds), ContextMenu.fadeDuration)
             }),
             new ButtonOptions(TextResources.exportCSV, () => {
-                Export.asCsv(Decomposition.fromCharts(charts), title)
+                Export.asCsv(charts, title)
             }),
             ButtonOptions.divider(),
             new ButtonOptions(TextResources.decomposeToTable, () => {
@@ -221,6 +266,9 @@ export class Renderer {
     }
 
     render(): void {
+        if (this.isSuspended)
+            return
+
         this.activeUntil = performance.now() + Renderer.idleDelay
 
         this.requestFrame()
@@ -245,10 +293,10 @@ export class Renderer {
 
         const { position, isContextOpen, contextPoint } = this.pointer
 
-        this.queue.animate(position)
+        this.queue.animate(position && !this.contextMenu.isOver(position) ? position : null)
 
-        this.queue.tooltip(this.window, this.settings.enableTooltip ? position : null, isContextOpen, this.customTooltip)
-        this.queue.contextMenu(this.window, contextPoint, position, isContextOpen, this.settings.contextMenu,
+        this.tooltip.update(this.queue, this.window, this.settings.enableTooltip ? position : null, isContextOpen, this.customTooltip)
+        this.contextMenu.update(this.queue, this.window, contextPoint, position, isContextOpen, this.settings.contextMenu,
             this.pointer.isMenu ? this.getMenuButtons() : undefined)
 
         const isLegendMoving = this.legend?.isMoving
@@ -270,9 +318,11 @@ export class Renderer {
 
     private buildChart(isInitialized: boolean) {
         const add = (...actions: ((items: QueueItemsBuilder) => void)[]) => {
-            return isInitialized || this.settings.disableInitAnimation
-                   ? this.queue.addInitialized(...actions)
-                   : this.queue.add(...actions)
+            const items = QueueItemsBuilder.build(actions, isInitialized || this.settings.disableInitAnimation)
+
+            this.queue.add(items)
+
+            return items
         }
 
         const { charts } = this.settings
@@ -333,13 +383,13 @@ export class Renderer {
                  .size(Renderer.panelTitleFont)
                  .align(TextAlignment.Center)
                  .key('panel-title')
-                 .init(Animations.title, 0, true)
+                 .init(AnimationTiming.title, 0, true)
         }
     }
 
     private getClickableItemAt(point: Point): RenderItem | undefined {
         const isContextOpen = this.pointer.isContextOpen
-        const items = this.queue.queue
+        const items = this.queue.items
 
         for (let i = items.length - 1; i >= 0; i--) {
             const item = items[i]
@@ -364,7 +414,7 @@ export class Renderer {
 
     private getTitle() {
         const { title } = this.settings
-        const { width, height } = this.canvas
+        const { width, height } = this
 
         if (!title)
             return QueueItemsBuilder.empty
@@ -376,7 +426,7 @@ export class Renderer {
                  .align(TextAlignment.Center)
                  .fixed()
                  .key('title')
-                 .init(Animations.title, 0, true)
+                 .init(AnimationTiming.title, 0, true)
         }
     }
 
@@ -384,13 +434,13 @@ export class Renderer {
         this.legend?.resize(width, height, this.titleHeight)
         this.menu?.resize(width, height, this.titleHeight)
 
-        this.screen = new CanvasWindow(this.canvas.width, this.canvas.height)
+        this.screen = new CanvasWindow(this.width, this.height)
 
         return this.fit(this.legend?.reserved ?? { left: 0, top: 0, right: 0, bottom: 0 })
     }
 
     private fit({ left, top, right, bottom }: Paddings): boolean {
-        const { width: canvasWidth, height: canvasHeight } = this.canvas
+        const { width: canvasWidth, height: canvasHeight } = this
 
         top += this.titleHeight
 

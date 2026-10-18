@@ -1,13 +1,13 @@
-import * as Helper from 'Helper'
-import Point from 'types/Point'
-import RenderItem from 'types/RenderItem'
-import Theme from 'Theme'
-import Queue from 'render/Queue'
-import QueueItemsBuilder from 'builders/QueueItemsBuilder'
-import HoverProgress from 'types/HoverProgress'
-import * as Constants from 'static/constants/Index'
-import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from 'static/constants/Index'
-import { HorizontalAlignment, Icon, TextAlignment, VerticalAlignment } from 'static/Enums'
+import * as Helper from '@/Helper'
+import Point from '@/types/Point'
+import RenderItem from '@/types/RenderItem'
+import Theme from '@/Theme'
+import Queue from '@/render/Queue'
+import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import HoverProgress from '@/types/HoverProgress'
+import * as Constants from '@/static/constants/Index'
+import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
+import { HorizontalAlignment, Icon, TextAlignment, VerticalAlignment } from '@/static/Enums'
 
 export default class MenuButton {
     private static readonly width = 28
@@ -48,18 +48,18 @@ export default class MenuButton {
         const { x, y, width, height } = this.bounds
 
         const isOver = !!mouse && x <= mouse.x && mouse.x <= x + width && y <= mouse.y && mouse.y <= y + height
-        const isHoverChanged = this.hover.step(isOver, performance.now(), Constants.Animations.button)
+        const isHoverChanged = this.hover.step(isOver, performance.now(), Constants.AnimationTiming.button)
 
         if (!this.isDirty && !isHoverChanged)
             return
 
         this.clear(queue)
 
-        const added = queue.add((items: QueueItemsBuilder) => {
+        const added = QueueItemsBuilder.build([(items: QueueItemsBuilder) => {
             items.rect()
                  .position(this.x(x), this.y(y))
                  .size(this.x(width), this.y(height))
-                 .round([4, 4, 4, 4])
+                 .round(Array(4).fill(this.x(4)))
                  .fill()
                  .align(HorizontalAlignment.Left, VerticalAlignment.Top)
                  .color(Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * this.hover.value)))
@@ -74,7 +74,9 @@ export default class MenuButton {
                  .color(Theme.text)
                  .layer(Layer.Legend + 2)
                  .fixed()
-        })
+        }])
+
+        queue.add(added)
 
         this.items = new Set(added)
         this.isDirty = false
@@ -86,7 +88,7 @@ export default class MenuButton {
         if (this.items.size == 0)
             return
 
-        queue.queue = queue.queue.filter(item => !this.items.has(item))
+        queue.remove(this.items)
 
         this.items.clear()
     }

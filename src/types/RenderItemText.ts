@@ -1,10 +1,11 @@
-import CanvasWindow from 'types/CanvasWindow';
-import RenderItemBase from 'types/interfaces/RenderItemBase'
-import Point from 'types/Point'
-import RenderItem from 'types/RenderItem'
-import {TextAlignment, TextBaseline} from 'static/Enums'
-import RenderItemArc from 'types/RenderItemArc'
-import { boxEdgeDistance, stringWidth } from 'Helper'
+import CanvasWindow from '@/types/CanvasWindow'
+import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import Point from '@/types/Point'
+import RenderItem from '@/types/RenderItem'
+import { TextAlignment, TextBaseline } from '@/static/Enums'
+import RenderItemArc from '@/types/RenderItemArc'
+import { boxEdgeDistance, stringWidth } from '@/Helper'
+import { FONT_FAMILY } from '@/static/constants/Index'
 
 export type Orbit = {
     x: number
@@ -18,7 +19,7 @@ type TextCanvas = Point & {
 }
 
 export default class RenderItemText
-    implements RenderItemBase {
+    extends RenderItemBase {
     value: string
 
     absolute: Point = { x: 0, y: 0 }
@@ -34,7 +35,7 @@ export default class RenderItemText
     baseline: TextBaseline = TextBaseline.Alphabetic
 
     private get font(): string {
-        return `${this.fontSize}px Arial`
+        return `${this.fontSize}px ${FONT_FAMILY}`
     }
 
     from: Point | null = null
@@ -77,6 +78,29 @@ export default class RenderItemText
             x: this.from.x + (this.absolute.x - this.from.x) * morph,
             y: this.from.y + (this.absolute.y - this.from.y) * morph
         }
+    }
+
+    morphFrom(previous: RenderItemBase, morph: number): boolean {
+        if (!(previous instanceof RenderItemText))
+            return false
+
+        this.from = previous.current(morph)
+        this.fromAngle = previous.orbit ? previous.currentAngle(morph) : null
+
+        return true
+    }
+
+    enterFromAxis(y: number): boolean {
+        this.from = { x: this.absolute.x, y }
+
+        return true
+    }
+
+    leaveToAxis(y: number, morph: number): boolean {
+        this.from = this.current(morph)
+        this.absolute.y = y
+
+        return true
     }
 
     adjust(window: CanvasWindow, morph: number = 1): void {

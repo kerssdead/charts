@@ -1,5 +1,5 @@
-import * as Helper from 'Helper'
-import Utils from '../e2e/utils/Utils'
+import * as Helper from '@/Helper'
+import Utils from '@e2e/utils/Utils'
 
 describe('Parsing string to number', () => {
     it('US, no thousands', () => {
@@ -135,5 +135,15 @@ describe('Parsing string to number', () => {
     it('EU, fractional with long number with trailing zeros', () => {
         expect(Helper.parseNumber('144587,045000000000'))
             .toStrictEqual(144587.045)
+    })
+
+    it('not a number', () => {
+        expect(Helper.parseNumber('abc'))
+            .toStrictEqual(NaN)
+    })
+
+    it('space as thousands separator', () => {
+        expect(Helper.parseNumber('1 000'))
+            .toStrictEqual(NaN)
     })
 })
