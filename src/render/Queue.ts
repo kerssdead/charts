@@ -31,6 +31,7 @@ export default class Queue {
     render(now: DOMHighResTimeStamp, window: CanvasWindow, screen: CanvasWindow = window): boolean {
         this.ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0)
 
+        this.ctx.globalAlpha = 1
         this.ctx.fillStyle = Theme.canvasBackground
         this.ctx.fillRect(0, 0, screen.width, screen.height)
 
