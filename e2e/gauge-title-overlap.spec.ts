@@ -7,19 +7,20 @@ import { test } from '@playwright/test'
 import Utils from '@e2e/utils/Utils'
 import Settings from '@e2e/utils/Settings'
 import { ChartType } from '@/static/Enums'
-import Clip from '@e2e/utils/Clip'
 
-test('Gauge labels should not overlap chart title', async ({ page, browserName }) => {
-    await Utils.setup(page, browserName)
+// todo: add intermediate labels in gauge
 
-    await Settings.height(63)
+test(
+    'Gauge labels should not overlap chart title',
+    async ({ page, browserName }) => {
+        await Utils.setup(page, browserName)
 
-    await Settings.staticMode()
-    await Settings.enableTitle()
-    await Settings.chartType(ChartType.Gauge)
+        await Settings.height(63)
 
-    await Utils.checkRender(
-        '',
-        new Clip(440, 148, 48, 29)
-    )
-})
+        await Settings.staticMode()
+        await Settings.enableTitle()
+        await Settings.chartType(ChartType.Gauge)
+
+        await Utils.checkRender('')
+    }
+)

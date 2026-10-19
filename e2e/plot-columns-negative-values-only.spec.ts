@@ -7,23 +7,24 @@ import { test } from '@playwright/test'
 import Utils from '@e2e/utils/Utils'
 import Settings from '@e2e/utils/Settings'
 import { PlotType } from '@/static/Enums'
-import Clip from '@e2e/utils/Clip'
 
-test('Only negative values in column plot chart should be render correctly', async ({ page, browserName }) => {
-    await Utils.setup(page, browserName)
+test(
+    'Only negative values in column plot chart should be render correctly',
+    async ({ page, browserName }) => {
+        await Utils.setup(page, browserName)
 
-    await Settings.staticMode()
+        await Settings.staticMode()
 
-    await Settings.plotType(PlotType.Column)
-    await Settings.seriesWidth(90)
-    await Settings.enableNegativeValuesInPlot()
-    await Settings.valuesCount(1)
-    await Settings.pointsCount(7)
+        await Settings.plotType(PlotType.Column)
+        await Settings.seriesWidth(90)
+        await Settings.enableNegativeValuesInPlot()
+        await Settings.valuesCount(1)
+        await Settings.pointsCount(7)
 
-    await Settings.seed(189)
+        await Settings.seed(189)
 
-    await Utils.checkRender(
-        '',
-        new Clip(0, 0, 928, 406)
-    )
-})
+        await Utils.wait(1000)
+
+        await Utils.checkRender('d4173ab5')
+    }
+)
