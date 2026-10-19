@@ -73,6 +73,8 @@ export default class Transition {
 
             const verticalNext = vertical(panels, item)
 
+            item.isFading ||= !verticalNext
+
             if (item.axisValue != null && verticalNext)
                 item.leaveToAxis(verticalNext.getAxisY(item.axisValue), duration)
             else

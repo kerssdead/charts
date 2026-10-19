@@ -12,7 +12,7 @@ import Clip from '@e2e/utils/Clip'
 test('Only negative values in column plot chart should be render correctly', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.plotType(PlotType.Column)
     await Settings.seriesWidth(90)

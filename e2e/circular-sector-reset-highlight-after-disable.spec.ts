@@ -12,7 +12,7 @@ import { AnimationTiming } from '@/static/constants/Index'
 test('Pie chart sectors should not has another item over states', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.valuesCount(3)
     await Settings.chartType(ChartType.Pie)

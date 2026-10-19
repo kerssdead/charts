@@ -160,7 +160,7 @@ class Legend extends Overlay {
         if (this.size)
             this.resize(this.size.width, this.size.height, this.top)
 
-        if (settings && previous.length > 0)
+        if (settings && previous.length > 0 && !settings.staticMode)
             this.move(previous, previousArea)
     }
 
@@ -481,7 +481,8 @@ class Legend extends Overlay {
             if (this.getKey(item) == key && item.disabled == disabled)
                 item.disabled = !disabled
 
-        this.toggles.set(key, null)
+        if (!this.settings.staticMode)
+            this.toggles.set(key, null)
 
         this.onChange?.()
     }

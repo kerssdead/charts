@@ -9,7 +9,7 @@ test('Plot width should be resized', async ({ page, browserName }) => {
 
     await Settings.width(50)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
     await Settings.valuesCount(5)
     await Settings.chartType(ChartType.Plot)
 

@@ -133,9 +133,9 @@
                 </label>
 
                 <label>
-                    <input type="checkbox" id="init-animation" onchange="refresh()"/>
+                    <input type="checkbox" id="static-mode" onchange="refresh()"/>
 
-                    Disable init animation
+                    Static mode
                 </label>
 
                 <label>
@@ -753,7 +753,7 @@
             contextMenuEnabled = document.getElementById('context-menu').checked,
             otherEnabled = document.getElementById('other').checked,
             simpleEnabled = document.getElementById('simple').checked,
-            disableInitAnimation = document.getElementById('init-animation').checked,
+            staticMode = document.getElementById('static-mode').checked,
             shortLabels = document.getElementById('short-labels').checked,
             debugModeEnabled = document.getElementById('debug-mode').checked,
             moveEnabled = document.getElementById('move').checked
@@ -805,7 +805,7 @@
             enableTooltip: tooltipEnabled,
             enableLegend: legendEnabled,
             enableOther: otherEnabled,
-            disableInitAnimation: disableInitAnimation,
+            staticMode: staticMode,
             data: {
                 values: values,
                 xTitle: xAxisTitle,

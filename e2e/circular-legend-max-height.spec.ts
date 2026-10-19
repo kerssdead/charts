@@ -11,7 +11,7 @@ import { ChartType } from '@/static/Enums'
 test('Legend should not be bigger than chart canvas', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.valuesCount(400)
     await Settings.chartType(ChartType.Pie)

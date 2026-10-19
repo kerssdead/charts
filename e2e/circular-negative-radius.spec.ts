@@ -13,7 +13,7 @@ test(
     async ({ page, browserName }) => {
         await Utils.setup(page, browserName)
 
-        await Settings.enableInitAnimation(false)
+        await Settings.staticMode()
         await Settings.width(1)
         await Settings.height(1)
         await Settings.valuesCount(2)

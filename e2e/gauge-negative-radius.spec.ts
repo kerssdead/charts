@@ -11,7 +11,7 @@ import { ChartType } from '@/static/Enums'
 test('Gauge should prevent crash when radius is negative', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.chartType(ChartType.Gauge)
     await Settings.width(10)

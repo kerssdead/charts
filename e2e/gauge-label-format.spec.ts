@@ -12,7 +12,7 @@ import Clip from '@e2e/utils/Clip'
 test('Gauge labels should be formatted', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
     await Settings.gaugeMax(99)
     await Settings.chartType(ChartType.Gauge)
 

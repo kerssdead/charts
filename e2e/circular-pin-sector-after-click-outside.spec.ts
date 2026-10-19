@@ -11,7 +11,7 @@ import { ChartType } from '@/static/Enums'
 test('Pie chart sector should not be pinned when mouse click not on sector and then mouse moved to sector', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.valuesCount(2)
     await Settings.chartType(ChartType.Pie)

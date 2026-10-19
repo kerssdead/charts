@@ -13,7 +13,7 @@ import Clip from '@e2e/utils/Clip'
 test('Pie chart sectors should not be rendered after disabled in legend', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.chartType(ChartType.Pie)
     await Settings.enableLegend()

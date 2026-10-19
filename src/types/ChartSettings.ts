@@ -12,7 +12,7 @@ export default interface ChartSettings {
 
     enableMove: boolean
 
-    disableInitAnimation: boolean
+    staticMode: boolean
 
     disableInteractions: boolean
 

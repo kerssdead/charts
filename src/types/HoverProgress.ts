@@ -2,6 +2,8 @@ import ease from '@/animation/Animations'
 import { clamp } from '@/helpers/Geometry'
 
 export default class HoverProgress {
+    static isInstant: boolean = false
+
     private progress: number = 0
 
     private time: DOMHighResTimeStamp | null = null
@@ -26,7 +28,9 @@ export default class HoverProgress {
         this.time = now
         this.isOver = isOver
 
-        const progress = clamp(this.progress + (isOver ? delta : -delta) / duration, 0, 1)
+        const progress = HoverProgress.isInstant
+                         ? isOver ? 1 : 0
+                         : clamp(this.progress + (isOver ? delta : -delta) / duration, 0, 1)
         const isChanged = progress != this.progress
 
         this.progress = progress

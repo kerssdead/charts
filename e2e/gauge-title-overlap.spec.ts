@@ -14,7 +14,7 @@ test('Gauge labels should not overlap chart title', async ({ page, browserName }
 
     await Settings.height(63)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
     await Settings.enableTitle()
     await Settings.chartType(ChartType.Gauge)
 

@@ -33,8 +33,8 @@ class Settings {
         return Settings.option(Selectors.chartType, type)
     }
 
-    static enableInitAnimation(value: boolean = true) {
-        return Settings.check(Selectors.initAnimation, !value)
+    static staticMode(value: boolean = true) {
+        return Settings.check(Selectors.staticMode, value)
     }
 
     static innerRadius(value: number) {

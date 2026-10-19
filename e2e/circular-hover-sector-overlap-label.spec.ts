@@ -12,7 +12,7 @@ import Clip from '@e2e/utils/Clip'
 test('Hover sector in circular chart should not overlap other labels', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.valuesCount(50)
     await Settings.chartType(ChartType.Pie)

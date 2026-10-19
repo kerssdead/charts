@@ -12,7 +12,7 @@ import Clip from '@e2e/utils/Clip'
 test('Gauge labels should not be shrunk when width is half of 100%', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.chartType(ChartType.Gauge)
     await Settings.width(70)

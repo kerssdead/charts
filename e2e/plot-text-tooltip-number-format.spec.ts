@@ -18,7 +18,7 @@ test('When x-axis type is text tooltip value for y-axis should be formatted as n
                                                                                                }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.xAxisType(PlotAxisType.Text)
     await Settings.plotType(PlotType.Column)

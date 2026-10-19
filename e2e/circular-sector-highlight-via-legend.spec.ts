@@ -12,7 +12,7 @@ import { AnimationTiming } from '@/static/constants/Index'
 test('Pie chart sector should be highlighted from legend', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.valuesCount(2)
     await Settings.chartType(ChartType.Pie)

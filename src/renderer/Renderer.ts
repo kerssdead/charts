@@ -18,6 +18,7 @@ import Layout from '@/renderer/Layout'
 import ChartMenu from '@/renderer/ChartMenu'
 import { AnimationTiming } from '@/static/constants/Index'
 import Theme from '@/Theme'
+import HoverProgress from '@/types/HoverProgress'
 
 export default class Renderer {
     private readonly canvas: HTMLCanvasElement
@@ -112,6 +113,9 @@ export default class Renderer {
     }
 
     private rebuildAnimated() {
+        if (this.settings.staticMode)
+            return this.rebuild(true)
+
         const previous = Transition.snapshot(this.queue)
         const previousPanels = this.panels
 
@@ -222,6 +226,7 @@ export default class Renderer {
         this.frame = null
 
         Theme.update(this.settings.isDarkThemeFunction)
+        HoverProgress.isInstant = this.settings.staticMode
 
         const { window, screen } = this.layout
         const { position, context } = this.pointer
@@ -253,7 +258,7 @@ export default class Renderer {
 
     private buildChart(isInitialized: boolean) {
         const add = (...actions: QueueAction[]) => {
-            const items = QueueItemsBuilder.build(actions, isInitialized || this.settings.disableInitAnimation)
+            const items = QueueItemsBuilder.build(actions, isInitialized || this.settings.staticMode)
 
             this.queue.add(items)
 

@@ -12,7 +12,7 @@ import Clip from '@e2e/utils/Clip'
 test('Plot title should be rendered', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.enableTitle()
     await Settings.enableLegend()

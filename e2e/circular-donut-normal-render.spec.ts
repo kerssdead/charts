@@ -6,7 +6,7 @@ import { ChartType } from '@/static/Enums'
 test('Circular donut chart should be rendered without any issues', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.valuesCount(2)
     await Settings.chartType(ChartType.Pie)

@@ -11,7 +11,7 @@ import { PlotType } from '@/static/Enums'
 test('Negative values in column plot chart should have negative value', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.plotType(PlotType.Column)
     await Settings.seriesWidth(90)

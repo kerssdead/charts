@@ -9,7 +9,7 @@ test('Plot height should be resized', async ({ page, browserName }) => {
 
     await Settings.height(30)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
     await Settings.valuesCount(5)
     await Settings.chartType(ChartType.Plot)
 

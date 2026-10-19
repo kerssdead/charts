@@ -12,7 +12,7 @@ import Clip from '@e2e/utils/Clip'
 test('Pie chart tooltip should not be in default position when mouse leave canvas', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.valuesCount(2)
     await Settings.chartType(ChartType.Pie)

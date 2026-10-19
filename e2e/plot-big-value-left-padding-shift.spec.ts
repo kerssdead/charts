@@ -12,7 +12,7 @@ import Clip from '@e2e/utils/Clip'
 test('Big numbers should not overlap y-axis title and should be in canvas', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
 
     await Settings.plotType(PlotType.Column)
     await Settings.baseValue(12345678)
