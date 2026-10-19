@@ -9,22 +9,27 @@ import Settings from '@e2e/utils/Settings'
 import { ChartType } from '@/static/Enums'
 import Clip from '@e2e/utils/Clip'
 
-test('Hover sector in circular chart should not overlap other labels', async ({ page, browserName }) => {
-    await Utils.setup(page, browserName)
+// todo: add pin sector on pie chart
 
-    await Settings.staticMode()
+test(
+    'Hover sector in circular chart should not overlap other labels',
+    async ({ page, browserName }) => {
+        await Utils.setup(page, browserName)
 
-    await Settings.valuesCount(50)
-    await Settings.chartType(ChartType.Pie)
+        await Settings.staticMode()
 
-    await Utils.scrollToCanvas()
-    await Utils.wait(50)
+        await Settings.valuesCount(50)
+        await Settings.chartType(ChartType.Pie)
 
-    await Utils.page.mouse.move(590, 600)
-    await Utils.wait(400)
+        await Utils.scrollToCanvas()
+        await Utils.wait(50)
 
-    await Utils.checkRender(
-        '',
-        new Clip(330, 620, 100, 100)
-    )
-})
+        await Utils.page.mouse.move(590, 600)
+        await Utils.wait(400)
+
+        await Utils.checkRender(
+            '',
+            new Clip(330, 620, 100, 100)
+        )
+    }
+)

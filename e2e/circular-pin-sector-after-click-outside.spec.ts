@@ -8,23 +8,26 @@ import Utils from '@e2e/utils/Utils'
 import Settings from '@e2e/utils/Settings'
 import { ChartType } from '@/static/Enums'
 
-test('Pie chart sector should not be pinned when mouse click not on sector and then mouse moved to sector', async ({ page, browserName }) => {
-    await Utils.setup(page, browserName)
+// todo: add pin to pie
 
-    await Settings.staticMode()
+test(
+    'Pie chart sector should not be pinned when mouse click not on sector and then mouse moved to sector',
+    async ({ page, browserName }) => {
+        await Utils.setup(page, browserName)
 
-    await Settings.valuesCount(2)
-    await Settings.chartType(ChartType.Pie)
+        await Settings.staticMode()
 
-    await Utils.scrollToCanvas()
-    await Utils.wait(50)
+        await Settings.valuesCount(2)
+        await Settings.chartType(ChartType.Pie)
 
-    await Utils.page.mouse.click(200, 200)
-    await Utils.wait(50)
-    await Utils.page.mouse.move(1000, 600, { steps: 5 })
-    await Utils.wait(700)
+        await Utils.scrollToCanvas()
+        await Utils.wait(50)
 
-    await Utils.checkRender(
-        ''
-    )
-})
+        await Utils.page.mouse.click(200, 200)
+        await Utils.wait(50)
+        await Utils.page.mouse.move(1000, 600, { steps: 5 })
+        await Utils.wait(700)
+
+        await Utils.checkRender('')
+    }
+)

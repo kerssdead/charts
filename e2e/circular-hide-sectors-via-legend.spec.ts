@@ -7,50 +7,55 @@ import { test } from '@playwright/test'
 import Utils from '@e2e/utils/Utils'
 import Settings from '@e2e/utils/Settings'
 import { ChartType } from '@/static/Enums'
-import { AnimationTiming } from '@/static/constants/Index'
 import Clip from '@e2e/utils/Clip'
 
-test('Pie chart sectors should not be rendered after disabled in legend', async ({ page, browserName }) => {
-    await Utils.setup(page, browserName)
+// todo: add empty state for pie chart
 
-    await Settings.staticMode()
+test(
+    'Pie chart sectors should not be rendered after disabled in legend',
+    async ({ page, browserName }) => {
+        await Utils.setup(page, browserName)
 
-    await Settings.chartType(ChartType.Pie)
-    await Settings.enableLegend()
-    await Settings.valuesCount(10)
+        await Settings.staticMode()
 
-    await Utils.scrollToCanvas()
-    await Utils.wait(1000)
+        await Settings.chartType(ChartType.Pie)
+        await Settings.enableLegend()
+        await Settings.valuesCount(10)
 
-    const timeAfterClick = AnimationTiming.legend
+        await Utils.scrollToCanvas()
+        await Utils.page.mouse.click(0, 0)
 
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(340, 670)
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(440, 670)
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(540, 670)
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(640, 670)
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(740, 670)
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(840, 670)
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(920, 670)
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(340, 700)
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(440, 700)
-    await Utils.wait(timeAfterClick)
-    await Utils.page.mouse.click(540, 700)
-    await Utils.wait(AnimationTiming.legend * 11)
+        const timeAfterClick = 20
 
-    await Utils.page.mouse.move(0, 0, { steps: 3 })
-    await Utils.wait(AnimationTiming.legend)
+        const topRow = 680
+        const bottomRow = 710
 
-    await Utils.checkRender(
-        '',
-        new Clip(173, 34, 582, 582)
-    )
-})
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(320, topRow)
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(420, topRow)
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(510, topRow)
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(610, topRow)
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(710, topRow)
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(800, topRow)
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(900, topRow)
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(1000, topRow)
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(610, bottomRow)
+        await Utils.wait(timeAfterClick)
+        await Utils.page.mouse.click(710, bottomRow)
+
+        await Utils.page.mouse.move(0, 0, { steps: 3 })
+
+        await Utils.checkRender(
+            'baf45eea',
+            new Clip(173, 34, 582, 582)
+        )
+    }
+)
