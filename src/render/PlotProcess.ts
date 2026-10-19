@@ -208,12 +208,20 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         return this.hasBars && !this.isHorizontal
     }
 
+    private get leftTitle() {
+        return this.isHorizontal ? this.data.xTitle : this.data.yTitle
+    }
+
+    private get bottomTitle() {
+        return this.isHorizontal ? this.data.yTitle : this.data.xTitle
+    }
+
     private get bandGap() {
         return this.units.y(X_LABEL_HEIGHT + BAND_SPACING)
     }
 
     private getLeftMargin() {
-        const titleWidth = this.data.xTitle ? AXIS_TITLE_FONT + LEFT_GAP : 0
+        const titleWidth = this.leftTitle ? AXIS_TITLE_FONT + LEFT_GAP : 0
 
         const labels = [
             ...(this.hasBars ? this.getCategories() : []),
@@ -226,7 +234,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
     }
 
     private getBottomMargin() {
-        const titleHeight = this.data.yTitle ? BOTTOM_GAP + AXIS_TITLE_FONT : 0
+        const titleHeight = this.bottomTitle ? BOTTOM_GAP + AXIS_TITLE_FONT : 0
 
         return this.units.y(X_LABEL_HEIGHT + titleHeight + BOTTOM_PADDING)
     }
@@ -419,8 +427,8 @@ export default class PlotProcess extends ChartProcess<PlotData> {
             return QueueItemsBuilder.empty
 
         return (items: QueueItemsBuilder) => {
-            if (this.data.xTitle) {
-                items.text(this.data.xTitle)
+            if (this.leftTitle) {
+                items.text(this.leftTitle)
                      .position(this.units.x(LEFT_PADDING), COORDS_MAX_Y / 2)
                      .baseline(TextBaseline.Top)
                      .size(AXIS_TITLE_FONT)
@@ -428,8 +436,8 @@ export default class PlotProcess extends ChartProcess<PlotData> {
                      .key('axis-title-x')
             }
 
-            if (this.data.yTitle) {
-                items.text(this.data.yTitle)
+            if (this.bottomTitle) {
+                items.text(this.bottomTitle)
                      .position(COORDS_MAX_X / 2 - this.units.x(AXIS_TITLE_FONT / 2), COORDS_MAX_Y - this.units.y(BOTTOM_PADDING + AXIS_TITLE_FONT / 2))
                      .size(AXIS_TITLE_FONT)
                      .key('axis-title-y')

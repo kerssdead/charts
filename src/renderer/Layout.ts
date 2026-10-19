@@ -34,14 +34,12 @@ export default class Layout {
 
     private title: string | undefined
 
-    private hasMenu: boolean = false
-
     get hasArea() {
         return this.window.width > 0 && this.window.height > 0
     }
 
     private get titleHeight() {
-        return this.title || this.hasMenu ? TITLE_FONT + TITLE_PADDING * 2 : 0
+        return this.title ? TITLE_FONT + TITLE_PADDING * 2 : 0
     }
 
     reset() {
@@ -50,7 +48,6 @@ export default class Layout {
 
     update(title: string | undefined, legend: Legend | undefined, menu: MenuButton | undefined): boolean {
         this.title = title
-        this.hasMenu = !!menu
 
         legend?.resize(this.width, this.height, this.titleHeight)
         menu?.resize(this.width, this.height, this.titleHeight)

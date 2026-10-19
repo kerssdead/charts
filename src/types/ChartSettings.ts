@@ -16,6 +16,8 @@ export default interface ChartSettings {
 
     disableInteractions: boolean
 
+    disableMenu: boolean
+
     enableDebugMode: boolean
 
     baseColor: string

@@ -29,7 +29,7 @@ type Box = LabelBox & {
 
 export default function layoutLabels(labels: LabelBox[], distance: number): LabelPlacement[] {
     const getCenter = (box: Box) => {
-        const push = distance + boxEdgeDistance(box.angle, box.halfWidth, box.halfHeight)
+        const push = distance + boxEdgeDistance(box.angle, box.halfWidth, box.halfHeight, distance)
 
         return {
             x: push * Math.cos(box.angle),

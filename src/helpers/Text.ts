@@ -61,9 +61,13 @@ export function escapeHtml(value: unknown) {
 
 let shortFormat: Intl.NumberFormat | undefined
 
+let fullFormat: Intl.NumberFormat | undefined
+
 export function short(value: number, isShort: boolean) {
     if (!isShort) {
-        return String(value)
+        fullFormat ??= new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 })
+
+        return fullFormat.format(value)
     }
 
     shortFormat ??= new Intl.NumberFormat(undefined, {

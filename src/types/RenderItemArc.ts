@@ -189,9 +189,11 @@ export default class RenderItemArc
             return
 
         const labelAngle = shape.middle + this.leaderOffset
+        const bendAngle = shape.middle + this.leaderOffset / 2
 
         const start = this.canvas.radius + this.canvas.leaderGap
         const end = start + this.canvas.leaderLength
+        const bend = end / Math.max(Math.cos(this.leaderOffset / 2), .5)
 
         ctx.globalAlpha *= visibility
         ctx.strokeStyle = Theme.line
@@ -199,7 +201,7 @@ export default class RenderItemArc
         ctx.beginPath()
         ctx.moveTo(shape.x + start * Math.cos(shape.middle), shape.y + start * Math.sin(shape.middle))
         ctx.quadraticCurveTo(
-            shape.x + end * Math.cos(shape.middle), shape.y + end * Math.sin(shape.middle),
+            shape.x + bend * Math.cos(bendAngle), shape.y + bend * Math.sin(bendAngle),
             shape.x + end * Math.cos(labelAngle), shape.y + end * Math.sin(labelAngle)
         )
         ctx.stroke()

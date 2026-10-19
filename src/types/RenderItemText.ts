@@ -6,7 +6,7 @@ import { TextAlignment, TextBaseline } from '@/static/Enums'
 import RenderItemArc from '@/types/RenderItemArc'
 import { boxEdgeDistance, lerp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
-import { FONT_FAMILY } from '@/static/constants/Index'
+import { COORDS_MAX_X, FONT_FAMILY } from '@/static/constants/Index'
 import Theme from '@/Theme'
 
 export type Orbit = {
@@ -18,6 +18,7 @@ export type Orbit = {
 
 type TextCanvas = Point & {
     angle: number
+    radius: number
 }
 
 export default class RenderItemText
@@ -26,7 +27,7 @@ export default class RenderItemText
 
     absolute: Point = { x: 0, y: 0 }
 
-    canvas: TextCanvas = { x: 0, y: 0, angle: 0 }
+    canvas: TextCanvas = { x: 0, y: 0, angle: 0, radius: 0 }
 
     fontSize: number = 14
 
@@ -113,6 +114,7 @@ export default class RenderItemText
         const position = this.current(morph)
 
         this.canvas.angle = this.currentAngle(morph)
+        this.canvas.radius = (this.orbit?.radiusX ?? 0) / COORDS_MAX_X * window.width
 
         this.canvas.x = RenderItem.adjustX(window, position.x)
         this.canvas.y = RenderItem.adjustY(window, position.y) + (this.rotate == 0 ? this.baselineShift : 0)
@@ -140,7 +142,7 @@ export default class RenderItemText
         } else if (this.orbit) {
             this.halfWidth ??= stringWidth(this.value, this.fontSize) / 2
 
-            const distance = boxEdgeDistance(this.canvas.angle, this.halfWidth, this.fontSize / 2)
+            const distance = boxEdgeDistance(this.canvas.angle, this.halfWidth, this.fontSize / 2, this.canvas.radius)
 
             ctx.textAlign = TextAlignment.Center
             ctx.textBaseline = TextBaseline.Middle

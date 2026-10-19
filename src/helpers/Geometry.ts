@@ -44,9 +44,17 @@ export function placeNear(point: Point,
     return { x: Math.max(x, bounds.x), y: Math.max(y, bounds.y) }
 }
 
-export function boxEdgeDistance(angle: number, halfWidth: number, halfHeight: number) {
+export function boxEdgeDistance(angle: number, halfWidth: number, halfHeight: number, distance: number) {
     const cos = Math.abs(Math.cos(angle))
     const sin = Math.abs(Math.sin(angle))
 
-    return Math.min(cos > 1e-6 ? halfWidth / cos : Infinity, sin > 1e-6 ? halfHeight / sin : Infinity)
+    if (sin > 1e-6 && (distance + halfHeight) / sin * cos <= halfWidth)
+        return (distance + halfHeight) / sin - distance
+
+    if (cos > 1e-6 && (distance + halfWidth) / cos * sin <= halfHeight)
+        return (distance + halfWidth) / cos - distance
+
+    const b = cos * halfWidth + sin * halfHeight
+
+    return b + Math.sqrt(Math.max(b * b - halfWidth * halfWidth - halfHeight * halfHeight + distance * distance, 0)) - distance
 }

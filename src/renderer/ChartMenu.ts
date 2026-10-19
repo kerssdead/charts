@@ -34,7 +34,7 @@ export default class ChartMenu {
         this.settings = settings
         this.buttons = undefined
 
-        if (settings.disableInteractions) {
+        if (settings.disableInteractions || settings.disableMenu) {
             this.remove()
         } else if (!this.button) {
             this.button = new MenuButton()

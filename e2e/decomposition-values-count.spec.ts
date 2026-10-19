@@ -27,7 +27,7 @@ test(
         await Utils.page.mouse.click(1084, 20)
         await page.mouse.click(1084, 90)
 
-        await page.waitForSelector('dialog')
+        await page.waitForSelector('dialog', { timeout: 6000 })
 
         expect(await page.locator('dialog .o-table .o-table-row').count())
             .toBe(count)
