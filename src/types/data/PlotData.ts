@@ -1,17 +1,16 @@
-import TableValue from 'types/TableValue'
-import PlotSeries from 'types/PlotSeries'
-import TableHeaderValue from 'types/TableHeaderValue'
-import TableData from 'types/TableData'
-import Data from 'types/interfaces/Data'
-import Formatter from 'helpers/Formatter'
-import { PlotAxisType } from 'static/Enums'
+import PlotSeries from '@/types/PlotSeries'
+import TableHeaderValue from '@/types/TableHeaderValue'
+import TableData from '@/types/TableData'
+import Data from '@/types/interfaces/Data'
+import Formatter from '@/helpers/Formatter'
+import { PlotAxisType } from '@/static/Enums'
 
-class PlotData implements Data {
+export default interface PlotData extends Data {
     shortLabels: boolean
 
     simple: boolean
 
-    yMax: number
+    yMax: number | undefined
 
     xTitle: string
 
@@ -20,42 +19,30 @@ class PlotData implements Data {
     xType: PlotAxisType
 
     values: PlotSeries[]
-
-    static getRows(data: PlotData): TableData {
-        let headers: TableHeaderValue[] = []
-
-        let values: TableValue[] = []
-
-        for (const series of data.values) {
-            let seriesValues = new Map<string, any>()
-
-            for (const value of series.values) {
-                seriesValues.set(value.x.toString(), value.y)
-                headers.push({
-                    value: value.x.toString(),
-                    display: data.xType == PlotAxisType.Date
-                             ? Formatter.date(new Date(value.x))
-                             : value.x.toString()
-                })
-            }
-
-            values.push({
-                name: series.label,
-                values: seriesValues
-            })
-        }
-
-        const unique = new Set(),
-            uniqueHeaders = headers.filter(v => !unique.has(v.display) && unique.add(v.display))
-
-        if (data.xType == PlotAxisType.Date)
-            uniqueHeaders.sort((a, b) => new Date(a.value).getTime() - new Date(b.value).getTime())
-
-        return {
-            headers: uniqueHeaders,
-            values: values
-        }
-    }
 }
 
-export default PlotData
+export function getPlotRows(data: PlotData): TableData {
+    const headers = new Map<string, TableHeaderValue>()
+
+    const values = data.values.map(series => {
+        const seriesValues = new Map<string, number>()
+
+        for (const value of series.values) {
+            const key = value.x.toString()
+
+            seriesValues.set(key, Number(value.y))
+
+            if (!headers.has(key))
+                headers.set(key, { value: key, display: Formatter.axis(value.x, data.xType) })
+        }
+
+        return { name: series.label, values: seriesValues }
+    })
+
+    const uniqueHeaders = [...headers.values()]
+
+    if (data.xType == PlotAxisType.Date)
+        uniqueHeaders.sort((a, b) => Formatter.toDate(a.value).getTime() - Formatter.toDate(b.value).getTime())
+
+    return { headers: uniqueHeaders, values }
+}

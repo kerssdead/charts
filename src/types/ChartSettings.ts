@@ -1,27 +1,22 @@
-import Data from 'types/interfaces/Data'
-import DropdownItem from 'types/DropdownItem'
-import { ChartType, LegendPlace } from 'static/Enums'
+import Data from '@/types/interfaces/Data'
+import DropdownItem from '@/types/DropdownItem'
+import { ChartType, LegendPlace } from '@/static/Enums'
+import ChartItem from '@/types/ChartItem'
 
-class ChartSettings {
+export default interface ChartSettings {
     enableLegend: boolean
 
     enableTooltip: boolean
 
     enableOther: boolean
 
-    disableInitAnimation: boolean
+    enableMove: boolean
+
+    staticMode: boolean
 
     disableInteractions: boolean
 
     enableDebugMode: boolean
-
-    width: number
-
-    height: number
-
-    minWidth: number | undefined
-
-    minHeight: number | undefined
 
     baseColor: string
 
@@ -31,15 +26,17 @@ class ChartSettings {
 
     valuePostfix: string | undefined
 
-    type: ChartType
-
     legendPlace: LegendPlace
 
     data: Data
 
+    type: ChartType
+
+    charts: ChartItem[]
+
+    columns?: number
+
     contextMenu?: DropdownItem[]
 
-    isDarkThemeFunction: Function | undefined
+    isDarkThemeFunction: (() => boolean) | undefined
 }
-
-export default ChartSettings

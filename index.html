@@ -10,6 +10,8 @@
     <script src="./dist/ocharts.js"></script>
 </head>
 
+<!-- todo: add displaying multiple charts on the single canvas -->
+
 <body>
     <div class="base">
         <div class="chart-container">
@@ -131,9 +133,15 @@
                 </label>
 
                 <label>
-                    <input type="checkbox" id="init-animation" onchange="refresh()"/>
+                    <input type="checkbox" id="static-mode" onchange="refresh()"/>
 
-                    Disable init animation
+                    Static mode
+                </label>
+
+                <label>
+                    <input type="checkbox" id="use-base-color" onchange="refresh()"/>
+
+                    Use base color
                 </label>
 
                 <label>
@@ -164,6 +172,18 @@
                     Base Value
 
                     <input type="number" id="base-value" onchange="refresh()" value="1000"/>
+                </label>
+
+                <label>
+                    <input type="checkbox" id="debug-mode" onchange="refresh()"/>
+
+                    Debug mode
+                </label>
+
+                <label>
+                    <input type="checkbox" id="move" onchange="refresh()"/>
+
+                    Move
                 </label>
             </div>
 
@@ -256,15 +276,15 @@
                     Line type
 
                     <select id="line-type" onchange="refresh()">
-                        <option value="0">
+                        <option value="[]">
                             Solid
                         </option>
 
-                        <option value="1">
+                        <option value="[15,5]">
                             Dash
                         </option>
 
-                        <option value="2">
+                        <option value="[5,5]">
                             Dotted
                         </option>
                     </select>
@@ -274,6 +294,12 @@
                     <input type="checkbox" id="short-labels" onchange="refresh()"/>
 
                     Short Labels
+                </label>
+
+                <label>
+                    Y-axis max
+
+                    <input type="number" min="0" id="y-max" onchange="refresh()" value=""/>
                 </label>
             </div>
 
@@ -310,6 +336,12 @@
 
                     <input type="number" id="gauge-max" onchange="refresh()" value="100"/>
                 </label>
+
+                <label>
+                    <input type="checkbox" id="use-track" onchange="refresh()" checked/>
+
+                    Use track
+                </label>
             </div>
 
             <div>
@@ -317,6 +349,18 @@
                     Padding
 
                     <input type="range" id="tree-padding" oninput="refresh()"/>
+                </label>
+
+                <label>
+                    Gap
+
+                    <input type="range" id="tree-gap" oninput="refresh()"/>
+                </label>
+
+                <label>
+                    Sectors Count
+
+                    <input type="number" min="0" id="tree-sectors-count" onchange="refresh()" value="10"/>
                 </label>
             </div>
         </div>
@@ -412,7 +456,7 @@
                 if (element) {
                     if (element.type === 'checkbox')
                         element.checked = value
-                    else
+                    else if (element.tagName !== 'SELECT' || [...element.options].some(option => option.value === value))
                         element.value = value
                 }
             }
@@ -437,6 +481,13 @@
                 location.reload()
             }
         })
+    }
+
+    function getColor() {
+        const color = `#${Math.floor(rng.nextFloat() * 16777215).toString(16).padStart(6, '0')}`
+
+        // random value is taken anyway, so other generated values don't change when base color is toggled
+        return document.getElementById('use-base-color').checked ? undefined : color
     }
 
     function getValues(type, count, valuesType, pointsCount, plotType) {
@@ -544,7 +595,8 @@
                                 : customLabel
                             : `Series ${i}`,
                         data: getData(i),
-                        lineType: lineType
+                        dash: JSON.parse(lineType),
+                        color: getColor()
                     })
                 }
 
@@ -584,48 +636,14 @@
                                 ? customLabel + ` ${i}`
                                 : customLabel
                             : `Sector ${i}`,
-                        data: getData(i)
+                        data: getData(i),
+                        color: getColor()
                     })
                 }
 
                 break
 
             case 2:
-                let value = 0
-
-                sameValue = rng.nextFloat() * baseValue
-
-                switch (valuesType) {
-                    case 0:
-                        value = rng.nextFloat() * baseValue
-
-                        break
-
-                    case 1:
-                        value = 50
-
-                        break
-
-                    case 2:
-                        value = sameValue
-
-                        break
-
-                    default:
-                        break
-                }
-
-                values.push({
-                    value: value,
-                    label: isCustomLabel
-                        ? customLabel
-                        : `Label`,
-                    data: getData(0)
-                })
-
-                break
-
-            case 3:
                 sameValue = rng.nextFloat() * baseValue
 
                 for (let i = 0; i < count; i++) {
@@ -638,7 +656,7 @@
                             break
 
                         case 1:
-                            value = i
+                            value = 50
 
                             break
 
@@ -651,15 +669,65 @@
                             break
                     }
 
-
                     values.push({
                         value: value,
                         label: isCustomLabel
-                            ? indexedCustomLabel
-                                ? customLabel + ` ${i}`
-                                : customLabel
-                            : `Cell ${i}`,
-                        data: getData(i)
+                            ? customLabel
+                            : `Label ${i}`,
+                        data: getData(i),
+                        color: getColor()
+                    })
+                }
+
+                break
+
+            case 3:
+                sameValue = rng.nextFloat() * baseValue
+
+                const sectorsCount = +document.getElementById('tree-sectors-count').value
+
+                for (let i = 0; i < count; i++) {
+                    let sectors = []
+
+                    for (let j = 0; j < sectorsCount; j++) {
+                        let value = 0
+
+                        switch (valuesType) {
+                            case 0:
+                                value = rng.nextFloat() * baseValue
+
+                                break
+
+                            case 1:
+                                value = j
+
+                                break
+
+                            case 2:
+                                value = sameValue
+
+                                break
+
+                            default:
+                                break
+                        }
+
+                        sectors.push({
+                            value: value,
+                            label: isCustomLabel
+                                ? indexedCustomLabel
+                                    ? customLabel + ` ${j}`
+                                    : customLabel
+                                : `Cell ${j}`,
+                            data: getData(j)
+                        })
+                    }
+
+                    values.push({
+                        label: `Group ${i}`,
+                        sectors: sectors,
+                        data: getData(i),
+                        color: getColor()
                     })
                 }
 
@@ -685,8 +753,10 @@
             contextMenuEnabled = document.getElementById('context-menu').checked,
             otherEnabled = document.getElementById('other').checked,
             simpleEnabled = document.getElementById('simple').checked,
-            disableInitAnimation = document.getElementById('init-animation').checked,
-            shortLabels = document.getElementById('short-labels').checked
+            staticMode = document.getElementById('static-mode').checked,
+            shortLabels = document.getElementById('short-labels').checked,
+            debugModeEnabled = document.getElementById('debug-mode').checked,
+            moveEnabled = document.getElementById('move').checked
 
 
         const title = titleEnabled ? 'Title' : null,
@@ -697,15 +767,20 @@
             valuesType = +document.getElementById('values-type').value,
             pointsCount = +document.getElementById('points-count').value,
             plotType = +document.getElementById('plot-type').value,
-            baseColor = document.getElementById('base-color').value,
+            baseColor = document.getElementById('use-base-color').checked
+                        ? document.getElementById('base-color').value
+                        : null,
             gaugeMin = +document.getElementById('gauge-min').value,
             gaugeMax = +document.getElementById('gauge-max').value,
+            enableTrack = document.getElementById('use-track').checked,
             padding = +document.getElementById('tree-padding').value,
+            gap = +document.getElementById('tree-gap').value,
             customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
             innerRadius = +document.getElementById('inner-radius').value,
             xType = +document.getElementById('x-axis-type').value,
             postfix = document.getElementById('postfix').value,
             innerTitle = document.getElementById('inner-title').value,
+            yMax = document.getElementById('y-max').value,
             contextMenu = !contextMenuEnabled
                 ? null
                 : [
@@ -730,7 +805,7 @@
             enableTooltip: tooltipEnabled,
             enableLegend: legendEnabled,
             enableOther: otherEnabled,
-            disableInitAnimation: disableInitAnimation,
+            staticMode: staticMode,
             data: {
                 values: values,
                 xTitle: xAxisTitle,
@@ -738,11 +813,14 @@
                 xType: xType,
                 min: gaugeMin,
                 max: gaugeMax,
+                enableTrack: enableTrack,
                 padding: padding,
+                gap: gap,
                 innerRadius: innerRadius,
                 simple: simpleEnabled,
                 innerTitle: innerTitle,
-                shortLabels: shortLabels
+                shortLabels: shortLabels,
+                yMax: yMax
             },
             type: type,
             baseColor: baseColor,
@@ -750,7 +828,8 @@
             contextMenu: contextMenu,
             valuePostfix: postfix,
             isDarkThemeFunction: () => darkThemeEnabled,
-            enableDebugMode: true
+            enableDebugMode: debugModeEnabled,
+            enableMove: moveEnabled
         }
 
         if (chart === undefined)

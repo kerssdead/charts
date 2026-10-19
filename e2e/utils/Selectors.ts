@@ -5,7 +5,7 @@ class Selectors {
 
     static chartType = '#chart-type'
 
-    static initAnimation = '#init-animation'
+    static staticMode = '#static-mode'
 
     static innerRadius = '#inner-radius'
 

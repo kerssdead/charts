@@ -1,56 +1,38 @@
-export enum AnimationType {
-    None,
-
-    MouseOver,
-
-    MouseLeave,
-
-    Init,
-
-    Click,
-
-    AnotherItemOver,
-
-    AnotherItemLeave
-}
-
-export enum Attribute {
-    Name = 'name'
-}
-
-export enum ChartType {
+export const enum ChartType {
     Plot,
 
-    Circular,
+    Pie,
 
     Gauge,
 
     TreeMap
 }
 
-export enum ErrorType {
-    NullContext = 'Can\'t find context',
-
-    ElementNotExist = 'Element does not exist',
-
-    MaxCallsReach = 'Max calls reach'
+export const enum ErrorType {
+    NullContext = 'Can\'t find context'
 }
 
-export enum Events {
-    VisibilityChanged = 'visibilitychange',
-
+export const enum Events {
     Blur = 'blur',
-
-    MouseMove = 'mousemove',
 
     Click = 'click',
 
     Change = 'change',
 
-    ContextMenu = 'contextmenu'
+    ContextMenu = 'contextmenu',
+
+    PointerDown = 'pointerdown',
+
+    PointerMove = 'pointermove',
+
+    PointerLeave = 'pointerleave',
+
+    LostPointerCapture = 'lostpointercapture',
+
+    Wheel = 'wheel'
 }
 
-export enum LegendPlace {
+export const enum LegendPlace {
     Bottom,
 
     Left,
@@ -60,15 +42,7 @@ export enum LegendPlace {
     Right
 }
 
-export enum LineType {
-    Solid,
-
-    Dash,
-
-    Dotted
-}
-
-export enum PlotAxisType {
+export const enum PlotAxisType {
     Number,
 
     Date,
@@ -76,7 +50,7 @@ export enum PlotAxisType {
     Text
 }
 
-export enum PlotType {
+export const enum PlotType {
     Line,
 
     AttentionLine,
@@ -88,7 +62,7 @@ export enum PlotType {
     StackingColumn
 }
 
-export enum Tag {
+export const enum Tag {
     Canvas = 'canvas',
 
     A = 'a',
@@ -97,33 +71,45 @@ export enum Tag {
 
     Dialog = 'dialog',
 
-    Table = 'table',
-
-    Script = 'script',
-
     Button = 'button',
 
     Span = 'span'
 }
 
-export enum RenderState {
-    Idle,
-
-    Init
-}
-
-export enum Icon {
-    ThreeLines = '☰',
+export const enum Icon {
+    ThreeDots = '⋯',
 
     Close = '×'
 }
 
-export enum DrawPointType {
-    Move = 'move',
+export const enum TextAlignment {
+    Left = 'start',
 
-    Line = 'line',
+    Center = 'center',
 
-    QuadraticCurve = 'quadratic-curve',
+    Right = 'end'
+}
 
-    ArcTo = 'arc-to'
+export const enum TextBaseline {
+    Alphabetic = 'alphabetic',
+
+    Top = 'top',
+
+    Middle = 'middle'
+}
+
+export const enum HorizontalAlignment {
+    Left = 'left',
+
+    Center = 'center',
+
+    Right = 'right'
+}
+
+export const enum VerticalAlignment {
+    Top = 'top',
+
+    Center = 'center',
+
+    Bottom = 'bottom'
 }

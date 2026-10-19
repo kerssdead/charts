@@ -1,303 +1,544 @@
-import Value from 'types/base/Value'
-import Renderable from 'types/base/Renderable'
-import * as Helper from 'Helper'
-import Sector from 'types/Sector'
-import Point from 'types/Point'
-import Theme from 'Theme'
-import Chart from 'Chart'
-import TextStyles from 'helpers/TextStyles'
-import Canvas from 'helpers/Canvas'
-import Button from 'Button'
-import TextResources from 'static/TextResources'
-import * as Constants from 'static/constants/Index'
-import Styles from 'static/constants/Styles'
-import { AnimationType, Events, LegendPlace, RenderState } from 'static/Enums'
-import ChartSettings from './types/ChartSettings'
+import Value from '@/types/base/Value'
+import { clamp, contains, lerp } from '@/helpers/Geometry'
+import { grayScale, withAlpha } from '@/helpers/Color'
+import { groupBy, maxOf, sum } from '@/helpers/Collections'
+import { stringWidth } from '@/helpers/Text'
+import Point from '@/types/Point'
+import Frame from '@/types/Frame'
+import Paddings, { NO_PADDINGS } from '@/types/Paddings'
+import RenderItem from '@/types/RenderItem'
+import Overlay from '@/renderer/Overlay'
+import Units from '@/helpers/Units'
+import Theme from '@/Theme'
+import Queue from '@/render/Queue'
+import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import TextResources from '@/static/TextResources'
+import { AnimationTiming, Layer } from '@/static/constants/Index'
+import { ChartType, LegendPlace, TextAlignment } from '@/static/Enums'
+import ChartSettings from '@/types/ChartSettings'
+import ChartItem from '@/types/ChartItem'
+import HoverMap from '@/types/HoverMap'
+import ease from '@/animation/Animations'
 
-class Legend extends Renderable {
-    private button: Button
+const PADDING_X = 12
 
-    private offset: Point
+const PADDING_Y = 4
 
-    private chart: Chart
+const ITEM_HEIGHT = 20
 
-    isDestroy: boolean = false
+const ROW_GAP = 4
 
-    constructor(chart: Chart) {
-        super(chart)
+const ITEM_GAP = 12
 
-        this.chart = chart
+const ITEM_EXTRA_WIDTH = 30
 
-        this.applySettings()
+const FONT_SIZE = 14
+
+const RESET_KEY = 'reset'
+
+const SIDES: { [key in LegendPlace]: keyof Paddings } = {
+    [LegendPlace.Bottom]: 'bottom',
+    [LegendPlace.Left]: 'left',
+    [LegendPlace.Top]: 'top',
+    [LegendPlace.Right]: 'right'
+}
+
+type LegendEntry = {
+    value: Value
+    label: string
+    x: number
+    y: number
+    width: number
+}
+
+class Legend extends Overlay {
+    settings: ChartSettings
+
+    onChange: (() => void) | undefined
+
+    private area: DOMRect | undefined
+
+    private entries: LegendEntry[] = []
+
+    private button: DOMRect | undefined
+
+    private size: { width: number, height: number } | undefined
+
+    private units: Units = Units.fromSize(1, 1)
+
+    private top: number = 0
+
+    private backgrounds: Map<string, RenderItem> = new Map()
+
+    private readonly hover = new HoverMap<string>()
+
+    private toggles: Map<string, DOMHighResTimeStamp | null> = new Map()
+
+    private isDirty: boolean = true
+
+    private moveStart: DOMHighResTimeStamp | null = null
+
+    private isMovePending: boolean = false
+
+    private from: Map<string, Point> = new Map()
+
+    private fromArea: DOMRect | undefined
+
+    private leaving: LegendEntry[] = []
+
+    private values: Value[] = []
+
+    get reserved(): Paddings {
+        return this.getReserved(this.area)
     }
 
-    render() {
-        super.render()
-
-        const ctx = this.ctx
-
-        let nextPoint: Point | null = { x: 20, y: 21 }
-
-        TextStyles.regular(ctx)
-        ctx.textAlign = 'start'
-        ctx.textBaseline = 'alphabetic'
-
-        ctx.translate(this.offset.x, this.offset.y)
-
-        for (const value of this.settings.data.values.filter(v => !v.hideInLegend)) {
-            if (nextPoint == null)
-                break
-
-            nextPoint = this.draw(value, nextPoint.x, nextPoint.y)
-        }
-
-        ctx.translate(-this.offset.x, -this.offset.y)
-
-        if (!this.isDestroy)
-            requestAnimationFrame(this.render.bind(this))
-
-        this.clickEvent = this.button?.render(this.moveEvent, this.clickEvent)
-
-        this.state = RenderState.Idle
+    getCurrentReserved(now: DOMHighResTimeStamp): Paddings {
+        return this.getReserved(this.area && this.getArea(this.getMoveProgress(now)))
     }
 
-    destroy() {
-        this.isDestroy = true
-
-        this.canvas.remove()
+    get isMoving() {
+        return this.isMovePending || this.moveStart != null
     }
 
-    refresh() {
-        this.state = RenderState.Init
+    private getReserved(area: DOMRect | undefined): Paddings {
+        const reserved = { ...NO_PADDINGS }
+
+        if (!area)
+            return reserved
+
+        const side = SIDES[this.settings.legendPlace] ?? 'bottom'
+
+        reserved[side] = this.isVertical ? area.width : area.height
+
+        return reserved
     }
 
-    resize() {
-        this.calculateSizes()
-        this.button?.resize()
-        this.initAnimations()
+    private get isShared() {
+        return this.settings.charts.length > 1
     }
 
-    calculateSizes() {
-        switch (this.settings.legendPlace) {
-            case LegendPlace.Bottom:
-            default:
-                this.canvas.width = this.settings.width
-                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
+    static isSupported(chart: ChartItem) {
+        return chart.type != ChartType.Gauge
+               && (chart.type != ChartType.TreeMap || (chart.data?.values?.length ?? 0) > 1)
+    }
 
-                this.node.style.flexDirection = Styles.FlexDirection.Column
+    static getGroupKey(value: Value, isShared: boolean) {
+        return isShared ? value.label : value.id
+    }
 
-                break
+    private get isVertical() {
+        return this.settings.legendPlace == LegendPlace.Left
+               || this.settings.legendPlace == LegendPlace.Right
+    }
 
-            case LegendPlace.Top:
-                this.canvas.width = this.settings.width
-                this.canvas.height = Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)
+    private get buttonWidth() {
+        return this.settings.disableInteractions
+               ? 0
+               : stringWidth(TextResources.reset) + 12
+    }
 
-                this.node.style.flexDirection = Styles.FlexDirection.ColumnReverse
+    constructor(settings: ChartSettings) {
+        super()
 
-                break
+        this.settings = settings
+        this.values = Legend.getValues(settings)
+    }
 
-            case LegendPlace.Left:
-                this.canvas.width = 500
-                this.canvas.height = this.settings.height
-
-                this.node.style.flexDirection = Styles.FlexDirection.Row
-
-                break
-
-            case LegendPlace.Right:
-                this.canvas.width = 500
-                this.canvas.height = this.settings.height
-
-                this.node.style.flexDirection = Styles.FlexDirection.RowReverse
-
-                break
-        }
-
-        this.offset = {
-            x: Legend.getOffsetToCenter(this.settings.data.values, this.canvas.width),
-            y: (this.canvas.height - Legend.getLegendHeight(this.settings.data.values, this.canvas.width, this.node.getBoundingClientRect().height)) / 2
-        }
+    private static getValues(settings: ChartSettings): Value[] {
+        return settings.charts.filter(Legend.isSupported).flatMap(chart => chart.data.values)
     }
 
     applySettings(settings?: ChartSettings) {
-        if (settings)
+        const previous = this.entries
+        const previousArea = this.area
+
+        if (settings) {
             this.settings = settings
+            this.values = Legend.getValues(settings)
+        }
 
-        this.resize()
+        if (this.size)
+            this.resize(this.size.width, this.size.height, this.top)
 
-        this.addResetButton()
+        if (settings && previous.length > 0 && !settings.staticMode)
+            this.move(previous, previousArea)
     }
 
-    private addResetButton() {
-        if (!this.settings.disableInteractions)
-            this.button = new Button(this.canvas,
-                {
-                    x: -10,
-                    y: 12,
-                    text: TextResources.reset,
-                    action: () => {
-                        for (let value of this.settings.data.values)
-                            value.reset()
-                    }
-                })
+    resize(width: number, height: number, top: number = 0) {
+        this.size = { width, height }
+        this.units = Units.fromSize(width, height)
+        this.top = top
+
+        if (this.isVertical)
+            this.calculateVertical(width, height)
+        else
+            this.calculateHorizontal(width, height)
+
+        this.button = this.settings.disableInteractions
+                      ? undefined
+                      : new DOMRect(this.area!.x + this.area!.width - PADDING_X - this.buttonWidth,
+                          this.area!.y + PADDING_Y,
+                          this.buttonWidth,
+                          ITEM_HEIGHT)
+
+        this.isDirty = true
     }
 
-    private draw(value: Value, x: number, y: number): Point | null {
-        const ctx = Canvas.getContext(this.canvas)
+    update({ queue, mouse, now }: Frame): boolean {
+        if (!this.area || !this.size || this.size.width <= 0 || this.size.height <= 0) {
+            this.clear(queue)
 
-        const textWidth = Helper.stringWidth(value.label),
-            circleRadius = 6
-
-        if (x + 48 + textWidth >= this.canvas.width - 40 - this.offset.x) {
-            x = 20
-            y += 26
+            return false
         }
 
-        let rectX = x - circleRadius - circleRadius,
-            rectY = y - circleRadius / 2 - circleRadius,
-            rectW = circleRadius + circleRadius + textWidth + 18,
-            rectH = 20
-
-        if (rectY > this.canvas.height -  rectH)
-            return null
-
-        const isHover = (event: MouseEvent | undefined) => {
-            if (!event)
-                return false
-
-            const px = event.offsetX - this.offset.x,
-                py = event.offsetY - this.offset.y
-
-            return px >= rectX && px <= rectX + rectW
-                   && py >= rectY && py <= rectY + rectH
+        if (this.isMovePending) {
+            this.moveStart = now
+            this.isMovePending = false
         }
 
-        const translate = (transition: number, event: AnimationType) => {
-            this.animations.reload(value.id, event)
+        this.updateToggles(now)
 
-            ctx.beginPath()
+        const isHoverChanged = this.updateHover(mouse, now)
+        const isMoving = this.moveStart != null
 
-            ctx.roundRect(rectX, rectY, rectW, rectH, circleRadius)
+        if (!this.isDirty && !isMoving) {
+            if (isHoverChanged)
+                this.updateBackgrounds()
 
-            ctx.fillStyle = Helper.adjustColor(Theme.canvasBackground, Math.round(-25 * transition))
-            ctx.fill()
+            return this.isAnimating
         }
 
-        this.animations.handle(value.id,
-            AnimationType.Click,
-            {
-                duration: Constants.Animations.legend,
-                continuous: true,
-                before: () => {
-                    return this.clickEvent != undefined
-                           && (isHover(this.clickEvent)
-                               || (value instanceof Sector
-                                   && value.current != 0
-                                   && value.value != value.current))
-                           && value.checkCondition()
-                },
-                body: transition => {
-                    value.toggle(transition)
+        const progress = this.getMoveProgress(now)
 
-                    if (transition == 1)
-                        this.clickEvent = new PointerEvent(Events.Click)
+        this.clear(queue)
+
+        const builder = new QueueItemsBuilder()
+        const area = this.getArea(progress)
+
+        builder.rect()
+               .box(this.units, area)
+               .fill()
+               .color(Theme.canvasBackground)
+               .layer(Layer.Legend)
+               .fixed()
+               .onClick(() => {
+                   this.isDirty = true
+               })
+
+        const resetBackground = this.button && this.buildButton(builder, this.button, this.hover.value(RESET_KEY))
+        const added = builder.dispose()
+
+        if (resetBackground)
+            this.backgrounds.set(RESET_KEY, resetBackground)
+
+        this.entries.forEach(entry => {
+            const from = this.from.get(this.getKey(entry.value))
+
+            const current = from
+                            ? {
+                    ...entry,
+                    x: lerp(from.x, entry.x, progress),
+                    y: lerp(from.y, entry.y, progress)
                 }
-            })
+                            : entry
 
-        if (isHover(this.moveEvent)) {
-            this.animations.handle(value.id,
-                AnimationType.MouseOver,
-                {
-                    duration: Constants.Animations.button,
-                    body: transition => {
-                        translate(transition, AnimationType.MouseLeave)
-                    }
-                })
+            const { items, background } = this.createEntry(current, this.hover.value(entry.value.id), from ? 1 : progress)
 
-            if (!value.disabled)
-                this.chart.highlight(value)
-        } else {
-            this.animations.handle(value.id,
-                AnimationType.MouseLeave,
-                {
-                    timer: Constants.Dates.minDate,
-                    duration: Constants.Animations.button,
-                    backward: true,
-                    body: transition => {
-                        translate(transition, AnimationType.MouseOver)
-                    }
-                })
+            this.backgrounds.set(entry.value.id, background)
+
+            added.push(...items)
+        })
+
+        for (const entry of this.leaving)
+            added.push(...this.createEntry(entry, 0, 1 - progress).items)
+
+        if (progress == 1) {
+            this.moveStart = null
+            this.from.clear()
+            this.fromArea = undefined
+            this.leaving = []
         }
 
-        ctx.beginPath()
+        this.show(queue, added)
 
-        ctx.arc(x - 1, y + 1, 3, 0, 2 * Math.PI)
-        ctx.fillStyle = value.disabled ? Helper.grayScale(value.color) : value.color
-        ctx.fill()
+        this.isDirty = false
 
-        ctx.fillStyle = Theme.text
+        return this.isAnimating
+    }
+
+    private get isAnimating() {
+        return this.hover.isAnimating || this.isMoving || this.toggles.size > 0
+    }
+
+    private move(previous: LegendEntry[], previousArea: DOMRect | undefined) {
+        this.fromArea = previousArea
+        const keys = new Set(this.entries.map(entry => this.getKey(entry.value)))
+
+        this.from = new Map(previous.map(entry => [this.getKey(entry.value), { x: entry.x, y: entry.y }]))
+        this.leaving = previous.filter(entry => !keys.has(this.getKey(entry.value)))
+        this.moveStart = null
+        this.isMovePending = true
+        this.isDirty = true
+    }
+
+    private getArea(progress: number) {
+        const area = this.area!
+        const from = this.fromArea
+
+        if (!from)
+            return area
+
+        return new DOMRect(lerp(from.x, area.x, progress), lerp(from.y, area.y, progress),
+            lerp(from.width, area.width, progress), lerp(from.height, area.height, progress))
+    }
+
+    private getMoveProgress(now: DOMHighResTimeStamp) {
+        if (this.moveStart == null)
+            return 1
+
+        const progress = Math.min((now - this.moveStart) / AnimationTiming.legend, 1)
+
+        return progress == 1 ? 1 : ease(progress)
+    }
+
+    private createEntry(entry: LegendEntry, hover: number, alpha: number) {
+        const builder = new QueueItemsBuilder()
+        const background = this.buildEntry(builder, entry, hover)
+        const items = builder.dispose()
+
+        for (const item of items)
+            item.animation.alpha = alpha
+
+        return { items, background }
+    }
+
+    clear(queue: Queue) {
+        this.isDirty = true
+        this.backgrounds.clear()
+
+        this.remove(queue)
+    }
+
+    destroy() {
+        this.hover.clear()
+        this.toggles.clear()
+        this.entries = []
+        this.area = undefined
+    }
+
+    private buildEntry(items: QueueItemsBuilder, entry: LegendEntry, hover: number) {
+        const { value, label, x, y, width } = entry
+        const centerY = y + ITEM_HEIGHT / 2
+        const textX = x + 22
+        const textColor = value.disabled ? withAlpha(Theme.text, .5) : Theme.text
+
+        const background = this.buttonRect(items, this.units, { x, y, width, height: ITEM_HEIGHT }, 6, hover, () => this.toggle(value))
+
+        items.arc()
+             .position(this.units.x(x + 11), this.units.y(centerY))
+             .radius(this.units.x(3))
+             .fill()
+             .color(value.disabled ? grayScale(value.color) : value.color)
+             .layer(Layer.Legend + 2)
+             .fixed()
+
+        items.text(label)
+             .position(this.units.x(textX), this.units.y(centerY))
+             .size(FONT_SIZE)
+             .align(TextAlignment.Left)
+             .color(textColor)
+             .layer(Layer.Legend + 2)
+             .fixed()
+
         if (value.disabled)
-            ctx.fillStyle += '7f'
+            items.line()
+                 .stop(this.units.x(textX), this.units.y(centerY + 1))
+                 .stop(this.units.x(textX + stringWidth(label)), this.units.y(centerY + 1))
+                 .color(textColor)
+                 .layer(Layer.Legend + 2)
+                 .fixed()
 
-        ctx.fillText(value.label, x + circleRadius * 1.5 + 1, y + 6)
-
-        x += 20
-
-        if (value.disabled) {
-            ctx.moveTo(x - 10, y + 2)
-            ctx.lineTo(x + textWidth - 10, y + 2)
-            ctx.strokeStyle = Theme.text + '7f'
-            ctx.stroke()
-        }
-
-        x += textWidth + 22
-
-        return {
-            x: x,
-            y: y
-        }
+        return background.dispose()
     }
 
-    static getOffsetToCenter(values: Value[], width: number): number {
-        let maxWidth = 20
+    private buildButton(items: QueueItemsBuilder, button: DOMRect, hover: number) {
+        const background = this.buttonRect(items, this.units, button, 4, hover, () => this.reset())
 
-        for (const value of values.filter(v => !v.hideInLegend)) {
-            const labelWidth = Helper.stringWidth(value.label)
+        this.buttonText(items, this.units, button, TextResources.reset, FONT_SIZE)
 
-            if (maxWidth + labelWidth + 47 >= width - 100)
-                break
-
-            maxWidth += labelWidth + 47
-        }
-
-        return width / 2 - maxWidth / 2
+        return background.dispose()
     }
 
-    static getLegendHeight(values: Value[], width: number, containerHeight: number): number {
-        let count = 1,
-            acc = 20,
-            offset = Legend.getOffsetToCenter(values, width)
+    private calculateHorizontal(width: number, height: number) {
+        const buttonSpace = this.buttonWidth > 0 ? this.buttonWidth + ITEM_GAP : 0
+        const available = Math.max(width - (PADDING_X + buttonSpace) * 2, 0)
+        const maxRows = Math.max(Math.floor((height / 4 - PADDING_Y * 2 + ROW_GAP) / (ITEM_HEIGHT + ROW_GAP)), 1)
 
-        const maxHeight = containerHeight / 4
+        const rows: LegendEntry[][] = []
+        let row: LegendEntry[] = []
+        let rowWidth = 0
 
-        const getHeight = (c: number) => 24 + c * 20 + (c - 1) * 6
+        for (const value of this.visibleValues()) {
+            const label = Legend.truncate(value.label, available - ITEM_EXTRA_WIDTH)
+            const itemWidth = stringWidth(label) + ITEM_EXTRA_WIDTH
 
-        for (const value of values.filter(v => !v.hideInLegend)) {
-            const labelWidth = Helper.stringWidth(value.label)
+            if (row.length > 0 && rowWidth + ITEM_GAP + itemWidth > available) {
+                rows.push(row)
 
-            if (acc + labelWidth + 48 >= width - 32 - offset) {
-                acc = 20
-
-                if (getHeight(count + 1) > maxHeight)
-                    return getHeight(count)
-
-                count++
+                row = []
+                rowWidth = 0
             }
 
-            acc += labelWidth + 48
+            if (rows.length == maxRows)
+                break
+
+            rowWidth += (row.length > 0 ? ITEM_GAP : 0) + itemWidth
+
+            row.push({ value, label, x: 0, y: 0, width: itemWidth })
         }
 
-        return getHeight(count)
+        if (row.length > 0 && rows.length < maxRows)
+            rows.push(row)
+
+        const rowsCount = Math.max(rows.length, 1)
+        const areaHeight = PADDING_Y * 2 + rowsCount * ITEM_HEIGHT + (rowsCount - 1) * ROW_GAP
+        const areaY = this.settings.legendPlace == LegendPlace.Top ? this.top : height - areaHeight
+
+        this.area = new DOMRect(0, areaY, width, areaHeight)
+
+        this.entries = []
+
+        rows.forEach((items, index) => {
+            const total = sum(items, item => item.width) + (items.length - 1) * ITEM_GAP
+
+            let x = (width - total) / 2
+
+            for (const item of items) {
+                item.x = x
+                item.y = areaY + PADDING_Y + index * (ITEM_HEIGHT + ROW_GAP)
+
+                x += item.width + ITEM_GAP
+
+                this.entries.push(item)
+            }
+        })
+    }
+
+    private calculateVertical(width: number, height: number) {
+        const values = this.visibleValues()
+        const widest = maxOf(values, value => stringWidth(value.label)) + ITEM_EXTRA_WIDTH
+        const areaWidth = Math.min(Math.max(widest, this.buttonWidth) + PADDING_X * 2, width / 4)
+        const available = areaWidth - PADDING_X * 2
+        const areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
+
+        this.area = new DOMRect(areaX, this.top, areaWidth, height - this.top)
+
+        const buttonSpace = this.buttonWidth > 0 ? ITEM_HEIGHT + ROW_GAP : 0
+        const availableHeight = height - this.top - PADDING_Y * 2 - buttonSpace
+        const count = clamp(Math.floor((availableHeight + ROW_GAP) / (ITEM_HEIGHT + ROW_GAP)), 0, values.length)
+        const blockHeight = count * ITEM_HEIGHT + Math.max(count - 1, 0) * ROW_GAP
+        const startY = this.top + PADDING_Y + buttonSpace + Math.max((availableHeight - blockHeight) / 2, 0)
+
+        this.entries = values.slice(0, count).map((value, index) => {
+            const label = Legend.truncate(value.label, available - ITEM_EXTRA_WIDTH)
+
+            return {
+                value,
+                label,
+                x: 0,
+                y: startY + index * (ITEM_HEIGHT + ROW_GAP),
+                width: Math.min(stringWidth(label) + ITEM_EXTRA_WIDTH, available)
+            }
+        })
+
+        const blockWidth = maxOf(this.entries, entry => entry.width)
+
+        for (const entry of this.entries)
+            entry.x = areaX + (areaWidth - blockWidth) / 2
+    }
+
+    private visibleValues(): Value[] {
+        const groups = groupBy(this.values.filter(value => !value.hideInLegend), value => this.getKey(value))
+
+        return Array.from(groups.values(), group => group[0])
+    }
+
+    private getKey(value: Value) {
+        return Legend.getGroupKey(value, this.isShared)
+    }
+
+    private toggle(value: Value) {
+        this.isDirty = true
+
+        const key = this.getKey(value)
+
+        if (this.toggles.has(key) || !value.canToggle())
+            return
+
+        const disabled = value.disabled
+
+        for (const item of this.values)
+            if (this.getKey(item) == key && item.disabled == disabled)
+                item.disabled = !disabled
+
+        if (!this.settings.staticMode)
+            this.toggles.set(key, null)
+
+        this.onChange?.()
+    }
+
+    private reset() {
+        this.toggles.clear()
+        this.isDirty = true
+
+        for (const value of this.values)
+            value.reset()
+
+        this.onChange?.()
+    }
+
+    private updateToggles(now: DOMHighResTimeStamp) {
+        for (const [key, start] of this.toggles) {
+            if (start == null)
+                this.toggles.set(key, now)
+            else if (now - start >= AnimationTiming.legend)
+                this.toggles.delete(key)
+        }
+    }
+
+    private updateHover(mouse: Point | null, now: DOMHighResTimeStamp) {
+        const targets = this.entries.map((entry): [string, boolean] => {
+            return [entry.value.id, contains({ x: entry.x, y: entry.y, width: entry.width, height: ITEM_HEIGHT }, mouse)]
+        })
+
+        if (this.button)
+            targets.push([RESET_KEY, contains(this.button, mouse)])
+
+        return this.hover.update(targets, now)
+    }
+
+    private updateBackgrounds() {
+        for (const [key, item] of this.backgrounds)
+            item.color = Theme.hoverBackground(this.hover.value(key))
+    }
+
+    static truncate(label: string, maxWidth: number) {
+        if (stringWidth(label) <= maxWidth)
+            return label
+
+        let low = 0
+        let high = label.length - 1
+
+        while (low < high) {
+            const middle = Math.ceil((low + high) / 2)
+
+            if (stringWidth(label.slice(0, middle) + '…') <= maxWidth)
+                low = middle
+            else
+                high = middle - 1
+        }
+
+        return label.slice(0, low) + '…'
     }
 }
 

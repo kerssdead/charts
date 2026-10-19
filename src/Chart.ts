@@ -1,185 +1,174 @@
-import ChartSettings from 'types/ChartSettings'
-import Renderer from 'types/base/Renderer'
-import Data from 'types/interfaces/Data'
-import Legend from 'Legend'
-import Value from 'types/base/Value'
-import PlotRenderer from 'render/PlotRenderer'
-import GaugeRenderer from 'render/GaugeRenderer'
-import TreeRenderer from 'render/TreeRenderer'
-import Animations from 'Animations'
-import Theme from 'Theme'
-import Styles from 'static/constants/Styles'
-import { ChartType, Events } from 'static/Enums'
-import CircularRenderer from 'render/CircularRenderer'
-import Debug from 'Debug'
+import { createCanvas } from '@/helpers/Canvas'
+import ChartSettings from '@/types/ChartSettings'
+import Theme, { ColorTheme } from '@/Theme'
+import { Events } from '@/static/Enums'
+import Renderer from '@/renderer/Renderer'
+import { randomColor } from '@/helpers/Color'
+import Debug from '@/helpers/Debug'
+import { keepDisabled, normalize } from '@/helpers/Settings'
 
-class Chart {
-    node: HTMLElement
+// todo: add public api
 
-    settings: ChartSettings
+export default class Chart {
+    private isDestroyed: boolean = false
 
-    private renderer: Renderer<Data>
+    private isSuspended: boolean = false
 
-    private legend: Legend | undefined
+    private suspendedTheme: ColorTheme = ColorTheme.light
 
-    private observer: ResizeObserver
+    private settings: ChartSettings
 
-    private currentType: ChartType
+    private readonly fallbackColor = randomColor()
+
+    private readonly canvas: HTMLCanvasElement
+
+    private readonly renderer: Renderer
+
+    private readonly observer: ResizeObserver
+
+    private readonly ratioWatcher = new AbortController()
+
+    private width: number = 0
+
+    private height: number = 0
+
+    private ratio: number = 0
+
+    private readonly onThemeChange = () => {
+        this.renderer.apply(this.settings)
+    }
 
     constructor(element: HTMLElement, settings: ChartSettings) {
-        this.node = element
+        this.canvas = createCanvas()
+        element.appendChild(this.canvas)
 
-        this.applyStyles()
-        this.attachEvents()
+        this.settings = normalize(settings, this.fallbackColor)
 
-        this.applySettings(settings)
+        Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
+
+        this.renderer = new Renderer(this.canvas)
+        this.renderer.apply(this.settings)
+
+        Debug.log(settings, this.settings, this.canvas)
+
+        this.observer = this.createObserver(element)
+        this.watchRatio()
+
+        if (!this.canvas.isConnected)
+            this.suspend()
     }
 
     render() {
-        this.renderer.render()
-        this.legend?.render()
+        if (this.isDestroyed)
+            return
 
-        this.refresh()
+        this.renderer.render()
     }
 
     destroy() {
-        this.renderer.destroy()
-        this.legend?.destroy()
+        if (this.isDestroyed)
+            return
+
+        this.isDestroyed = true
 
         this.observer.disconnect()
-    }
+        this.ratioWatcher.abort()
+        this.renderer.destroy()
 
-    highlight(value?: Value) {
-        this.renderer.highlight(value)
-    }
-
-    reset() {
-        Theme.reset()
-
-        this.initialize(this.settings)
+        Theme.detach(this.onThemeChange)
+        this.canvas.remove()
     }
 
     applySettings(settings: ChartSettings) {
-        this.settings = settings
-
-        this.reset()
-
-        const isNeedRestartRender = this.settings.type != this.currentType
-
-        this.prepareSettings()
-
-        if (this.settings.enableLegend && this.legend != undefined)
-            this.legend.applySettings(settings)
-
-        if (this.settings.enableLegend && this.legend == undefined) {
-            this.legend = new Legend(this)
-
-            this.legend.render()
-        }
-
-        if (!this.settings.enableLegend && this.legend != undefined) {
-            this.legend.destroy()
-
-            this.legend = undefined
-        }
-
-        if (isNeedRestartRender)
-            this.renderer.render()
-    }
-
-    private prepareSettings() {
-        this.settings.enableTooltip = !this.settings.disableInteractions && this.settings.enableTooltip
-
-        if (this.renderer == undefined || this.settings.type != this.currentType) {
-            this.renderer?.destroy()
-
-            switch (this.settings.type) {
-                case ChartType.Plot:
-                    this.renderer = new PlotRenderer(this)
-                    this.currentType = ChartType.Plot
-                    break
-
-                case ChartType.Circular:
-                    this.renderer = new CircularRenderer(this)
-                    this.currentType = ChartType.Circular
-                    break
-
-                case ChartType.Gauge:
-                    this.renderer = new GaugeRenderer(this)
-                    this.currentType = ChartType.Gauge
-                    break
-
-                case ChartType.TreeMap:
-                    this.renderer = new TreeRenderer(this)
-                    this.currentType = ChartType.TreeMap
-                    break
-            }
-        } else {
-            this.renderer.applySettings(this.settings)
-        }
-
-        this.renderer.prepareSettings()
-
-        if (!this.settings.disableInteractions) {
-            this.renderer.initDropdown()
-            this.renderer.initAnimations()
-        }
-
-        this.renderer.resize()
-    }
-
-    private refresh() {
-        this.renderer.refresh()
-        this.legend?.refresh()
-    }
-
-    private resize() {
-        this.renderer.resize()
-        this.legend?.resize()
-    }
-
-    private initialize(settings: ChartSettings) {
-        Debug.initialize(settings.enableDebugMode)
-        Theme.initialize(
-            () => this.resize(),
-            settings.isDarkThemeFunction
-        )
-        Animations.initializeTransitions()
-    }
-
-    private applyStyles() {
-        this.node.style.display = Styles.Display.Flex
-        this.node.style.flexDirection = Styles.FlexDirection.Column
-        this.node.style.alignItems = Styles.AlignItems.Center
-        this.node.style.justifyContent = Styles.JustifyContent.Center
-        this.node.style.height = '100%'
-    }
-
-    private initializeObserver() {
-        if (this.observer != undefined)
+        if (this.isDestroyed)
             return
 
-        this.observer = new ResizeObserver(() => {
-            if (this.renderer.canvas)
-                this.resize()
-            else
-                this.destroy()
-        })
+        const previous = this.settings
 
-        this.observer.observe(this.node)
+        this.settings = normalize(settings, this.fallbackColor)
+
+        keepDisabled(previous, this.settings)
+
+        this.renderer.apply(this.settings)
+
+        Debug.log(settings, this.settings, this.canvas)
     }
 
-    private attachEvents() {
-        document.addEventListener(Events.VisibilityChanged, () => this.renderer.resetMouse())
-        window.addEventListener(Events.Blur, () => this.renderer.resetMouse())
+    private resize(width: number, height: number) {
+        width = Math.floor(width)
+        height = Math.floor(height)
 
-        window.addEventListener(Events.Click, event => {
-            if (event.target != this.renderer.canvas)
-                this.renderer.closeDropdowns()
+        if (width == 0 || height == 0)
+            return
+
+        const ratio = window.devicePixelRatio || 1
+
+        if (this.width == width && this.height == height && this.ratio == ratio)
+            return
+
+        this.width = width
+        this.height = height
+        this.ratio = ratio
+
+        this.canvas.width = Math.round(width * ratio)
+        this.canvas.height = Math.round(height * ratio)
+        this.canvas.style.width = `${ width }px`
+        this.canvas.style.height = `${ height }px`
+
+        this.renderer.resize(width, height, ratio)
+        this.renderer.render()
+    }
+
+    private watchRatio() {
+        matchMedia(`(resolution: ${ window.devicePixelRatio }dppx)`).addEventListener(Events.Change, () => {
+            this.resize(this.width, this.height)
+            this.watchRatio()
+        }, { once: true, signal: this.ratioWatcher.signal })
+    }
+
+    private createObserver(node: HTMLElement) {
+        const observer = new ResizeObserver(entries => {
+            if (!this.canvas.isConnected) {
+                this.suspend()
+
+                return
+            }
+
+            this.resume()
+
+            const { width, height } = entries[0].contentRect
+
+            this.resize(width, height)
         })
 
-        this.initializeObserver()
+        observer.observe(node)
+
+        return observer
+    }
+
+    private suspend() {
+        if (this.isSuspended || this.isDestroyed)
+            return
+
+        this.isSuspended = true
+
+        Theme.update(this.settings.isDarkThemeFunction)
+        this.suspendedTheme = Theme.currentTheme
+
+        Theme.detach(this.onThemeChange)
+        this.renderer.suspend()
+    }
+
+    private resume() {
+        if (!this.isSuspended || this.isDestroyed)
+            return
+
+        this.isSuspended = false
+
+        Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
+        this.renderer.resume()
+
+        if (Theme.currentTheme != this.suspendedTheme)
+            this.onThemeChange()
     }
 }
-
-export default Chart

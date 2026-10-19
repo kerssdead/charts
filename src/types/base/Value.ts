@@ -1,11 +1,9 @@
+import ItemData from '@/types/ItemData'
+
 class Value {
     id: string
 
-    baseColor: string
-
     color: string
-
-    textColor: string
 
     label: string
 
@@ -13,16 +11,15 @@ class Value {
 
     hideInLegend: boolean
 
-    data: { [key: string]: string }
+    data: ItemData
 
     value: number
 
-    toggle(transition: number) {
-        if (transition == 0)
-            this.disabled = !this.disabled
+    constructor(obj: object = {}) {
+        Object.assign(this, obj)
     }
 
-    checkCondition(): boolean {
+    canToggle(): boolean {
         return false
     }
 

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Benchmark
+    </title>
+
+    <link href="../dist/main.css" rel="stylesheet">
+
+    <style>
+        :root {
+            color-scheme: light dark;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        body {
+            margin: 16px;
+            background-color: light-dark(#ffffff, #000000);
+        }
+
+        #host {
+            width: 900px;
+            height: 500px;
+        }
+
+        #controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        th, td {
+            padding: 4px 10px;
+            border-bottom: 1px solid light-dark(#dddddd, #333333);
+            text-align: right;
+        }
+
+        th:first-child, td:first-child {
+            text-align: left;
+        }
+    </style>
+
+    <script>
+        const frames = []
+
+        const nativeRequestAnimationFrame = window.requestAnimationFrame.bind(window)
+
+        window.requestAnimationFrame = callback => nativeRequestAnimationFrame(timestamp => {
+            const start = performance.now()
+
+            callback(timestamp)
+
+            frames.push({ timestamp, duration: performance.now() - start })
+        })
+
+        let resizeTime = 0
+
+        const NativeResizeObserver = window.ResizeObserver
+
+        window.ResizeObserver = class extends NativeResizeObserver {
+            constructor(callback) {
+                super((entries, observer) => {
+                    const start = performance.now()
+
+                    callback(entries, observer)
+
+                    resizeTime += performance.now() - start
+                })
+            }
+        }
+    </script>
+
+    <script src="../dist/ocharts.js"></script>
+</head>
+
+<body>
+<div id="controls">
+    <label>
+        Scale
+        <select id="scale">
+            <option value="1">1×</option>
+            <option value="5" selected>5×</option>
+            <option value="20">20×</option>
+        </select>
+    </label>
+
+    <button id="run">Run all</button>
+
+    <span id="status"></span>
+</div>
+
+<div id="host"></div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Scenario</th>
+        <th>Create, ms</th>
+        <th>Init frame avg / p95, ms</th>
+        <th>Hover frame avg / p95, ms</th>
+        <th>Idle frames after no-op move</th>
+        <th>Update, ms</th>
+        <th>Update frame avg / p95, ms</th>
+    </tr>
+    </thead>
+    <tbody id="results"></tbody>
+</table>
+</body>
+
+<script>
+    const WIDTH = 900
+
+    const HEIGHT = 500
+
+    const INIT_TIME = 1500
+
+    const HOVER_MOVES = 120
+
+    const MOVE_INTERVAL = 16
+
+    const SETTLE_TIME = 1500
+
+    const IDLE_TIME = 1500
+
+    const UPDATE_TIME = 1000
+
+    let seed = 1
+
+    const random = () => (seed = seed * 16807 % 2147483647) / 2147483647
+
+    const range = count => Array.from({ length: count }, (_, i) => i)
+
+    const points = count => range(count).map(x => ({ x, y: Math.round(random() * 100) }))
+
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+    const scenarios = {
+        'Plot · lines': scale => ({
+            type: 0,
+            title: 'Lines',
+            enableLegend: true,
+            enableTooltip: true,
+            data: { xType: 0, values: range(5).map(s => ({ type: 0, label: `Line ${ s }`, width: 2, values: points(100 * scale) })) }
+        }),
+        'Plot · columns': scale => ({
+            type: 0,
+            title: 'Columns',
+            enableLegend: true,
+            enableTooltip: true,
+            data: { xType: 0, values: range(3).map(s => ({ type: 2, label: `Column ${ s }`, values: points(20 * scale) })) }
+        }),
+        'Plot · stacked': scale => ({
+            type: 0,
+            title: 'Stacked',
+            enableLegend: true,
+            enableTooltip: true,
+            data: { xType: 0, values: range(4).map(s => ({ type: 4, label: `Stack ${ s }`, values: points(20 * scale) })) }
+        }),
+        'Pie': scale => ({
+            type: 1,
+            title: 'Pie',
+            enableLegend: true,
+            enableTooltip: true,
+            data: { innerRadius: 50, values: range(10 * scale).map(i => ({ label: `Sector ${ i }`, value: 1 + Math.round(random() * 100) })) }
+        }),
+        'Treemap': scale => ({
+            type: 3,
+            title: 'Treemap',
+            enableTooltip: true,
+            data: {
+                padding: 0,
+                gap: 8,
+                values: range(4 * scale).map(g => ({
+                    label: `Group ${ g }`,
+                    sectors: range(5).map(i => ({ label: `Item ${ g }.${ i }`, value: 1 + Math.round(random() * 100) }))
+                }))
+            }
+        }),
+        'Grid · 9 charts': scale => ({
+            title: 'Grid',
+            enableLegend: true,
+            enableTooltip: true,
+            columns: 3,
+            charts: range(9).map(i => i % 3 == 0
+                                       ? { type: 0, title: `Plot ${ i }`, data: { xType: 0, values: range(2).map(s => ({ type: 2, label: `Series ${ s }`, values: points(4 * scale) })) } }
+                                       : i % 3 == 1
+                                         ? { type: 1, title: `Pie ${ i }`, data: { values: range(3 * scale).map(s => ({ label: `Series ${ s }`, value: 1 + Math.round(random() * 100) })) } }
+                                         : { type: 0, title: `Lines ${ i }`, data: { xType: 0, values: range(2).map(s => ({ type: 0, label: `Series ${ s }`, width: 2, values: points(20 * scale) })) } })
+        })
+    }
+
+    function takeFrames() {
+        const byTimestamp = new Map()
+
+        for (const { timestamp, duration } of frames)
+            byTimestamp.set(timestamp, (byTimestamp.get(timestamp) ?? 0) + duration)
+
+        frames.length = 0
+
+        return Array.from(byTimestamp.values())
+    }
+
+    function summarize(durations) {
+        if (durations.length == 0)
+            return { count: 0, avg: 0, p95: 0 }
+
+        const sorted = [...durations].sort((a, b) => a - b)
+
+        return {
+            count: durations.length,
+            avg: durations.reduce((acc, value) => acc + value, 0) / durations.length,
+            p95: sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * .95))]
+        }
+    }
+
+    function move(canvas, x, y) {
+        const rect = canvas.getBoundingClientRect()
+
+        canvas.dispatchEvent(new PointerEvent('pointermove', {
+            clientX: rect.left + x,
+            clientY: rect.top + y,
+            pointerId: 1,
+            isPrimary: true,
+            bubbles: true
+        }))
+    }
+
+    async function hover(canvas) {
+        for (let i = 0; i < HOVER_MOVES; i++) {
+            const t = i / HOVER_MOVES
+
+            move(canvas, 40 + t * (WIDTH - 80), HEIGHT / 2 + Math.sin(t * Math.PI * 6) * HEIGHT / 4)
+
+            await sleep(MOVE_INTERVAL)
+        }
+
+        canvas.dispatchEvent(new PointerEvent('pointerleave', { pointerId: 1, isPrimary: true }))
+    }
+
+    async function measure(name, scale) {
+        const host = document.getElementById('host')
+
+        host.innerHTML = ''
+        seed = 1
+
+        const settings = scenarios[name](scale)
+
+        await sleep(100)
+        takeFrames()
+
+        resizeTime = 0
+
+        const start = performance.now()
+        const chart = OCharts.chart(host, settings)
+        const construct = performance.now() - start
+
+        await sleep(INIT_TIME)
+
+        const create = construct + resizeTime
+
+        const init = summarize(takeFrames())
+
+        const canvas = host.querySelector('canvas')
+
+        await hover(canvas)
+
+        const hovered = summarize(takeFrames())
+
+        await sleep(SETTLE_TIME)
+        takeFrames()
+
+        move(canvas, 2, 2)
+
+        await sleep(IDLE_TIME)
+
+        const idle = takeFrames().length
+
+        const updateStart = performance.now()
+        chart.applySettings(scenarios[name](scale))
+        const update = performance.now() - updateStart
+
+        await sleep(UPDATE_TIME)
+
+        const updated = summarize(takeFrames())
+
+        chart.destroy()
+
+        return { name, scale, create, init, hover: hovered, idle, update, updated }
+    }
+
+    const format = value => value.toFixed(2)
+
+    const pair = summary => `${ format(summary.avg) } / ${ format(summary.p95) }`
+
+    function report(result) {
+        const row = document.createElement('tr')
+
+        row.innerHTML = `
+            <td>${ result.name } (${ result.scale }×)</td>
+            <td>${ format(result.create) }</td>
+            <td>${ pair(result.init) }</td>
+            <td>${ pair(result.hover) }</td>
+            <td>${ result.idle }</td>
+            <td>${ format(result.update) }</td>
+            <td>${ pair(result.updated) }</td>
+        `
+
+        document.getElementById('results').appendChild(row)
+    }
+
+    async function runAll(scale) {
+        const status = document.getElementById('status')
+        const results = []
+
+        document.getElementById('results').innerHTML = ''
+
+        for (const name of Object.keys(scenarios)) {
+            status.textContent = `Running ${ name }…`
+
+            const result = await measure(name, scale)
+
+            results.push(result)
+            report(result)
+        }
+
+        status.textContent = 'Done'
+
+        return results
+    }
+
+    window.benchmark = { runAll }
+
+    document.getElementById('run').onclick = () => runAll(+document.getElementById('scale').value)
+</script>
+</html>

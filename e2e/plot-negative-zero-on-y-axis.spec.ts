@@ -4,10 +4,10 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
-import Clip from './utils/Clip'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
+import Clip from '@e2e/utils/Clip'
 
 test('Zero y-axis label shouldn`t be negative', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
@@ -18,8 +18,8 @@ test('Zero y-axis label shouldn`t be negative', async ({ page, browserName }) =>
     await Settings.chartType(ChartType.Plot)
     await Settings.seed(179)
 
-    await Utils.checkScreenshot(
-        '/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAXACcDASIAAhEBAxEB/8QAGgABAAIDAQAAAAAAAAAAAAAAAAQFAQYIB//EACgQAAEDBAEEAQQDAAAAAAAAAAECAwQABQYRMQcSEyFRFCVBQlJxgf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDqG4TY1ugSJs99uPEjtqdddcOkoQBskn4AqpxnLrPkrshq1PvF9hKXFsyIzsdzsVvtWEuJSSg6OlAa9VVdZYUif0wyFiIw5IdEfyeFsbU4lCgtSQPySEka/O616Bk9kunUWXlFvuLL2P2zHy3LntnbSFreDgQVfySlCiRyO4b5oNuyHOcex+4mFdZq230IS69447jqI7aiQlby0JKWkkg+1kD/ACsXvO8dst0+guM9SH0pQp1SI7jjcdKzpBecSkoaBPBWR88V5xlt2gWa49UYlycAlX+A05a2FDapwVE8IbaH7nyA7A9jvB4O6qLg8zjuPdRcYu6vv13hMIt0dXtycpcFqOkND9u11Cgdca2fXug6FpUe2srj26Kw6rucbaShR+SAAaUEigAA0AB/VKUAgEgkDY4oQCQSBscUpQKUpQf/2Q==',
+    await Utils.checkRender(
+        '',
         new Clip(37, 338, 39, 23)
     )
 })

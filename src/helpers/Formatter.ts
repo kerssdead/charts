@@ -1,41 +1,42 @@
-import { PlotAxisType } from 'static/Enums'
+import { PlotAxisType } from '@/static/Enums'
 
-abstract class Formatter {
-    static number = (value: number | undefined) =>
-        value?.toLocaleString(undefined, {
+let numberFormat: Intl.NumberFormat | undefined
+
+export default abstract class Formatter {
+    static number(value: number | undefined) {
+        if (typeof value != 'number')
+            return value == undefined ? '' : String(value)
+
+        numberFormat ??= new Intl.NumberFormat(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
-        }) ?? ''
+        })
 
-    static date = (value: Date | undefined) =>
-        value?.toLocaleDateString() ?? ''
+        return numberFormat.format(value)
+    }
 
-    static text = (value: string | undefined) =>
-        value ?? ''
+    static toDate(value: number | Date | string) {
+        const match = typeof value == 'string' ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(value) : null
 
-    static format(value: any | undefined, type: PlotAxisType, postfix?: string | undefined) {
-        let result = value
+        return match ? new Date(+match[1], +match[2] - 1, +match[3]) : new Date(value)
+    }
 
-        switch (type) {
-            case PlotAxisType.Number:
-                if (isNaN(+value))
-                    result = Formatter.text(value)
-                else
-                    result = Formatter.number(+value)
-                break
+    static axis(value: number | Date | string, type: PlotAxisType) {
+        return type == PlotAxisType.Date ? Formatter.toDate(value).toLocaleDateString() : value.toString()
+    }
 
-            case PlotAxisType.Date:
-                result = Formatter.date(new Date(value))
-                break
+    static format(value: number | Date | string | undefined, type: PlotAxisType, postfix?: string | undefined) {
+        let result = String(value ?? '')
 
-            case PlotAxisType.Text:
-                result = Formatter.text(value)
-                break
-        }
+        if (type == PlotAxisType.Number && !isNaN(Number(value)))
+            result = Formatter.number(Number(value))
+        else if (type == PlotAxisType.Date)
+            result = Formatter.toDate(value ?? '').toLocaleDateString()
 
         return result + (postfix ?? '')
     }
 
+    static value(value: number | Date | string | undefined, postfix?: string | undefined) {
+        return Formatter.format(value, PlotAxisType.Number, postfix)
+    }
 }
-
-export default Formatter

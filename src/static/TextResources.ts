@@ -1,31 +1,25 @@
-class TextResources {
-    static exportPNG = 'Save as image...'
+const enum TextResources {
+    exportPNG = 'Save as image...',
 
-    static decomposeToTable = 'Show as table...'
+    decomposeToTable = 'Show as table...',
 
-    static reset = 'Reset'
+    reset = 'Reset',
 
-    static exportCSV = 'Save as table...'
+    exportCSV = 'Save as table...',
 
-    static menu = 'Menu'
+    other = 'Other',
 
-    static allDataIsHidden = 'All data is hidden'
+    noLabel = 'No Label',
 
-    static other = 'Other'
+    dataAsTable = 'Data as table',
 
-    static thousandShort = 'K'
+    total = 'Total',
 
-    static millionShort = 'M'
+    value = 'Value',
 
-    static billionShort = 'B'
+    defaultImageName = 'chart',
 
-    static show = 'Show...'
-
-    static noLabel = 'No Label'
-
-    static treeMapIsEmpty = 'Tree Map is empty'
-
-    static dataAsTable = 'Data as table'
+    defaultTableName = 'table'
 }
 
 export default TextResources

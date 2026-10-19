@@ -1,4 +1,4 @@
-class Paddings {
+export default interface Paddings {
     top: number
 
     right: number
@@ -8,4 +8,4 @@ class Paddings {
     left: number
 }
 
-export default Paddings
+export const NO_PADDINGS: Paddings = { top: 0, right: 0, bottom: 0, left: 0 }

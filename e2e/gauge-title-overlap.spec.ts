@@ -4,22 +4,22 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
-import Clip from './utils/Clip'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
+import Clip from '@e2e/utils/Clip'
 
 test('Gauge labels should not overlap chart title', async ({ page, browserName }) => {
     await Utils.setup(page, browserName)
 
     await Settings.height(63)
 
-    await Settings.enableInitAnimation(false)
+    await Settings.staticMode()
     await Settings.enableTitle()
     await Settings.chartType(ChartType.Gauge)
 
-    await Utils.checkScreenshot(
-        '/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAdADADASIAAhEBAxEB/8QAGAABAAMBAAAAAAAAAAAAAAAABwAFCAP/xAAtEAABBAEDAwQBAgcAAAAAAAABAgMEBREABhIHITEUQVFhExYiMlVxgZSh0f/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDUkuVHhsKflvtMMpxycdWEpGewyT21X/qSj/nNZ/lN/wDddrynrr6sdrrmGzNgulJWw8nklWCCMj6IB0GVXTvaDvX+9qHNu1qqxmkYfbjFkcEuFzBUB840DzEnw5ilJiS476kpCiGnArAPg9j4Ptro5JYbeZacfaQ69n8SFLALmBk8R74HxoI3M8ipHVqp2hTVta/V0cfMlLjjalsmO4TjjkBSEhXDAHfGT76r9uKs1TegBt0Q0q9PI9P6ZalZY9A3wK+QGF48gZHwToNGamhNfVbcduLu02pW7fcoap91gIsJ6mpU78YypTSQOKQfA5ef9BT2ZuGJuza1Ze14WmNOZDqUL/iQfBSfsEEf20Fzo+rNu2jHXK63C7F41EinZitSPyJPJ1LmSnjnkO3uRjSDqaAmstl3U7dHVd1MdDcXcFOzCgPrdTxccEdxtWQCVJAUodyB9Z1TbX25u2VJ6TuW23F1g2uJEOZymMu5bERDaHRxV4UoEcRkjHftg6ctTQZqj9NrPazVxUNdMqbdKnJDrlZcOusJCULJKUvpXhX7PrsR2Hzp42NTuUG0ausfbhtvsMgOohMhpkOElSuCR4HIn+vnV7qaD//Z',
+    await Utils.checkRender(
+        '',
         new Clip(440, 148, 48, 29)
     )
 })

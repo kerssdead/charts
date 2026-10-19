@@ -11,20 +11,15 @@
     "sourceMap": true,
     "removeComments": true,
     "isolatedModules": true,
-    "baseUrl": "./src"
+    "paths": {
+      "@/*": ["./src/*"],
+      "@e2e/*": ["./e2e/*"]
+    }
   },
-  "files": [
-    "src/types/base/Value.ts",
-    "src/types/interfaces/Data.ts",
-    "src/types/base/Renderer.ts"
-  ],
   "include": [
     "src/**/*.ts"
   ],
   "exclude": [
     "node_modules"
-  ],
-  "types": [
-    "@types/wicg-file-system-access"
   ]
 }

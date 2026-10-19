@@ -61,3 +61,15 @@ body {
 .flex-shrink-0 {
     flex-shrink: 0;
 }
+
+.fine {
+    background: #2fe432;
+}
+
+.warn {
+    background: #e47b2f;
+}
+
+.danger {
+    background: #e42f2f;
+}

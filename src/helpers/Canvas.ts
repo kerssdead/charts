@@ -1,45 +1,62 @@
-import Errors from 'helpers/Errors'
-import { ErrorType } from 'static/Enums'
-import Theme from 'Theme'
-import * as Helper from 'Helper'
+import fail from '@/helpers/Errors'
+import { ErrorType, Tag } from '@/static/Enums'
+import Theme from '@/Theme'
+import { adjustColor } from '@/helpers/Color'
 
-abstract class Canvas {
-    static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
-        return canvas.getContext('2d', { willReadFrequently: true })
-               ?? Errors.throw(ErrorType.NullContext)
-    }
+const GRADIENT_DELTA = 20
 
-    static isPixelBusy(pixel: number) {
-        return pixel != undefined && pixel - Theme.canvasBackgroundInt != 0
-    }
+const gradientStops = new Map<string, [string, string]>()
 
-    static isCanRender(
-        ctx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        w: number | string,
-        h: number,
-        isLeft?: boolean
-    ) {
-        const width = typeof w == 'number' ? w : Helper.stringWidth(w)
+export class GradientCache {
+    private key: string | null = null
 
-        if (width <= 0)
-            return false
+    private gradient: CanvasGradient | null = null
 
-        const pos = !isLeft
-                    ? { x: x - width / 2, y: y - h / 2 }
-                    : { x: x, y: y + h / 2 }
+    get(ctx: CanvasRenderingContext2D, color: string, y1: number, y2: number) {
+        const key = `${ color }|${ y1 }|${ y2 }`
 
-        const imageData = isLeft
-                          ? new Uint32Array(ctx.getImageData(pos.x - width, pos.y - h, width, h).data.buffer)
-                          : new Uint32Array(ctx.getImageData(pos.x, pos.y, width, h).data.buffer)
+        if (key != this.key || !this.gradient) {
+            this.key = key
+            this.gradient = verticalGradient(ctx, color, y1, y2)
+        }
 
-        for (let i = 0; i < imageData.length; i++)
-            if (Canvas.isPixelBusy(imageData[i]))
-                return false
-
-        return true
+        return this.gradient
     }
 }
 
-export default Canvas
+export function verticalGradient(ctx: CanvasRenderingContext2D, color: string, y1: number, y2: number) {
+    let stops = gradientStops.get(color)
+
+    if (!stops) {
+        const base = color.slice(0, 7)
+        const alpha = color.slice(7)
+
+        stops = [adjustColor(base, GRADIENT_DELTA) + alpha, adjustColor(base, -GRADIENT_DELTA) + alpha]
+
+        gradientStops.set(color, stops)
+    }
+
+    const gradient = ctx.createLinearGradient(0, Math.min(y1, y2), 0, Math.max(y1, y2))
+
+    gradient.addColorStop(0, stops[0])
+    gradient.addColorStop(1, stops[1])
+
+    return gradient
+}
+
+export function getContext(canvas: HTMLCanvasElement, willReadFrequently: boolean = false): CanvasRenderingContext2D {
+    return canvas.getContext('2d', { willReadFrequently })
+           ?? fail(ErrorType.NullContext)
+}
+
+export function isPixelBusy(pixel: number) {
+    return pixel != undefined && pixel !== Theme.canvasBackgroundInt
+}
+
+export function createCanvas() {
+    const canvas = document.createElement(Tag.Canvas)
+    canvas.width = 0
+    canvas.height = 0
+
+    return canvas
+}

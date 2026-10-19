@@ -1,7 +1,5 @@
-class TableHeaderValue {
+export default interface TableHeaderValue {
     display: string
 
     value: string
 }
-
-export default TableHeaderValue

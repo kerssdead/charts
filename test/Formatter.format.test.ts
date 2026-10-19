@@ -1,5 +1,5 @@
-import { PlotAxisType } from '../src/static/Enums'
-import Formatter from '../src/helpers/Formatter'
+import { PlotAxisType } from '@/static/Enums'
+import Formatter from '@/helpers/Formatter'
 
 describe('Getting formatted values', () => {
     it('Number', () => {
@@ -30,5 +30,15 @@ describe('Getting formatted values', () => {
     it('Text with prefix', () => {
         expect(Formatter.format('Title', PlotAxisType.Text, '.'))
             .toBe('Title.')
+    })
+
+    it('Undefined text', () => {
+        expect(Formatter.format(undefined, PlotAxisType.Text))
+            .toBe('')
+    })
+
+    it('Not a number as text', () => {
+        expect(Formatter.format('Test string', PlotAxisType.Number))
+            .toBe('Test string')
     })
 })

@@ -4,27 +4,32 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
-import Clip from './utils/Clip'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
+import Clip from '@e2e/utils/Clip'
 
-test('Hover sector in circular chart should not overlap other labels', async ({ page, browserName }) => {
-    await Utils.setup(page, browserName)
+// todo: add pin sector on pie chart
 
-    await Settings.enableInitAnimation(false)
+test(
+    'Hover sector in circular chart should not overlap other labels',
+    async ({ page, browserName }) => {
+        await Utils.setup(page, browserName)
 
-    await Settings.valuesCount(50)
-    await Settings.chartType(ChartType.Circular)
+        await Settings.staticMode()
 
-    await Utils.scrollToCanvas()
-    await Utils.wait(50)
+        await Settings.valuesCount(50)
+        await Settings.chartType(ChartType.Pie)
 
-    await Utils.page.mouse.move(590, 600)
-    await Utils.wait(400)
+        await Utils.scrollToCanvas()
+        await Utils.wait(50)
 
-    await Utils.checkScreenshot(
-        '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',
-        new Clip(330, 620, 100, 100)
-    )
-})
+        await Utils.page.mouse.move(590, 600)
+        await Utils.wait(400)
+
+        await Utils.checkRender(
+            '',
+            new Clip(330, 620, 100, 100)
+        )
+    }
+)

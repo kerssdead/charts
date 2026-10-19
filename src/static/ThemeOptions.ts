@@ -1,17 +1,42 @@
+type Palette = {
+    text: string
+
+    background: string
+
+    line: string
+
+    lineAxis: string
+
+    dropdownBorder: string
+
+    canvasBackground: string
+
+    other: string
+}
+
 class ThemeOptions {
-    static readonly colors = ['#000000', '#ffffff']
+    static readonly palettes: Palette[] = [
+        {
+            text: '#000000',
+            background: '#f7f7f7',
+            line: '#000000',
+            lineAxis: '#e0e0e0',
+            dropdownBorder: '#bcbcbc',
+            canvasBackground: '#ffffff',
+            other: '#9e9e9e'
+        },
+        {
+            text: '#ffffff',
+            background: '#222222',
+            line: '#eeeeee',
+            lineAxis: '#434343',
+            dropdownBorder: '#7e7e7e',
+            canvasBackground: '#222222',
+            other: '#757575'
+        }
+    ]
 
-    static readonly backgrounds = ['#f7f7f7', '#222222']
-
-    static readonly lines = ['#000000', '#eeeeee']
-
-    static readonly lineAxes = ['#e0e0e0', '#434343']
-
-    static readonly lineActives = ['#898989', '#898989']
-
-    static readonly dropdownBorders = ['#bcbcbc', '#7e7e7e']
-
-    static readonly canvasBackgrounds = ['#ffffff', '#222222']
+    static readonly contextMenuOpacity = 0.85
 }
 
 export default ThemeOptions

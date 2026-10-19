@@ -4,21 +4,21 @@
  */
 
 import { test } from '@playwright/test'
-import Utils from './utils/Utils'
-import Settings from './utils/Settings'
-import { ChartType } from '../src/static/Enums'
+import Utils from '@e2e/utils/Utils'
+import Settings from '@e2e/utils/Settings'
+import { ChartType } from '@/static/Enums'
 
 test(
     'Circular chart should not be rendered without any exceptions in console',
     async ({ page, browserName }) => {
         await Utils.setup(page, browserName)
 
-        await Settings.enableInitAnimation(false)
+        await Settings.staticMode()
         await Settings.width(1)
         await Settings.height(1)
         await Settings.valuesCount(2)
         await Settings.customLabel('custom label')
-        await Settings.chartType(ChartType.Circular)
+        await Settings.chartType(ChartType.Pie)
         await Settings.innerRadius(0)
 
         await Utils.checkForErrors()

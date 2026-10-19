@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Multiple Pies
+    </title>
+
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
+
+    <script src="../dist/ocharts.js"></script>
+</head>
+
+<body>
+<div></div>
+</body>
+
+<script>
+    const sectors = values => Object.entries(values).map(([label, value]) => ({ label: label, value: value }))
+
+    const chart = OCharts.chart(
+        document.querySelector('div'),
+        {
+            title: 'Sales by Region',
+            enableTooltip: true,
+            enableLegend: true,
+            charts: [
+                {
+                    type: 1,
+                    title: 'Q1',
+                    data: { values: sectors({ North: 40, South: 25, East: 20, West: 15 }) }
+                },
+                {
+                    type: 1,
+                    title: 'Q2',
+                    data: { values: sectors({ North: 30, South: 35, East: 15, West: 20 }) }
+                },
+                {
+                    type: 1,
+                    title: 'Q3',
+                    data: { values: sectors({ North: 20, South: 30, East: 35, Central: 15 }), innerRadius: 50 }
+                },
+                {
+                    type: 1,
+                    title: 'Q4',
+                    data: { values: sectors({ North: 45, South: 15, West: 25, Central: 15 }), innerRadius: 50, innerTitle: 'Q4' }
+                }
+            ]
+        }
+    )
+
+    chart.render()
+</script>
+</html>

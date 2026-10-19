@@ -5,7 +5,10 @@ const config: Config = {
     testEnvironment: 'node',
     testMatch: ['**/?(*.)+(test).[tj]s?(x)'],
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
-    moduleDirectories: ["node_modules", "src"]
+    moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^@e2e/(.*)$': '<rootDir>/e2e/$1'
+    }
 }
 
 export default config

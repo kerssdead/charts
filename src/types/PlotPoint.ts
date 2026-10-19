@@ -1,22 +1,13 @@
-import Value from 'types/base/Value'
+import ItemData from '@/types/ItemData'
 
-class PlotPoint extends Value {
+type PlotPoint = {
     x: number | Date | string
 
     y: number | Date | string
 
-    constructor(obj: object) {
-        super()
+    label?: string
 
-        Object.assign(this, obj)
-    }
-
-    // TODO: better name ?
-    inverse() {
-        const x = this.x
-        this.x = this.y as any
-        this.y = x as any
-    }
+    data?: ItemData
 }
 
 export default PlotPoint

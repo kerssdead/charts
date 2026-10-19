@@ -3,10 +3,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
-    entry: [
-        './src/Prototypes.ts',
-        './src/OCharts.ts'
-    ],
+    entry: './src/OCharts.ts',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'ocharts.js',
@@ -19,16 +16,21 @@ module.exports = {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: 'ts-loader',
+                use: {
+                    loader: 'ts-loader',
+                    options: {
+                        compilerOptions: { module: 'ESNext', moduleResolution: 'bundler', isolatedModules: false }
+                    }
+                },
                 exclude: /node_modules/,
             }
         ],
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
-        modules: [
-            path.resolve(__dirname, 'src')
-        ]
+        alias: {
+            '@': path.resolve(__dirname, 'src')
+        }
     },
     optimization: {
         minimize: true,

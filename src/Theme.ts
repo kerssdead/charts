@@ -1,14 +1,14 @@
-import * as Helper from 'Helper'
-import ThemeOptions from 'static/ThemeOptions'
-import { Events } from 'static/Enums'
+import { adjustColor, hexToRgb, withAlpha } from '@/helpers/Color'
+import ThemeOptions from '@/static/ThemeOptions'
+import { Events } from '@/static/Enums'
 
-enum ColorTheme {
+export enum ColorTheme {
     light = 0,
     dark = 1
 }
 
 class Theme {
-    static currentTheme = 0
+    static currentTheme = ColorTheme.light
 
     static text: string
 
@@ -18,50 +18,61 @@ class Theme {
 
     static lineAxis: string
 
-    static lineActive: string
-
     static dropdownItemHoverColor: string
 
     static dropdownBorder: string
 
     static canvasBackground: string
 
+    static other: string
+
     static canvasBackgroundInt: number
 
-    static function: Function | undefined
+    static contextMenuBackground: string
 
-    static initialize(callback: Function, isDark?: Function) {
-        if (!Theme.function && isDark)
-            Theme.function = isDark
+    static contextMenuButton: string
 
-        if (!Theme.function || Theme.function())
-            Theme.setTheme(ColorTheme.dark)
-        else
-            Theme.setTheme(ColorTheme.light)
+    static contextMenuButtonHover: string
 
-        window.matchMedia('(prefers-color-scheme: dark)')
-              .addEventListener(Events.Change, event => {
-                  Theme.setTheme(event.matches && (!Theme.function || Theme.function()) ? ColorTheme.dark : ColorTheme.light)
-                  callback()
-              })
+    static media: MediaQueryList | undefined
+
+    static initialize(callback: () => void, isDark?: () => boolean) {
+        Theme.media ??= window.matchMedia('(prefers-color-scheme: dark)')
+
+        Theme.update(isDark)
+
+        Theme.media.addEventListener(Events.Change, callback)
+    }
+
+    static detach(callback: () => void) {
+        Theme.media?.removeEventListener(Events.Change, callback)
     }
 
     static setTheme(index: ColorTheme) {
+        if (Theme.text != undefined && index == Theme.currentTheme)
+            return
+
         Theme.currentTheme = index
 
-        Theme.text = ThemeOptions.colors[index]
-        Theme.background = ThemeOptions.backgrounds[index]
-        Theme.line = ThemeOptions.lines[index]
-        Theme.lineAxis = ThemeOptions.lineAxes[index]
-        Theme.lineActive = ThemeOptions.lineActives[index]
-        Theme.dropdownItemHoverColor = Helper.adjustColor(Theme.background, index == ColorTheme.light ? -50 : 50)
-        Theme.dropdownBorder = ThemeOptions.dropdownBorders[index]
-        Theme.canvasBackground = ThemeOptions.canvasBackgrounds[index]
-        Theme.canvasBackgroundInt = Number(`0xff${ Theme.canvasBackground.slice(1) }`)
+        Object.assign(Theme, ThemeOptions.palettes[index])
+
+        Theme.dropdownItemHoverColor = adjustColor(Theme.background, index == ColorTheme.light ? -50 : 50)
+
+        const { r, g, b } = hexToRgb(Theme.canvasBackground)!
+        Theme.canvasBackgroundInt = new Uint32Array(new Uint8ClampedArray([r, g, b, 255]).buffer)[0]
+        Theme.contextMenuBackground = withAlpha(Theme.background, ThemeOptions.contextMenuOpacity)
+        Theme.contextMenuButton = withAlpha(Theme.dropdownItemHoverColor, 0)
+        Theme.contextMenuButtonHover = withAlpha(Theme.dropdownItemHoverColor, 1)
     }
 
-    static reset() {
-        this.function = undefined
+    static hoverBackground(hover: number) {
+        return adjustColor(Theme.canvasBackground, Math.round(-25 * hover))
+    }
+
+    static update(isDark?: () => boolean) {
+        const isDarkTheme = isDark ? isDark() : Theme.media?.matches
+
+        Theme.setTheme(isDarkTheme ? ColorTheme.dark : ColorTheme.light)
     }
 }
 

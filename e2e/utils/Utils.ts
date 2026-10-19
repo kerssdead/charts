@@ -1,8 +1,10 @@
-import { expect, Page } from '@playwright/test'
-import Selectors from './Selectors'
-import { Screenshot } from './Screenshot'
-import Clip from './Clip'
-import Settings from './Settings'
+import { expect, Page, test } from '@playwright/test'
+import { pathToFileURL } from 'url'
+import path from 'path'
+import Selectors from '@e2e/utils/Selectors'
+import Render from '@e2e/utils/Render'
+import Clip from '@e2e/utils/Clip'
+import Settings from '@e2e/utils/Settings'
 
 type BrowserName = 'chromium' | 'firefox' | 'webkit'
 
@@ -20,19 +22,24 @@ class Utils {
     }
 
     static async goto() {
-        if (process.env.CI)
-            await Utils.page.goto('/charts/')
-        else
-            await Utils.page.goto('file:///Users/sergey/WebstormProjects/charts/index.html')
+        await Utils.page.goto(pathToFileURL(path.resolve(__dirname, '../../index.html')).href)
     }
 
     static scrollToCanvas() {
         return Utils.page.locator(Selectors.chart).scrollIntoViewIfNeeded()
     }
 
-    static async checkScreenshot(base64: string, clip?: Clip | undefined) {
-        expect(await Screenshot.get(Utils.page, clip))
-            .toBe(base64)
+    static async checkRender(expected: string, clip?: Clip | undefined) {
+        const drawCalls = await Render.drawCalls(Utils.page, clip)
+        const hash = Render.hash(drawCalls)
+
+        if (hash != expected) {
+            console.log(`Draw calls (${ hash }):\n${ drawCalls }`)
+
+            await test.info().attach('clip', { body: await Render.image(Utils.page, clip), contentType: 'image/png' })
+        }
+
+        expect(hash).toBe(expected)
     }
 
     static async checkForErrors() {
@@ -51,9 +58,11 @@ class Utils {
         Settings.initialize(page)
 
         page.addListener(
-            "pageerror",
+            'pageerror',
             error => this.errors.push(error)
         )
+
+        await Render.intercept(page)
 
         await Utils.goto()
 

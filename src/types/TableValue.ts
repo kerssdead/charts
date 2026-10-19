@@ -1,7 +1,5 @@
-class TableValue {
+export default interface TableValue {
     name: string
 
-    values: Map<string, any>
+    values: Map<string, number>
 }
-
-export default TableValue
