@@ -48,10 +48,11 @@ export default class QueueArcItemBuilder extends QueueItemBaseBuilder<RenderItem
         return this
     }
 
-    leader(gap: number, length: number, offset: number = 0) {
+    leader(gap: number, length: number, offset: number = 0, anchor: number = 0) {
         this.shape.leaderGap = gap
         this.shape.leaderLength = length
         this.shape.leaderOffset = offset
+        this.shape.leaderAnchor = anchor
 
         return this
     }

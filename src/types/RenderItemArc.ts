@@ -5,7 +5,8 @@ import { AnimationTiming, COORDS_MAX_X } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import Theme from '@/Theme'
 import { GradientCache } from '@/helpers/Canvas'
-import { lerp } from '@/helpers/Geometry'
+import { clamp, lerp } from '@/helpers/Geometry'
+import type RenderItemText from '@/types/RenderItemText'
 
 const FULL_CIRCLE_EPSILON = 1e-6
 
@@ -60,6 +61,8 @@ export default class RenderItemArc
     leaderLength: number = 0
 
     leaderOffset: number = 0
+
+    leaderAnchor: number = 0
 
     leaderLabel: RenderItem | null = null
 
@@ -188,21 +191,28 @@ export default class RenderItemArc
         if (visibility <= 0)
             return
 
-        const labelAngle = shape.middle + this.leaderOffset
-        const bendAngle = shape.middle + this.leaderOffset / 2
+        const anchorAngle = shape.middle + this.leaderAnchor
+        const turn = this.leaderOffset - this.leaderAnchor
+        const labelAngle = anchorAngle + turn
+        const bendAngle = anchorAngle + turn / 2
 
         const start = this.canvas.radius + this.canvas.leaderGap
         const end = start + this.canvas.leaderLength
-        const bend = end / Math.max(Math.cos(this.leaderOffset / 2), .5)
+        const bend = end / Math.max(Math.cos(turn / 2), .5)
 
         ctx.globalAlpha *= visibility
         ctx.strokeStyle = Theme.line
 
+        const endX = shape.x + end * Math.cos(labelAngle)
+        const endY = shape.y + end * Math.sin(labelAngle)
+        const box = (this.leaderLabel!.shape as RenderItemText).orbitBox()
+
         ctx.beginPath()
-        ctx.moveTo(shape.x + start * Math.cos(shape.middle), shape.y + start * Math.sin(shape.middle))
-        ctx.quadraticCurveTo(
-            shape.x + bend * Math.cos(bendAngle), shape.y + bend * Math.sin(bendAngle),
-            shape.x + end * Math.cos(labelAngle), shape.y + end * Math.sin(labelAngle)
+        ctx.moveTo(shape.x + start * Math.cos(anchorAngle), shape.y + start * Math.sin(anchorAngle))
+        ctx.quadraticCurveTo(shape.x + bend * Math.cos(bendAngle), shape.y + bend * Math.sin(bendAngle), endX, endY)
+        ctx.lineTo(
+            clamp(endX, box.x - box.halfWidth, box.x + box.halfWidth),
+            clamp(endY, box.y - box.halfHeight, box.y + box.halfHeight)
         )
         ctx.stroke()
     }
@@ -222,12 +232,9 @@ export default class RenderItemArc
         if (angle <= 0)
             return false
 
-        const half = this.canvas.gap / 2
         const sin = Math.sin(Math.min(angle, Math.PI) / 2)
         const outer = this.canvas.radius
-
-        if (outer * sin <= half)
-            return false
+        const half = Math.min(this.canvas.gap / 2, outer * sin / 2)
 
         const isApex = this.canvas.innerRadius * sin <= half
         const inner = isApex
@@ -246,8 +253,8 @@ export default class RenderItemArc
             sin < 1 ? (inner * sin - half) / (1 - sin) : Infinity
         ), 0)
 
-        const outerStart = this.corner(shape, shape.start, 1, outer, outerCorner, true)
-        const outerEnd = this.corner(shape, shape.end, -1, outer, outerCorner, true)
+        const outerStart = this.corner(shape, shape.start, 1, outer, outerCorner, true, half)
+        const outerEnd = this.corner(shape, shape.end, -1, outer, outerCorner, true, half)
 
         this.cornerArc(ctx, outerStart, outerCorner, outerStart.edge, outerStart.circle)
         ctx.arc(shape.x, shape.y, outer, outerStart.angle, outerEnd.angle)
@@ -256,8 +263,8 @@ export default class RenderItemArc
         if (isApex) {
             ctx.lineTo(shape.x + inner * Math.cos(shape.middle), shape.y + inner * Math.sin(shape.middle))
         } else {
-            const innerEnd = this.corner(shape, shape.end, -1, inner, innerCorner, false)
-            const innerStart = this.corner(shape, shape.start, 1, inner, innerCorner, false)
+            const innerEnd = this.corner(shape, shape.end, -1, inner, innerCorner, false, half)
+            const innerStart = this.corner(shape, shape.start, 1, inner, innerCorner, false, half)
 
             this.cornerArc(ctx, innerEnd, innerCorner, innerEnd.edge, innerEnd.circle)
             ctx.arc(shape.x, shape.y, inner, innerEnd.angle, innerStart.angle, true)
@@ -275,8 +282,8 @@ export default class RenderItemArc
         ctx.arc(center.x, center.y, radius, from, from + turn, turn < 0)
     }
 
-    private corner(shape: Shape, edgeAngle: number, side: 1 | -1, radius: number, corner: number, isOuter: boolean) {
-        const offset = this.canvas.gap / 2 + corner
+    private corner(shape: Shape, edgeAngle: number, side: 1 | -1, radius: number, corner: number, isOuter: boolean, half: number) {
+        const offset = half + corner
         const distance = isOuter ? radius - corner : radius + corner
         const along = Math.sqrt(Math.max(distance * distance - offset * offset, 0))
 
@@ -285,8 +292,8 @@ export default class RenderItemArc
         const x = shape.x + distance * Math.cos(angle)
         const y = shape.y + distance * Math.sin(angle)
 
-        const edgeX = shape.x + along * Math.cos(edgeAngle) - side * this.canvas.gap / 2 * Math.sin(edgeAngle)
-        const edgeY = shape.y + along * Math.sin(edgeAngle) + side * this.canvas.gap / 2 * Math.cos(edgeAngle)
+        const edgeX = shape.x + along * Math.cos(edgeAngle) - side * half * Math.sin(edgeAngle)
+        const edgeY = shape.y + along * Math.sin(edgeAngle) + side * half * Math.cos(edgeAngle)
 
         return {
             x,

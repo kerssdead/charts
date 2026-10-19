@@ -4,7 +4,7 @@ import Sector from '@/types/Sector'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import TextResources from '@/static/TextResources'
-import { clamp } from '@/helpers/Geometry'
+import { clamp, normalizeAngle } from '@/helpers/Geometry'
 import layoutLabels from '@/render/LabelLayout'
 import { stringWidth } from '@/helpers/Text'
 import { sum } from '@/helpers/Collections'
@@ -26,7 +26,7 @@ const SIDE_RATIO = 2.5
 
 const SIDE_PADDING = 10
 
-const SIDE_SQUEEZE = 1 / 3
+const ANCHOR_INSET = .15
 
 const SECTOR_GAP = 20
 
@@ -70,9 +70,9 @@ export default class PieProcess extends ChartProcess<PieData> {
 
     private readonly labelDistance: number
 
-    private readonly labelAxis: number | null
-
     private readonly hideLabels: boolean
+
+    private readonly bounds: Point
 
     private scale: number = 0
 
@@ -86,10 +86,10 @@ export default class PieProcess extends ChartProcess<PieData> {
         const width = this.units.toPxX(COORDS_MAX_X)
         const height = this.units.toPxY(COORDS_MAX_Y)
 
+        this.bounds = { x: width / 2, y: height / 2 }
+
         const isWide = width > height * SIDE_RATIO
         const isTall = height > width * SIDE_RATIO
-
-        this.labelAxis = isWide ? 0 : isTall ? Math.PI / 2 : null
 
         const fit = isWide ? Math.min(width / 5, height / 2 - SIDE_PADDING)
                     : isTall ? Math.min(width / 2 - SIDE_PADDING, height / 5)
@@ -128,14 +128,10 @@ export default class PieProcess extends ChartProcess<PieData> {
     }
 
     private getLabels(slices: Slice[]): Label[] {
-        const result: Label[] = slices.map(slice => {
-            const angle = slice.startAngle + slice.angle / 2
-
-            return {
-                angle: this.labelAxis == null ? angle : PieProcess.toSide(angle, this.labelAxis),
-                isVisible: !this.hideLabels && (slice.sector.disabled || PieProcess.isVisible(slice.sector))
-            }
-        })
+        const result: Label[] = slices.map(slice => ({
+            angle: slice.startAngle + slice.angle / 2,
+            isVisible: !this.hideLabels && (slice.sector.disabled || PieProcess.isVisible(slice.sector))
+        }))
 
         if (this.hideLabels)
             return result
@@ -147,7 +143,7 @@ export default class PieProcess extends ChartProcess<PieData> {
             value: slices[index].sector.value,
             halfWidth: stringWidth(this.getLabel(slices[index].sector), LABEL_FONT) / 2,
             halfHeight: LABEL_FONT / 2
-        })), this.labelDistance)
+        })), this.labelDistance, this.bounds)
 
         visible.forEach((index, i) => result[index] = placements[i])
 
@@ -204,7 +200,8 @@ export default class PieProcess extends ChartProcess<PieData> {
 
     private getSector({ sector, key, children, startAngle, angle }: Slice, label: Label) {
         const endAngle = startAngle + angle
-        const labelOffset = label.angle - (startAngle + angle / 2)
+        const labelOffset = normalizeAngle(label.angle - (startAngle + angle / 2))
+        const anchorRange = angle / 2 - Math.min(angle / 2, ANCHOR_INSET)
 
         const radius = this.units.x(this.radius)
         const innerRadius = radius * this.innerRatio
@@ -225,7 +222,7 @@ export default class PieProcess extends ChartProcess<PieData> {
                 .gap(SECTOR_GAP)
                 .cornerRadius(SECTOR_CORNER_RADIUS)
                 .grow(START_ANGLE)
-                .leader(LEADER_GAP, LEADER_LENGTH, labelOffset)
+                .leader(LEADER_GAP, LEADER_LENGTH, labelOffset, clamp(labelOffset, -anchorRange, anchorRange))
                 .fill()
                 .gradient()
                 .color(sector.color)
@@ -260,12 +257,6 @@ export default class PieProcess extends ChartProcess<PieData> {
         return this.data.labelPercent && PieProcess.isVisible(sector)
                ? `${ sector.label } ${ this.percent(sector.value / this.sum) }`
                : sector.label
-    }
-
-    private static toSide(angle: number, axis: number) {
-        const side = Math.cos(angle - axis) >= 0 ? axis : axis + Math.PI
-
-        return side + Math.atan2(Math.sin(angle - side), Math.cos(angle - side)) * SIDE_SQUEEZE
     }
 
     private static isVisible(sector: Sector) {

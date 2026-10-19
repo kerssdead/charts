@@ -44,6 +44,10 @@ export function placeNear(point: Point,
     return { x: Math.max(x, bounds.x), y: Math.max(y, bounds.y) }
 }
 
+export function normalizeAngle(angle: number) {
+    return Math.atan2(Math.sin(angle), Math.cos(angle))
+}
+
 export function boxEdgeDistance(angle: number, halfWidth: number, halfHeight: number, distance: number) {
     const cos = Math.abs(Math.cos(angle))
     const sin = Math.abs(Math.sin(angle))

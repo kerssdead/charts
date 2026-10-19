@@ -125,6 +125,20 @@ export default class RenderItemText
         }
     }
 
+    orbitBox() {
+        this.halfWidth ??= stringWidth(this.value, this.fontSize) / 2
+
+        const halfHeight = this.fontSize / 2
+        const distance = boxEdgeDistance(this.canvas.angle, this.halfWidth, halfHeight, this.canvas.radius)
+
+        return {
+            x: this.canvas.x + distance * Math.cos(this.canvas.angle),
+            y: this.canvas.y + distance * Math.sin(this.canvas.angle),
+            halfWidth: this.halfWidth,
+            halfHeight
+        }
+    }
+
     render(ctx: CanvasRenderingContext2D): void {
         ctx.font = this.font
         ctx.textAlign = this.alignment
@@ -140,15 +154,11 @@ export default class RenderItemText
 
             ctx.restore()
         } else if (this.orbit) {
-            this.halfWidth ??= stringWidth(this.value, this.fontSize) / 2
-
-            const distance = boxEdgeDistance(this.canvas.angle, this.halfWidth, this.fontSize / 2, this.canvas.radius)
+            const { x, y } = this.orbitBox()
 
             ctx.textAlign = TextAlignment.Center
             ctx.textBaseline = TextBaseline.Middle
-            ctx.fillText(this.value,
-                this.canvas.x + distance * Math.cos(this.canvas.angle),
-                this.canvas.y + distance * Math.sin(this.canvas.angle))
+            ctx.fillText(this.value, x, y)
         } else {
             ctx.fillText(this.value, this.canvas.x, this.canvas.y)
         }
