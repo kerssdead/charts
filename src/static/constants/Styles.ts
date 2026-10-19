@@ -10,6 +10,10 @@ namespace Styles {
     export const enum PointerEvents {
         None = 'none'
     }
+
+    export const enum Size {
+        Full = '100%'
+    }
 }
 
 export default Styles

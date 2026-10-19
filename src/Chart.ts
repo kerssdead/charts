@@ -6,6 +6,7 @@ import Renderer from '@/renderer/Renderer'
 import { randomColor } from '@/helpers/Color'
 import Debug from '@/helpers/Debug'
 import { keepDisabled, normalize } from '@/helpers/Settings'
+import Styles from '@/static/constants/Styles'
 
 // todo: add public api
 
@@ -39,6 +40,12 @@ export default class Chart {
     }
 
     constructor(element: HTMLElement, settings: ChartSettings) {
+        if (element.clientWidth == 0)
+            element.style.width = Styles.Size.Full
+
+        if (element.clientHeight == 0)
+            element.style.height = Styles.Size.Full
+
         this.canvas = createCanvas()
         element.appendChild(this.canvas)
 
