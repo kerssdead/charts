@@ -1,5 +1,5 @@
 import ChartSettings from '@/types/ChartSettings'
-import { ChartType } from '@/static/Enums'
+import { ChartType, PlotType } from '@/static/Enums'
 import { normalizeColor, spreadColor } from '@/helpers/Color'
 import { deepClone, groupBy } from '@/helpers/Collections'
 import { parseNumber } from '@/helpers/Numbers'
@@ -48,6 +48,9 @@ function prepareValues(chart: ChartItem) {
                     ? new PlotSeries(value)
                     : new Sector(value)
 
+        if (value instanceof PlotSeries)
+            value.type ??= PlotType.Line
+
         value.label ??= TextResources.noLabel
 
         const count = counts.get(value.label) ?? 0
@@ -90,6 +93,9 @@ function normalizeValues(values: Value[] | undefined) {
 
         if (value.color)
             value.color = normalizeColor(value.color)
+
+        if ((value as PlotSeries).values)
+            (value as PlotSeries).values = (value as PlotSeries).values.filter(point => point.x != null)
 
         for (const point of (value as PlotSeries).values ?? [])
             point.y = toNumber(point.y)

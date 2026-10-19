@@ -7,4 +7,6 @@ export default interface PieData extends Data {
     innerRadius: number
 
     innerTitle: string
+
+    labelPercent: boolean
 }

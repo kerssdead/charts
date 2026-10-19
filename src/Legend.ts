@@ -522,8 +522,8 @@ class Legend extends Overlay {
             item.color = Theme.hoverBackground(this.hover.value(key))
     }
 
-    static truncate(label: string, maxWidth: number) {
-        if (stringWidth(label) <= maxWidth)
+    static truncate(label: string, maxWidth: number, font?: number) {
+        if (stringWidth(label, font) <= maxWidth)
             return label
 
         let low = 0
@@ -532,7 +532,7 @@ class Legend extends Overlay {
         while (low < high) {
             const middle = Math.ceil((low + high) / 2)
 
-            if (stringWidth(label.slice(0, middle) + '…') <= maxWidth)
+            if (stringWidth(label.slice(0, middle) + '…', font) <= maxWidth)
                 low = middle
             else
                 high = middle - 1

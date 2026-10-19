@@ -6,20 +6,20 @@ export default class Debug {
         if (!settings.enableDebugMode)
             return
 
-        console.log('OCharts:', {
-            input: Debug.copy(input),
-            settings: Debug.copy(settings),
+        console.log('OCharts:', Debug.json({
+            input,
+            settings,
             size: {
                 width: canvas.parentElement?.clientWidth,
                 height: canvas.parentElement?.clientHeight
             },
             theme: ColorTheme[Theme.currentTheme]
-        })
+        }))
     }
 
-    private static copy(value: ChartSettings) {
+    private static json(value: object) {
         try {
-            return JSON.parse(JSON.stringify(value))
+            return JSON.stringify(value)
         } catch {
             return value
         }

@@ -8,12 +8,16 @@ import ChartItem from '@/types/ChartItem'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import { TextAlignment } from '@/static/Enums'
+import { clamp } from '@/helpers/Geometry'
+import { stringWidth } from '@/helpers/Text'
 
 const TITLE_FONT = 20
 
 const TITLE_PADDING = 12
 
 const PANEL_TITLE_FONT = 16
+
+const PANEL_TITLE_MIN_FONT = 12
 
 const PANEL_TITLE_PADDING = 8
 
@@ -98,10 +102,13 @@ export default class Layout {
         if (!title)
             return QueueItemsBuilder.empty
 
+        const width = COORDS_MAX_X / pixel.x - PANEL_TITLE_PADDING * 2
+        const font = clamp(width / stringWidth(title, 1), PANEL_TITLE_MIN_FONT, PANEL_TITLE_FONT)
+
         return (items: QueueItemsBuilder) => {
-            items.text(title)
+            items.text(Legend.truncate(title, width, font))
                  .position(COORDS_MAX_X / 2, -PANEL_TITLE_HEIGHT / 2 * pixel.y)
-                 .size(PANEL_TITLE_FONT)
+                 .size(font)
                  .align(TextAlignment.Center)
                  .key('panel-title')
                  .init(AnimationTiming.title, 0, true)

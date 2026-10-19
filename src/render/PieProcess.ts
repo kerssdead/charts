@@ -20,6 +20,14 @@ const LABEL_SPACE = 36
 
 const LABEL_FONT = 14
 
+const MIN_RADIUS = 40
+
+const SIDE_RATIO = 2.5
+
+const SIDE_PADDING = 10
+
+const SIDE_SQUEEZE = 1 / 3
+
 const SECTOR_GAP = 20
 
 const SECTOR_CORNER_RADIUS = 30
@@ -62,6 +70,10 @@ export default class PieProcess extends ChartProcess<PieData> {
 
     private readonly labelDistance: number
 
+    private readonly labelAxis: number | null
+
+    private readonly hideLabels: boolean
+
     private scale: number = 0
 
     private sum: number = 0
@@ -74,7 +86,17 @@ export default class PieProcess extends ChartProcess<PieData> {
         const width = this.units.toPxX(COORDS_MAX_X)
         const height = this.units.toPxY(COORDS_MAX_Y)
 
-        this.radius = Math.max(Math.min(width / 5, height / 2 - LABEL_SPACE), 0)
+        const isWide = width > height * SIDE_RATIO
+        const isTall = height > width * SIDE_RATIO
+
+        this.labelAxis = isWide ? 0 : isTall ? Math.PI / 2 : null
+
+        const fit = isWide ? Math.min(width / 5, height / 2 - SIDE_PADDING)
+                    : isTall ? Math.min(width / 2 - SIDE_PADDING, height / 5)
+                    : Math.min(width / 5, height / 2 - LABEL_SPACE)
+
+        this.radius = Math.max(fit, Math.min(MIN_RADIUS, height / 2, width / 2), 0)
+        this.hideLabels = fit < MIN_RADIUS
         this.innerRatio = clamp(this.data.innerRadius ?? 0, 0, 100) / 100
         this.labelDistance = this.radius + this.units.toPxX(LEADER_GAP + LEADER_LENGTH + LEADER_GAP)
     }
@@ -106,17 +128,24 @@ export default class PieProcess extends ChartProcess<PieData> {
     }
 
     private getLabels(slices: Slice[]): Label[] {
-        const result: Label[] = slices.map(slice => ({
-            angle: slice.startAngle + slice.angle / 2,
-            isVisible: slice.sector.disabled || PieProcess.isVisible(slice.sector)
-        }))
+        const result: Label[] = slices.map(slice => {
+            const angle = slice.startAngle + slice.angle / 2
+
+            return {
+                angle: this.labelAxis == null ? angle : PieProcess.toSide(angle, this.labelAxis),
+                isVisible: !this.hideLabels && (slice.sector.disabled || PieProcess.isVisible(slice.sector))
+            }
+        })
+
+        if (this.hideLabels)
+            return result
 
         const visible = slices.flatMap((slice, index) => PieProcess.isVisible(slice.sector) ? [index] : [])
 
         const placements = layoutLabels(visible.map(index => ({
             angle: result[index].angle,
             value: slices[index].sector.value,
-            halfWidth: stringWidth(slices[index].sector.label, LABEL_FONT) / 2,
+            halfWidth: stringWidth(this.getLabel(slices[index].sector), LABEL_FONT) / 2,
             halfHeight: LABEL_FONT / 2
         })), this.labelDistance)
 
@@ -213,7 +242,7 @@ export default class PieProcess extends ChartProcess<PieData> {
             if (!label.isVisible)
                 return
 
-            const text = items.text(sector.label)
+            const text = items.text(this.getLabel(sector))
                 .orbit(label.angle, orbit)
                 .size(LABEL_FONT)
                 .follow(arc.shape)
@@ -225,6 +254,18 @@ export default class PieProcess extends ChartProcess<PieData> {
             if (sector.disabled)
                 text.ghost()
         }
+    }
+
+    private getLabel(sector: Sector) {
+        return this.data.labelPercent && PieProcess.isVisible(sector)
+               ? `${ sector.label } ${ this.percent(sector.value / this.sum) }`
+               : sector.label
+    }
+
+    private static toSide(angle: number, axis: number) {
+        const side = Math.cos(angle - axis) >= 0 ? axis : axis + Math.PI
+
+        return side + Math.atan2(Math.sin(angle - side), Math.cos(angle - side)) * SIDE_SQUEEZE
     }
 
     private static isVisible(sector: Sector) {
