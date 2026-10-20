@@ -57,10 +57,14 @@ export default class CustomTooltip {
             return escapeHtml(data[key])
         })
 
-        element.style.position = Styles.Position.Absolute
+        element.style.position = Styles.Position.Fixed
+        element.style.left = '0'
+        element.style.top = '0'
         element.style.pointerEvents = Styles.PointerEvents.None
 
-        document.body.appendChild(element)
+        const host = this.canvas.closest(Tag.Dialog) ?? document.fullscreenElement ?? document.body
+
+        host.appendChild(element)
 
         const { width, height } = element.getBoundingClientRect()
 
@@ -75,7 +79,7 @@ export default class CustomTooltip {
         const { x, y } = placeNear(point, this.size.width, this.size.height, Tooltip.offset,
             { x: 0, y: 0, width: canvas.width, height: canvas.height })
 
-        element.style.left = `${ canvas.left + window.scrollX + x }px`
-        element.style.top = `${ canvas.top + window.scrollY + y }px`
+        element.style.left = `${ canvas.left + x }px`
+        element.style.top = `${ canvas.top + y }px`
     }
 }

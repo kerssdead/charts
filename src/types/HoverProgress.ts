@@ -23,7 +23,7 @@ export default class HoverProgress {
     }
 
     step(isOver: boolean, now: DOMHighResTimeStamp, duration: number): boolean {
-        const delta = this.time == null ? 0 : now - this.time
+        const delta = this.time == null ? 0 : Math.max(now - this.time, 0)
 
         this.time = now
         this.isOver = isOver

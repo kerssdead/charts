@@ -24,10 +24,13 @@ export default class ChartMenu {
 
     private readonly onOpen: (point: Point) => void
 
-    constructor(canvas: HTMLCanvasElement, queue: Queue, onOpen: (point: Point) => void) {
+    private readonly drawClean: () => void
+
+    constructor(canvas: HTMLCanvasElement, queue: Queue, onOpen: (point: Point) => void, drawClean: () => void) {
         this.canvas = canvas
         this.queue = queue
         this.onOpen = onOpen
+        this.drawClean = drawClean
     }
 
     apply(settings: ChartSettings) {
@@ -59,7 +62,7 @@ export default class ChartMenu {
             {
                 text: TextResources.exportPNG,
                 action: () => setTimeout(() => {
-                    Export.asPng(this.canvas, this.ratio, title, this.button?.bounds, this.settings.isDarkThemeFunction)
+                    Export.asPng(this.canvas, this.ratio, title, this.button?.bounds, this.settings.isDarkThemeFunction, this.drawClean)
                 }, ContextMenu.fadeDuration)
             },
             {

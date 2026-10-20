@@ -58,7 +58,7 @@ export default class RenderItemText
     }
 
     private get baselineShift(): number {
-        return this.orbit ? 0 : this.fontSize * 0.3
+        return this.orbit || this.baseline != TextBaseline.Alphabetic ? 0 : this.fontSize * 0.3
     }
 
     currentAngle(morph: number = 1): number {

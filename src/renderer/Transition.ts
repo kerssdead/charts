@@ -65,6 +65,10 @@ export default class Transition {
 
         const removed = Array.from(previous.values())
 
+        for (const item of removed)
+            if (item.panel)
+                item.panel = panels[item.panel.index] ?? item.panel
+
         Transition.animateArcs(queue, appearedArcs, removed, matches, duration)
 
         for (const item of removed) {

@@ -61,7 +61,7 @@ export default class TreeProcess extends ChartProcess<TreeData> {
         const sectors = TreeProcess.prepare(group.sectors ?? [], value => value.value)
 
         return this.layout(sectors, box, value => value.value).map(({ value, box }, index) => {
-            const color = spreadColor(group.color, index, sectors.length, COLOR_RANGE)
+            const color = value.color || spreadColor(group.color, index, sectors.length, COLOR_RANGE)
 
             return { color, value, key: `tree-${ group.id }-${ group.sectors?.indexOf(value) }`, box, group }
         })
@@ -78,7 +78,7 @@ export default class TreeProcess extends ChartProcess<TreeData> {
         return values.map((value, index) => {
             const { x, y } = position
 
-            const isVertical = (index % 2 === 0)
+            const isVertical = this.units.toPxX(right - x) >= this.units.toPxY(bottom - y)
             const isLast = index + 1 == values.length
 
             const area = getValue(value) * unit
@@ -96,7 +96,7 @@ export default class TreeProcess extends ChartProcess<TreeData> {
             const widthGap = isVertical && !isLast ? gap / 2 : 0
             const heightGap = isVertical || isLast ? 0 : gap / 2
 
-            return { value, box: { x, y, width: w - widthGap, height: h - heightGap } }
+            return { value, box: { x, y, width: Math.max(w - widthGap, 0), height: Math.max(h - heightGap, 0) } }
         })
     }
 

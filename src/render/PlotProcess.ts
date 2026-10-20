@@ -36,6 +36,8 @@ const X_LABEL_FONT = 12
 
 const X_LABEL_SPACING = 8
 
+const TOP_BASELINE_GAP = 4
+
 const BAND_SPACING = 24
 
 const BAR_BAND_RATIO = 0.35
@@ -365,7 +367,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
     private bottomLabel(items: QueueItemsBuilder, text: string, x: number, y: number, key: string) {
         return items.text(text)
-                    .position(x, y)
+                    .position(x, y + this.units.y(TOP_BASELINE_GAP))
                     .align(TextAlignment.Center)
                     .baseline(TextBaseline.Top)
                     .size(X_LABEL_FONT)
@@ -454,7 +456,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         return (items: QueueItemsBuilder) => {
             if (this.leftTitle) {
                 items.text(this.leftTitle)
-                     .position(this.units.x(LEFT_PADDING), COORDS_MAX_Y / 2)
+                     .position(this.units.x(LEFT_PADDING + TOP_BASELINE_GAP), COORDS_MAX_Y / 2)
                      .baseline(TextBaseline.Top)
                      .size(AXIS_TITLE_FONT)
                      .rotate(Math.PI * 1.5)

@@ -35,8 +35,6 @@ export default class Chart {
 
     private height: number = 0
 
-    private ratio: number = 0
-
     private readonly onThemeChange = () => {
         this.renderer.apply(this.settings)
     }
@@ -125,7 +123,7 @@ export default class Chart {
         return Number.isFinite(+value) ? `${ +value }px` : value
     }
 
-    private resize(width: number, height: number) {
+    private resize(width: number, height: number, device?: ResizeObserverSize) {
         width = Math.floor(width)
         height = Math.floor(height)
 
@@ -133,20 +131,26 @@ export default class Chart {
             return
 
         const ratio = window.devicePixelRatio || 1
+        const isExact = device != undefined
+                        && Math.abs(device.inlineSize - width * ratio) < 1
+                        && Math.abs(device.blockSize - height * ratio) < 1
 
-        if (this.width == width && this.height == height && this.ratio == ratio)
+        const pixelWidth = isExact ? device.inlineSize : Math.round(width * ratio)
+        const pixelHeight = isExact ? device.blockSize : Math.round(height * ratio)
+
+        if (this.width == width && this.height == height
+            && this.canvas.width == pixelWidth && this.canvas.height == pixelHeight)
             return
 
         this.width = width
         this.height = height
-        this.ratio = ratio
 
-        this.canvas.width = Math.round(width * ratio)
-        this.canvas.height = Math.round(height * ratio)
+        this.canvas.width = pixelWidth
+        this.canvas.height = pixelHeight
         this.canvas.style.width = `${ width }px`
         this.canvas.style.height = `${ height }px`
 
-        this.renderer.resize(width, height, ratio)
+        this.renderer.resize(width, height, pixelWidth / width)
         this.renderer.render()
     }
 
@@ -167,12 +171,20 @@ export default class Chart {
 
             this.resume()
 
-            const { width, height } = entries[0].contentRect
-
-            this.resize(width, height)
+            for (const entry of entries) {
+                if (entry.target == this.canvas)
+                    this.resize(this.width, this.height, entry.devicePixelContentBoxSize?.[0])
+                else
+                    this.resize(entry.contentRect.width, entry.contentRect.height)
+            }
         })
 
         observer.observe(node)
+
+        try {
+            observer.observe(this.canvas, { box: 'device-pixel-content-box' })
+        } catch {
+        }
 
         return observer
     }

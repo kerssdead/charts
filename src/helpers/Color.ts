@@ -40,9 +40,18 @@ export function normalizeColor(color: string) {
     const rgba = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(style)
 
     if (!rgba)
-        return style
+        return style.startsWith('#') ? style : readPixel(ctx)
 
     return '#' + toHex(+rgba[1]) + toHex(+rgba[2]) + toHex(+rgba[3]) + (rgba[4] == undefined ? '' : toHex(+rgba[4] * 255))
+}
+
+function readPixel(ctx: CanvasRenderingContext2D) {
+    ctx.clearRect(0, 0, 1, 1)
+    ctx.fillRect(0, 0, 1, 1)
+
+    const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data
+
+    return '#' + toHex(r) + toHex(g) + toHex(b) + (a == 255 ? '' : toHex(a))
 }
 
 export function grayScale(color: string) {

@@ -1,6 +1,6 @@
 namespace Styles {
     export const enum Position {
-        Absolute = 'absolute'
+        Fixed = 'fixed'
     }
 
     export const enum TouchAction {

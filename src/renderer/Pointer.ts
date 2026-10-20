@@ -10,6 +10,7 @@ type PointerHandlers = {
     onClick: (point: Point) => void
     onChange: () => void
     canDrag: (point: Point) => boolean
+    hasContextMenuAt: (point: Point) => boolean
 }
 
 type DragState = {
@@ -210,9 +211,14 @@ export default class Pointer {
     }
 
     private onContextMenu(event: MouseEvent) {
+        const point = this.toPoint(event)
+
+        if (!this.handlers.hasContextMenuAt(point))
+            return
+
         event.preventDefault()
 
-        this.context = { point: this.toPoint(event), isMenu: false }
+        this.context = { point, isMenu: false }
 
         this.handlers.onChange()
     }

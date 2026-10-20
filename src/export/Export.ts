@@ -13,8 +13,10 @@ const REVOKE_DELAY = 1000
 const CSV_FORMULA = /^[=+\-@\t\r]/
 
 export default class Export {
-    static asPng(canvas: HTMLCanvasElement, ratio: number, title: string, exclude?: DOMRect, isDark?: () => boolean) {
+    static asPng(canvas: HTMLCanvasElement, ratio: number, title: string, exclude?: DOMRect, isDark?: () => boolean, prepare?: () => void) {
         requestAnimationFrame(() => {
+            prepare?.()
+
             Theme.update(isDark)
 
             const { width, height } = canvas
@@ -101,7 +103,7 @@ export default class Export {
 
         const csv = blocks.join('\n\n')
 
-        Export.saveAs((title || TextResources.defaultTableName) + '.csv', new Blob([csv], { type: 'text/csv;charset=utf-8' }),
+        Export.saveAs((title || TextResources.defaultTableName) + '.csv', new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }),
             { accept: { 'text/csv': '.csv' } })
     }
 

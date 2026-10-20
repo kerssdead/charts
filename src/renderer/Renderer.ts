@@ -47,6 +47,8 @@ export default class Renderer {
 
     private isSuspended: boolean = false
 
+    private isClean: boolean = false
+
     private legend: Legend | undefined
 
     private panels: Panel[] = []
@@ -57,13 +59,15 @@ export default class Renderer {
         this.canvas = canvas
         this.queue = new Queue(getContext(this.canvas))
         this.tooltip = new TooltipOverlay(this.canvas)
-        this.menu = new ChartMenu(this.canvas, this.queue, point => this.pointer.openMenu(point))
+        this.menu = new ChartMenu(this.canvas, this.queue, point => this.pointer.openMenu(point), () => this.drawClean())
         this.contextMenu.fixedButtons = () => this.menu.getButtons()
 
         this.pointer = new Pointer(this.canvas, () => this.layout.window, {
             onClick: (point: Point) => this.onClick(point),
             onChange: () => this.render(),
-            canDrag: (point: Point) => !this.pointer.context && !this.getClickableItemAt(point)
+            canDrag: (point: Point) => !this.pointer.context && !this.getClickableItemAt(point),
+            hasContextMenuAt: (point: Point) => !!this.settings.contextMenu?.length
+                                                && this.queue.items.some(item => item.hasContextMenuAt(point))
         })
     }
 
@@ -136,11 +140,14 @@ export default class Renderer {
         const isResized = this.updateLayout()
 
         if (isResized && this.layout.hasArea)
-            this.rebuild(this.isLaidOut)
+            this.rebuild(this.isLaidOut && !this.queue.items.some(item => item.isInitializing))
         else
             this.render()
 
         this.isLaidOut ||= this.layout.hasArea
+
+        if (this.isSuspended)
+            return
 
         this.cancelFrame()
         this.draw(performance.now())
@@ -222,14 +229,26 @@ export default class Renderer {
         this.frame = null
     }
 
+    private drawClean() {
+        this.isClean = true
+
+        this.cancelFrame()
+        this.draw(performance.now())
+
+        this.isClean = false
+
+        this.render()
+    }
+
     private draw(timestamp: DOMHighResTimeStamp) {
         this.frame = null
 
         Theme.update(this.settings.isDarkThemeFunction)
-        HoverProgress.isInstant = this.settings.staticMode
+        HoverProgress.isInstant = this.settings.staticMode || this.isClean
 
         const { window, screen } = this.layout
-        const { position, context } = this.pointer
+        const { context } = this.pointer
+        const position = this.isClean ? null : this.pointer.position
 
         let isAnimating = this.queue.animate(position && !this.contextMenu.isOver(position) ? position : null, timestamp)
 

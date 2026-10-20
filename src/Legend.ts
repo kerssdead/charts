@@ -233,14 +233,7 @@ class Legend extends Overlay {
 
         this.entries.forEach(entry => {
             const from = this.from.get(this.getKey(entry.value))
-
-            const current = from
-                            ? {
-                    ...entry,
-                    x: lerp(from.x, entry.x, progress),
-                    y: lerp(from.y, entry.y, progress)
-                }
-                            : entry
+            const current = this.getCurrent(entry, progress)
 
             const { items, background } = this.createEntry(current, this.hover.value(entry.value.id), from ? 1 : progress)
 
@@ -290,6 +283,14 @@ class Legend extends Overlay {
 
         return new DOMRect(lerp(from.x, area.x, progress), lerp(from.y, area.y, progress),
             lerp(from.width, area.width, progress), lerp(from.height, area.height, progress))
+    }
+
+    private getCurrent(entry: LegendEntry, progress: number): LegendEntry {
+        const from = this.from.get(this.getKey(entry.value))
+
+        return from
+               ? { ...entry, x: lerp(from.x, entry.x, progress), y: lerp(from.y, entry.y, progress) }
+               : entry
     }
 
     private getMoveProgress(now: DOMHighResTimeStamp) {
@@ -381,7 +382,7 @@ class Legend extends Overlay {
 
         for (const value of this.visibleValues()) {
             const label = Legend.truncate(Legend.getLabel(value), available - ITEM_EXTRA_WIDTH)
-            const itemWidth = stringWidth(label) + ITEM_EXTRA_WIDTH
+            const itemWidth = Math.min(stringWidth(label) + ITEM_EXTRA_WIDTH, available)
 
             if (row.length > 0 && rowWidth + ITEM_GAP + itemWidth > available) {
                 rows.push(row)
@@ -428,7 +429,7 @@ class Legend extends Overlay {
     private calculateVertical(width: number, height: number) {
         const values = this.visibleValues()
         const widest = maxOf(values, value => stringWidth(Legend.getLabel(value))) + ITEM_EXTRA_WIDTH
-        const areaWidth = Math.min(Math.max(widest, this.buttonWidth) + PADDING_X * 2, width / 4)
+        const areaWidth = Math.max(Math.min(Math.max(widest, this.buttonWidth) + PADDING_X * 2, width / 4), this.buttonWidth + PADDING_X * 2)
         const available = areaWidth - PADDING_X * 2
         const areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
 
@@ -508,8 +509,12 @@ class Legend extends Overlay {
     }
 
     private updateHover(mouse: Point | null, now: DOMHighResTimeStamp) {
+        const progress = this.getMoveProgress(now)
+
         const targets = this.entries.map((entry): [string, boolean] => {
-            return [entry.value.id, contains({ x: entry.x, y: entry.y, width: entry.width, height: ITEM_HEIGHT }, mouse)]
+            const { x, y, width } = this.getCurrent(entry, progress)
+
+            return [entry.value.id, contains({ x, y, width, height: ITEM_HEIGHT }, mouse)]
         })
 
         if (this.button)
@@ -531,19 +536,21 @@ class Legend extends Overlay {
         if (stringWidth(label, font) <= maxWidth)
             return label
 
+        const chars = Array.from(label)
+
         let low = 0
-        let high = label.length - 1
+        let high = chars.length - 1
 
         while (low < high) {
             const middle = Math.ceil((low + high) / 2)
 
-            if (stringWidth(label.slice(0, middle) + '…', font) <= maxWidth)
+            if (stringWidth(chars.slice(0, middle).join('') + '…', font) <= maxWidth)
                 low = middle
             else
                 high = middle - 1
         }
 
-        return label.slice(0, low) + '…'
+        return chars.slice(0, low).join('') + '…'
     }
 }
 
