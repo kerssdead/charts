@@ -10,8 +10,6 @@
     <script src="./dist/ocharts.js"></script>
 </head>
 
-<!-- todo: add displaying multiple charts on the single canvas -->
-
 <body>
     <div class="base">
         <div class="chart-container">
@@ -58,6 +56,18 @@
                             Tree Map
                         </option>
                     </select>
+                </label>
+
+                <label>
+                    Charts Count
+
+                    <input type="number" min="1" id="charts-count" onchange="refresh()" value="1"/>
+                </label>
+
+                <label>
+                    Columns
+
+                    <input type="number" min="0" id="columns" onchange="refresh()" value=""/>
                 </label>
 
                 <label>
@@ -781,6 +791,9 @@
             postfix = document.getElementById('postfix').value,
             innerTitle = document.getElementById('inner-title').value,
             yMax = document.getElementById('y-max').value,
+            chartsCount = Math.max(+document.getElementById('charts-count').value, 1),
+            typesCount = document.getElementById('chart-type').options.length,
+            columns = +document.getElementById('columns').value || undefined,
             contextMenu = !contextMenuEnabled
                 ? null
                 : [
@@ -798,7 +811,30 @@
                     }
                 ]
 
-        let values = getValues(type, valuesCount, valuesType, pointsCount, plotType)
+        const chartData = chartType => ({
+            values: getValues(chartType, valuesCount, valuesType, pointsCount, plotType),
+            xTitle: xAxisTitle,
+            yTitle: yAxisTitle,
+            xType: xType,
+            min: gaugeMin,
+            max: gaugeMax,
+            enableTrack: enableTrack,
+            padding: padding,
+            gap: gap,
+            innerRadius: innerRadius,
+            simple: simpleEnabled,
+            innerTitle: innerTitle,
+            shortLabels: shortLabels,
+            yMax: yMax
+        })
+
+        const charts = chartsCount > 1
+            ? Array.from({ length: chartsCount }, (_, i) => {
+                const chartType = (type + i) % typesCount
+
+                return { type: chartType, title: `Chart ${i + 1}`, data: chartData(chartType) }
+            })
+            : undefined
 
         const settings = {
             title: title,
@@ -806,22 +842,9 @@
             enableLegend: legendEnabled,
             enableOther: otherEnabled,
             staticMode: staticMode,
-            data: {
-                values: values,
-                xTitle: xAxisTitle,
-                yTitle: yAxisTitle,
-                xType: xType,
-                min: gaugeMin,
-                max: gaugeMax,
-                enableTrack: enableTrack,
-                padding: padding,
-                gap: gap,
-                innerRadius: innerRadius,
-                simple: simpleEnabled,
-                innerTitle: innerTitle,
-                shortLabels: shortLabels,
-                yMax: yMax
-            },
+            data: charts ? undefined : chartData(type),
+            charts: charts,
+            columns: columns,
             type: type,
             baseColor: baseColor,
             templateId: customTooltip,

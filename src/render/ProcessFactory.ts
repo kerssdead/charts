@@ -11,8 +11,9 @@ import PieData from '@/types/data/PieData'
 import PlotData from '@/types/data/PlotData'
 import TreeData from '@/types/data/TreeData'
 import Point from '@/types/Point'
+import Data from '@/types/interfaces/Data'
 
-type Factory = (chart: ChartItem, settings: ChartSettings, pixel: Point) => ChartProcess<unknown>
+type Factory = (chart: ChartItem, settings: ChartSettings, pixel: Point) => ChartProcess<Data>
 
 export default class ProcessFactory {
     private static readonly factories = new Map<ChartType, Factory>([

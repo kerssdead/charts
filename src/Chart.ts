@@ -21,6 +21,8 @@ export default class Chart {
 
     private readonly fallbackColor = randomColor()
 
+    private readonly element: HTMLElement
+
     private readonly canvas: HTMLCanvasElement
 
     private readonly renderer: Renderer
@@ -40,16 +42,19 @@ export default class Chart {
     }
 
     constructor(element: HTMLElement, settings: ChartSettings) {
-        if (element.clientWidth == 0)
+        this.element = element
+        this.settings = normalize(settings, this.fallbackColor)
+
+        this.applySize()
+
+        if (!this.settings.width && element.clientWidth == 0)
             element.style.width = Styles.Size.Full
 
-        if (element.clientHeight == 0)
+        if (!this.settings.height && element.clientHeight == 0)
             element.style.height = Styles.Size.Full
 
         this.canvas = createCanvas()
         element.appendChild(this.canvas)
-
-        this.settings = normalize(settings, this.fallbackColor)
 
         Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
 
@@ -96,9 +101,25 @@ export default class Chart {
 
         keepDisabled(previous, this.settings)
 
+        this.applySize()
+
         this.renderer.apply(this.settings)
 
         Debug.log(settings, this.settings, this.canvas)
+    }
+
+    private applySize() {
+        const { width, height } = this.settings
+
+        if (width)
+            this.element.style.width = Chart.toCssSize(width)
+
+        if (height)
+            this.element.style.height = Chart.toCssSize(height)
+    }
+
+    private static toCssSize(value: string) {
+        return Number.isFinite(+value) ? `${ +value }px` : value
     }
 
     private resize(width: number, height: number) {

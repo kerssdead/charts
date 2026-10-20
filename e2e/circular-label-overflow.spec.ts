@@ -10,8 +10,6 @@ import Settings from '@e2e/utils/Settings'
 import { ChartType } from '@/static/Enums'
 import Clip from '@e2e/utils/Clip'
 
-// todo: add radius setting to pie chart
-
 test(
     'Label should not be rendered',
     async ({ page, browserName }) => {

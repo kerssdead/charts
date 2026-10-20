@@ -57,6 +57,12 @@ export default class QueueArcItemBuilder extends QueueItemBaseBuilder<RenderItem
         return this
     }
 
+    pull(distance: number) {
+        this.shape.pull = distance
+
+        return this
+    }
+
     gradient() {
         this.shape.isGradient = true
 

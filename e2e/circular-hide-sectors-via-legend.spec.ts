@@ -9,8 +9,6 @@ import Settings from '@e2e/utils/Settings'
 import { ChartType } from '@/static/Enums'
 import Clip from '@e2e/utils/Clip'
 
-// todo: add empty state for pie chart
-
 test(
     'Pie chart sectors should not be rendered after disabled in legend',
     async ({ page, browserName }) => {

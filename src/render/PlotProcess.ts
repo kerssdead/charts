@@ -189,6 +189,10 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         return range.min + (bottom - y) / (bottom - top) * (range.max - range.min)
     }
 
+    isEmpty() {
+        return !this.series.some(series => series.values.length)
+    }
+
     getData() {
         const series = this.data.values.flatMap(series => {
             if (series.disabled && !GHOST_TYPES.includes(series.type))

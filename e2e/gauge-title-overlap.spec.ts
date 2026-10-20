@@ -8,8 +8,6 @@ import Utils from '@e2e/utils/Utils'
 import Settings from '@e2e/utils/Settings'
 import { ChartType } from '@/static/Enums'
 
-// todo: add intermediate labels in gauge
-
 test(
     'Gauge labels should not overlap chart title',
     async ({ page, browserName }) => {

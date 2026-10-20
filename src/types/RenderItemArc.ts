@@ -21,6 +21,7 @@ type ArcGeometry = {
     innerRadius: number
     startAngle: number
     endAngle: number
+    pull: number
 }
 
 type ArcCanvas = ArcGeometry & {
@@ -68,9 +69,13 @@ export default class RenderItemArc
 
     hover: number = 0
 
+    pull: number = 0
+
     readonly pop: Point = { x: 0, y: 0 }
 
     private readonly gradient = new GradientCache()
+
+    private window: CanvasWindow
 
     startAngle: number = 0
 
@@ -93,7 +98,8 @@ export default class RenderItemArc
             radius: this.radius,
             innerRadius: this.innerRadius,
             startAngle: this.startAngle,
-            endAngle: this.endAngle
+            endAngle: this.endAngle,
+            pull: this.pull
         }
 
         if (!this.from || morph >= 1)
@@ -105,7 +111,8 @@ export default class RenderItemArc
             radius: lerp(this.from.radius, result.radius, morph),
             innerRadius: lerp(this.from.innerRadius, result.innerRadius, morph),
             startAngle: lerp(this.from.startAngle, result.startAngle, morph),
-            endAngle: lerp(this.from.endAngle, result.endAngle, morph)
+            endAngle: lerp(this.from.endAngle, result.endAngle, morph),
+            pull: lerp(this.from.pull, result.pull, morph)
         }
     }
 
@@ -132,6 +139,8 @@ export default class RenderItemArc
         const geometry = this.current(morph)
         const scale = window.width / COORDS_MAX_X
 
+        this.window = window
+
         this.canvas = {
             x: RenderItem.adjustX(window, geometry.x),
             y: RenderItem.adjustY(window, geometry.y),
@@ -142,7 +151,8 @@ export default class RenderItemArc
             leaderGap: this.leaderGap * scale,
             leaderLength: this.leaderLength * scale,
             startAngle: geometry.startAngle,
-            endAngle: geometry.endAngle
+            endAngle: geometry.endAngle,
+            pull: geometry.pull * scale
         }
     }
 
@@ -177,7 +187,7 @@ export default class RenderItemArc
         }
 
         const middle = (start + end) / 2
-        const offset = isFullCircle(end - start) ? 0 : HOVER_OFFSET * this.hover
+        const offset = isFullCircle(end - start) ? 0 : this.canvas.pull + HOVER_OFFSET * this.hover
 
         this.pop.x = offset * Math.cos(middle)
         this.pop.y = offset * Math.sin(middle)
@@ -205,7 +215,11 @@ export default class RenderItemArc
 
         const endX = shape.x + end * Math.cos(labelAngle)
         const endY = shape.y + end * Math.sin(labelAngle)
-        const box = (this.leaderLabel!.shape as RenderItemText).orbitBox()
+        const label = this.leaderLabel!
+
+        label.shape.adjust(this.window, label.animation.morph)
+
+        const box = (label.shape as RenderItemText).orbitBox()
 
         ctx.beginPath()
         ctx.moveTo(shape.x + start * Math.cos(anchorAngle), shape.y + start * Math.sin(anchorAngle))
@@ -320,15 +334,17 @@ export default class RenderItemArc
     }
 
     isMouseOver(point: Point): boolean {
-        const dx = point.x - this.canvas.x
-        const dy = point.y - this.canvas.y
+        const sweep = this.canvas.endAngle - this.canvas.startAngle
+        const pull = isFullCircle(sweep) ? 0 : this.canvas.pull
+        const middle = this.canvas.startAngle + sweep / 2
+
+        const dx = point.x - this.canvas.x - pull * Math.cos(middle)
+        const dy = point.y - this.canvas.y - pull * Math.sin(middle)
 
         const distance = dx * dx + dy * dy
 
         if (distance > this.canvas.radius * this.canvas.radius || distance < this.canvas.innerRadius * this.canvas.innerRadius)
             return false
-
-        const sweep = this.canvas.endAngle - this.canvas.startAngle
 
         if (isFullCircle(sweep))
             return true

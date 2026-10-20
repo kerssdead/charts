@@ -45,10 +45,12 @@ export default class Panel {
 
         const cellWidth = Math.max((width - GAP * (cols - 1)) / cols, 0)
         const cellHeight = Math.max((height - GAP * (rows - 1)) / rows, 0)
+        const lastOffset = (rows * cols - titles.length) * (cellWidth + GAP) / 2
 
         return titles.map((title, index) => {
-            const x = (index % cols) * (cellWidth + GAP)
-            const y = Math.floor(index / cols) * (cellHeight + GAP) + title
+            const row = Math.floor(index / cols)
+            const x = (index % cols) * (cellWidth + GAP) + (row == rows - 1 ? lastOffset : 0)
+            const y = row * (cellHeight + GAP) + title
 
             return new Panel(index, {
                 x: width > 0 ? x / width : 0,

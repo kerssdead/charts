@@ -278,7 +278,10 @@ export default class Renderer {
 
             panel.plot = process instanceof PlotProcess ? process : null
 
-            for (const item of add(...process?.getData() ?? [], this.layout.getPanelTitle(chart.title, pixel))) {
+            if (process)
+                process.onChange = () => this.rebuildAnimated()
+
+            for (const item of add(...(process?.isEmpty() ? [this.layout.getEmpty()] : process?.getData() ?? []), this.layout.getPanelTitle(chart.title, pixel))) {
                 if (!item.isFixed)
                     item.panel = panel
 

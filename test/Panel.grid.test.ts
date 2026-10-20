@@ -29,6 +29,13 @@ describe('Building panels grid', () => {
             .toEqual([0, 0, 0])
     })
 
+    it('Should center incomplete last row', () => {
+        const panels = Panel.grid([0, 0, 0], 1000, 1000, 2)
+
+        expect(panels[2].rect.x)
+            .toBeCloseTo(.254)
+    })
+
     it('Should reserve space for panel title', () => {
         const [first, second] = Panel.grid([20, 0], 1000, 500, 2)
 

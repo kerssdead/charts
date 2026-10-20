@@ -30,6 +30,10 @@ type Block = {
 }
 
 export default class TreeProcess extends ChartProcess<TreeData> {
+    isEmpty() {
+        return !this.data.values.some(value => !value.disabled && getTreeSum(value) > 0)
+    }
+
     getData() {
         const box = {
             x: this.data.padding,

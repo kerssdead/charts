@@ -130,6 +130,8 @@ export default class RenderItem {
         if (!this.shape.morphFrom(previous.shape, previous.animation.morph))
             return
 
+        Object.assign(this.hover, previous.hover)
+
         this.startMorph(previous.isGhost ? 'in' : this.isGhost ? 'out' : null, duration)
     }
 

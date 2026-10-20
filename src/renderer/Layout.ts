@@ -10,6 +10,7 @@ import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/
 import { TextAlignment } from '@/static/Enums'
 import { clamp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
+import TextResources from '@/static/TextResources'
 
 const TITLE_FONT = 20
 
@@ -108,6 +109,17 @@ export default class Layout {
                  .size(font)
                  .align(TextAlignment.Center)
                  .key('panel-title')
+                 .init(AnimationTiming.title, 0, true)
+        }
+    }
+
+    getEmpty() {
+        return (items: QueueItemsBuilder) => {
+            items.text(TextResources.noData)
+                 .position(COORDS_MAX_X / 2, COORDS_MAX_Y / 2)
+                 .size(PANEL_TITLE_FONT)
+                 .align(TextAlignment.Center)
+                 .key('empty')
                  .init(AnimationTiming.title, 0, true)
         }
     }

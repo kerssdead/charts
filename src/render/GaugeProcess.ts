@@ -43,6 +43,14 @@ const START_ANGLE = Math.PI
 
 const SWEEP = Math.PI
 
+const STEPS = 4
+
+type Step = {
+    angle: number
+    text: string
+    width: number
+}
+
 type Label = {
     key: string
     text: string
@@ -52,6 +60,8 @@ type Label = {
 
 export default class GaugeProcess extends ChartProcess<GaugeData> {
     private readonly lines: Label[][]
+
+    private readonly steps: Step[]
 
     private readonly labelSpace: number
 
@@ -67,17 +77,24 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         super(data, pixel, valuePostfix)
 
         this.lines = this.getLines()
+        this.steps = this.getSteps()
 
         const width = this.units.toPxX(COORDS_MAX_X)
         const height = this.units.toPxY(COORDS_MAX_Y)
+        const side = width / 2 - this.units.toPxX(PADDING)
+        const top = LABEL_GAP + RANGE_FONT
 
         this.labelSpace = LABEL_GAP + LABEL_FONT * this.labelRows + LABEL_GAP
         this.innerRatio = clamp(this.data.innerRadius ?? DEFAULT_INNER_RADIUS, 0, 100) / 100
-        this.radius = Math.max(Math.min(width / 2 - this.units.toPxX(PADDING), height - this.labelSpace - this.units.toPxY(PADDING) * 2), 0)
+        this.radius = Math.max(Math.min(
+            side,
+            height - this.labelSpace - top - this.units.toPxY(PADDING) * 2,
+            ...this.steps.map(step => (side - step.width) / Math.abs(Math.cos(step.angle)) - LABEL_GAP)
+        ), 0)
         this.thickness = this.radius * (1 - this.innerRatio) / this.data.values.length
         this.center = {
             x: COORDS_MAX_X / 2,
-            y: this.units.y((height - this.radius - this.labelSpace) / 2 + this.radius)
+            y: this.units.y((height - this.radius - this.labelSpace + top) / 2 + this.radius)
         }
     }
 
@@ -99,6 +116,10 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
 
     private get labelRows() {
         return this.isSingle ? 2 : this.lines.length + 1
+    }
+
+    isEmpty() {
+        return !this.data.values.length
     }
 
     getData() {
@@ -169,6 +190,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
 
         return [
             ...this.getRangeLabels(rows[0]),
+            ...this.getStepLabels(),
             ...(this.isSingle ? this.getValueLabels(sector, rows) : this.getLegendLines(rows.slice(1)))
         ]
     }
@@ -181,6 +203,31 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
             this.getText('gauge-min', this.formatValue(this.min), x - band, y, RANGE_FONT),
             this.getText('gauge-max', this.formatValue(this.max), x + band, y, RANGE_FONT)
         ]
+    }
+
+    private getStepLabels() {
+        const orbit = {
+            ...this.center,
+            radiusX: this.units.x(this.radius + LABEL_GAP),
+            radiusY: this.units.y(this.radius + LABEL_GAP)
+        }
+
+        return this.steps.map((step, index) => (items: QueueItemsBuilder) => {
+            items.text(step.text)
+                 .orbit(step.angle, orbit)
+                 .size(RANGE_FONT)
+                 .key(`gauge-step-${ index }`)
+                 .init(AnimationTiming.gaugeLabelInit, AnimationTiming.gaugeInit, true)
+        })
+    }
+
+    private getSteps() {
+        return Array.from({ length: STEPS - 1 }, (_, index) => {
+            const ratio = (index + 1) / STEPS
+            const text = this.formatValue(this.min + (this.max - this.min) * ratio)
+
+            return { angle: START_ANGLE + SWEEP * ratio, text, width: stringWidth(text, RANGE_FONT) }
+        })
     }
 
     private getLegendLines(rows: number[]) {

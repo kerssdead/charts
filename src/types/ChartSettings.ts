@@ -38,6 +38,10 @@ export default interface ChartSettings {
 
     columns?: number
 
+    width?: string
+
+    height?: string
+
     contextMenu?: DropdownItem[]
 
     isDarkThemeFunction: (() => boolean) | undefined

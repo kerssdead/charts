@@ -32,6 +32,8 @@ const SECTOR_GAP = 20
 
 const SECTOR_CORNER_RADIUS = 30
 
+const PIN_OFFSET = 12
+
 const MIN_SECTOR_WIDTH = SECTOR_GAP + SECTOR_CORNER_RADIUS * 2
 
 const OTHER_KEY = 'other'
@@ -83,8 +85,8 @@ export default class PieProcess extends ChartProcess<PieData> {
 
         this.enableOther = enableOther
 
-        const width = this.units.toPxX(COORDS_MAX_X)
-        const height = this.units.toPxY(COORDS_MAX_Y)
+        const width = this.units.toPxX(COORDS_MAX_X) - PIN_OFFSET * 2
+        const height = this.units.toPxY(COORDS_MAX_Y) - PIN_OFFSET * 2
 
         this.bounds = { x: width / 2, y: height / 2 }
 
@@ -221,6 +223,7 @@ export default class PieProcess extends ChartProcess<PieData> {
                 .innerRadius(innerRadius)
                 .gap(SECTOR_GAP)
                 .cornerRadius(SECTOR_CORNER_RADIUS)
+                .pull(sector.pinned && !sector.disabled ? this.units.x(PIN_OFFSET) : 0)
                 .grow(START_ANGLE)
                 .leader(LEADER_GAP, LEADER_LENGTH, labelOffset, clamp(labelOffset, -anchorRange, anchorRange))
                 .fill()
@@ -235,6 +238,11 @@ export default class PieProcess extends ChartProcess<PieData> {
 
             if (sector.disabled)
                 arc.ghost()
+            else if (!children)
+                arc.onClick(() => {
+                    sector.pinned = !sector.pinned
+                    this.onChange?.()
+                })
 
             if (!label.isVisible)
                 return
@@ -254,6 +262,9 @@ export default class PieProcess extends ChartProcess<PieData> {
     }
 
     private getLabel(sector: Sector) {
+        if (sector.pinned && PieProcess.isVisible(sector))
+            return `${ sector.label }: ${ this.getShare(sector.value) }`
+
         return this.data.labelPercent && PieProcess.isVisible(sector)
                ? `${ sector.label } ${ this.percent(sector.value / this.sum) }`
                : sector.label

@@ -9,8 +9,6 @@ import Settings from '@e2e/utils/Settings'
 import { ChartType } from '@/static/Enums'
 import Clip from '@e2e/utils/Clip'
 
-// todo: add pin sector on pie chart
-
 test(
     'Hover sector in circular chart should not overlap other labels',
     async ({ page, browserName }) => {
