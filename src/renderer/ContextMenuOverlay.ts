@@ -45,7 +45,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
 
     private buttonRects: (RenderItem | null)[] = []
 
-    update({ queue, window, mouse, context, now }: Frame): boolean {
+    update({ queue, window, screen, mouse, context, now }: Frame): boolean {
         const point = context?.point ?? null
         const fixedButtons = context?.isMenu ? this.fixedButtons?.() : undefined
         const target = point && !fixedButtons ? queue.items.find(item => item.hasContextMenuAt(point)) : undefined
@@ -83,7 +83,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         }
 
         const { point: menuPoint, buttons } = this.state
-        const bounds = this.getBounds(window, menuPoint, buttons)
+        const bounds = this.getBounds(screen, menuPoint, buttons)
 
         this.bounds = isVisible ? bounds : null
 
@@ -153,12 +153,12 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         return this.hover.isAnimating
     }
 
-    private getBounds(window: CanvasWindow, point: Point, buttons: ButtonOptions[]): RectangleDimensions {
+    private getBounds(screen: CanvasWindow, point: Point, buttons: ButtonOptions[]): RectangleDimensions {
         const width = Math.max(ContextMenu.minWidth,
             maxOf(buttons, button => stringWidth(button.text, ContextMenu.fontSize)) + ContextMenu.textPadding * 2 + ContextMenu.padding * 2)
         const height = sum(buttons, ContextMenuOverlay.getButtonHeight) + ContextMenu.padding * 2
 
-        const { x, y } = placeNear(point, width, height, ContextMenu.offset, window)
+        const { x, y } = placeNear(point, width, height, ContextMenu.offset, screen)
 
         return { x, y, width, height }
     }

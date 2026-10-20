@@ -123,7 +123,7 @@ class Legend extends Overlay {
     }
 
     static getGroupKey(value: Value, isShared: boolean) {
-        return isShared ? value.label : value.id
+        return isShared ? `${ value.label }-${ value.labelIndex }` : value.id
     }
 
     private get isVertical() {
@@ -330,7 +330,8 @@ class Legend extends Overlay {
         const { value, label, x, y, width } = entry
         const centerY = y + ITEM_HEIGHT / 2
         const textX = x + 22
-        const textColor = value.disabled ? withAlpha(Theme.text, .5) : Theme.text
+        const isDisabled = value.disabled || value.isBlank
+        const textColor = isDisabled ? withAlpha(Theme.text, .5) : Theme.text
 
         const background = this.buttonRect(items, this.units, { x, y, width, height: ITEM_HEIGHT }, 6, hover, () => this.toggle(value))
 
@@ -338,7 +339,7 @@ class Legend extends Overlay {
              .position(this.units.x(x + 11), this.units.y(centerY))
              .radius(this.units.x(3))
              .fill()
-             .color(value.disabled ? grayScale(value.color) : value.color)
+             .color(isDisabled ? grayScale(value.color) : value.color)
              .layer(Layer.Legend + 2)
              .fixed()
 
@@ -350,7 +351,7 @@ class Legend extends Overlay {
              .layer(Layer.Legend + 2)
              .fixed()
 
-        if (value.disabled)
+        if (isDisabled)
             items.line()
                  .stop(this.units.x(textX), this.units.y(centerY + 1))
                  .stop(this.units.x(textX + stringWidth(label)), this.units.y(centerY + 1))
@@ -379,7 +380,7 @@ class Legend extends Overlay {
         let rowWidth = 0
 
         for (const value of this.visibleValues()) {
-            const label = Legend.truncate(value.label, available - ITEM_EXTRA_WIDTH)
+            const label = Legend.truncate(Legend.getLabel(value), available - ITEM_EXTRA_WIDTH)
             const itemWidth = stringWidth(label) + ITEM_EXTRA_WIDTH
 
             if (row.length > 0 && rowWidth + ITEM_GAP + itemWidth > available) {
@@ -426,7 +427,7 @@ class Legend extends Overlay {
 
     private calculateVertical(width: number, height: number) {
         const values = this.visibleValues()
-        const widest = maxOf(values, value => stringWidth(value.label)) + ITEM_EXTRA_WIDTH
+        const widest = maxOf(values, value => stringWidth(Legend.getLabel(value))) + ITEM_EXTRA_WIDTH
         const areaWidth = Math.min(Math.max(widest, this.buttonWidth) + PADDING_X * 2, width / 4)
         const available = areaWidth - PADDING_X * 2
         const areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
@@ -440,7 +441,7 @@ class Legend extends Overlay {
         const startY = this.top + PADDING_Y + buttonSpace + Math.max((availableHeight - blockHeight) / 2, 0)
 
         this.entries = values.slice(0, count).map((value, index) => {
-            const label = Legend.truncate(value.label, available - ITEM_EXTRA_WIDTH)
+            const label = Legend.truncate(Legend.getLabel(value), available - ITEM_EXTRA_WIDTH)
 
             return {
                 value,
@@ -520,6 +521,10 @@ class Legend extends Overlay {
     private updateBackgrounds() {
         for (const [key, item] of this.backgrounds)
             item.color = Theme.hoverBackground(this.hover.value(key))
+    }
+
+    private static getLabel(value: Value) {
+        return value.isBlank ? `${ value.label } ${ TextResources.noValue }` : value.label
     }
 
     static truncate(label: string, maxWidth: number, font?: number) {

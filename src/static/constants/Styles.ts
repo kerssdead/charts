@@ -11,8 +11,14 @@ namespace Styles {
         None = 'none'
     }
 
+    export const enum Display {
+        Block = 'block'
+    }
+
     export const enum Size {
-        Full = '100%'
+        Full = '100%',
+
+        FallbackHeight = '400px'
     }
 }
 

@@ -18,6 +18,8 @@ import ChartProcess from '@/render/ChartProcess'
 
 const GAP = 30
 
+const GAP_RATIO = 0.2
+
 const LEFT_PADDING = 8
 
 const LEFT_GAP = 8
@@ -114,7 +116,8 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
         for (const series of this.series.filter(s => s.type == PlotType.StackingColumn))
             for (const value of series.values)
-                this.stackTops.set(PlotProcess.getStackKey(value), series)
+                if (Number(value.y) != 0)
+                    this.stackTops.set(PlotProcess.getStackKey(value), series)
 
         for (const series of this.series.filter(s => s.type == PlotType.Column || s.type == PlotType.StackingColumn)) {
             for (const value of series.values) {
@@ -130,7 +133,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
             }
         }
 
-        this.mainSlots = this.getSlots(data.values.filter(s => s.type != PlotType.Bar))
+        this.mainSlots = this.getSlots(data.values.filter(s => s.type != PlotType.Bar && s.type != PlotType.AttentionLine))
         this.barSlots = this.getSlots(this.barSeries)
 
         this.calculateLabels()
@@ -194,6 +197,8 @@ export default class PlotProcess extends ChartProcess<PlotData> {
     }
 
     getData() {
+        this.stacks.clear()
+
         const series = this.data.values.flatMap(series => {
             if (series.disabled && !GHOST_TYPES.includes(series.type))
                 return []
@@ -278,17 +283,33 @@ export default class PlotProcess extends ChartProcess<PlotData> {
     }
 
     private slotX(i: number, step: number) {
-        return this.margin.left + i * step + (i + 1) * GAP
+        return this.margin.left + i * step + (i + 1) * this.mainGap
+    }
+
+    private static getGap(available: number, count: number) {
+        return Math.min(GAP, available / Math.max(count, 1) * GAP_RATIO)
+    }
+
+    private get mainGap() {
+        return PlotProcess.getGap(this.available.x, this.mainSlots.values.length)
+    }
+
+    private get barGap() {
+        return PlotProcess.getGap(this.barBand.bottom - this.barBand.top, this.barSlots.values.length)
     }
 
     private getMainStep() {
-        return (this.available.x - GAP) / this.mainSlots.values.length - GAP
+        return (this.available.x - this.mainGap) / this.mainSlots.values.length - this.mainGap
     }
 
     private getBarStep() {
         const { top, bottom } = this.barBand
 
-        return (bottom - top - GAP) / this.barSlots.values.length - GAP
+        return (bottom - top - this.barGap) / this.barSlots.values.length - this.barGap
+    }
+
+    private cap(y: number) {
+        return this.yMax == undefined ? y : Math.min(y, this.yMax)
     }
 
     private getBase() {
@@ -310,7 +331,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
                 this.bottomLabel(items, short(value, this.data.shortLabels), this.getAxisX(value), bottom, `x-label-${ value }`)
 
             this.getCategories().forEach((category, i) => {
-                this.leftLabel(items, category, bottom - i * (step + GAP) - GAP - step / 2, `y-category-${ i }`)
+                this.leftLabel(items, category, bottom - i * (step + this.barGap) - this.barGap - step / 2, `y-category-${ i }`)
             })
         }
 
@@ -324,7 +345,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         const step = this.getMainStep()
         const labels = this.mainSlots.values.map(x => this.formatX(x))
 
-        const slot = this.units.toPxX(step + GAP)
+        const slot = this.units.toPxX(step + this.mainGap)
         const widest = maxOf(labels, label => stringWidth(label, X_LABEL_FONT))
         const every = Math.max(1, Math.ceil((widest + X_LABEL_SPACING) / slot))
 
@@ -442,11 +463,17 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
             if (this.bottomTitle) {
                 items.text(this.bottomTitle)
-                     .position(COORDS_MAX_X / 2 - this.units.x(AXIS_TITLE_FONT / 2), COORDS_MAX_Y - this.units.y(BOTTOM_PADDING + AXIS_TITLE_FONT / 2))
+                     .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.units.y(BOTTOM_PADDING + AXIS_TITLE_FONT / 2))
                      .size(AXIS_TITLE_FONT)
                      .key('axis-title-y')
             }
         }
+    }
+
+    private get initStagger() {
+        const slots = Math.max(this.mainSlots.values.length, this.barSlots.values.length, 1)
+
+        return Math.min(AnimationTiming.plotInitStagger, AnimationTiming.plotInitStaggerTotal / slots)
     }
 
     private groupHover(item: QueueItemBaseBuilder, series: PlotSeries) {
@@ -502,7 +529,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
                 const column = items.rect()
                      .position(this.slotX(i, step) + offset + width / 2, baseY)
-                     .size(width, series.disabled ? 0 : Number(value.y) * this.scale.y)
+                     .size(width, series.disabled ? 0 : this.cap(Number(value.y)) * this.scale.y)
                      .round([CORNER_RADIUS, CORNER_RADIUS, 0, 0])
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                      .grow('y', baseY)
@@ -519,7 +546,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
                          .layer(Layer.Data)
                          .key(this.getKey(series, 'rect', index))
                          .interact()
-                         .init(AnimationTiming.plotInit, index * AnimationTiming.plotInitStagger)
+                         .init(AnimationTiming.plotInit, index * this.initStagger)
                          .tooltip(this.getValueTooltip(series, value))
                          .data(value.data)
                          .contextMenu()
@@ -546,7 +573,8 @@ export default class PlotProcess extends ChartProcess<PlotData> {
             slots.forEach(({ value, i }) => {
                 line.stop(
                     this.slotX(i, step) + step / 2,
-                    baseY - Number(value.y) * this.scale.y
+                    baseY - this.cap(Number(value.y)) * this.scale.y,
+                    this.getValueTooltip(series, value)
                 )
             })
 
@@ -580,11 +608,11 @@ export default class PlotProcess extends ChartProcess<PlotData> {
             series.values.forEach(value => {
                 const i = PlotProcess.getSlot(this.barSlots, value)
                 const x = this.getAxisX(0)
-                const y = baseY - i * (step + GAP) - GAP
+                const y = baseY - i * (step + this.barGap) - this.barGap
 
                 const bar = items.rect()
                      .position(x, y)
-                     .size(series.disabled ? 0 : Number(value.y) * this.scale.x, height)
+                     .size(series.disabled ? 0 : (this.isHorizontal ? this.cap(Number(value.y)) : Number(value.y)) * this.scale.x, height)
                      .round([0, CORNER_RADIUS, CORNER_RADIUS, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', x)
@@ -608,7 +636,8 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
             const key = PlotProcess.getStackKey(value)
             const stack = this.stacks.get(key) ?? 0
-            const height = series.disabled ? 0 : Number(value.y) * this.scale.y
+            const room = this.yMax == undefined ? Infinity : Math.max(this.yMax * this.scale.y + stack, 0)
+            const height = series.disabled ? 0 : Math.min(Number(value.y) * this.scale.y, room)
 
             this.stacks.set(key, stack - height)
 
@@ -658,7 +687,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
             return QueueItemsBuilder.empty
 
         const y = this.getAxisY(0)
-                  - Number(series.values[0].y) * this.scale.y
+                  - this.cap(Number(series.values[0].y)) * this.scale.y
 
         const x1 = this.margin.left
         const x2 = COORDS_MAX_X - this.margin.right

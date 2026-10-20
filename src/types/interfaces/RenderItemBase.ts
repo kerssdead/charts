@@ -22,6 +22,10 @@ export default abstract class RenderItemBase {
         return false
     }
 
+    tooltipAt(_point: Point): string | null {
+        return null
+    }
+
     get defaultColor(): string | undefined {
         return undefined
     }

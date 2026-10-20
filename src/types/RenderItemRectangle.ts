@@ -168,10 +168,10 @@ export default class RenderItemRectangle
     }
 
     isMouseOver(point: Point) {
-        const { left, top, width, height } = this.bounds()
+        const { left, top, right, bottom } = this.getBounds()
 
-        return left <= point.x && point.x <= left + width
-               && top <= point.y && point.y <= top + height
+        return left <= point.x && point.x <= right
+               && top <= point.y && point.y <= bottom
     }
 
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp) {

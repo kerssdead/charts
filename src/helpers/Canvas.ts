@@ -2,6 +2,7 @@ import fail from '@/helpers/Errors'
 import { ErrorType, Tag } from '@/static/Enums'
 import Theme from '@/Theme'
 import { adjustColor } from '@/helpers/Color'
+import Styles from '@/static/constants/Styles'
 
 const GRADIENT_DELTA = 20
 
@@ -57,6 +58,7 @@ export function createCanvas() {
     const canvas = document.createElement(Tag.Canvas)
     canvas.width = 0
     canvas.height = 0
+    canvas.style.display = Styles.Display.Block
 
     return canvas
 }

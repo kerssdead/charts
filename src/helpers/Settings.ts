@@ -57,6 +57,7 @@ function prepareValues(chart: ChartItem) {
 
         counts.set(value.label, count + 1)
 
+        value.labelIndex = count
         value.id ??= `${ value.label }-${ count }`
 
         return value
@@ -98,7 +99,7 @@ function normalizeValues(values: Value[] | undefined) {
             (value as PlotSeries).values = (value as PlotSeries).values.filter(point => point.x != null)
 
         for (const point of (value as PlotSeries).values ?? [])
-            point.y = toNumber(point.y)
+            point.y = toNumber(point.y ?? 0)
 
         normalizeValues((value as TreeValue).sectors)
     }
@@ -107,7 +108,7 @@ function normalizeValues(values: Value[] | undefined) {
 export function applyBaseColor(settings: ChartSettings, fallbackColor: string) {
     const isShared = settings.charts.length > 1
     const groups = groupBy(settings.charts.flatMap(chart => chart.data?.values ?? []),
-        (value): string | Value => isShared ? value.label : value)
+        (value): string | Value => isShared ? Legend.getGroupKey(value, true) : value)
 
     for (const values of groups.values()) {
         const color = values.find(value => value.color)?.color

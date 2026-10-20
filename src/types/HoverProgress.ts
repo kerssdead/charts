@@ -35,7 +35,7 @@ export default class HoverProgress {
 
         this.progress = progress
 
-        if (!isOver && this.isIdle)
+        if (isOver ? progress == 1 : this.isIdle)
             this.time = null
 
         return isChanged

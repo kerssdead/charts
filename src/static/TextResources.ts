@@ -17,6 +17,8 @@ const enum TextResources {
 
     noData = 'No data',
 
+    noValue = '(no value)',
+
     value = 'Value',
 
     defaultImageName = 'chart',

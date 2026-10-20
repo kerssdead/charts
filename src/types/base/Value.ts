@@ -15,8 +15,14 @@ class Value {
 
     value: number
 
+    labelIndex: number
+
     constructor(obj: object = {}) {
         Object.assign(this, obj)
+    }
+
+    get isBlank(): boolean {
+        return false
     }
 
     canToggle(): boolean {

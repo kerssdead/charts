@@ -235,7 +235,7 @@ export default class Renderer {
 
         const isLegendMoving = this.legend?.isMoving
 
-        const frame = { queue: this.queue, window, mouse: position, context, now: timestamp }
+        const frame = { queue: this.queue, window, screen, mouse: position, context, now: timestamp }
 
         for (const overlay of this.overlays)
             isAnimating = overlay.update(frame) || isAnimating
@@ -302,7 +302,7 @@ export default class Renderer {
         for (let i = items.length - 1; i >= 0; i--) {
             const item = items[i]
 
-            if (item.onClick && (!isContextOpen || item.isMenuButton) && item.in(point)) {
+            if (item.onClick && !item.isInitializing && (!isContextOpen || item.isMenuButton) && item.in(point)) {
                 return item
             }
         }

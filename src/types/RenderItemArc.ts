@@ -355,7 +355,7 @@ export default class RenderItemArc
         if (angle > sweep)
             return false
 
-        const half = this.canvas.gap / 2
+        const half = Math.min(this.canvas.gap / 2, this.canvas.radius * Math.sin(Math.min(sweep, Math.PI) / 2) / 2)
 
         return RenderItemArc.rayDistance(dx, dy, this.canvas.startAngle) >= half
                && RenderItemArc.rayDistance(dx, dy, this.canvas.endAngle) >= half

@@ -115,7 +115,11 @@ export default class RenderItem {
     }
 
     hasTooltipAt(point: Point) {
-        return !!this.tooltipTemplate && !this.isInitializing && this.in(point)
+        return !this.isInitializing && this.in(point) && !!this.tooltipAt(point)
+    }
+
+    tooltipAt(point: Point) {
+        return this.shape.tooltipAt(point) ?? this.tooltipTemplate
     }
 
     hasContextMenuAt(point: Point) {

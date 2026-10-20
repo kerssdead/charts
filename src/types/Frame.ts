@@ -8,6 +8,8 @@ type Frame = {
 
     window: CanvasWindow
 
+    screen: CanvasWindow
+
     mouse: Point | null
 
     context: PointerContext | null

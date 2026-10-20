@@ -6,8 +6,11 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
         super(new RenderItemLine())
     }
 
-    stop(x: number, y: number) {
+    stop(x: number, y: number, tooltip?: string) {
         this.shape.absolute.push({ x, y })
+
+        if (tooltip != undefined)
+            this.shape.tooltips.push(tooltip)
 
         return this
     }

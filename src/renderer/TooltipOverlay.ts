@@ -101,7 +101,7 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
             point,
             version: queue.version,
             window: copyRect(window),
-            template: target?.tooltipTemplate ?? null,
+            template: target?.tooltipAt(point) ?? null,
             data: target?.data ?? null
         }
 

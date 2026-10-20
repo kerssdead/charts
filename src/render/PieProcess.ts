@@ -99,7 +99,7 @@ export default class PieProcess extends ChartProcess<PieData> {
 
         this.radius = Math.max(fit, Math.min(MIN_RADIUS, height / 2 - SIDE_PADDING, width / 2 - SIDE_PADDING), 0)
         this.hideLabels = (isWide ? width / 5 : isTall ? height / 5 : fit) < MIN_RADIUS
-        this.innerRatio = clamp(this.data.innerRadius ?? 0, 0, 100) / 100
+        this.innerRatio = clamp(Number.isFinite(this.data.innerRadius) ? this.data.innerRadius : 0, 0, 100) / 100
         this.labelDistance = this.radius + this.units.toPxX(LEADER_GAP + LEADER_LENGTH + LEADER_GAP)
     }
 

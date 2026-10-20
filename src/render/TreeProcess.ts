@@ -35,33 +35,35 @@ export default class TreeProcess extends ChartProcess<TreeData> {
     }
 
     getData() {
+        const padding = this.data.padding || 0
+
         const box = {
-            x: this.data.padding,
-            y: this.data.padding,
-            width: COORDS_MAX_X - this.data.padding * 2,
-            height: COORDS_MAX_Y - this.data.padding * 2
+            x: padding,
+            y: padding,
+            width: COORDS_MAX_X - padding * 2,
+            height: COORDS_MAX_Y - padding * 2
         }
 
         const groups = TreeProcess.prepare(this.data.values.filter(value => !value.disabled), getTreeSum)
 
         const blocks = groups.length == 1 && groups[0].sectors?.length
-                       ? this.getSectors(groups[0], 0, box)
-                       : this.layout(groups, box, getTreeSum).flatMap(({ value, box }, index) => {
+                       ? this.getSectors(groups[0], box)
+                       : this.layout(groups, box, getTreeSum).flatMap(({ value, box }) => {
                            return value.sectors?.length
-                                  ? this.getSectors(value, index, box)
-                                  : [{ color: value.color, value, key: `tree-${ index }`, box }]
+                                  ? this.getSectors(value, box)
+                                  : [{ color: value.color, value, key: `tree-${ value.id }`, box }]
                        })
 
         return blocks.map((block, order) => this.getBlock(block, order))
     }
 
-    private getSectors(group: TreeValue, groupIndex: number, box: RectangleDimensions): Block[] {
+    private getSectors(group: TreeValue, box: RectangleDimensions): Block[] {
         const sectors = TreeProcess.prepare(group.sectors ?? [], value => value.value)
 
         return this.layout(sectors, box, value => value.value).map(({ value, box }, index) => {
             const color = spreadColor(group.color, index, sectors.length, COLOR_RANGE)
 
-            return { color, value, key: `tree-${ groupIndex }-${ index }`, box, group }
+            return { color, value, key: `tree-${ group.id }-${ group.sectors?.indexOf(value) }`, box, group }
         })
     }
 
@@ -90,8 +92,9 @@ export default class TreeProcess extends ChartProcess<TreeData> {
                 position.y += h
             }
 
-            const widthGap = isVertical && !isLast ? this.data.gap / 2 : 0
-            const heightGap = isVertical || isLast ? 0 : this.data.gap / 2
+            const gap = this.data.gap || 0
+            const widthGap = isVertical && !isLast ? gap / 2 : 0
+            const heightGap = isVertical || isLast ? 0 : gap / 2
 
             return { value, box: { x, y, width: w - widthGap, height: h - heightGap } }
         })

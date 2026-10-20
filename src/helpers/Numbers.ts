@@ -9,15 +9,30 @@ export function getRoundedValues(
         return []
     }
 
-    const dataMax = maxOf(all, value => value)
     const minVal = all.reduce((acc, value) => Math.min(acc, value), 0)
-    const maxVal = max == undefined ? dataMax : Math.min(max, dataMax)
+    const maxVal = maxOf(all, value => value)
 
     if (!Number.isFinite(minVal) || !Number.isFinite(maxVal) || minVal === 0 && maxVal === 0) {
         return []
     }
 
     const intervals = targetTicks - 1
+
+    const ticks = (start: number, step: number) =>
+        Array.from({ length: targetTicks }, (_, i) => Number((start + i * step).toFixed(12)) || 0)
+
+    if (max != undefined && max > 0) {
+        const lower = Math.abs(minVal)
+
+        let neg = 0
+
+        while (neg < intervals - 1 && neg * max / (intervals - neg) < lower)
+            neg++
+
+        const fixedStep = Math.max(max / (intervals - neg), neg == 0 ? 0 : lower / neg)
+
+        return ticks(-neg * fixedStep, fixedStep)
+    }
 
     const rawStep = (maxVal - minVal) / intervals
 
@@ -26,11 +41,9 @@ export function getRoundedValues(
 
     const niceSteps = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]
 
-    const round = max != undefined ? Math.round : Math.ceil
-
     const intervalsFor = (step: number) => ({
-        neg: minVal < 0 ? round(Math.abs(minVal) / step) : 0,
-        pos: maxVal > 0 ? round(maxVal / step) : 0
+        neg: minVal < 0 ? Math.ceil(Math.abs(minVal) / step) : 0,
+        pos: maxVal > 0 ? Math.ceil(maxVal / step) : 0
     })
 
     const isFit = (step: number) => {
@@ -39,9 +52,7 @@ export function getRoundedValues(
         return neg + pos <= intervals
     }
 
-    const prettyNormalizedStep = max != undefined
-                                 ? normalizedStep
-                                 : niceSteps.find(nice => nice >= normalizedStep && isFit(nice * magnitude)) ?? 10
+    const prettyNormalizedStep = niceSteps.find(nice => nice >= normalizedStep && isFit(nice * magnitude)) ?? 10
 
     const countsFor = (step: number) => {
         const { neg, pos } = intervalsFor(step)
@@ -77,9 +88,7 @@ export function getRoundedValues(
         }
     }
 
-    const startTick = -negIntervals * step
-
-    return Array.from({ length: targetTicks }, (_, i) => Number((startTick + i * step).toFixed(12)) || 0)
+    return ticks(-negIntervals * step, step)
 }
 
 const NUMBER_PATTERN = /^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i

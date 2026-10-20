@@ -53,6 +53,9 @@ export default class Chart {
         if (!this.settings.height && element.clientHeight == 0)
             element.style.height = Styles.Size.Full
 
+        if (!this.settings.height && element.isConnected && element.clientHeight == 0)
+            element.style.height = Styles.Size.FallbackHeight
+
         this.canvas = createCanvas()
         element.appendChild(this.canvas)
 

@@ -73,9 +73,12 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
 
     private readonly center: Point
 
+    private readonly values: Sector[]
+
     constructor(data: GaugeData, pixel: Point, valuePostfix: string | undefined) {
         super(data, pixel, valuePostfix)
 
+        this.values = data.values.filter(value => !value.disabled)
         this.lines = this.getLines()
         this.steps = this.getSteps()
 
@@ -85,13 +88,13 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         const top = LABEL_GAP + RANGE_FONT
 
         this.labelSpace = LABEL_GAP + LABEL_FONT * this.labelRows + LABEL_GAP
-        this.innerRatio = clamp(this.data.innerRadius ?? DEFAULT_INNER_RADIUS, 0, 100) / 100
+        this.innerRatio = clamp(Number.isFinite(this.data.innerRadius) ? this.data.innerRadius : DEFAULT_INNER_RADIUS, 0, 100) / 100
         this.radius = Math.max(Math.min(
             side,
             height - this.labelSpace - top - this.units.toPxY(PADDING) * 2,
             ...this.steps.map(step => (side - step.width) / Math.abs(Math.cos(step.angle)) - LABEL_GAP)
         ), 0)
-        this.thickness = this.radius * (1 - this.innerRatio) / this.data.values.length
+        this.thickness = this.radius * (1 - this.innerRatio) / this.values.length
         this.center = {
             x: COORDS_MAX_X / 2,
             y: this.units.y((height - this.radius - this.labelSpace + top) / 2 + this.radius)
@@ -107,7 +110,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     }
 
     private get isSingle() {
-        return this.data.values.length == 1
+        return this.values.length == 1
     }
 
     private get band() {
@@ -119,17 +122,17 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     }
 
     isEmpty() {
-        return !this.data.values.length
+        return !this.values.length
     }
 
     getData() {
-        const first = this.data.values[0]
+        const first = this.values[0]
 
         if (!first || this.radius <= 0)
             return []
 
         return [
-            ...this.data.values.flatMap((sector, index) => [
+            ...this.values.flatMap((sector, index) => [
                 this.getTrack(index),
                 this.getValue(sector, index)
             ]),
@@ -155,7 +158,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     private getRatio(value: number) {
         const range = this.max - this.min
 
-        return range == 0 ? 0 : clamp((value - this.min) / range, 0, 1)
+        return range == 0 || !Number.isFinite(value) ? 0 : clamp((value - this.min) / range, 0, 1)
     }
 
     private getTrack(index: number) {
@@ -292,7 +295,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
 
         let width = 0
 
-        this.data.values.forEach((item, index) => {
+        this.values.forEach((item, index) => {
             const text = `${ item.label }: ${ this.formatValue(item.value) }`
             const label = {
                 key: `gauge-label-${ index }`,

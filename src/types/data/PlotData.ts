@@ -41,8 +41,10 @@ export function getPlotRows(data: PlotData): TableData {
 
     const uniqueHeaders = [...headers.values()]
 
-    if (data.xType == PlotAxisType.Date)
-        uniqueHeaders.sort((a, b) => Formatter.toDate(a.value).getTime() - Formatter.toDate(b.value).getTime())
+    const order = (x: string) => data.xType == PlotAxisType.Date ? Formatter.toDate(x).getTime() : Number(x)
+
+    if (data.xType != PlotAxisType.Text && uniqueHeaders.every(header => !isNaN(order(header.value))))
+        uniqueHeaders.sort((a, b) => order(a.value) - order(b.value))
 
     return { headers: uniqueHeaders, values }
 }

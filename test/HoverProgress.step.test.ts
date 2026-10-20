@@ -38,6 +38,11 @@ describe('Stepping hover progress', () => {
         hover.step(false, 200, 100)
 
         expect(hover.isIdle)
+            .toBe(false)
+
+        hover.step(false, 300, 100)
+
+        expect(hover.isIdle)
             .toBe(true)
 
         hover.step(true, 1000, 100)

@@ -3,12 +3,14 @@ import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming } from '@/static/constants/Index'
-import { lerp } from '@/helpers/Geometry'
+import { clamp, lerp } from '@/helpers/Geometry'
 import { sum } from '@/helpers/Collections'
 
 const ALPHA_DELTA = 0.5
 
 const POINT_MIN_RADIUS = 2
+
+const HIT_RADIUS = 6
 
 export default class RenderItemLine
     extends RenderItemBase {
@@ -19,6 +21,8 @@ export default class RenderItemLine
     width: number = 1
 
     dash: number[] = []
+
+    tooltips: string[] = []
 
     from: Point[] | null = null
 
@@ -127,8 +131,40 @@ export default class RenderItemLine
         }
     }
 
+    isMouseOver(point: Point): boolean {
+        const radius = this.width / 2 + HIT_RADIUS
+
+        if (this.canvas.length == 1)
+            return Math.hypot(point.x - this.canvas[0].x, point.y - this.canvas[0].y) <= radius
+
+        return this.canvas.slice(1).some((to, i) => RenderItemLine.segmentDistance(point, this.canvas[i], to) <= radius)
+    }
+
+    tooltipAt(point: Point): string | null {
+        if (this.tooltips.length != this.canvas.length)
+            return null
+
+        let nearest = 0
+
+        this.canvas.forEach((stop, i) => {
+            if (Math.abs(stop.x - point.x) < Math.abs(this.canvas[nearest].x - point.x))
+                nearest = i
+        })
+
+        return this.tooltips[nearest] ?? null
+    }
+
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp): void {
         item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, now, AnimationTiming.hover)
+    }
+
+    private static segmentDistance(point: Point, from: Point, to: Point) {
+        const dx = to.x - from.x
+        const dy = to.y - from.y
+        const length = dx * dx + dy * dy
+        const k = length == 0 ? 0 : clamp(((point.x - from.x) * dx + (point.y - from.y) * dy) / length, 0, 1)
+
+        return Math.hypot(point.x - from.x - dx * k, point.y - from.y - dy * k)
     }
 
     private partial(progress: number): Point[] {
