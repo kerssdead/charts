@@ -10,7 +10,7 @@ import type RenderItemText from '@/types/RenderItemText'
 
 const FULL_CIRCLE_EPSILON = 1e-6
 
-const HOVER_OFFSET = 8
+export const HOVER_OFFSET = 8
 
 const isFullCircle = (sweep: number) => sweep >= Math.PI * 2 - FULL_CIRCLE_EPSILON
 

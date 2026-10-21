@@ -23,6 +23,7 @@ export type LabelPlacement = {
 
 type Box = LabelBox & {
     index: number
+    origin: number
     middle: number
     center: Point
 }
@@ -57,11 +58,27 @@ export default function layoutLabels(labels: LabelBox[], distance: number, bound
     }
 
     const move = (box: Box, step: number) => {
-        box.angle = clamp(box.angle + step, box.middle - MAX_DRIFT, box.middle + MAX_DRIFT)
+        const { angle, center } = box
+
+        box.angle = clamp(angle + step, box.middle - MAX_DRIFT, box.middle + MAX_DRIFT)
         box.center = getCenter(box)
+
+        if (!isOutside(box))
+            return box.angle != angle
+
+        box.angle = angle
+        box.center = center
+
+        return false
     }
 
-    const boxes: Box[] = labels.map((label, index) => ({ ...label, index, middle: label.angle, center: { x: 0, y: 0 } }))
+    const boxes: Box[] = labels.map((label, index) => ({
+        ...label,
+        index,
+        origin: label.angle,
+        middle: label.angle,
+        center: { x: 0, y: 0 }
+    }))
 
     for (const box of boxes) {
         box.center = getCenter(box)
@@ -71,7 +88,7 @@ export default function layoutLabels(labels: LabelBox[], distance: number, bound
         box.middle = box.angle
     }
 
-    boxes.sort((a, b) => a.middle - b.middle)
+    boxes.sort((a, b) => a.origin - b.origin)
 
     for (let iteration = 0; iteration < ITERATIONS; iteration++) {
         let isMoved = false
@@ -85,13 +102,11 @@ export default function layoutLabels(labels: LabelBox[], distance: number, bound
             const current = boxes[i]
             const next = boxes[isLast ? 0 : i + 1]
 
-            if (!isOverlap(current, next))
+            if (!isOverlap(current, next) && (isLast || current.angle <= next.angle))
                 continue
 
-            move(current, -STEP)
-            move(next, STEP)
-
-            isMoved = true
+            isMoved = move(current, -STEP) || isMoved
+            isMoved = move(next, STEP) || isMoved
         }
 
         if (!isMoved)

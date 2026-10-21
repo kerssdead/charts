@@ -90,7 +90,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         if (alpha == 0) {
             this.remove(queue)
 
-            return false
+            return this.fade.isAnimating
         }
 
         if (!this.isBuilt(window, isVisible)) {

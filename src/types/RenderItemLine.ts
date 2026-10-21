@@ -3,14 +3,17 @@ import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming } from '@/static/constants/Index'
-import { clamp, lerp } from '@/helpers/Geometry'
+import { lerp } from '@/helpers/Geometry'
 import { sum } from '@/helpers/Collections'
+import HoverMap from '@/types/HoverMap'
 
 const ALPHA_DELTA = 0.5
 
 const POINT_MIN_RADIUS = 2
 
 const HIT_RADIUS = 6
+
+const MARKER_RADIUS = 4
 
 export default class RenderItemLine
     extends RenderItemBase {
@@ -25,6 +28,10 @@ export default class RenderItemLine
     tooltips: string[] = []
 
     from: Point[] | null = null
+
+    private hovered: number = -1
+
+    private readonly markers = new HoverMap<number>()
 
     current(morph: number = 1): Point[] {
         if (!this.from || morph >= 1 || this.from.length != this.absolute.length)
@@ -102,6 +109,21 @@ export default class RenderItemLine
         }
 
         ctx.stroke()
+
+        if (progress < 1)
+            return
+
+        for (const index of this.markers.keys()) {
+            const marker = this.canvas[index]
+            const radius = (this.width / 2 + MARKER_RADIUS) * this.markers.value(index)
+
+            if (!marker || radius <= 0)
+                continue
+
+            ctx.beginPath()
+            ctx.arc(marker.x, marker.y, radius, 0, Math.PI * 2)
+            ctx.fill()
+        }
     }
 
     getBounds() {
@@ -132,39 +154,54 @@ export default class RenderItemLine
     }
 
     isMouseOver(point: Point): boolean {
-        const radius = this.width / 2 + HIT_RADIUS
+        this.hovered = this.stopAt(point)
 
-        if (this.canvas.length == 1)
-            return Math.hypot(point.x - this.canvas[0].x, point.y - this.canvas[0].y) <= radius
-
-        return this.canvas.slice(1).some((to, i) => RenderItemLine.segmentDistance(point, this.canvas[i], to) <= radius)
+        return this.hovered >= 0
     }
 
     tooltipAt(point: Point): string | null {
         if (this.tooltips.length != this.canvas.length)
             return null
 
-        let nearest = 0
+        return this.tooltips[this.stopAt(point)] ?? null
+    }
+
+    private stopAt(point: Point) {
+        let closest = -1
+        let distance = this.width / 2 + HIT_RADIUS
 
         this.canvas.forEach((stop, i) => {
-            if (Math.abs(stop.x - point.x) < Math.abs(this.canvas[nearest].x - point.x))
-                nearest = i
+            const current = Math.hypot(point.x - stop.x, point.y - stop.y)
+
+            if (current <= distance) {
+                closest = i
+                distance = current
+            }
         })
 
-        return this.tooltips[nearest] ?? null
+        return closest
     }
 
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp): void {
+        if (item.hoverGroup == null)
+            return
+
         item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, now, AnimationTiming.hover)
     }
 
-    private static segmentDistance(point: Point, from: Point, to: Point) {
-        const dx = to.x - from.x
-        const dy = to.y - from.y
-        const length = dx * dx + dy * dy
-        const k = length == 0 ? 0 : clamp(((point.x - from.x) * dx + (point.y - from.y) * dy) / length, 0, 1)
+    animateHover(now: DOMHighResTimeStamp): boolean {
+        const targets = new Map<number, boolean>()
 
-        return Math.hypot(point.x - from.x - dx * k, point.y - from.y - dy * k)
+        for (const index of this.markers.keys())
+            if (!this.markers.get(index)!.isIdle)
+                targets.set(index, false)
+
+        if (this.hovered >= 0)
+            targets.set(this.hovered, true)
+
+        this.markers.update([...targets], now)
+
+        return this.markers.isAnimating
     }
 
     private partial(progress: number): Point[] {

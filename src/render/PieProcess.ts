@@ -11,6 +11,7 @@ import { sum } from '@/helpers/Collections'
 import ChartProcess from '@/render/ChartProcess'
 import Theme from '@/Theme'
 import { TextAlignment } from '@/static/Enums'
+import { HOVER_OFFSET } from '@/types/RenderItemArc'
 
 const LEADER_GAP = 20
 
@@ -88,7 +89,7 @@ export default class PieProcess extends ChartProcess<PieData> {
         const width = this.units.toPxX(COORDS_MAX_X) - PIN_OFFSET * 2
         const height = this.units.toPxY(COORDS_MAX_Y) - PIN_OFFSET * 2
 
-        this.bounds = { x: width / 2, y: height / 2 }
+        this.bounds = { x: width / 2 - HOVER_OFFSET, y: height / 2 - HOVER_OFFSET }
 
         const isWide = width > height * SIDE_RATIO
         const isTall = height > width * SIDE_RATIO

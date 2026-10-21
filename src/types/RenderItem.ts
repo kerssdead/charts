@@ -106,12 +106,14 @@ export default class RenderItem {
                        ? this.shape.isMouseOver(point)
                        : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
 
+        const isShapeAnimating = this.shape.animateHover(now)
+
         if (!isOver && this.hover.isIdle)
-            return false
+            return isShapeAnimating
 
         this.shape.animate(this, !isOver, now)
 
-        return this.hover.isAnimating
+        return this.hover.isAnimating || isShapeAnimating
     }
 
     hasTooltipAt(point: Point) {

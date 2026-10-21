@@ -18,6 +18,10 @@ export default abstract class RenderItemBase {
     animate(_item: RenderItem, _isBackward: boolean, _now: DOMHighResTimeStamp): void {
     }
 
+    animateHover(_now: DOMHighResTimeStamp): boolean {
+        return false
+    }
+
     isMouseOver(_point: Point): boolean {
         return false
     }

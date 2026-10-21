@@ -16,6 +16,8 @@ const LABEL_PADDING = 8
 
 const CORNER_RADIUS = 80
 
+const DEFAULT_GAP = 4
+
 type Cell<T> = {
     value: T
     box: RectangleDimensions
@@ -92,9 +94,9 @@ export default class TreeProcess extends ChartProcess<TreeData> {
                 position.y += h
             }
 
-            const gap = this.data.gap || 0
-            const widthGap = isVertical && !isLast ? gap / 2 : 0
-            const heightGap = isVertical || isLast ? 0 : gap / 2
+            const gap = Number.isFinite(this.data.gap) ? this.data.gap : DEFAULT_GAP
+            const widthGap = isVertical && !isLast ? this.units.x(gap) : 0
+            const heightGap = isVertical || isLast ? 0 : this.units.y(gap)
 
             return { value, box: { x, y, width: Math.max(w - widthGap, 0), height: Math.max(h - heightGap, 0) } }
         })
