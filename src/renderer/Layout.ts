@@ -14,6 +14,8 @@ import TextResources from '@/static/TextResources'
 
 const TITLE_FONT = 20
 
+const TITLE_MIN_FONT = 14
+
 const TITLE_PADDING = 12
 
 const PANEL_TITLE_FONT = 16
@@ -35,6 +37,8 @@ export default class Layout {
 
     private title: string | undefined
 
+    private titleInset: number = TITLE_PADDING
+
     get hasArea() {
         return this.window.width > 0 && this.window.height > 0
     }
@@ -52,6 +56,8 @@ export default class Layout {
 
         legend?.resize(this.width, this.height, this.titleHeight)
         menu?.resize(this.width, this.height, this.titleHeight)
+
+        this.titleInset = Math.max(menu?.bounds ? this.width - menu.bounds.left : 0, TITLE_PADDING)
 
         this.screen = new CanvasWindow(this.width, this.height)
 
@@ -85,10 +91,13 @@ export default class Layout {
         if (!title)
             return QueueItemsBuilder.empty
 
+        const width = this.width - this.titleInset * 2
+        const font = clamp(width / stringWidth(title, 1), TITLE_MIN_FONT, TITLE_FONT)
+
         return (items: QueueItemsBuilder) => {
-            items.text(title)
+            items.text(Legend.truncate(title, width, font))
                  .position(COORDS_MAX_X / 2, this.titleHeight / 2 * COORDS_MAX_Y / height)
-                 .size(TITLE_FONT)
+                 .size(font)
                  .align(TextAlignment.Center)
                  .fixed()
                  .key('title')
