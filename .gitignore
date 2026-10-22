@@ -13,3 +13,7 @@ node_modules/
 
 # Temp pages
 /temp/
+
+
+# Fuzzer output
+/fuzz/results.jsonl

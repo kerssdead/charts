@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Charts Fuzzer</title>
+
+    <link rel="stylesheet" href="../dist/main.css">
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #1f2328;
+            --muted: #6e7781;
+            --border: #d0d7de;
+            --panel: #f6f8fa;
+            --accent: #0969da;
+            --bad: #cf222e;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d1117;
+                --fg: #e6edf3;
+                --muted: #8d96a0;
+                --border: #30363d;
+                --panel: #161b22;
+                --accent: #4493f8;
+                --bad: #f85149;
+            }
+        }
+
+        * { box-sizing: border-box }
+
+        body {
+            margin: 0;
+            padding: 16px;
+            background: var(--bg);
+            color: var(--fg);
+            font: 14px/1.4 system-ui, sans-serif;
+        }
+
+        h1 { font-size: 18px; margin: 0 0 12px }
+
+        .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-bottom: 12px }
+        .controls label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px }
+
+        input, select, button {
+            font: inherit;
+            color: inherit;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+        }
+
+        input[type=number] { width: 140px }
+        button { cursor: pointer }
+        button.primary { background: var(--accent); border-color: var(--accent); color: #fff }
+        button:disabled { opacity: .5; cursor: default }
+
+        .stats { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; color: var(--muted) }
+        .stats b { color: var(--fg); font-variant-numeric: tabular-nums }
+
+        .stage {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: auto;
+            height: 420px;
+            resize: vertical;
+            margin-bottom: 16px;
+        }
+
+        #chart { width: 800px; height: 500px }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px }
+        th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top }
+        th { color: var(--muted); font-weight: 500 }
+        td.count { font-variant-numeric: tabular-nums; width: 1% }
+        td.kind { color: var(--bad); white-space: nowrap; width: 1% }
+        td.msg { font-family: ui-monospace, monospace; word-break: break-word; white-space: pre-wrap }
+        td.actions { white-space: nowrap; width: 1% }
+        td.actions button { padding: 2px 8px; font-size: 12px }
+
+        .table-wrap { overflow-x: auto }
+        .empty { color: var(--muted); padding: 12px 0 }
+    </style>
+
+    <script src="instrument.js"></script>
+    <script src="generator.js"></script>
+    <script src="../dist/ocharts.js"></script>
+</head>
+
+<body>
+    <h1>Charts Fuzzer</h1>
+
+    <div class="controls">
+        <label>
+            Seed
+            <input type="number" id="seed">
+        </label>
+
+        <label>
+            Duration, min (0 = until stopped)
+            <input type="number" id="duration" min="0" value="10">
+        </label>
+
+        <label>
+            Speed
+            <select id="speed">
+                <option value="1">Normal</option>
+                <option value="0.2">Fast</option>
+                <option value="3">Slow</option>
+            </select>
+        </label>
+
+        <button class="primary" id="start">Start</button>
+        <button id="stop" disabled>Stop</button>
+        <button id="download" disabled>Download results</button>
+    </div>
+
+    <div class="stats">
+        <span>Cases <b id="cases">0</b></span>
+        <span>Failed cases <b id="failed">0</b></span>
+        <span>Unique bugs <b id="unique">0</b></span>
+        <span>Time left <b id="left">–</b></span>
+        <span>Current seed <b id="current">–</b></span>
+    </div>
+
+    <div class="stage">
+        <div id="chart"></div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Count</th>
+                    <th>Kind</th>
+                    <th>Message</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="bugs"></tbody>
+        </table>
+
+        <div class="empty" id="empty">No bugs yet</div>
+    </div>
+
+    <template id="tpl">
+        <div style="padding: 8px; background: #fff; color: #000">${ Id }, ${ Name } <b>${ Value }</b></div>
+    </template>
+
+    <script>
+        const $ = id => document.getElementById(id)
+
+        const results = []
+        const bugs = new Map()
+
+        let running = false
+
+        for (const level of ['error', 'warn']) {
+            const original = console[level]
+
+            console[level] = (...args) => {
+                window.__issues.push({ kind: 'console', msg: `${ level }: ${ args.map(String).join(' ') }` })
+                original.apply(console, args)
+            }
+        }
+
+        const sleep = ms => new Promise(resolve => setTimeout(resolve, ms * +$('speed').value))
+
+        const canvas = () => document.querySelector('#chart canvas')
+
+        function fire(type, x, y, init = {}) {
+            const target = canvas()
+
+            if (!target)
+                return
+
+            const rect = target.getBoundingClientRect()
+            const options = {
+                bubbles: true,
+                cancelable: true,
+                clientX: rect.left + x,
+                clientY: rect.top + y,
+                pointerId: 1,
+                pointerType: 'mouse',
+                isPrimary: true,
+                ...init
+            }
+
+            const event = type.startsWith('pointer')
+                          ? new PointerEvent(type, options)
+                          : type === 'wheel'
+                            ? new WheelEvent(type, options)
+                            : new MouseEvent(type, options)
+
+            target.dispatchEvent(event)
+        }
+
+        async function move(x, y, steps = 1) {
+            for (let i = 0; i < steps; i++) {
+                fire('pointermove', x, y)
+
+                await sleep(16)
+            }
+        }
+
+        async function act(G, action, width, height, steps) {
+            const { rnd, ri, pick } = G
+            const x = rnd() * width, y = rnd() * height
+
+            switch (action) {
+                case 'move':
+                    await move(x, y, ri(1, 5))
+                    break
+
+                case 'click':
+                    fire('pointerdown', x, y, { button: 0, buttons: 1 })
+                    fire('pointerup', x, y, { button: 0 })
+                    fire('click', x, y, { button: 0 })
+                    break
+
+                case 'dblclick':
+                    fire('click', x, y)
+                    fire('click', x, y)
+                    fire('dblclick', x, y)
+                    break
+
+                case 'rclick':
+                    fire('contextmenu', x, y, { button: 2 })
+                    break
+
+                case 'wheel':
+                    await move(x, y)
+                    fire('wheel', x, y, { ctrlKey: true, deltaY: pick([-500, -100, 100, 500]) })
+                    break
+
+                case 'drag': {
+                    const dx = ri(-300, 300), dy = ri(-200, 200)
+
+                    fire('pointerdown', x, y, { button: 0, buttons: 1 })
+
+                    for (let i = 1; i <= 5; i++) {
+                        fire('pointermove', x + dx * i / 5, y + dy * i / 5, { buttons: 1 })
+
+                        await sleep(16)
+                    }
+
+                    fire('pointerup', x + dx, y + dy, { button: 0 })
+                    fire('lostpointercapture', x + dx, y + dy)
+                    fire('click', x + dx, y + dy)
+                    break
+                }
+
+                case 'leave':
+                    fire('pointerleave', -1, -1)
+                    break
+
+                case 'key':
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: pick(['Escape', 'Tab', 'Enter']), bubbles: true }))
+                    break
+
+                case 'resize': {
+                    const size = [ri(1, 1500), ri(1, 1000)]
+
+                    steps.push('resize' + size)
+
+                    $('chart').style.width = size[0] + 'px'
+                    $('chart').style.height = size[1] + 'px'
+                    break
+                }
+
+                case 'legendsweep':
+                    for (let yy = height - 5; yy > height - 60; yy -= 12)
+                        for (let xx = 5; xx < width; xx += 40)
+                            fire('pointermove', xx, yy)
+
+                    fire('click', width / 2, height - 15)
+                    break
+
+                case 'menu':
+                    fire('click', width - 15, 15)
+                    await sleep(100)
+                    fire('click', width - 40, 60)
+                    break
+            }
+        }
+
+        function isNoise(issue) {
+            return issue.msg.includes('setPointerCapture') || issue.msg.includes('user gesture')
+        }
+
+        async function runCase(G) {
+            const { gen, ri, pick, chance } = G
+            const caseSeed = G.seed
+            const g = gen()
+            const g2 = chance(0.3) ? gen() : null
+            const steps = []
+            const before = new Set(document.body.children)
+            const element = $('chart')
+
+            let fatal = null,
+                chart = null
+
+            window.__issues = []
+            window.__text = []
+
+            $('current').textContent = caseSeed
+
+            try {
+                element.style.width = g.size[0] + 'px'
+                element.style.height = g.size[1] + 'px'
+
+                const settings = { ...g.settings, isDarkThemeFunction: () => g.settings.dark }
+
+                if (settings.contextMenu)
+                    settings.contextMenu = settings.contextMenu.map(button => ({ ...button, action: () => {} }))
+
+                chart = OCharts.chart(element, settings)
+
+                await sleep(ri(50, 1200))
+
+                window.__collectTextIssues()
+
+                const box = canvas()?.getBoundingClientRect()
+                const actions = ri(3, 25)
+
+                for (let k = 0; k < actions && box; k++) {
+                    const action = pick(['move', 'move', 'move', 'click', 'rclick', 'wheel', 'drag', 'dblclick', 'leave', 'resize', 'key', 'legendsweep', 'menu'])
+
+                    steps.push(action)
+
+                    await act(G, action, box.width, box.height, steps)
+                    await sleep(ri(0, 150))
+                }
+
+                if (g2) {
+                    steps.push('applySettings')
+
+                    chart.applySettings({ ...g2.settings, isDarkThemeFunction: () => g2.settings.dark })
+
+                    await sleep(ri(50, 600))
+
+                    if (box)
+                        await move(box.width / 2, box.height / 2, 4)
+                }
+
+                if (chance(0.2)) {
+                    steps.push('render+destroy')
+
+                    chart.render()
+                    chart.destroy()
+                    chart.render()
+                    chart.applySettings({})
+                } else {
+                    chart.destroy()
+                }
+
+                await sleep(30)
+
+                if (element.children.length)
+                    window.__issues.push({ kind: 'leak', msg: `${ element.children.length } children left in container after destroy` })
+            } catch (e) {
+                fatal = String(e && e.stack || e).split('\n').slice(0, 6).join('\n')
+
+                try { chart?.destroy() } catch {}
+            }
+
+            for (const child of [...document.body.children])
+                if (!before.has(child))
+                    child.remove()
+
+            element.innerHTML = ''
+
+            const issues = window.__issues.filter(issue => !isNoise(issue)).slice(0, 30)
+
+            if (fatal)
+                issues.unshift({ kind: 'fatal', msg: fatal })
+
+            return { caseSeed, issues, steps, g, g2 }
+        }
+
+        function signature(issue) {
+            return issue.kind + ' ' + issue.msg.split('\n').slice(0, 2).join(' ').replace(/-?\d+(\.\d+)?/g, '#')
+        }
+
+        function record(result) {
+            if (!result.issues.length)
+                return
+
+            results.push(result)
+
+            $('failed').textContent = results.length
+            $('download').disabled = false
+
+            for (const issue of result.issues) {
+                const key = signature(issue)
+                const bug = bugs.get(key)
+
+                if (bug)
+                    bug.count++
+                else
+                    bugs.set(key, { count: 1, issue, result })
+            }
+
+            renderBugs()
+        }
+
+        function renderBugs() {
+            const body = $('bugs')
+
+            body.innerHTML = ''
+
+            for (const bug of [...bugs.values()].sort((a, b) => b.count - a.count)) {
+                const row = body.insertRow()
+
+                row.insertCell().textContent = bug.count
+                row.insertCell().textContent = bug.issue.kind
+                row.insertCell().textContent = bug.issue.msg.split('\n').slice(0, 3).join('\n')
+
+                row.cells[0].className = 'count'
+                row.cells[1].className = 'kind'
+                row.cells[2].className = 'msg'
+
+                const actions = row.insertCell()
+
+                actions.className = 'actions'
+
+                const replay = document.createElement('button')
+
+                replay.textContent = 'Replay'
+                replay.title = `Run seed ${ bug.result.caseSeed } once`
+                replay.onclick = () => start(bug.result.caseSeed, true)
+
+                const copy = document.createElement('button')
+
+                copy.textContent = 'Copy'
+                copy.title = 'Copy seed, settings and steps as JSON'
+                copy.onclick = () => navigator.clipboard.writeText(JSON.stringify(bug.result, null, 2))
+
+                actions.append(replay, ' ', copy)
+            }
+
+            $('unique').textContent = bugs.size
+            $('empty').hidden = bugs.size > 0
+        }
+
+        async function start(seed, once = false) {
+            if (running)
+                return
+
+            running = true
+
+            $('start').disabled = true
+            $('stop').disabled = false
+
+            const G = createGenerator(seed)
+            const minutes = +$('duration').value
+            const end = minutes > 0 ? Date.now() + minutes * 60000 : Infinity
+
+            let cases = +$('cases').textContent
+
+            while (running && Date.now() < end) {
+                record(await runCase(G))
+
+                $('cases').textContent = ++cases
+                $('left').textContent = end === Infinity ? '∞' : Math.max(0, Math.round((end - Date.now()) / 1000)) + 's'
+
+                if (once)
+                    break
+            }
+
+            stop()
+        }
+
+        function stop() {
+            running = false
+
+            $('start').disabled = false
+            $('stop').disabled = true
+        }
+
+        function download() {
+            const blob = new Blob([results.map(result => JSON.stringify(result)).join('\n')], { type: 'application/json' })
+            const link = document.createElement('a')
+
+            link.href = URL.createObjectURL(blob)
+            link.download = 'fuzz-results.jsonl'
+            link.click()
+
+            URL.revokeObjectURL(link.href)
+        }
+
+        const params = new URLSearchParams(location.search)
+
+        $('seed').value = params.get('seed') ?? Math.floor(Math.random() * 1e9)
+        $('duration').value = params.get('duration') ?? $('duration').value
+
+        $('start').onclick = () => start(+$('seed').value)
+        $('stop').onclick = stop
+        $('download').onclick = download
+
+        if (params.has('autostart'))
+            start(+$('seed').value)
+    </script>
+</body>
+</html>
