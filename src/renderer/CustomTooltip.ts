@@ -75,11 +75,12 @@ export default class CustomTooltip {
 
     private place(element: HTMLElement, point: Point) {
         const canvas = this.canvas.getBoundingClientRect()
+        const { clientWidth, clientHeight } = document.documentElement
 
-        const { x, y } = placeNear(point, this.size.width, this.size.height, Tooltip.offset,
-            { x: 0, y: 0, width: canvas.width, height: canvas.height })
+        const { x, y } = placeNear({ x: canvas.left + point.x, y: canvas.top + point.y }, this.size.width, this.size.height, Tooltip.offset,
+            { x: 0, y: 0, width: clientWidth, height: clientHeight })
 
-        element.style.left = `${ canvas.left + x }px`
-        element.style.top = `${ canvas.top + y }px`
+        element.style.left = `${ x }px`
+        element.style.top = `${ y }px`
     }
 }
