@@ -417,7 +417,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
     private clampLabel(text: string, x: number) {
         const half = this.units.x(stringWidth(text, X_LABEL_FONT) / 2)
 
-        return clamp(x, half, COORDS_MAX_X - half)
+        return clamp(x, this.margin.left + half, COORDS_MAX_X - half)
     }
 
     private leftLabel(items: QueueItemsBuilder, text: string, y: number, key: string) {
