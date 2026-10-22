@@ -1,11 +1,16 @@
 (function (root) {
 function createGenerator(seed) {
-    const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648 }
+    const rnd = () => {
+        seed = (seed + 0x6D2B79F5) | 0
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed)
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t
+        return ((t ^ t >>> 14) >>> 0) / 4294967296
+    }
     const ri = (a, b) => a + Math.floor(rnd() * (b - a + 1))
     const pick = a => a[Math.floor(rnd() * a.length)]
     const chance = p => rnd() < p
     
-    const LABELS = [i => `Item ${i}`, i => `Very long label number ${i} that goes on and on and on forever`, i => '', i => `😀👍🏽 эмодзи ${i}`, i => 'Same', i => `${i}`, i => `A`, i => `Line\nbreak ${i}`]
+    const LABELS = [i => `Item ${i}`, i => `Very long label number ${i} that goes on and on and on forever`, i => '', i => `😀👍🏽 эмодзи ${i}`, i => 'Same', i => `${i}`, i => `A`, i => `Line\nbreak ${i}`, i => `Supercalifragilisticexpialidocious${i}`, i => `  spaced ${i}  `]
     function num(scale) {
         return pick([
             () => rnd() * scale,
@@ -31,30 +36,35 @@ function createGenerator(seed) {
         switch (type) {
             case 0: {
                 const xType = ri(0, 2)
-                const points = pick([0, 1, 2, 5, 12, 40, 150])
+                const points = pick([0, 1, 2, 5, 12, 40, 150, 1000])
                 const plotType = pick([0, 0, 1, 2, 3, 4])
                 const mixed = chance(0.3)
+                const order = pick(['sorted', 'sorted', 'shuffled', 'duplicates'])
                 data.values = Array.from({ length: count }, (_, i) => ({
                     type: mixed ? ri(0, 4) : plotType,
+                    hideInLegend: chance(0.05),
+                    disabled: chance(0.05),
                     label: labelFn(i),
                     width: pick([undefined, 0, 1, 3, 10, 50]),
                     dash: pick([undefined, [], [5, 5], [1, 3]]),
                     color: color(),
                     data: { Id: i, Name: 'n' + i, Value: i },
-                    values: Array.from({ length: chance(0.2) ? ri(0, points) : points }, (_, j) => ({
+                    values: Array.from({ length: chance(0.2) ? ri(0, points) : points }, (_, k) => order === 'shuffled' ? ri(0, points) : order === 'duplicates' ? Math.floor(k / 2) : k).map(j => ({
                         x: xType === 1 ? new Date(Date.UTC(2025, 0, 1) + j * pick([86400000, 3600000, 2592000000])).toISOString()
                             : xType === 2 ? pick([`Cat ${j}`, `Long category name ${j} here`, `${j}`]) : (chance(0.1) ? j * scale : j),
-                        y: v(),
+                        y: chance(0.05) ? String(v()) : v(),
+                        label: chance(0.1) ? labelFn(j) : undefined,
                         data: { Id: j, Name: 'p' + j, Value: j }
                     }))
                 }))
-                Object.assign(data, { xType, xTitle: chance(0.4) ? 'X axis title' : null, yTitle: chance(0.4) ? 'Y axis title' : null,
-                    simple: chance(0.15), shortLabels: chance(0.3), yMax: chance(0.15) ? pick([0, 10, scale, -5]) : undefined })
+                Object.assign(data, { xType, xTitle: chance(0.4) ? pick(['X axis title', 'A very long x axis title that keeps going and going']) : null,
+                    yTitle: chance(0.4) ? pick(['Y axis title', 'A very long y axis title that keeps going and going']) : null,
+                    simple: chance(0.15), shortLabels: chance(0.3), yMax: chance(0.15) ? pick([0, 10, scale, -5, '', '50']) : undefined })
                 break
             }
             case 1:
-                data.values = Array.from({ length: count }, (_, i) => ({ value: Math.abs(v()), label: labelFn(i), color: color(), data: { Id: i, Name: 's' + i, Value: i } }))
-                Object.assign(data, { innerRadius: pick([0, 0, 30, 50, 80, 100, 120, -10]), innerTitle: pick(['', 'Total', 'A very long inner title text here']), labelPercent: chance(0.3) })
+                data.values = Array.from({ length: count }, (_, i) => ({ value: Math.abs(v()), label: labelFn(i), color: color(), hideInLegend: chance(0.05), disabled: chance(0.05), data: { Id: i, Name: 's' + i, Value: i } }))
+                Object.assign(data, { innerRadius: pick([0, 0, 30, 50, 80, 100, 120, -10]), innerTitle: pick(['', 'Total', 'A very long inner title text here', '😀 Σ']), labelPercent: chance(0.3) })
                 break
             case 2: {
                 const min = pick([0, 0, -100, 10, scale])
@@ -67,7 +77,7 @@ function createGenerator(seed) {
                 data.values = Array.from({ length: count }, (_, i) => ({
                     label: labelFn(i), color: color(), value: chance(0.3) ? Math.abs(v()) : undefined,
                     data: { Id: i, Name: 'g' + i, Value: i },
-                    sectors: chance(0.2) ? undefined : Array.from({ length: pick([0, 1, 3, 10]) }, (_, j) => ({ value: Math.abs(v()), label: labelFn(j), data: { Id: j, Name: 'c' + j, Value: j } }))
+                    sectors: chance(0.2) ? undefined : Array.from({ length: pick([0, 1, 3, 10, 40]) }, (_, j) => ({ value: chance(0.1) ? -Math.abs(v()) : Math.abs(v()), label: labelFn(j), data: { Id: j, Name: 'c' + j, Value: j } }))
                 }))
                 Object.assign(data, { padding: pick([0, 2, 10, 40, -5]), gap: pick([0, 2, 10, 40, -5]) })
                 break
@@ -75,21 +85,23 @@ function createGenerator(seed) {
         const multi = chance(0.12)
         const settings = {
             type, data,
-            title: chance(0.4) ? pick(['Title', 'An extremely long title that probably should be truncated somewhere along the way ok']) : null,
+            title: chance(0.4) ? pick(['Title', 'An extremely long title that probably should be truncated somewhere along the way ok', 'Pneumonoultramicroscopicsilicovolcanoconiosis', '😀👍🏽 эмодзи']) : null,
             enableTooltip: chance(0.7), enableLegend: chance(0.6), enableOther: chance(0.3), staticMode: chance(0.1),
             enableMove: chance(0.3), disableInteractions: chance(0.05), disableMenu: chance(0.1),
             baseColor: chance(0.2) ? pick(['#ff0000', '#000000', '#ffffff', '#3366cc']) : null,
             templateId: chance(0.15) ? 'tpl' : null,
-            valuePostfix: chance(0.2) ? pick(['%', ' kg', ' very long postfix']) : undefined,
+            valuePostfix: chance(0.2) ? pick(['%', ' kg', ' very long postfix', '']) : undefined,
             legendPlace: chance(0.5) ? ri(0, 3) : undefined,
             contextMenu: chance(0.2) ? [{ text: 'Button 1' }, { text: 'Button 2' }] : undefined,
+            width: chance(0.05) ? pick(['400', '300px', '50%']) : undefined,
+            height: chance(0.05) ? pick(['250', '200px', '50%']) : undefined,
             dark: chance(0.25)
         }
         if (multi) {
-            settings.charts = Array.from({ length: ri(2, 5) }, (_, i) => ({ type: (type + i) % 4, title: `Chart ${i}`, data: gen((type + i) % 4).settings.data }))
-            settings.columns = pick([undefined, 1, 2, 3])
+            settings.charts = Array.from({ length: pick([2, 3, 4, 5, 9]) }, (_, i) => ({ type: (type + i) % 4, title: `Chart ${i}`, data: gen((type + i) % 4).settings.data }))
+            settings.columns = pick([undefined, 1, 2, 3, 4])
         }
-        const size = pick([[800, 500], [300, 200], [120, 80], [1400, 900], [50, 50], [600, 1000], [200, 600], [1, 1]])
+        const size = pick([[800, 500], [300, 200], [120, 80], [1400, 900], [50, 50], [600, 1000], [200, 600], [1, 1], [320, 480], [2000, 200], [1000, 300]])
         return { settings, size }
     }
 

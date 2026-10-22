@@ -289,7 +289,7 @@
         }
 
         function isNoise(issue) {
-            return issue.msg.includes('setPointerCapture') || issue.msg.includes('user gesture')
+            return issue.msg.includes('setPointerCapture') || issue.msg.includes('user gesture') || issue.msg.includes('User activation')
         }
 
         async function runCase(G) {
