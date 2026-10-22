@@ -181,6 +181,8 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
                 .color(sector.color)
                 .layer(Layer.Data)
                 .key(`gauge-value-${ index }`)
+                .hoverGroup(`gauge-value-${ index }`)
+                .interact()
                 .init(AnimationTiming.gaugeInit)
                 .tooltip(this.getTooltip(sector))
                 .data(sector.data)

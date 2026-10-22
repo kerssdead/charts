@@ -12,6 +12,8 @@ const FULL_CIRCLE_EPSILON = 1e-6
 
 export const HOVER_OFFSET = 8
 
+const ALPHA_DELTA = 0.5
+
 const isFullCircle = (sweep: number) => sweep >= Math.PI * 2 - FULL_CIRCLE_EPSILON
 
 type ArcGeometry = {
@@ -204,17 +206,20 @@ export default class RenderItemArc
         const anchorAngle = shape.middle + this.leaderAnchor
         const turn = this.leaderOffset - this.leaderAnchor
         const labelAngle = anchorAngle + turn
-        const bendAngle = anchorAngle + turn / 2
 
+        const hover = isFullCircle(shape.end - shape.start) ? 0 : HOVER_OFFSET * this.hover
+        const x = shape.x - hover * Math.cos(shape.middle)
+        const y = shape.y - hover * Math.sin(shape.middle)
         const start = this.canvas.radius + this.canvas.leaderGap
         const end = start + this.canvas.leaderLength
-        const bend = end / Math.max(Math.cos(turn / 2), .5)
+        const lift = start + hover
+        const handle = 4 / 3 * Math.tan(turn / 4) * end
 
         ctx.globalAlpha *= visibility
         ctx.strokeStyle = Theme.line
 
-        const endX = shape.x + end * Math.cos(labelAngle)
-        const endY = shape.y + end * Math.sin(labelAngle)
+        const endX = x + end * Math.cos(labelAngle)
+        const endY = y + end * Math.sin(labelAngle)
         const label = this.leaderLabel!
 
         label.shape.adjust(this.window, label.animation.morph)
@@ -222,9 +227,12 @@ export default class RenderItemArc
         const box = (label.shape as RenderItemText).orbitBox()
 
         ctx.beginPath()
-        ctx.moveTo(shape.x + start * Math.cos(anchorAngle), shape.y + start * Math.sin(anchorAngle))
-        ctx.quadraticCurveTo(shape.x + bend * Math.cos(bendAngle), shape.y + bend * Math.sin(bendAngle), endX, endY)
-        ctx.lineTo(
+        ctx.moveTo(x + lift * Math.cos(anchorAngle), y + lift * Math.sin(anchorAngle))
+        ctx.bezierCurveTo(
+            x + end * Math.cos(anchorAngle) - handle * Math.sin(anchorAngle),
+            y + end * Math.sin(anchorAngle) + handle * Math.cos(anchorAngle),
+            endX + handle * Math.sin(labelAngle),
+            endY - handle * Math.cos(labelAngle),
             clamp(endX, box.x - box.halfWidth, box.x + box.halfWidth),
             clamp(endY, box.y - box.halfHeight, box.y + box.halfHeight)
         )
@@ -330,7 +338,12 @@ export default class RenderItemArc
     }
 
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp): void {
-        this.hover = item.hoverFactor(isBackward, now, AnimationTiming.hover)
+        const k = item.hoverFactor(isBackward, now, AnimationTiming.hover)
+
+        if (item.hoverGroup == null)
+            this.hover = k
+        else
+            item.animation.alpha = 1 - ALPHA_DELTA * k
     }
 
     isMouseOver(point: Point): boolean {

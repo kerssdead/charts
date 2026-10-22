@@ -53,6 +53,8 @@ const RIGHT_MARGIN = 100
 
 const X_LABEL_HEIGHT = X_LABEL_FONT * 1.3
 
+const Y_LABEL_HEIGHT = AXIS_LABEL_FONT * 1.3
+
 const GRID_DASH = [1, 20]
 
 const LINE_LAYER = Layer.Data + 1
@@ -343,8 +345,11 @@ export default class PlotProcess extends ChartProcess<PlotData> {
                     this.bottomLabel(items, label, this.getAxisX(value), bottom, `x-label-${ value }`)
             })
 
+            const every = Math.max(1, Math.ceil(Y_LABEL_HEIGHT / this.units.toPxY(step + this.barGap)))
+
             this.getCategories().forEach((category, i) => {
-                this.leftLabel(items, category, bottom - i * (step + this.barGap) - this.barGap - step / 2, `y-category-${ i }`)
+                if (i % every == 0)
+                    this.leftLabel(items, category, bottom - i * (step + this.barGap) - this.barGap - step / 2, `y-category-${ i }`)
             })
         }
 

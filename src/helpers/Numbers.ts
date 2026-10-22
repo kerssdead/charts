@@ -1,5 +1,7 @@
 import { maxOf } from '@/helpers/Collections'
 
+const NEGLIGIBLE = 0.01
+
 export function getRoundedValues(
     all: number[],
     targetTicks: number = 5,
@@ -9,12 +11,15 @@ export function getRoundedValues(
         return []
     }
 
-    const minVal = all.reduce((acc, value) => Math.min(acc, value), 0)
-    const maxVal = maxOf(all, value => value)
+    const lowest = all.reduce((acc, value) => Math.min(acc, value), 0)
+    const highest = maxOf(all, value => value)
 
-    if (!Number.isFinite(minVal) || !Number.isFinite(maxVal) || minVal === 0 && maxVal === 0) {
+    if (!Number.isFinite(lowest) || !Number.isFinite(highest) || lowest === 0 && highest === 0) {
         return []
     }
+
+    const minVal = -lowest < highest * NEGLIGIBLE ? 0 : lowest
+    const maxVal = highest < -lowest * NEGLIGIBLE ? 0 : highest
 
     const intervals = targetTicks - 1
 

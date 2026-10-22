@@ -127,7 +127,7 @@ describe('Calculating rounded values', () => {
             1368061.50,
             100.00,
             0.00]))
-            .toStrictEqual([-500000, 0, 500000, 1000000, 1500000])
+            .toStrictEqual([0, 400000, 800000, 1200000, 1600000])
     })
 
     it('Should be 80 in (w/o zero value) and 5 values with 456,030 diff. 78 positive values and only 1 positive small value', () => {
@@ -211,6 +211,6 @@ describe('Calculating rounded values', () => {
             -1368061.50,
             -100.00,
             0.00]))
-            .toStrictEqual([-1500000, -1000000, -500000, 0, 500000])
+            .toStrictEqual([-1600000, -1200000, -800000, -400000, 0])
     })
 })
