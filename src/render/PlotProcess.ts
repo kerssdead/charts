@@ -4,7 +4,7 @@ import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/con
 import { HorizontalAlignment, PlotAxisType, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from '@/static/Enums'
 import { getRoundedValues } from '@/helpers/Numbers'
 import { maxOf } from '@/helpers/Collections'
-import { short, stringWidth } from '@/helpers/Text'
+import { scientific, short, stringWidth } from '@/helpers/Text'
 import Paddings from '@/types/Paddings'
 import PlotSeries from '@/types/PlotSeries'
 import Point from '@/types/Point'
@@ -15,6 +15,7 @@ import QueueLineItemBuilder from '@/builders/QueueLineItemBuilder'
 import PlotPoint from '@/types/PlotPoint'
 import Formatter from '@/helpers/Formatter'
 import ChartProcess from '@/render/ChartProcess'
+import { clamp } from '@/helpers/Geometry'
 
 const GAP = 30
 
@@ -157,8 +158,8 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         this.mainBand = { top: this.isMixed ? barBottom + this.bandGap : top, bottom }
 
         this.scale = {
-            x: this.getAxisX(1) - this.getAxisX(0),
-            y: this.getAxisY(0) - this.getAxisY(1)
+            x: PlotProcess.getScale(this.barValues, this.available.x),
+            y: PlotProcess.getScale(this.values, this.mainBand.bottom - this.mainBand.top)
         }
     }
 
@@ -254,6 +255,12 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         return values.length < 2 ? null : { min: values[0], max: values[values.length - 1] }
     }
 
+    private static getScale(values: number[], size: number) {
+        const range = PlotProcess.axisRange(values)
+
+        return !range || range.max == range.min ? 0 : size / (range.max - range.min)
+    }
+
     private getCategories() {
         return this.barSlots.values.map(x => this.formatX(x))
     }
@@ -329,8 +336,12 @@ export default class PlotProcess extends ChartProcess<PlotData> {
             const { bottom } = this.barBand
             const step = this.getBarStep()
 
-            for (const value of this.barValues)
-                this.bottomLabel(items, short(value, this.data.shortLabels), this.getAxisX(value), bottom, `x-label-${ value }`)
+            this.getBarLabels().forEach((label, i) => {
+                const value = this.barValues[i]
+
+                if (label)
+                    this.bottomLabel(items, label, this.getAxisX(value), bottom, `x-label-${ value }`)
+            })
 
             this.getCategories().forEach((category, i) => {
                 this.leftLabel(items, category, bottom - i * (step + this.barGap) - this.barGap - step / 2, `y-category-${ i }`)
@@ -347,14 +358,61 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         const step = this.getMainStep()
         const labels = this.mainSlots.values.map(x => this.formatX(x))
 
+        const positions = labels.map((_, i) => this.slotX(i, step) + step / 2)
+
         const slot = this.units.toPxX(step + this.mainGap)
         const widest = maxOf(labels, label => stringWidth(label, X_LABEL_FONT))
-        const every = Math.max(1, Math.ceil((widest + X_LABEL_SPACING) / slot))
+        const every = this.getLabelStep(labels, positions, Math.ceil((widest + X_LABEL_SPACING) / slot))
 
         labels.forEach((label, i) => {
             if (i % every == 0)
-                this.bottomLabel(items, label, this.slotX(i, step) + step / 2, this.mainBand.bottom, `x-category-${ i }`)
+                this.bottomLabel(items, label, positions[i], this.mainBand.bottom, `x-category-${ i }`)
         })
+    }
+
+    private getBarLabels() {
+        const positions = this.barValues.map(value => this.getAxisX(value))
+
+        const variants = [this.data.shortLabels, true]
+            .map(isShort => this.barValues.map(value => short(value, isShort)))
+            .concat([this.barValues.map(scientific)])
+
+        const labels = variants.find(labels => !this.isOverlapping(labels, positions, 1)) ?? variants[variants.length - 1]
+        const every = this.getLabelStep(labels, positions, 1)
+
+        return labels.map((label, i) => i % every == 0 ? label : '')
+    }
+
+    private getLabelStep(labels: string[], positions: number[], from: number) {
+        let every = Math.max(1, from)
+
+        while (every < labels.length && this.isOverlapping(labels, positions, every))
+            every++
+
+        return every
+    }
+
+    private isOverlapping(labels: string[], positions: number[], every: number) {
+        let right = -Infinity
+
+        return labels.some((label, i) => {
+            if (i % every != 0)
+                return false
+
+            const half = this.units.x(stringWidth(label, X_LABEL_FONT) / 2)
+            const x = this.clampLabel(label, positions[i])
+            const isOverlap = x - half < right
+
+            right = x + half + this.units.x(X_LABEL_SPACING)
+
+            return isOverlap
+        })
+    }
+
+    private clampLabel(text: string, x: number) {
+        const half = this.units.x(stringWidth(text, X_LABEL_FONT) / 2)
+
+        return clamp(x, half, COORDS_MAX_X - half)
     }
 
     private leftLabel(items: QueueItemsBuilder, text: string, y: number, key: string) {
@@ -367,7 +425,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
     private bottomLabel(items: QueueItemsBuilder, text: string, x: number, y: number, key: string) {
         return items.text(text)
-                    .position(x, y + this.units.y(TOP_BASELINE_GAP))
+                    .position(this.clampLabel(text, x), y + this.units.y(TOP_BASELINE_GAP))
                     .align(TextAlignment.Center)
                     .baseline(TextBaseline.Top)
                     .size(X_LABEL_FONT)

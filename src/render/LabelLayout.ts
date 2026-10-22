@@ -38,9 +38,32 @@ export default function layoutLabels(labels: LabelBox[], distance: number, bound
         }
     }
 
+    const isCrossing = (box: Box, other: Box) => {
+        const from = { x: distance * Math.cos(box.angle), y: distance * Math.sin(box.angle) }
+        const to = {
+            x: clamp(from.x, box.center.x - box.halfWidth, box.center.x + box.halfWidth),
+            y: clamp(from.y, box.center.y - box.halfHeight, box.center.y + box.halfHeight)
+        }
+
+        let enter = 0
+        let exit = 1
+
+        for (const [axis, half] of [['x', other.halfWidth], ['y', other.halfHeight]] as const) {
+            const delta = to[axis] - from[axis]
+            const near = (other.center[axis] - half - SPACING - from[axis]) / delta
+            const far = (other.center[axis] + half + SPACING - from[axis]) / delta
+
+            enter = Math.max(enter, Math.min(near, far))
+            exit = Math.min(exit, Math.max(near, far))
+        }
+
+        return enter < exit
+    }
+
     const isOverlap = (a: Box, b: Box) => {
         return Math.abs(a.center.x - b.center.x) < a.halfWidth + b.halfWidth + SPACING
                && Math.abs(a.center.y - b.center.y) < a.halfHeight + b.halfHeight + SPACING
+               || isCrossing(a, b) || isCrossing(b, a)
     }
 
     const isOutside = (box: Box) => {

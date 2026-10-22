@@ -9,7 +9,7 @@ const enum TextResources {
 
     other = 'Other',
 
-    noLabel = 'No Label',
+    noLabel = '(No label)',
 
     dataAsTable = 'Data as table',
 

@@ -59,12 +59,21 @@ export function escapeHtml(value: unknown) {
     return String(value ?? '').replace(/[&<>"']/g, char => HTML_ESCAPES[char])
 }
 
+const SHORT_THRESHOLD = 1e10
+
+const SCIENTIFIC_THRESHOLD = 1e15
+
 let shortFormat: Intl.NumberFormat | undefined
 
 let fullFormat: Intl.NumberFormat | undefined
 
+let scientificFormat: Intl.NumberFormat | undefined
+
 export function short(value: number, isShort: boolean) {
-    if (!isShort) {
+    if (Math.abs(value) >= SCIENTIFIC_THRESHOLD)
+        return scientific(value)
+
+    if (!isShort && Math.abs(value) < SHORT_THRESHOLD) {
         fullFormat ??= new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 })
 
         return fullFormat.format(value)
@@ -77,4 +86,10 @@ export function short(value: number, isShort: boolean) {
     })
 
     return shortFormat.format(value)
+}
+
+export function scientific(value: number) {
+    scientificFormat ??= new Intl.NumberFormat(undefined, { notation: 'scientific', maximumFractionDigits: 1 })
+
+    return value == 0 ? '0' : scientificFormat.format(value)
 }

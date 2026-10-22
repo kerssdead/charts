@@ -51,7 +51,7 @@ function prepareValues(chart: ChartItem) {
         if (value instanceof PlotSeries)
             value.type ??= PlotType.Line
 
-        value.label ??= TextResources.noLabel
+        value.label ||= TextResources.noLabel
 
         const count = counts.get(value.label) ?? 0
 
@@ -98,8 +98,12 @@ function normalizeValues(values: Value[] | undefined) {
         if ((value as PlotSeries).values)
             (value as PlotSeries).values = (value as PlotSeries).values.filter(point => point.x != null)
 
-        for (const point of (value as PlotSeries).values ?? [])
+        for (const point of (value as PlotSeries).values ?? []) {
             point.y = toNumber(point.y ?? 0)
+
+            if (point.x === '')
+                point.x = TextResources.noLabel
+        }
 
         normalizeValues((value as TreeValue).sectors)
     }

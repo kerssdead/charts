@@ -14,9 +14,16 @@ export function adjustColor(color: string, amount: number) {
 }
 
 export function spreadColor(base: string, index: number, count: number, range: number) {
-    const ratio = count == 1 ? .5 : index / (count - 1)
+    const rgb = hexToRgb(base)
 
-    return adjustColor(base, Math.round((ratio * 2 - 1) * range))
+    if (count == 1 || !rgb)
+        return base
+
+    const min = Math.min(rgb.r, rgb.g, rgb.b)
+    const max = Math.max(rgb.r, rgb.g, rgb.b)
+    const shift = Math.max(0, range - min) - Math.max(0, range - (255 - max))
+
+    return adjustColor(base, Math.round((index / (count - 1) * 2 - 1) * range) + shift) + expandHex(base).slice(7)
 }
 
 function toHex(channel: number) {

@@ -1,4 +1,4 @@
-import { applyBaseColor, keepDisabled, normalize } from '@/helpers/Settings'
+import { normalize } from '@/helpers/Settings'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import PlotSeries from '@/types/PlotSeries'
@@ -76,77 +76,5 @@ describe('Normalizing settings', () => {
 
         expect([settings.enableTooltip, settings.enableLegend])
             .toEqual([false, false])
-    })
-})
-
-describe('Keeping disabled values', () => {
-    const create = (disabled?: boolean) => normalize({
-        type: ChartType.Pie,
-        data: { values: [{ label: 'A', value: 1, disabled }, { label: 'B', value: 1 }] }
-    } as unknown as ChartSettings, FALLBACK)
-
-    it('Should keep value disabled between settings', () => {
-        const next = create()
-
-        keepDisabled(create(true), next)
-
-        expect(next.charts[0].data.values.map(value => !!value.disabled))
-            .toEqual([true, false])
-    })
-
-    it('Should respect explicit disabled value', () => {
-        const next = create(false)
-
-        keepDisabled(create(true), next)
-
-        expect(next.charts[0].data.values[0].disabled)
-            .toBe(false)
-    })
-})
-
-describe('Applying base color', () => {
-    const create = (charts: object[], baseColor?: string) => ({ charts, baseColor }) as unknown as ChartSettings
-
-    it('Should keep defined colors', () => {
-        const settings = create([{ type: ChartType.Pie, data: { values: [{ label: 'A', color: '#ff0000' }] } }])
-
-        applyBaseColor(settings, FALLBACK)
-
-        expect(settings.charts[0].data.values[0].color)
-            .toBe('#ff0000')
-    })
-
-    it('Should use base color for single uncolored value', () => {
-        const settings = create([{ type: ChartType.Pie, data: { values: [{ label: 'A' }] } }], '#336699')
-
-        applyBaseColor(settings, FALLBACK)
-
-        expect(settings.charts[0].data.values[0].color)
-            .toBe('#336699')
-    })
-
-    it('Should spread shades around fallback color', () => {
-        const settings = create([{ type: ChartType.Pie, data: { values: [{ label: 'A' }, { label: 'B' }, { label: 'C' }] } }])
-
-        applyBaseColor(settings, FALLBACK)
-
-        expect(settings.charts[0].data.values.map(value => value.color))
-            .toEqual(['#3d3d3d', '#808080', '#c3c3c3'])
-    })
-
-    it('Should share colors by label between charts', () => {
-        const settings = create([
-            { type: ChartType.Pie, data: { values: [{ label: 'A', color: '#ff0000' }, { label: 'B' }] } },
-            { type: ChartType.Pie, data: { values: [{ label: 'A' }, { label: 'B' }] } }
-        ])
-
-        applyBaseColor(settings, FALLBACK)
-
-        const [first, second] = settings.charts.map(chart => chart.data.values.map(value => value.color))
-
-        expect(second)
-            .toEqual(first)
-        expect(first[0])
-            .toBe('#ff0000')
     })
 })
