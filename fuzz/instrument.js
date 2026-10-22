@@ -12,7 +12,7 @@ window.__frame = 0
         P[name] = function (...args) {
             for (let i = 0; i < args.length; i++) {
                 const a = args[i]
-                if (typeof a === 'number' && !Number.isFinite(a)) { rec('nonfinite', `${name} arg${i}=${a}`); break }
+                if (typeof a === 'number' && !Number.isFinite(a)) { rec('nonfinite', `${name} arg${i}=${a}` + (typeof args[0] === 'string' ? ` "${args[0]}"` : '')); break }
             }
             if (name === 'fillText' || name === 'strokeText') {
                 const s = String(args[0])

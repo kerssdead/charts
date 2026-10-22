@@ -19,14 +19,14 @@ function createGenerator(seed) {
             () => 0.001 * rnd()
         ])()
     }
-    function gen() {
+    function gen(forcedType) {
         const scale = pick([1, 10, 1000, 1e6, 0.01, 1e9])
         const labelFn = pick(LABELS)
         const count = pick([0, 1, 1, 2, 3, 5, 8, 15, 30, 60])
         const valueMode = pick(['random', 'same', 'zero', 'mixed'])
         const v = () => valueMode === 'zero' ? 0 : valueMode === 'same' ? scale : num(scale)
         const color = () => chance(0.5) ? undefined : '#' + ri(0, 0xffffff).toString(16).padStart(6, '0')
-        const type = ri(0, 3)
+        const type = forcedType ?? ri(0, 3)
         const data = {}
         switch (type) {
             case 0: {
@@ -86,7 +86,7 @@ function createGenerator(seed) {
             dark: chance(0.25)
         }
         if (multi) {
-            settings.charts = Array.from({ length: ri(2, 5) }, (_, i) => ({ type: (type + i) % 4, title: `Chart ${i}`, data: gen().settings.data }))
+            settings.charts = Array.from({ length: ri(2, 5) }, (_, i) => ({ type: (type + i) % 4, title: `Chart ${i}`, data: gen((type + i) % 4).settings.data }))
             settings.columns = pick([undefined, 1, 2, 3])
         }
         const size = pick([[800, 500], [300, 200], [120, 80], [1400, 900], [50, 50], [600, 1000], [200, 600], [1, 1]])
