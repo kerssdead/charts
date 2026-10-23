@@ -5,7 +5,9 @@ export const enum ChartType {
 
     Gauge,
 
-    TreeMap
+    TreeMap,
+
+    SegmentedBar
 }
 
 export const enum ErrorType {

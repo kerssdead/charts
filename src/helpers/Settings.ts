@@ -10,6 +10,8 @@ import { TreeValue } from '@/types/data/TreeData'
 import ChartItem from '@/types/ChartItem'
 import Sector from '@/types/Sector'
 import TextResources from '@/static/TextResources'
+import SegmentedBarStop from '@/types/SegmentedBarStop'
+import SegmentedBarData from '@/types/data/SegmentedBarData'
 
 const BASE_COLOR_RANGE = 67
 
@@ -25,6 +27,7 @@ export function normalize(source: ChartSettings, fallbackColor: string): ChartSe
     for (const chart of charts) {
         prepareValues(chart)
         normalizeValues(chart.data?.values)
+        normalizeValues(getStops(chart))
     }
 
     applyBaseColor(settings, fallbackColor)
@@ -42,26 +45,42 @@ function prepareValues(chart: ChartItem) {
 
     const counts = new Map<string, number>()
 
+    const prepare = <T extends Value>(value: T) => {
+        if (value instanceof PlotSeries)
+            value.type ??= PlotType.Line
+
+        if (chart.type != ChartType.SegmentedBar)
+            value.label ||= TextResources.noLabel
+
+        const label = value.label ?? ''
+        const count = counts.get(label) ?? 0
+
+        counts.set(label, count + 1)
+
+        value.labelIndex = count
+        value.id ??= `${ label }-${ count }`
+
+        return value
+    }
+
     chart.data.values = chart.data.values.map(value => {
         if (!(value instanceof Value))
             value = chart.type == ChartType.Plot
                     ? new PlotSeries(value)
                     : new Sector(value)
 
-        if (value instanceof PlotSeries)
-            value.type ??= PlotType.Line
-
-        value.label ||= TextResources.noLabel
-
-        const count = counts.get(value.label) ?? 0
-
-        counts.set(value.label, count + 1)
-
-        value.labelIndex = count
-        value.id ??= `${ value.label }-${ count }`
-
-        return value
+        return prepare(value)
     })
+
+    if (chart.type == ChartType.SegmentedBar) {
+        const data = chart.data as SegmentedBarData
+
+        data.stops = (data.stops ?? []).map(stop => prepare(stop instanceof Value ? stop : new SegmentedBarStop(stop)))
+    }
+}
+
+function getStops(chart: ChartItem) {
+    return (chart.data as SegmentedBarData | undefined)?.stops
 }
 
 export function keepDisabled(previous: ChartSettings, next: ChartSettings) {
@@ -122,7 +141,9 @@ export function applyBaseColor(settings: ChartSettings, fallbackColor: string) {
                 value.color ||= color
     }
 
-    const uncolored = Array.from(groups.values()).filter(values => !values[0].color)
+    const stops = settings.charts.flatMap(chart => getStops(chart) ?? []).map(stop => [stop])
+
+    const uncolored = [...groups.values(), ...stops].filter(values => !values[0].color)
 
     if (uncolored.length == 0)
         return

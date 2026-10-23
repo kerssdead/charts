@@ -53,4 +53,10 @@ export default class QueueTextItemBuilder
 
         return this
     }
+
+    clip(width: number) {
+        this.shape.clipWidth = width
+
+        return this
+    }
 }

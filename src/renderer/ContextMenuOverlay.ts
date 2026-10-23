@@ -48,7 +48,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
     update({ queue, window, screen, mouse, context, now }: Frame): boolean {
         const point = context?.point ?? null
         const fixedButtons = context?.isMenu ? this.fixedButtons?.() : undefined
-        const target = point && !fixedButtons ? queue.items.find(item => item.hasContextMenuAt(point)) : undefined
+        const target = point && !fixedButtons ? queue.findTop(item => item.hasContextMenuAt(point)) : undefined
 
         const previous = this.state
         const isSame = previous != null && samePoint(previous.point, point)

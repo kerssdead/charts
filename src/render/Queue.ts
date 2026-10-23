@@ -58,17 +58,17 @@ export default class Queue {
         return isAnimating
     }
 
-    animate(point: Point | null, now: DOMHighResTimeStamp): boolean {
-        point ??= OUTSIDE
+    animate(pointer: Point | null, now: DOMHighResTimeStamp): boolean {
+        const point = pointer ?? OUTSIDE
 
         const hoveredGroups = this.hoveredGroups
 
         hoveredGroups.clear()
 
-        for (const item of this.queue) {
-            if (item.hoverGroup != null && item.isInteractive && !item.isInitializing && item.in(point))
-                hoveredGroups.add(item.hoverGroup)
-        }
+        const top = this.findTop(item => item.hoverGroup != null && item.isInteractive && !item.isInitializing && item.in(point))
+
+        if (top?.hoverGroup)
+            hoveredGroups.add(top.hoverGroup)
 
         let isAnimating = false
 
@@ -78,6 +78,16 @@ export default class Queue {
         }
 
         return isAnimating
+    }
+
+    findTop(predicate: (item: RenderItem) => boolean) {
+        const items = this.getSorted()
+
+        for (let i = items.length - 1; i >= 0; i--)
+            if (predicate(items[i]))
+                return items[i]
+
+        return undefined
     }
 
     add(items: RenderItem[]) {

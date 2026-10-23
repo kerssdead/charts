@@ -7,7 +7,7 @@ import Alignment, { DEFAULT_ALIGNMENT } from '@/types/Alignment'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { GradientCache } from '@/helpers/Canvas'
-import { lerp } from '@/helpers/Geometry'
+import { clamp, lerp } from '@/helpers/Geometry'
 
 const SCALE_DELTA = 0.01
 const ALPHA_DELTA = 0.5
@@ -25,6 +25,10 @@ const V_FACTOR = {
 
 type RectangleCanvas = RectangleDimensions & {
     radii: number[]
+}
+
+type ClipBox = RectangleDimensions & {
+    radius: number
 }
 
 export default class RenderItemRectangle
@@ -50,6 +54,10 @@ export default class RenderItemRectangle
     collapse = { width: true, height: true }
 
     from: RectangleDimensions | null = null
+
+    clip: ClipBox | null = null
+
+    private canvasClip: ClipBox = { x: 0, y: 0, width: 0, height: 0, radius: 0 }
 
     private canvasGrowOrigin: number = 0
 
@@ -135,6 +143,15 @@ export default class RenderItemRectangle
         this.canvas.width = absolute.width / COORDS_MAX_X * window.width
         this.canvas.height = absolute.height / COORDS_MAX_Y * window.height
 
+        if (this.clip)
+            this.canvasClip = {
+                x: RenderItem.adjustX(window, this.clip.x),
+                y: RenderItem.adjustY(window, this.clip.y),
+                width: this.clip.width / COORDS_MAX_X * window.width,
+                height: this.clip.height / COORDS_MAX_Y * window.height,
+                radius: this.clip.radius / COORDS_MAX_X * window.width
+            }
+
         this.canvasGrowOrigin = this.growAxis == 'x'
                                 ? RenderItem.adjustX(window, this.growOrigin)
                                 : RenderItem.adjustY(window, this.growOrigin)
@@ -143,10 +160,21 @@ export default class RenderItemRectangle
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
         const { left, top, width, height } = this.grow(item.animation.init)
 
+        if (this.clip) {
+            const clip = this.canvasClip
+
+            ctx.save()
+
+            ctx.roundRect(clip.x, clip.y, clip.width, clip.height, clip.radius)
+            ctx.clip()
+
+            ctx.beginPath()
+        }
+
         ctx.roundRect(left, top, width, height, this.canvas.radii)
 
         if (this.isGradient && height != 0) {
-            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.color, top, top + height)
+            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.fill!, top, top + height)
         }
 
         if (this.isFill) {
@@ -154,6 +182,9 @@ export default class RenderItemRectangle
         }
 
         ctx.stroke()
+
+        if (this.clip)
+            ctx.restore()
     }
 
     getBounds() {
@@ -172,6 +203,17 @@ export default class RenderItemRectangle
 
         return left <= point.x && point.x <= right
                && top <= point.y && point.y <= bottom
+               && (!this.clip || this.isInClip(point))
+    }
+
+    private isInClip(point: Point) {
+        const { x, y, width, height } = this.canvasClip
+        const radius = Math.min(this.canvasClip.radius, width / 2, height / 2)
+
+        const dx = point.x - clamp(point.x, x + radius, x + width - radius)
+        const dy = point.y - clamp(point.y, y + radius, y + height - radius)
+
+        return dx * dx + dy * dy <= radius * radius
     }
 
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp) {

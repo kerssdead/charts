@@ -1,4 +1,4 @@
-import { COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from '@/static/constants/Index'
+import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from '@/static/constants/Index'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import Point from '@/types/Point'
@@ -8,6 +8,7 @@ import ease from '@/animation/Animations'
 import HoverProgress from '@/types/HoverProgress'
 import Panel from '@/types/Panel'
 import { clamp } from '@/helpers/Geometry'
+import { grayScale } from '@/helpers/Color'
 
 export default class RenderItem {
     isInteractive: boolean = false
@@ -26,12 +27,20 @@ export default class RenderItem {
 
     isFading: boolean = true
 
+    isMonochrome: boolean = false
+
     hoverGroup: string | null = null
 
     panel: Panel | null = null
 
     get isInitializing() {
         return this.animation.isInitializing
+    }
+
+    get fill(): string | undefined {
+        const color = this.color ?? this.shape.defaultColor
+
+        return color && grayScale(color, this.animation.mono)
     }
 
     color: string
@@ -41,6 +50,8 @@ export default class RenderItem {
     stroke: string
 
     tooltipTemplate: string
+
+    tooltipHtml: string | null = null
 
     data: ItemData | null = null
 
@@ -85,7 +96,7 @@ export default class RenderItem {
         ctx.lineWidth = DEFAULT_LINE_WIDTH
         ctx.setLineDash([])
 
-        const fill = this.color ?? this.shape.defaultColor
+        const fill = this.fill
         const stroke = this.stroke ?? fill
 
         if (fill)
@@ -111,13 +122,16 @@ export default class RenderItem {
         if (!isOver && this.hover.isIdle)
             return isShapeAnimating
 
-        this.shape.animate(this, !isOver, now)
+        if (this.isMonochrome)
+            this.animation.mono = this.hoverFactor(!isOver, now, AnimationTiming.hover)
+        else
+            this.shape.animate(this, !isOver, now)
 
         return this.hover.isAnimating || isShapeAnimating
     }
 
     hasTooltipAt(point: Point) {
-        return !this.isInitializing && this.in(point) && !!this.tooltipAt(point)
+        return !this.isInitializing && this.in(point) && !!(this.tooltipAt(point) || this.tooltipHtml)
     }
 
     tooltipAt(point: Point) {

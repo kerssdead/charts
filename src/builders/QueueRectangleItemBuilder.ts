@@ -53,6 +53,12 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<Rend
         return this
     }
 
+    clip(box: RectangleDimensions, radius: number) {
+        this.shape.clip = { ...box, radius }
+
+        return this
+    }
+
     collapse(width: boolean, height: boolean) {
         this.shape.collapse = { width, height }
 

@@ -55,6 +55,10 @@
                         <option value="3">
                             Tree Map
                         </option>
+
+                        <option value="4">
+                            Segmented Bar
+                        </option>
                     </select>
                 </label>
 
@@ -371,6 +375,32 @@
                     Sectors Count
 
                     <input type="number" min="0" id="tree-sectors-count" onchange="refresh()" value="10"/>
+                </label>
+            </div>
+
+            <div>
+                <label>
+                    Left label
+
+                    <input type="text" id="left-label" onchange="refresh()" value="08/01/2009"/>
+                </label>
+
+                <label>
+                    Right label
+
+                    <input type="text" id="right-label" onchange="refresh()" value="03/23/2013"/>
+                </label>
+
+                <label>
+                    Stops count
+
+                    <input type="number" min="0" id="stops-count" onchange="refresh()" value="2"/>
+                </label>
+
+                <label>
+                    <input type="checkbox" id="percent-stops" onchange="refresh()"/>
+
+                    Percent stops
                 </label>
             </div>
         </div>
@@ -743,6 +773,46 @@
 
                 break
 
+            case 4:
+                sameValue = rng.nextFloat() * baseValue
+
+                for (let i = 0; i < count; i++) {
+                    let value = 0
+
+                    switch (valuesType) {
+                        case 0:
+                            value = rng.nextFloat() * baseValue
+
+                            break
+
+                        case 1:
+                            value = i
+
+                            break
+
+                        case 2:
+                            value = sameValue
+
+                            break
+
+                        default:
+                            break
+                    }
+
+                    values.push({
+                        value: value,
+                        label: isCustomLabel
+                            ? indexedCustomLabel
+                                ? customLabel + ` ${i}`
+                                : customLabel
+                            : `Part ${i}`,
+                        data: getData(i),
+                        color: getColor()
+                    })
+                }
+
+                break
+
             default:
                 break
         }
@@ -811,22 +881,40 @@
                     }
                 ]
 
-        const chartData = chartType => ({
-            values: getValues(chartType, valuesCount, valuesType, pointsCount, plotType),
-            xTitle: xAxisTitle,
-            yTitle: yAxisTitle,
-            xType: xType,
-            min: gaugeMin,
-            max: gaugeMax,
-            enableTrack: enableTrack,
-            padding: padding,
-            gap: gap,
-            innerRadius: innerRadius,
-            simple: simpleEnabled,
-            innerTitle: innerTitle,
-            shortLabels: shortLabels,
-            yMax: yMax
-        })
+        function getStops(values) {
+            const total = values.reduce((acc, value) => acc + value.value, 0),
+                percentStops = document.getElementById('percent-stops').checked
+
+            return Array.from({ length: +document.getElementById('stops-count').value }, (_, i) => ({
+                label: `Stop ${i}`,
+                value: percentStops ? `${(rng.nextFloat() * 100).toFixed(1)}%` : rng.nextFloat() * total,
+                color: getColor()
+            }))
+        }
+
+        const chartData = chartType => {
+            const values = getValues(chartType, valuesCount, valuesType, pointsCount, plotType)
+
+            return {
+                values: values,
+                stops: chartType === 4 ? getStops(values) : undefined,
+                leftLabel: document.getElementById('left-label').value,
+                rightLabel: document.getElementById('right-label').value,
+                xTitle: xAxisTitle,
+                yTitle: yAxisTitle,
+                xType: xType,
+                min: gaugeMin,
+                max: gaugeMax,
+                enableTrack: enableTrack,
+                padding: padding,
+                gap: gap,
+                innerRadius: innerRadius,
+                simple: simpleEnabled,
+                innerTitle: innerTitle,
+                shortLabels: shortLabels,
+                yMax: yMax
+            }
+        }
 
         const charts = chartsCount > 1
             ? Array.from({ length: chartsCount }, (_, i) => {

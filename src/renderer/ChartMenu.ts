@@ -8,6 +8,7 @@ import Modal from '@/ui/Modal'
 import Decomposition from '@/export/Decomposition'
 import TextResources from '@/static/TextResources'
 import { ContextMenu } from '@/static/constants/Index'
+import { ChartType } from '@/static/Enums'
 
 export default class ChartMenu {
     ratio: number = 1
@@ -37,7 +38,8 @@ export default class ChartMenu {
         this.settings = settings
         this.buttons = undefined
 
-        if (settings.disableInteractions || settings.disableMenu) {
+        if (settings.disableInteractions || settings.disableMenu
+            || settings.charts.every(chart => chart.type == ChartType.SegmentedBar)) {
             this.remove()
         } else if (!this.button) {
             this.button = new MenuButton()

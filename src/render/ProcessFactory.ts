@@ -3,6 +3,7 @@ import GaugeProcess from '@/render/GaugeProcess'
 import PieProcess from '@/render/PieProcess'
 import PlotProcess from '@/render/PlotProcess'
 import TreeProcess from '@/render/TreeProcess'
+import SegmentedBarProcess from '@/render/SegmentedBarProcess'
 import { ChartType } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import ChartSettings from '@/types/ChartSettings'
@@ -10,6 +11,7 @@ import GaugeData from '@/types/data/GaugeData'
 import PieData from '@/types/data/PieData'
 import PlotData from '@/types/data/PlotData'
 import TreeData from '@/types/data/TreeData'
+import SegmentedBarData from '@/types/data/SegmentedBarData'
 import Point from '@/types/Point'
 import Data from '@/types/interfaces/Data'
 
@@ -24,7 +26,9 @@ export default class ProcessFactory {
         [ChartType.TreeMap, (chart, settings, pixel) =>
             new TreeProcess(chart.data as TreeData, pixel, settings.valuePostfix)],
         [ChartType.Gauge, (chart, settings, pixel) =>
-            new GaugeProcess(chart.data as GaugeData, pixel, settings.valuePostfix)]
+            new GaugeProcess(chart.data as GaugeData, pixel, settings.valuePostfix)],
+        [ChartType.SegmentedBar, (chart, settings, pixel) =>
+            new SegmentedBarProcess(chart.data as SegmentedBarData, pixel, settings.valuePostfix)]
     ])
 
     static create(chart: ChartItem, settings: ChartSettings, pixel: Point) {

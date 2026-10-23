@@ -162,7 +162,7 @@ export default class RenderItemArc
         const shape = this.shape(item.animation.init)
 
         if (this.isGradient)
-            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.color,
+            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.fill!,
                 shape.y - this.canvas.radius, shape.y + this.canvas.radius)
 
         if (isFullCircle(shape.end - shape.start))

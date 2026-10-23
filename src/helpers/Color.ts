@@ -1,5 +1,5 @@
 import Color from '@/types/Color'
-import { clamp } from '@/helpers/Geometry'
+import { clamp, lerp } from '@/helpers/Geometry'
 import { scratchContext } from '@/helpers/Text'
 
 const RESET_COLOR = '#000000'
@@ -61,13 +61,15 @@ function readPixel(ctx: CanvasRenderingContext2D) {
     return '#' + toHex(r) + toHex(g) + toHex(b) + (a == 255 ? '' : toHex(a))
 }
 
-export function grayScale(color: string) {
+export function grayScale(color: string, amount: number = 1) {
     const rgb = hexToRgb(color)
 
-    if (!rgb)
+    if (!rgb || amount <= 0)
         return color
 
-    return '#' + toHex(.3 * rgb.r + .59 * rgb.g + .11 * rgb.b).repeat(3)
+    const gray = .3 * rgb.r + .59 * rgb.g + .11 * rgb.b
+
+    return '#' + [rgb.r, rgb.g, rgb.b].map(channel => toHex(lerp(channel, gray, amount))).join('') + expandHex(color).slice(7)
 }
 
 export function randomColor() {

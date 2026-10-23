@@ -79,11 +79,11 @@ export default class Renderer {
 
         this.contextMenu.menu = settings.contextMenu
 
-        this.tooltip.custom?.hide()
+        this.tooltip.custom.hide()
         this.tooltip.isEnabled = settings.enableTooltip
-        this.tooltip.custom = settings.enableTooltip && settings.templateId
-                              ? CustomTooltip.create(this.canvas, settings.templateId)
-                              : null
+        this.tooltip.template = settings.enableTooltip && settings.templateId
+                                ? CustomTooltip.fromTemplate(settings.templateId)
+                                : null
 
         if (!this.isSuspended)
             this.pointer.attach(this.settings.enableMove)
@@ -159,8 +159,8 @@ export default class Renderer {
         this.removeLegend()
         this.menu.remove()
 
-        this.tooltip.custom?.hide()
-        this.tooltip.custom = null
+        this.tooltip.custom.hide()
+        this.tooltip.template = null
 
         this.tooltip.clear(this.queue)
         this.contextMenu.clear(this.queue)
@@ -179,7 +179,7 @@ export default class Renderer {
 
         this.pointer.detach()
 
-        this.tooltip.custom?.hide()
+        this.tooltip.custom.hide()
 
         this.cancelFrame()
     }

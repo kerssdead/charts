@@ -22,7 +22,9 @@ type TooltipBuilt = TooltipState & { window: RectangleDimensions }
 export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipBuilt> {
     isEnabled: boolean = false
 
-    custom: CustomTooltip | null = null
+    template: ((data: ItemData) => string) | null = null
+
+    readonly custom: CustomTooltip
 
     private readonly canvas: HTMLCanvasElement
 
@@ -31,29 +33,30 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
         version: number
         window: RectangleDimensions
         template: string | null
-        data: ItemData | null
+        html: string | null
     } | null = null
 
     constructor(canvas: HTMLCanvasElement) {
         super()
 
         this.canvas = canvas
+        this.custom = new CustomTooltip(canvas)
     }
 
     update({ queue, window, mouse, context, now }: Frame): boolean {
         const { custom } = this
         const point = this.isEnabled ? mouse : null
 
-        const { template, data } = point && !context
+        const { template, html } = point && !context
                                    ? this.getTarget(queue, window, point)
-                                   : { template: null, data: null }
+                                   : { template: null, html: null }
 
-        if (custom && point && data)
-            custom.show(data, point)
+        if (point && html)
+            custom.show(html, point)
         else
-            custom?.hide()
+            custom.hide()
 
-        const isVisible = !(custom && data) && point != null && template != null
+        const isVisible = !html && point != null && template != null
 
         if (isVisible) {
             this.state = { point, template }
@@ -95,14 +98,14 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
             && samePoint(scan.point, point) && sameRect(scan.window, window))
             return scan
 
-        const target = queue.items.find(item => item.hasTooltipAt(point))
+        const target = queue.findTop(item => item.hasTooltipAt(point))
 
         this.scan = {
             point,
             version: queue.version,
             window: copyRect(window),
             template: target?.tooltipAt(point) ?? null,
-            data: target?.data ?? null
+            html: (this.template && target?.data ? this.template(target.data) : target?.tooltipHtml) ?? null
         }
 
         return this.scan

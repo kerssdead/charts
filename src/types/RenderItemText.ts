@@ -16,6 +16,12 @@ export type Orbit = {
     radiusY: number
 }
 
+const CLIP_FACTOR = {
+    [TextAlignment.Left]: 0,
+    [TextAlignment.Center]: .5,
+    [TextAlignment.Right]: 1
+}
+
 type TextCanvas = Point & {
     angle: number
     radius: number
@@ -50,6 +56,10 @@ export default class RenderItemText
     fromAngle: number | null = null
 
     follow: RenderItemArc | null = null
+
+    clipWidth: number | null = null
+
+    private canvasClipWidth: number = 0
 
     private halfWidth: number | null = null
 
@@ -115,6 +125,7 @@ export default class RenderItemText
 
         this.canvas.angle = this.currentAngle(morph)
         this.canvas.radius = (this.orbit?.radiusX ?? 0) / COORDS_MAX_X * window.width
+        this.canvasClipWidth = (this.clipWidth ?? 0) / COORDS_MAX_X * window.width
 
         this.canvas.x = RenderItem.adjustX(window, position.x)
         this.canvas.y = RenderItem.adjustY(window, position.y) + (this.rotate == 0 ? this.baselineShift : 0)
@@ -159,6 +170,16 @@ export default class RenderItemText
             ctx.textAlign = TextAlignment.Center
             ctx.textBaseline = TextBaseline.Middle
             ctx.fillText(this.value, x, y)
+        } else if (this.clipWidth != null) {
+            ctx.save()
+
+            ctx.rect(this.canvas.x - this.canvasClipWidth * CLIP_FACTOR[this.alignment], this.canvas.y - this.fontSize,
+                this.canvasClipWidth, this.fontSize * 2)
+            ctx.clip()
+
+            ctx.fillText(this.value, this.canvas.x, this.canvas.y)
+
+            ctx.restore()
         } else {
             ctx.fillText(this.value, this.canvas.x, this.canvas.y)
         }
