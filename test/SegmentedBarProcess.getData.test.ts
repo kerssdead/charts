@@ -12,11 +12,14 @@ const PIXEL = { x: 5000 / 1000, y: 5000 / 40 }
 
 const BAR = { x: 7 * PIXEL.x, width: COORDS_MAX_X - 14 * PIXEL.x }
 
-function getRects(data: Partial<SegmentedBarData>) {
+function getItems(data: Partial<SegmentedBarData>) {
     const process = new SegmentedBarProcess({ values: [], stops: [], ...data } as SegmentedBarData, PIXEL, undefined)
-    const items = QueueItemsBuilder.build(process.getData())
 
-    return new Map(items.filter(item => item.key).map(item => [item.key!, item.shape as RenderItemRectangle]))
+    return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key!, item]))
+}
+
+function getRects(data: Partial<SegmentedBarData>) {
+    return new Map([...getItems(data)].map(([key, item]) => [key, item.shape as RenderItemRectangle]))
 }
 
 const part = (id: string, value: number) => new Sector({ id, value, color: '#ff0000' })
@@ -47,5 +50,22 @@ describe('Getting segmented bar data', () => {
         expect(rects.get('segmented-bar-stop-value')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
         expect(rects.get('segmented-bar-stop-percent')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
         expect(rects.get('segmented-bar-stop-outside')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 3 * PIXEL.x)
+    })
+
+    it('Should show string data in tooltip and pass object data to item', () => {
+        const items = getItems({
+            values: [
+                new Sector({ id: 'text', label: 'Lorem', value: 1, color: '#ff0000', data: 'Ipsum: 7<br/>Dolor: <b>9</b>' }),
+                new Sector({ id: 'object', label: 'Amet', value: 1, color: '#ff0000', data: { Sit: '9' } })
+            ]
+        })
+
+        const text = items.get('segmented-bar-part-text')!
+        const object = items.get('segmented-bar-part-object')!
+
+        expect(text.tooltipHtml).toContain('>Lorem\nIpsum: 7\nDolor: &lt;b&gt;9&lt;/b&gt;\n1.00 (50%)</div>')
+        expect(text.data).toBeNull()
+        expect(object.tooltipHtml).toContain('>Amet\n1.00 (50%)</div>')
+        expect(object.data).toEqual({ Sit: '9' })
     })
 })

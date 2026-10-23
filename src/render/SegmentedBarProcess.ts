@@ -13,6 +13,7 @@ import { sum } from '@/helpers/Collections'
 import ChartProcess from '@/render/ChartProcess'
 import CustomTooltip from '@/renderer/CustomTooltip'
 import Theme from '@/Theme'
+import ItemData from '@/types/ItemData'
 
 const PADDING_X = 7
 
@@ -39,6 +40,8 @@ const STOP_OVERFLOW = 3
 const STOP_RADIUS = 3
 
 const STOP_OUTLINE = 2
+
+const LINE_BREAK = /<br\s*\/?>/gi
 
 type Part = {
     sector: Sector
@@ -153,8 +156,8 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                  .monochrome()
                  .interact()
                  .contextMenu()
-                 .tooltipHtml(CustomTooltip.fromText(this.tooltip(sector.label, this.share(sector.value, sector.value / this.total))))
-                 .data(sector.data)
+                 .tooltipHtml(this.getTooltip(sector, this.share(sector.value, sector.value / this.total)))
+                 .data(SegmentedBarProcess.getItemData(sector))
 
             if (sector.label)
                 items.text(sector.label)
@@ -201,9 +204,20 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                  .monochrome()
                  .interact()
                  .contextMenu()
-                 .tooltipHtml(CustomTooltip.fromText(this.tooltip(stop.label, value)))
-                 .data(stop.data)
+                 .tooltipHtml(this.getTooltip(stop, value))
+                 .data(SegmentedBarProcess.getItemData(stop))
         }
+    }
+
+    private getTooltip(sector: Sector, value: string) {
+        const data = sector.data as ItemData | string | undefined
+        const text = typeof data == 'string' ? data.replace(LINE_BREAK, '\n') : undefined
+
+        return CustomTooltip.fromText(this.tooltip(sector.label, text, value))
+    }
+
+    private static getItemData(sector: Sector) {
+        return typeof sector.data == 'object' ? sector.data : undefined
     }
 
     private getLabel(key: string, text: string | undefined, x: number, alignment: TextAlignment): QueueAction {
