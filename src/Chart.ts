@@ -17,6 +17,8 @@ export default class Chart {
 
     private suspendedTheme: ColorTheme = ColorTheme.light
 
+    private source: ChartSettings
+
     private settings: ChartSettings
 
     private readonly fallbackColor = randomColor()
@@ -36,12 +38,13 @@ export default class Chart {
     private height: number = 0
 
     private readonly onThemeChange = () => {
-        this.renderer.apply(this.settings)
+        this.applySettings(this.source)
     }
 
     constructor(element: HTMLElement, settings: ChartSettings) {
         this.element = element
-        this.settings = normalize(settings, this.fallbackColor)
+        this.source = settings
+        this.settings = normalize(settings, this.fallbackColor, this.element)
 
         this.bindMenuActions()
         this.applySize()
@@ -99,7 +102,8 @@ export default class Chart {
 
         const previous = this.settings
 
-        this.settings = normalize(settings, this.fallbackColor)
+        this.source = settings
+        this.settings = normalize(settings, this.fallbackColor, this.element)
 
         keepDisabled(previous, this.settings)
 

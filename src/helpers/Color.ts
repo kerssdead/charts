@@ -4,6 +4,8 @@ import { scratchContext } from '@/helpers/Text'
 
 const RESET_COLOR = '#000000'
 
+const CSS_VARIABLE = /^(?:var\(\s*)?(--[\w-]+)\s*(?:,\s*([^)]+))?\)?$/
+
 export function adjustColor(color: string, amount: number) {
     const rgb = hexToRgb(color)
 
@@ -30,7 +32,9 @@ function toHex(channel: number) {
     return Math.round(clamp(channel, 0, 255)).toString(16).padStart(2, '0')
 }
 
-export function normalizeColor(color: string) {
+export function normalizeColor(color: string, scope?: Element) {
+    color = resolveVariable(color, scope)
+
     if (color.startsWith('#')) {
         const hex = expandHex(color)
 
@@ -50,6 +54,18 @@ export function normalizeColor(color: string) {
         return style.startsWith('#') ? style : readPixel(ctx)
 
     return '#' + toHex(+rgba[1]) + toHex(+rgba[2]) + toHex(+rgba[3]) + (rgba[4] == undefined ? '' : toHex(+rgba[4] * 255))
+}
+
+function resolveVariable(color: string, scope?: Element) {
+    const match = CSS_VARIABLE.exec(color.trim())
+
+    if (!match)
+        return color
+
+    const [, name, fallback] = match
+    const value = getComputedStyle(scope ?? document.documentElement).getPropertyValue(name).trim()
+
+    return value || fallback?.trim() || color
 }
 
 function readPixel(ctx: CanvasRenderingContext2D) {

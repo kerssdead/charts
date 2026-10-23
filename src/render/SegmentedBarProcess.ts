@@ -14,6 +14,10 @@ import ChartProcess from '@/render/ChartProcess'
 import CustomTooltip from '@/renderer/CustomTooltip'
 import Theme from '@/Theme'
 
+const PADDING_X = 8
+
+const PADDING_Y = 4
+
 const LABEL_FONT = 14
 
 const LABEL_GAP = 12
@@ -42,6 +46,8 @@ type Part = {
 export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> {
     private readonly total: number
 
+    private readonly padding: number
+
     private readonly bar: RectangleDimensions
 
     private readonly parts: Part[]
@@ -52,6 +58,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
         const values = data.values.filter(value => value.value > 0)
 
         this.total = sum(values, value => value.value)
+        this.padding = this.units.x(PADDING_X)
         this.bar = this.getBar()
         this.parts = this.getParts(values)
     }
@@ -64,20 +71,21 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
         return [
             ...this.parts.map(part => this.getPart(part)),
             ...this.data.stops.map(stop => this.getStop(stop)),
-            this.getLabel('segmented-bar-left-label', this.data.leftLabel, 0, TextAlignment.Left),
-            this.getLabel('segmented-bar-right-label', this.data.rightLabel, COORDS_MAX_X, TextAlignment.Right)
+            this.getLabel('segmented-bar-left-label', this.data.leftLabel, this.padding, TextAlignment.Left),
+            this.getLabel('segmented-bar-right-label', this.data.rightLabel, COORDS_MAX_X - this.padding, TextAlignment.Right)
         ]
     }
 
     private getBar(): RectangleDimensions {
-        const left = this.getLabelSpace(this.data.leftLabel)
-        const overflow = this.units.y(STOP_OVERFLOW)
+        const left = this.padding + this.getLabelSpace(this.data.leftLabel)
+        const right = this.padding + this.getLabelSpace(this.data.rightLabel)
+        const top = this.units.y(PADDING_Y + STOP_OVERFLOW)
 
         return {
             x: left,
-            y: overflow,
-            width: COORDS_MAX_X - left - this.getLabelSpace(this.data.rightLabel),
-            height: COORDS_MAX_Y - overflow * 2
+            y: top,
+            width: COORDS_MAX_X - left - right,
+            height: COORDS_MAX_Y - top * 2
         }
     }
 

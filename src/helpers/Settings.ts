@@ -15,7 +15,7 @@ import SegmentedBarData from '@/types/data/SegmentedBarData'
 
 const BASE_COLOR_RANGE = 67
 
-export function normalize(source: ChartSettings, fallbackColor: string): ChartSettings {
+export function normalize(source: ChartSettings, fallbackColor: string, scope?: Element): ChartSettings {
     const clone = deepClone(source)
 
     const charts = clone.charts?.length
@@ -26,11 +26,11 @@ export function normalize(source: ChartSettings, fallbackColor: string): ChartSe
 
     for (const chart of charts) {
         prepareValues(chart)
-        normalizeValues(chart.data?.values)
-        normalizeValues(getStops(chart))
+        normalizeValues(chart.data?.values, scope)
+        normalizeValues(getStops(chart), scope)
     }
 
-    applyBaseColor(settings, fallbackColor)
+    applyBaseColor(settings, fallbackColor, scope)
 
     return {
         ...settings,
@@ -98,7 +98,7 @@ export function keepDisabled(previous: ChartSettings, next: ChartSettings) {
             value.disabled = true
 }
 
-function normalizeValues(values: Value[] | undefined) {
+function normalizeValues(values: Value[] | undefined, scope?: Element) {
     const toNumber = <T>(value: T) => {
         if (typeof value != 'string' && typeof value != 'number')
             return value
@@ -112,7 +112,7 @@ function normalizeValues(values: Value[] | undefined) {
         value.value = toNumber(value.value)
 
         if (value.color)
-            value.color = normalizeColor(value.color)
+            value.color = normalizeColor(value.color, scope)
 
         if ((value as PlotSeries).values)
             (value as PlotSeries).values = (value as PlotSeries).values.filter(point => point.x != null)
@@ -124,11 +124,11 @@ function normalizeValues(values: Value[] | undefined) {
                 point.x = TextResources.noLabel
         }
 
-        normalizeValues((value as TreeValue).sectors)
+        normalizeValues((value as TreeValue).sectors, scope)
     }
 }
 
-export function applyBaseColor(settings: ChartSettings, fallbackColor: string) {
+export function applyBaseColor(settings: ChartSettings, fallbackColor: string, scope?: Element) {
     const isShared = settings.charts.length > 1
     const groups = groupBy(settings.charts.flatMap(chart => chart.data?.values ?? []),
         (value): string | Value => isShared ? Legend.getGroupKey(value, true) : value)
@@ -148,7 +148,7 @@ export function applyBaseColor(settings: ChartSettings, fallbackColor: string) {
     if (uncolored.length == 0)
         return
 
-    const base = settings.baseColor ? normalizeColor(settings.baseColor) : fallbackColor
+    const base = settings.baseColor ? normalizeColor(settings.baseColor, scope) : fallbackColor
 
     uncolored.forEach((values, index) => {
         const color = spreadColor(base, index, uncolored.length, BASE_COLOR_RANGE)
