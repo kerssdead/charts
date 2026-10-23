@@ -43,6 +43,7 @@ export default class Chart {
         this.element = element
         this.settings = normalize(settings, this.fallbackColor)
 
+        this.bindMenuActions()
         this.applySize()
 
         if (!this.settings.width && element.clientWidth == 0)
@@ -102,11 +103,18 @@ export default class Chart {
 
         keepDisabled(previous, this.settings)
 
+        this.bindMenuActions()
         this.applySize()
 
         this.renderer.apply(this.settings)
 
         Debug.log(settings, this.settings, this.canvas)
+    }
+
+    private bindMenuActions() {
+        for (const item of this.settings.contextMenu ?? [])
+            if (item.id != undefined)
+                item.action ??= data => this.element.dispatchEvent(new CustomEvent(item.id!, { detail: data }))
     }
 
     private applySize() {
