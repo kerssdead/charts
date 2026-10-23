@@ -1,6 +1,6 @@
 {
   "name": "charts",
-  "version": "2.1.9",
+  "version": "2.1.10",
   "description": "Typescript Canvas Charts",
   "jsdelivr": "./dist/ocharts.js",
   "repository": "https://github.com/kerssdead/charts",

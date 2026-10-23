@@ -14,11 +14,11 @@ import ChartProcess from '@/render/ChartProcess'
 import CustomTooltip from '@/renderer/CustomTooltip'
 import Theme from '@/Theme'
 
-const PADDING_X = 8
+const PADDING_X = 7
 
-const PADDING_Y = 6
+const PADDING_Y = 5
 
-const LABEL_FONT = 14
+const LABEL_FONT = 12
 
 const LABEL_GAP = 12
 

@@ -10,7 +10,7 @@ jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff' }))
 
 const PIXEL = { x: 5000 / 1000, y: 5000 / 40 }
 
-const BAR = { x: 8 * PIXEL.x, width: COORDS_MAX_X - 16 * PIXEL.x }
+const BAR = { x: 7 * PIXEL.x, width: COORDS_MAX_X - 14 * PIXEL.x }
 
 function getRects(data: Partial<SegmentedBarData>) {
     const process = new SegmentedBarProcess({ values: [], stops: [], ...data } as SegmentedBarData, PIXEL, undefined)
