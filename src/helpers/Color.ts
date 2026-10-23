@@ -93,7 +93,13 @@ export function randomColor() {
 }
 
 export function contrastText(background: string) {
-    const { r, g, b } = hexToRgb(background) ?? { r: 0, g: 0, b: 0 }
+    const value = luminance(background)
+
+    return (value + .05) / .05 > 1.05 / (value + .05) ? '#000000' : '#ffffff'
+}
+
+export function luminance(color: string) {
+    const { r, g, b } = hexToRgb(color) ?? { r: 0, g: 0, b: 0 }
 
     const channel = (value: number) => {
         const c = value / 255
@@ -101,9 +107,7 @@ export function contrastText(background: string) {
         return c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4)
     }
 
-    const luminance = .2126 * channel(r) + .7152 * channel(g) + .0722 * channel(b)
-
-    return (luminance + .05) / .05 > 1.05 / (luminance + .05) ? '#000000' : '#ffffff'
+    return .2126 * channel(r) + .7152 * channel(g) + .0722 * channel(b)
 }
 
 export function hexToRgb(hex: string): Color | null {

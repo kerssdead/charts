@@ -73,6 +73,7 @@ export default class CustomTooltip {
         element.style.left = '0'
         element.style.top = '0'
         element.style.pointerEvents = Styles.PointerEvents.None
+        element.style.zIndex = Styles.ZIndex.Tooltip
 
         const host = this.canvas.closest(Tag.Dialog) ?? document.fullscreenElement ?? document.body
 

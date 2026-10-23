@@ -6,7 +6,7 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
-import { contrastText } from '@/helpers/Color'
+import { luminance } from '@/helpers/Color'
 import { clamp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
 import { sum } from '@/helpers/Collections'
@@ -16,7 +16,7 @@ import Theme from '@/Theme'
 
 const PADDING_X = 8
 
-const PADDING_Y = 4
+const PADDING_Y = 6
 
 const LABEL_FONT = 14
 
@@ -27,6 +27,8 @@ const LABEL_MAX_SHARE = .2
 const PART_FONT = 12
 
 const PART_PADDING = 6
+
+const LIGHT_LUMINANCE = .5
 
 const MIN_PART_WIDTH = 4
 
@@ -159,7 +161,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                      .position(box.x + padding, box.y + box.height / 2)
                      .size(PART_FONT)
                      .align(TextAlignment.Left)
-                     .color(contrastText(sector.color))
+                     .color(luminance(sector.color) > LIGHT_LUMINANCE ? '#000000' : '#ffffff')
                      .layer(Layer.Data)
                      .key(`${ key }-label`)
                      .clip(box.width - padding)

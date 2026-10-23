@@ -11,6 +11,10 @@ namespace Styles {
         None = 'none'
     }
 
+    export const enum ZIndex {
+        Tooltip = '10000'
+    }
+
     export const enum Display {
         Block = 'block'
     }
