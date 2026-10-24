@@ -57,6 +57,8 @@ export default class RenderItemRectangle
 
     clip: ClipBox | null = null
 
+    fromClip: ClipBox | null = null
+
     private canvasClip: ClipBox = { x: 0, y: 0, width: 0, height: 0, radius: 0 }
 
     private canvasGrowOrigin: number = 0
@@ -91,12 +93,26 @@ export default class RenderItemRectangle
         })
     }
 
+    currentClip(morph: number = 1): ClipBox | null {
+        if (!this.clip || !this.fromClip || morph >= 1)
+            return this.clip
+
+        return {
+            x: lerp(this.fromClip.x, this.clip.x, morph),
+            y: lerp(this.fromClip.y, this.clip.y, morph),
+            width: lerp(this.fromClip.width, this.clip.width, morph),
+            height: lerp(this.fromClip.height, this.clip.height, morph),
+            radius: lerp(this.fromClip.radius, this.clip.radius, morph)
+        }
+    }
+
     morphFrom(previous: RenderItemBase, morph: number): boolean {
         if (!(previous instanceof RenderItemRectangle))
             return false
 
         this.from = previous.current(morph)
         this.fromRadii = previous.currentRadii(morph)
+        this.fromClip = previous.currentClip(morph)
 
         return true
     }
@@ -143,13 +159,15 @@ export default class RenderItemRectangle
         this.canvas.width = absolute.width / COORDS_MAX_X * window.width
         this.canvas.height = absolute.height / COORDS_MAX_Y * window.height
 
-        if (this.clip)
+        const clip = this.currentClip(morph)
+
+        if (clip)
             this.canvasClip = {
-                x: RenderItem.adjustX(window, this.clip.x),
-                y: RenderItem.adjustY(window, this.clip.y),
-                width: this.clip.width / COORDS_MAX_X * window.width,
-                height: this.clip.height / COORDS_MAX_Y * window.height,
-                radius: this.clip.radius / COORDS_MAX_X * window.width
+                x: RenderItem.adjustX(window, clip.x),
+                y: RenderItem.adjustY(window, clip.y),
+                width: clip.width / COORDS_MAX_X * window.width,
+                height: clip.height / COORDS_MAX_Y * window.height,
+                radius: clip.radius / COORDS_MAX_X * window.width
             }
 
         this.canvasGrowOrigin = this.growAxis == 'x'

@@ -39,20 +39,26 @@ export default class Layout {
 
     private titleInset: number = TITLE_PADDING
 
+    private hasMenuRow: boolean = false
+
     get hasArea() {
         return this.window.width > 0 && this.window.height > 0
     }
 
     private get titleHeight() {
-        return this.title ? TITLE_FONT + TITLE_PADDING * 2 : 0
+        if (this.title)
+            return TITLE_FONT + TITLE_PADDING * 2
+
+        return this.hasMenuRow ? MenuButton.rowHeight : 0
     }
 
     reset() {
         this.window = new CanvasWindow(this.width, this.height)
     }
 
-    update(title: string | undefined, legend: Legend | undefined, menu: MenuButton | undefined): boolean {
+    update(title: string | undefined, legend: Legend | undefined, menu: MenuButton | undefined, reserveMenuRow: boolean = false): boolean {
         this.title = title
+        this.hasMenuRow = reserveMenuRow && !!menu
 
         legend?.resize(this.width, this.height, this.titleHeight)
         menu?.resize(this.width, this.height, this.titleHeight)

@@ -4,6 +4,7 @@ import { ChartType, Tag } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import PlotData, { getPlotRows } from '@/types/data/PlotData'
 import TreeData, { getTreeSum } from '@/types/data/TreeData'
+import TreeBarData, { getTreeBarRows } from '@/types/data/TreeBarData'
 import TextResources from '@/static/TextResources'
 
 export default class Decomposition {
@@ -23,6 +24,9 @@ export default class Decomposition {
 
             case ChartType.TreeMap:
                 return getValueRows((chart.data as TreeData).values, getTreeSum)
+
+            case ChartType.TreeBar:
+                return getTreeBarRows(chart.data as TreeBarData)
 
             default:
                 return getValueRows(chart.data.values)

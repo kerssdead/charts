@@ -17,6 +17,8 @@ const PADDING = 8
 const FONT_SIZE = 20
 
 export default class MenuButton extends Overlay {
+    static readonly rowHeight = HEIGHT + PADDING * 2
+
     onClick: (() => void) | undefined
 
     bounds: DOMRect | undefined

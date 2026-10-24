@@ -3,6 +3,12 @@ import Formatter from '@/helpers/Formatter'
 import Units from '@/helpers/Units'
 import Point from '@/types/Point'
 import Data from '@/types/interfaces/Data'
+import type { PanelScroll } from '@/types/Panel'
+import Value from '@/types/base/Value'
+import ItemData from '@/types/ItemData'
+import CustomTooltip from '@/renderer/CustomTooltip'
+
+const LINE_BREAK = /<br\s*\/?>/gi
 
 export default abstract class ChartProcess<TData extends Data> {
     protected readonly data: TData
@@ -21,6 +27,14 @@ export default abstract class ChartProcess<TData extends Data> {
 
     abstract getData(): QueueAction[]
 
+    getFixedData(): QueueAction[] {
+        return []
+    }
+
+    getScroll(): PanelScroll | null {
+        return null
+    }
+
     isEmpty() {
         return !this.data.values.some(value => !value.disabled && value.value > 0)
     }
@@ -31,6 +45,17 @@ export default abstract class ChartProcess<TData extends Data> {
 
     protected tooltip(...rows: (string | undefined)[]) {
         return rows.filter(row => row).join('\n')
+    }
+
+    protected valueTooltip(item: Value, label: string | undefined, value: string) {
+        const data = item.data as ItemData | string | undefined
+        const text = typeof data == 'string' ? data.replace(LINE_BREAK, '\n') : undefined
+
+        return CustomTooltip.fromText(this.tooltip(label, text, value))
+    }
+
+    protected static getItemData(item: Value) {
+        return typeof item.data == 'object' ? item.data : undefined
     }
 
     protected percent(ratio: number) {

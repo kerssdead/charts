@@ -4,6 +4,7 @@ import QueueLineItemBuilder from '@/builders/QueueLineItemBuilder'
 import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
 import QueueArcItemBuilder from '@/builders/QueueArcItemBuilder'
 import QueueTextItemBuilder from '@/builders/QueueTextItemBuilder'
+import QueueImageItemBuilder from '@/builders/QueueImageItemBuilder'
 
 export type QueueAction = (items: QueueItemsBuilder) => void
 
@@ -46,6 +47,10 @@ export default class QueueItemsBuilder {
 
     text(text: string) {
         return this.next(new QueueTextItemBuilder(text))
+    }
+
+    image(url: string) {
+        return this.next(new QueueImageItemBuilder(url))
     }
 
     static build(actions: QueueAction | QueueAction[], isInitialized: boolean = false) {

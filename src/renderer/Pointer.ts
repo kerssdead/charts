@@ -11,7 +11,11 @@ type PointerHandlers = {
     onChange: () => void
     canDrag: (point: Point) => boolean
     hasContextMenuAt: (point: Point) => boolean
+    scrollBy: (point: Point, delta: number) => boolean | null
+    getScrollDrag: (point: Point) => ScrollDrag | null
 }
+
+export type ScrollDrag = (dy: number) => boolean
 
 type DragState = {
     pointerId: number
@@ -19,6 +23,7 @@ type DragState = {
     y: number
     windowX: number
     windowY: number
+    scroll: ScrollDrag | null
 }
 
 const DRAG_THRESHOLD = 3
@@ -26,6 +31,8 @@ const DRAG_THRESHOLD = 3
 const WHEEL_NOTCH = 100
 
 const WHEEL_LINE_HEIGHT = 16
+
+const WHEEL_LATCH = 400
 
 export default class Pointer {
     position: Point | null = null
@@ -38,7 +45,13 @@ export default class Pointer {
 
     private abort: AbortController = new AbortController()
 
+    private dragAbort: AbortController | null = null
+
     private isMoveEnabled: boolean | null = null
+
+    private isScrollable: boolean = false
+
+    private lastWheel: DOMHighResTimeStamp = -Infinity
 
     private readonly canvas: HTMLCanvasElement
 
@@ -62,13 +75,7 @@ export default class Pointer {
 
         this.isMoveEnabled = enableMove
 
-        if (enableMove) {
-            this.canvas.style.touchAction = Styles.TouchAction.None
-
-            this.listen(this.canvas, Events.PointerDown, event => this.onDragStart(event))
-            this.listen(this.canvas, Events.LostPointerCapture, () => this.drag = null)
-            this.listen(this.canvas, Events.Wheel, event => this.onWheel(event))
-        }
+        this.updateDragging()
 
         this.listen(this.canvas, Events.PointerMove, event => this.onMove(event))
         this.listen(this.canvas, Events.PointerLeave, () => this.setPosition(null))
@@ -93,6 +100,9 @@ export default class Pointer {
         this.abort.abort()
         this.abort = new AbortController()
 
+        this.dragAbort?.abort()
+        this.dragAbort = null
+
         this.canvas.style.touchAction = ''
 
         this.position = null
@@ -100,6 +110,33 @@ export default class Pointer {
         this.drag = null
         this.isDragged = false
         this.isMoveEnabled = null
+    }
+
+    setScrollable(value: boolean) {
+        this.isScrollable = value
+
+        this.updateDragging()
+    }
+
+    private updateDragging() {
+        const isEnabled = this.isMoveEnabled != null && (this.isMoveEnabled || this.isScrollable)
+
+        this.canvas.style.touchAction = isEnabled ? Styles.TouchAction.None : ''
+
+        if (isEnabled == (this.dragAbort != null))
+            return
+
+        this.dragAbort?.abort()
+        this.dragAbort = isEnabled ? new AbortController() : null
+
+        if (!this.dragAbort)
+            return
+
+        const { signal } = this.dragAbort
+
+        this.listen(this.canvas, Events.PointerDown, event => this.onDragStart(event), signal)
+        this.listen(this.canvas, Events.LostPointerCapture, () => this.drag = null, signal)
+        this.listen(this.canvas, Events.Wheel, event => this.onWheel(event), signal)
     }
 
     openMenu(point: Point) {
@@ -119,8 +156,9 @@ export default class Pointer {
 
     private listen<E extends Events>(target: EventTarget,
                                      type: E,
-                                     listener: (event: HTMLElementEventMap[`${E}`]) => void) {
-        target.addEventListener(type, listener as EventListener, { signal: this.abort.signal })
+                                     listener: (event: HTMLElementEventMap[`${E}`]) => void,
+                                     signal: AbortSignal = this.abort.signal) {
+        target.addEventListener(type, listener as EventListener, { signal })
     }
 
     private toPoint(event: MouseEvent): Point {
@@ -147,7 +185,13 @@ export default class Pointer {
     private onDragStart(event: PointerEvent) {
         this.isDragged = false
 
-        if (!event.isPrimary || event.button !== 0 || !this.handlers.canDrag(this.toPoint(event)))
+        if (!event.isPrimary || event.button !== 0)
+            return
+
+        const point = this.toPoint(event)
+        const scroll = this.handlers.getScrollDrag(point)
+
+        if (!scroll && !(this.isMoveEnabled && this.handlers.canDrag(point)))
             return
 
         const view = this.getWindow()
@@ -157,7 +201,8 @@ export default class Pointer {
             x: event.clientX,
             y: event.clientY,
             windowX: view.x,
-            windowY: view.y
+            windowY: view.y,
+            scroll
         }
 
         this.canvas.setPointerCapture(event.pointerId)
@@ -175,12 +220,16 @@ export default class Pointer {
 
         this.isDragged = true
 
-        const { windowX, windowY } = this.drag
+        const { windowX, windowY, scroll } = this.drag
 
-        if (this.updateWindow(view => view.moveTo(windowX + dx, windowY + dy))) {
+        const isChanged = scroll
+                          ? scroll(dy)
+                          : this.updateWindow(view => view.moveTo(windowX + dx, windowY + dy))
+
+        if (isChanged) {
             this.position = null
             this.handlers.onChange()
-        } else {
+        } else if (!scroll) {
             this.setPosition(null)
         }
 
@@ -188,16 +237,38 @@ export default class Pointer {
     }
 
     private onWheel(event: WheelEvent) {
-        if (!event.ctrlKey && !event.metaKey)
+        const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? WHEEL_LINE_HEIGHT : 1)
+
+        if (!event.ctrlKey && !event.metaKey) {
+            if (delta != 0)
+                this.onWheelScroll(event, delta)
+
+            return
+        }
+
+        if (!this.isMoveEnabled)
             return
 
         event.preventDefault()
 
-        const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? WHEEL_LINE_HEIGHT : 1)
-
         const step = clamp(-delta / WHEEL_NOTCH, -1, 1) * ZOOM_DEFAULT_STEP
 
         if (this.updateWindow(view => view.zoom(step, this.toPoint(event))))
+            this.handlers.onChange()
+    }
+
+    private onWheelScroll(event: WheelEvent, delta: number) {
+        const isScrolled = this.handlers.scrollBy(this.toPoint(event), delta)
+        const isLatched = event.timeStamp - this.lastWheel <= WHEEL_LATCH
+
+        if (isScrolled == null || !isScrolled && !isLatched)
+            return
+
+        event.preventDefault()
+
+        this.lastWheel = event.timeStamp
+
+        if (isScrolled)
             this.handlers.onChange()
     }
 

@@ -5,7 +5,7 @@ import { Events } from '@/static/Enums'
 import Renderer from '@/renderer/Renderer'
 import { randomColor } from '@/helpers/Color'
 import Debug from '@/helpers/Debug'
-import { keepDisabled, normalize } from '@/helpers/Settings'
+import { keepState, normalize } from '@/helpers/Settings'
 import Styles from '@/static/constants/Styles'
 
 // todo: add public api
@@ -105,7 +105,7 @@ export default class Chart {
         this.source = settings
         this.settings = normalize(settings, this.fallbackColor, this.element)
 
-        keepDisabled(previous, this.settings)
+        keepState(previous, this.settings)
 
         this.bindMenuActions()
         this.applySize()

@@ -7,7 +7,9 @@ export const enum ChartType {
 
     TreeMap,
 
-    SegmentedBar
+    SegmentedBar,
+
+    TreeBar
 }
 
 export const enum ErrorType {

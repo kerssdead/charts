@@ -59,6 +59,10 @@
                         <option value="4">
                             Segmented Bar
                         </option>
+
+                        <option value="5">
+                            Tree Bar
+                        </option>
                     </select>
                 </label>
 
@@ -819,6 +823,31 @@
 
                 break
 
+            case 5:
+                const getRow = (label, level) => {
+                    const value = valuesType === 1 ? level + 1 : rng.nextFloat() * baseValue,
+                        children = level < 2
+                            ? Array.from({ length: 1 + Math.floor(rng.nextFloat() * 3) }, (_, i) => getRow(`${ label }.${ i }`, level + 1))
+                            : undefined
+
+                    return {
+                        label: `Row ${ label }`,
+                        subLabel: level > 0 ? `Code ${ label }` : undefined,
+                        parts: [
+                            { value: value * .7, label: 'First', data: getData(level) },
+                            { value: value * .3, label: 'Second', color: getColor() }
+                        ],
+                        barLabel: Math.round(value).toString(),
+                        cells: { value: Math.round(value), level },
+                        children
+                    }
+                }
+
+                for (let i = 0; i < count; i++)
+                    values.push(getRow(i, 0))
+
+                break
+
             default:
                 break
         }
@@ -912,6 +941,7 @@
             return {
                 values: isPercent ? getPercentParts(values) : values,
                 stops: chartType === 4 ? getStops(values, isPercent) : undefined,
+                columns: chartType === 5 ? [{ key: 'value', title: 'Value' }, { key: 'level', title: 'Level' }] : undefined,
                 percentageMode: isPercent,
                 leftLabel: document.getElementById('left-label').value,
                 rightLabel: document.getElementById('right-label').value,

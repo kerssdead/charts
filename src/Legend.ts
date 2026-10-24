@@ -120,6 +120,7 @@ class Legend extends Overlay {
     static isSupported(chart: ChartItem) {
         return chart.type != ChartType.Gauge
                && chart.type != ChartType.SegmentedBar
+               && chart.type != ChartType.TreeBar
                && (chart.type != ChartType.TreeMap || (chart.data?.values?.length ?? 0) > 1)
     }
 

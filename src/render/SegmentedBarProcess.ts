@@ -11,9 +11,7 @@ import { clamp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
 import { sum } from '@/helpers/Collections'
 import ChartProcess from '@/render/ChartProcess'
-import CustomTooltip from '@/renderer/CustomTooltip'
 import Theme from '@/Theme'
-import ItemData from '@/types/ItemData'
 
 const PADDING_X = 7
 
@@ -44,8 +42,6 @@ const STOP_OUTLINE = 2
 const PERCENT_SCALE = 100
 
 const TRACK_ALPHA = .15
-
-const LINE_BREAK = /<br\s*\/?>/gi
 
 type Part = {
     sector: Sector
@@ -201,7 +197,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                  .monochrome()
                  .interact()
                  .contextMenu()
-                 .tooltipHtml(this.getTooltip(sector, value))
+                 .tooltipHtml(this.valueTooltip(sector, sector.label, value))
                  .data(SegmentedBarProcess.getItemData(sector))
 
             if (sector.label)
@@ -249,24 +245,13 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                  .monochrome()
                  .interact()
                  .contextMenu()
-                 .tooltipHtml(this.getTooltip(stop, value))
+                 .tooltipHtml(this.valueTooltip(stop, stop.label, value))
                  .data(SegmentedBarProcess.getItemData(stop))
         }
     }
 
     private static formatPercent(value: Sector) {
         return `${ value.value }%`
-    }
-
-    private getTooltip(sector: Sector, value: string) {
-        const data = sector.data as ItemData | string | undefined
-        const text = typeof data == 'string' ? data.replace(LINE_BREAK, '\n') : undefined
-
-        return CustomTooltip.fromText(this.tooltip(sector.label, text, value))
-    }
-
-    private static getItemData(sector: Sector) {
-        return typeof sector.data == 'object' ? sector.data : undefined
     }
 
     private getLabel(key: string, text: string | undefined, x: number, alignment: TextAlignment): QueueAction {

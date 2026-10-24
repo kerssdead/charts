@@ -1,13 +1,14 @@
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from '@/static/constants/Index'
 import CanvasWindow from '@/types/CanvasWindow'
-import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
 import Point from '@/types/Point'
 import AnimationData from '@/animation/AnimationData'
 import ItemData from '@/types/ItemData'
 import ease from '@/animation/Animations'
 import HoverProgress from '@/types/HoverProgress'
 import Panel from '@/types/Panel'
-import { clamp } from '@/helpers/Geometry'
+import { clamp, contains } from '@/helpers/Geometry'
+import RectangleDimensions from '@/types/RectangleDimensions'
 import { grayScale } from '@/helpers/Color'
 
 export default class RenderItem {
@@ -18,6 +19,8 @@ export default class RenderItem {
     isMenuButton: boolean = false
 
     isFixed: boolean = false
+
+    isScrollable: boolean = false
 
     key: string | null = null
 
@@ -83,10 +86,25 @@ export default class RenderItem {
             return
         }
 
-        this.shape.adjust(this.panel?.window ?? window, this.animation.morph)
+        const scroll = this.scrollPanel
 
-        if (!this.isOnCanvas(screen)) {
+        this.shape.adjust(scroll?.body ?? this.panel?.window ?? window, this.animation.morph)
+
+        const bounds = this.shape.getBounds()
+        const clip = scroll?.clip
+
+        if (bounds && !RenderItem.overlaps(bounds, clip ?? { x: 0, y: 0, width: screen.width, height: screen.height })) {
             return
+        }
+
+        const isClipped = clip != undefined && !(bounds && RenderItem.isInside(bounds, clip))
+
+        if (isClipped) {
+            ctx.save()
+
+            ctx.beginPath()
+            ctx.rect(clip.x, clip.y, clip.width, clip.height)
+            ctx.clip()
         }
 
         ctx.beginPath()
@@ -106,6 +124,9 @@ export default class RenderItem {
             ctx.strokeStyle = stroke
 
         this.shape.render(ctx, this)
+
+        if (isClipped)
+            ctx.restore()
     }
 
     animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>): boolean {
@@ -114,7 +135,7 @@ export default class RenderItem {
         }
 
         const isOver = this.hoverGroup == null
-                       ? this.shape.isMouseOver(point)
+                       ? this.in(point)
                        : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
 
         const isShapeAnimating = this.shape.animateHover(now)
@@ -143,7 +164,13 @@ export default class RenderItem {
     }
 
     in(point: Point) {
-        return this.shape.isMouseOver(point)
+        const clip = this.scrollPanel?.clip
+
+        return (!clip || contains(clip, point)) && this.shape.isMouseOver(point)
+    }
+
+    private get scrollPanel() {
+        return this.isScrollable && this.panel?.canScroll ? this.panel : null
     }
 
     morphFrom(previous: RenderItem, duration: number) {
@@ -162,7 +189,7 @@ export default class RenderItem {
         this.animation.isLeaving = isLeaving
         this.animation.initFade = true
         this.animation.initDuration = duration
-        this.animation.initDelay = 0
+        this.animation.initDelay = isLeaving ? 0 : this.animation.appearDelay
         this.animation.initStart = null
     }
 
@@ -221,17 +248,18 @@ export default class RenderItem {
             this.animation.visibility = 0
     }
 
-    private isOnCanvas(screen: CanvasWindow): boolean {
-        const bounds = this.shape.getBounds()
-
-        if (!bounds) {
-            return true
-        }
-
+    private static overlaps(bounds: Bounds, area: RectangleDimensions): boolean {
         const margin = DEFAULT_LINE_WIDTH
 
-        return bounds.right >= -margin && bounds.left <= screen.width + margin
-               && bounds.bottom >= -margin && bounds.top <= screen.height + margin
+        return bounds.right >= area.x - margin && bounds.left <= area.x + area.width + margin
+               && bounds.bottom >= area.y - margin && bounds.top <= area.y + area.height + margin
+    }
+
+    private static isInside(bounds: Bounds, area: RectangleDimensions): boolean {
+        const margin = DEFAULT_LINE_WIDTH
+
+        return bounds.left >= area.x + margin && bounds.right <= area.x + area.width - margin
+               && bounds.top >= area.y + margin && bounds.bottom <= area.y + area.height - margin
     }
 
     private static progress(now: DOMHighResTimeStamp, start: DOMHighResTimeStamp, delay: number, duration: number) {

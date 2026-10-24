@@ -3,6 +3,8 @@ const enum Layer {
 
     Data = 500,
 
+    Scrollbar = 600,
+
     Legend = 700,
 
     Tooltip = 800,

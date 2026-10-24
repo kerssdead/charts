@@ -12,6 +12,8 @@ import Sector from '@/types/Sector'
 import TextResources from '@/static/TextResources'
 import SegmentedBarStop from '@/types/SegmentedBarStop'
 import SegmentedBarData from '@/types/data/SegmentedBarData'
+import TreeBarRow from '@/types/TreeBarRow'
+import TreeBarData, { colorTreeBarRows, keepTreeBarState } from '@/types/data/TreeBarData'
 
 const BASE_COLOR_RANGE = 67
 
@@ -45,11 +47,11 @@ function prepareValues(chart: ChartItem) {
 
     const counts = new Map<string, number>()
 
-    const prepare = <T extends Value>(value: T) => {
+    const prepare = <T extends Value>(value: T, hasDefaultLabel: boolean = chart.type != ChartType.SegmentedBar) => {
         if (value instanceof PlotSeries)
             value.type ??= PlotType.Line
 
-        if (chart.type != ChartType.SegmentedBar)
+        if (hasDefaultLabel)
             value.label ||= TextResources.noLabel
 
         const label = value.label ?? ''
@@ -61,6 +63,21 @@ function prepareValues(chart: ChartItem) {
         value.id ??= `${ label }-${ count }`
 
         return value
+    }
+
+    if (chart.type == ChartType.TreeBar) {
+        const prepareRow = (value: TreeBarRow): TreeBarRow => {
+            const row = prepare(value instanceof TreeBarRow ? value : new TreeBarRow(value))
+
+            row.parts = (row.parts ?? []).map(part => prepare(part instanceof Value ? part : new Sector(part), false))
+            row.children = row.children?.map(prepareRow)
+
+            return row
+        }
+
+        chart.data.values = (chart.data as TreeBarData).values.map(prepareRow)
+
+        return
     }
 
     chart.data.values = chart.data.values.map(value => {
@@ -81,6 +98,17 @@ function prepareValues(chart: ChartItem) {
 
 function getStops(chart: ChartItem) {
     return (chart.data as SegmentedBarData | undefined)?.stops
+}
+
+export function keepState(previous: ChartSettings, next: ChartSettings) {
+    keepDisabled(previous, next)
+
+    next.charts.forEach((chart, index) => {
+        const old = previous.charts[index]
+
+        if (chart.type == ChartType.TreeBar && old?.type == ChartType.TreeBar)
+            keepTreeBarState(old.data as TreeBarData, chart.data as TreeBarData)
+    })
 }
 
 export function keepDisabled(previous: ChartSettings, next: ChartSettings) {
@@ -125,12 +153,20 @@ function normalizeValues(values: Value[] | undefined, scope?: Element) {
         }
 
         normalizeValues((value as TreeValue).sectors, scope)
+        normalizeValues((value as TreeBarRow).parts, scope)
+        normalizeValues((value as TreeBarRow).children, scope)
     }
 }
 
 export function applyBaseColor(settings: ChartSettings, fallbackColor: string, scope?: Element) {
     const isShared = settings.charts.length > 1
-    const groups = groupBy(settings.charts.flatMap(chart => chart.data?.values ?? []),
+    const isTreeBar = (chart: ChartItem) => chart.type == ChartType.TreeBar
+    const base = settings.baseColor ? normalizeColor(settings.baseColor, scope) : fallbackColor
+
+    for (const chart of settings.charts.filter(isTreeBar))
+        colorTreeBarRows((chart.data as TreeBarData | undefined)?.values, base)
+
+    const groups = groupBy(settings.charts.filter(chart => !isTreeBar(chart)).flatMap(chart => chart.data?.values ?? []),
         (value): string | Value => isShared ? Legend.getGroupKey(value, true) : value)
 
     for (const values of groups.values()) {
@@ -147,8 +183,6 @@ export function applyBaseColor(settings: ChartSettings, fallbackColor: string, s
 
     if (uncolored.length == 0)
         return
-
-    const base = settings.baseColor ? normalizeColor(settings.baseColor, scope) : fallbackColor
 
     uncolored.forEach((values, index) => {
         const color = spreadColor(base, index, uncolored.length, BASE_COLOR_RANGE)
