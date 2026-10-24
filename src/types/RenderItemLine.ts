@@ -6,6 +6,7 @@ import { AnimationTiming } from '@/static/constants/Index'
 import { lerp } from '@/helpers/Geometry'
 import { sum } from '@/helpers/Collections'
 import HoverMap from '@/types/HoverMap'
+import { GradientCache } from '@/helpers/Canvas'
 
 const ALPHA_DELTA = 0.5
 
@@ -27,9 +28,13 @@ export default class RenderItemLine
 
     tooltips: string[] = []
 
+    isGradient: boolean = false
+
     from: Point[] | null = null
 
     private hovered: number = -1
+
+    private readonly gradient = new GradientCache()
 
     private readonly markers = new HoverMap<number>()
 
@@ -90,6 +95,13 @@ export default class RenderItemLine
 
         ctx.lineWidth = this.width
         ctx.setLineDash(this.dash)
+
+        if (this.isGradient) {
+            const bounds = this.getBounds()!
+
+            if (bounds.bottom > bounds.top)
+                ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.fill!, bounds.top, bounds.bottom)
+        }
 
         const stops = progress < 1
                       ? this.partial(progress)

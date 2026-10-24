@@ -644,6 +644,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
             })
 
             line.dash(Array.isArray(series.dash) ? series.dash : [])
+                .gradient()
 
             this.dataLine(line, series, 'line')
         }

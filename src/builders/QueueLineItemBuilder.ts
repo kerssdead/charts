@@ -26,4 +26,10 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
 
         return this
     }
+
+    gradient() {
+        this.shape.isGradient = true
+
+        return this
+    }
 }
