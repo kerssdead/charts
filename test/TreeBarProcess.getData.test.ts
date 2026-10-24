@@ -72,6 +72,13 @@ describe('Getting tree bar data', () => {
             .toBeCloseTo(BAR.width)
     })
 
+    it('Should treat parts without value as zero when scaling bars', () => {
+        const items = getItems(create({ values: [row('a', [60], { children: [new TreeBarRow({ id: 'b', label: 'b', parts: [new Sector({ color: '#ff0000' })] })] })] }))
+
+        expect(rect(items, 'tree-bar-row-a-part-0').absolute.width)
+            .toBeCloseTo(BAR.width)
+    })
+
     it('Should grow row height for multiline label and sub label', () => {
         const process = create({ values: [row('a', [1], { label: 'Lorem\nIpsum', subLabel: 'Dolor' })] })
 

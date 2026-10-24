@@ -59,7 +59,7 @@ export function colorTreeBarRows(rows: TreeBarRow[] | undefined, color: string) 
 }
 
 export function getTreeBarTotal(row: TreeBarRow) {
-    return sum(row.parts, part => Math.max(part.value, 0))
+    return sum(row.parts, part => Math.max(part.value || 0, 0))
 }
 
 export function getCellNumber(value: string | number | undefined) {
