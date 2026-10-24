@@ -107,7 +107,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             return
 
         const availableWidth = this.sizing.radius * this.sizing.innerRadiusRatio * 2 * INNER_TITLE_WIDTH_RATIO
-        const fontSize = Math.min(INNER_TITLE_FONT_SIZE, availableWidth / stringWidth(title, 1))
+        const fontSize = this.getFittingFontSize(title, availableWidth, INNER_TITLE_FONT_SIZE)
 
         if (fontSize < INNER_TITLE_MIN_FONT_SIZE)
             return

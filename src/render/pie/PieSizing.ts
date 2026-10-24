@@ -1,7 +1,7 @@
 import Units from '@/helpers/Units'
 import Point from '@/types/Point'
 import { COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
-import { clamp } from '@/helpers/Geometry'
+import { getInnerRadiusRatio } from '@/helpers/Geometry'
 import { HOVER_OFFSET } from '@/types/RenderItemArc'
 import {
     ELONGATED_ASPECT_RATIO,
@@ -48,7 +48,7 @@ export default class PieSizing {
             0
         )
         this.areLabelsHidden = !this.hasRoomForLabels(fittedRadius)
-        this.innerRadiusRatio = clamp(Number.isFinite(innerRadiusPercent) ? innerRadiusPercent : 0, 0, 100) / 100
+        this.innerRadiusRatio = getInnerRadiusRatio(innerRadiusPercent, 0)
         this.labelDistance = this.radius + units.toPxX(LEADER_GAP + LEADER_LENGTH + LEADER_GAP)
         this.labelBounds = { x: this.width / 2 - HOVER_OFFSET, y: this.height / 2 - HOVER_OFFSET }
     }

@@ -1,5 +1,5 @@
 import ChartProcess from '@/render/ChartProcess'
-import GaugeProcess from '@/render/GaugeProcess'
+import GaugeProcess from '@/render/gauge/GaugeProcess'
 import PieProcess from '@/render/pie/PieProcess'
 import PlotProcess from '@/render/PlotProcess'
 import TreeProcess from '@/render/TreeProcess'

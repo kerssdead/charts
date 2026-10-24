@@ -8,6 +8,7 @@ import type { PanelScroll } from '@/types/Panel'
 import Value from '@/types/base/Value'
 import ItemData from '@/types/ItemData'
 import CustomTooltip from '@/renderer/CustomTooltip'
+import { stringWidth } from '@/helpers/Text'
 
 const LINE_BREAK = /<br\s*\/?>/gi
 
@@ -60,6 +61,10 @@ export default abstract class ChartProcess<
 
     protected static getItemData(item: Value) {
         return typeof item.data == 'object' ? item.data : undefined
+    }
+
+    protected getFittingFontSize(text: string, availableWidth: number, maxFontSize: number) {
+        return Math.min(maxFontSize, availableWidth / stringWidth(text, 1))
     }
 
     protected percent(ratio: number) {
