@@ -1,6 +1,7 @@
 import PlotProcess from '@/render/PlotProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemText from '@/types/RenderItemText'
+import RenderItemRectangle from '@/types/RenderItemRectangle'
 import PlotData from '@/types/data/PlotData'
 import { PlotAxisType, PlotType } from '@/static/Enums'
 
@@ -37,5 +38,25 @@ describe('Getting plot data', () => {
 
         expect(leftEdge(texts.get('x-category-0')!))
             .toBeGreaterThan(yLabel.absolute.x)
+    })
+
+    it('Should scale stacking columns to y-axis when yMax is less than stack total', () => {
+        const values = [300, 280, 50, 35, 20]
+        const process = new PlotProcess({
+            yMax: 250,
+            xType: PlotAxisType.Text,
+            values: [
+                { type: PlotType.StackingColumn, label: 'Apples', values: values.map((y, i) => ({ x: `Day ${ i }`, y: y.toString() })) },
+                { type: PlotType.StackingColumn, label: 'Pears', values: values.map((_, i) => ({ x: `Day ${ i }`, y: i < 2 ? '15' : '0' })) }
+            ]
+        } as PlotData, PIXEL, undefined)
+
+        const rects = new Map(QueueItemsBuilder.build(process.getData())
+                                               .filter(item => item.shape instanceof RenderItemRectangle)
+                                               .map(item => [item.key!, item.shape as RenderItemRectangle]))
+
+        values.forEach((y, i) =>
+            expect(rects.get(`0-rect-${ i }`)!.absolute.height)
+                .toBeCloseTo(process.getAxisY(0) - process.getAxisY(Math.min(y, 250))))
     })
 })
