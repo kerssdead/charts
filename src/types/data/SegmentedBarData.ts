@@ -10,4 +10,6 @@ export default interface SegmentedBarData extends Data {
     leftLabel?: string
 
     rightLabel?: string
+
+    percentageMode?: boolean
 }

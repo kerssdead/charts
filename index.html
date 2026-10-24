@@ -404,9 +404,9 @@
                 </label>
 
                 <label>
-                    <input type="checkbox" id="percent-stops" onchange="refresh()"/>
+                    <input type="checkbox" id="percentage-mode" onchange="refresh()"/>
 
-                    Percent stops
+                    Percentage mode
                 </label>
             </div>
         </div>
@@ -888,23 +888,31 @@
                     }
                 ]
 
-        function getStops(values) {
-            const total = values.reduce((acc, value) => acc + value.value, 0),
-                percentStops = document.getElementById('percent-stops').checked
+        function getStops(values, isPercent) {
+            const total = values.reduce((acc, value) => acc + value.value, 0)
 
             return Array.from({ length: +document.getElementById('stops-count').value }, (_, i) => ({
                 label: `Stop ${i}`,
-                value: percentStops ? `${(rng.nextFloat() * 100).toFixed(1)}%` : rng.nextFloat() * total,
+                value: isPercent ? +(rng.nextFloat() * 100).toFixed(1) : rng.nextFloat() * total,
                 color: getColor()
             }))
         }
 
+        function getPercentParts(values) {
+            const total = values.reduce((acc, value) => acc + value.value, 0),
+                filled = rng.nextFloat() * 100
+
+            return values.map(value => ({ ...value, value: +(value.value / total * filled).toFixed(1) }))
+        }
+
         const chartData = chartType => {
-            const values = getValues(chartType, valuesCount, valuesType, pointsCount, plotType)
+            const values = getValues(chartType, valuesCount, valuesType, pointsCount, plotType),
+                isPercent = chartType === 4 && document.getElementById('percentage-mode').checked
 
             return {
-                values: values,
-                stops: chartType === 4 ? getStops(values) : undefined,
+                values: isPercent ? getPercentParts(values) : values,
+                stops: chartType === 4 ? getStops(values, isPercent) : undefined,
+                percentageMode: isPercent,
                 leftLabel: document.getElementById('left-label').value,
                 rightLabel: document.getElementById('right-label').value,
                 xTitle: xAxisTitle,

@@ -6,7 +6,7 @@ import Sector from '@/types/Sector'
 import SegmentedBarStop from '@/types/SegmentedBarStop'
 import { COORDS_MAX_X } from '@/static/constants/Index'
 
-jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff' }))
+jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
 
 const PIXEL = { x: 5000 / 1000, y: 5000 / 40 }
 
@@ -50,6 +50,42 @@ describe('Getting segmented bar data', () => {
         expect(rects.get('segmented-bar-stop-value')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
         expect(rects.get('segmented-bar-stop-percent')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
         expect(rects.get('segmented-bar-stop-outside')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 3 * PIXEL.x)
+    })
+
+    it('Should scale parts to 100% in percentage mode and show empty track', () => {
+        const rects = getRects({ percentageMode: true, values: [part('a', 20), part('b', 30)], stops: [stop('value', 60)] })
+
+        expect(rects.get('segmented-bar-part-a')!.absolute.width).toBeCloseTo(BAR.width * .2)
+        expect(rects.get('segmented-bar-part-b')!.absolute.x).toBeCloseTo(BAR.x + BAR.width * .2)
+        expect(rects.get('segmented-bar-part-b')!.absolute.width).toBeCloseTo(BAR.width * .3)
+        expect(rects.get('segmented-bar-track')!.absolute.width).toBeCloseTo(BAR.width)
+        expect(rects.get('segmented-bar-stop-value')!.absolute.x).toBeCloseTo(BAR.x + BAR.width * .6)
+    })
+
+    it('Should cut parts over 100% at the bar end in percentage mode', () => {
+        const rects = getRects({ percentageMode: true, values: [part('a', 70), part('b', 40), part('c', 10)] })
+
+        expect(rects.get('segmented-bar-part-b')!.absolute.width).toBeCloseTo(BAR.width * .3)
+        expect(rects.has('segmented-bar-part-c')).toBe(false)
+        expect(rects.has('segmented-bar-track')).toBe(false)
+    })
+
+    it('Should use sum of parts without percentage mode', () => {
+        const rects = getRects({ values: [part('a', 20), part('b', 60)] })
+
+        expect(rects.get('segmented-bar-part-a')!.absolute.width).toBeCloseTo(BAR.width / 4)
+        expect(rects.has('segmented-bar-track')).toBe(false)
+    })
+
+    it('Should show percent values in tooltips in percentage mode', () => {
+        const items = getItems({
+            percentageMode: true,
+            values: [new Sector({ id: 'a', label: 'Lorem', value: 15, color: '#ff0000' })],
+            stops: [new SegmentedBarStop({ id: 'b', label: 'Ipsum', value: 40, color: '#0000ff' })]
+        })
+
+        expect(items.get('segmented-bar-part-a')!.tooltipHtml).toContain('>Lorem\n15%</div>')
+        expect(items.get('segmented-bar-stop-b')!.tooltipHtml).toContain('>Ipsum\n40%</div>')
     })
 
     it('Should show string data in tooltip and pass object data to item', () => {

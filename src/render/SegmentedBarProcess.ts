@@ -6,7 +6,7 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
-import { luminance } from '@/helpers/Color'
+import { luminance, withAlpha } from '@/helpers/Color'
 import { clamp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
 import { sum } from '@/helpers/Collections'
@@ -41,6 +41,10 @@ const STOP_RADIUS = 3
 
 const STOP_OUTLINE = 2
 
+const PERCENT_SCALE = 100
+
+const TRACK_ALPHA = .15
+
 const LINE_BREAK = /<br\s*\/?>/gi
 
 type Part = {
@@ -50,6 +54,12 @@ type Part = {
 
 export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> {
     private readonly total: number
+
+    private readonly isPercent: boolean
+
+    private readonly scale: number
+
+    private unit: number = 0
 
     private readonly padding: number
 
@@ -63,6 +73,8 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
         const values = data.values.filter(value => value.value > 0)
 
         this.total = sum(values, value => value.value)
+        this.isPercent = !!data.percentageMode
+        this.scale = this.isPercent ? PERCENT_SCALE : this.total
         this.padding = this.units.x(PADDING_X)
         this.bar = this.getBar()
         this.parts = this.getParts(values)
@@ -74,11 +86,20 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
 
     getData(): QueueAction[] {
         return [
-            ...this.parts.map(part => this.getPart(part)),
+            this.getTrack(),
+            ...this.parts.filter(part => part.box.x < this.barEnd).map(part => this.getPart(part)),
             ...this.data.stops.map(stop => this.getStop(stop)),
             this.getLabel('segmented-bar-left-label', this.data.leftLabel, this.padding, TextAlignment.Left),
             this.getLabel('segmented-bar-right-label', this.data.rightLabel, COORDS_MAX_X - this.padding, TextAlignment.Right)
         ]
+    }
+
+    private get barEnd() {
+        return this.bar.x + this.bar.width
+    }
+
+    private get radius() {
+        return this.units.x(this.units.toPxY(this.bar.height) / 2)
     }
 
     private getBar(): RectangleDimensions {
@@ -104,14 +125,14 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
     private getParts(values: Sector[]): Part[] {
         const min = this.units.x(MIN_PART_WIDTH)
 
-        const small = values.filter(value => value.value / this.total * this.bar.width < min)
+        const small = values.filter(value => value.value / this.scale * this.bar.width < min)
 
-        const unit = (this.bar.width - small.length * min) / (this.total - sum(small, value => value.value))
+        this.unit = (this.bar.width - small.length * min) / (this.scale - sum(small, value => value.value))
 
         let x = this.bar.x
 
         return values.map(sector => {
-            const width = small.includes(sector) ? min : sector.value * unit
+            const width = small.includes(sector) ? min : sector.value * this.unit
             const box = { x, y: this.bar.y, width, height: this.bar.height }
 
             x += width
@@ -133,21 +154,41 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
             rest -= sector.value
         }
 
-        return this.bar.x + this.bar.width
+        const last = this.parts[this.parts.length - 1]
+
+        return (last ? last.box.x + last.box.width : this.bar.x) + rest * this.unit
+    }
+
+    private getTrack(): QueueAction {
+        if (!this.isPercent || this.total >= PERCENT_SCALE)
+            return QueueItemsBuilder.empty
+
+        return (items: QueueItemsBuilder) => {
+            items.rect()
+                 .position(this.bar.x, this.bar.y)
+                 .size(this.bar.width, this.bar.height)
+                 .align(HorizontalAlignment.Left, VerticalAlignment.Top)
+                 .round(this.radius)
+                 .fill()
+                 .color(withAlpha(Theme.text, TRACK_ALPHA))
+                 .layer(Layer.Base)
+                 .key('segmented-bar-track')
+        }
     }
 
     private getPart({ sector, box }: Part): QueueAction {
         const key = `segmented-bar-part-${ sector.id }`
 
         const padding = this.units.x(PART_PADDING)
-        const radius = this.units.x(this.units.toPxY(this.bar.height) / 2)
+        const width = Math.min(box.width, this.barEnd - box.x)
+        const value = this.isPercent ? SegmentedBarProcess.formatPercent(sector) : this.share(sector.value, sector.value / this.total)
 
         return (items: QueueItemsBuilder) => {
             items.rect()
                  .position(box.x, box.y)
-                 .size(box.width, box.height)
+                 .size(width, box.height)
                  .align(HorizontalAlignment.Left, VerticalAlignment.Top)
-                 .clip(this.bar, radius)
+                 .clip(this.bar, this.radius)
                  .fill()
                  .color(sector.color)
                  .layer(Layer.Data)
@@ -156,7 +197,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                  .monochrome()
                  .interact()
                  .contextMenu()
-                 .tooltipHtml(this.getTooltip(sector, this.share(sector.value, sector.value / this.total)))
+                 .tooltipHtml(this.getTooltip(sector, value))
                  .data(SegmentedBarProcess.getItemData(sector))
 
             if (sector.label)
@@ -167,7 +208,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                      .color(luminance(sector.color) > LIGHT_LUMINANCE ? '#000000' : '#ffffff')
                      .layer(Layer.Data)
                      .key(`${ key }-label`)
-                     .clip(box.width - padding)
+                     .clip(width - padding)
         }
     }
 
@@ -180,7 +221,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
         const y = this.bar.y + this.bar.height / 2
         const outline = { x: this.units.x(STOP_OUTLINE), y: this.units.y(STOP_OUTLINE) }
 
-        const value = stop.isPercent ? `${ stop.value }%` : this.formatValue(stop.value)
+        const value = stop.isPercent || this.isPercent ? SegmentedBarProcess.formatPercent(stop) : this.formatValue(stop.value)
 
         return (items: QueueItemsBuilder) => {
             items.rect()
@@ -207,6 +248,10 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                  .tooltipHtml(this.getTooltip(stop, value))
                  .data(SegmentedBarProcess.getItemData(stop))
         }
+    }
+
+    private static formatPercent(value: Sector) {
+        return `${ value.value }%`
     }
 
     private getTooltip(sector: Sector, value: string) {
