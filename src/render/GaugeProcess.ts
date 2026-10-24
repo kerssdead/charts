@@ -227,6 +227,9 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     }
 
     private getSteps() {
+        if (this.data.disableStepLabels)
+            return []
+
         return Array.from({ length: STEPS - 1 }, (_, index) => {
             const ratio = (index + 1) / STEPS
             const text = this.formatValue(this.min + (this.max - this.min) * ratio)

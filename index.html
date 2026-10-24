@@ -356,6 +356,12 @@
 
                     Use track
                 </label>
+
+                <label>
+                    <input type="checkbox" id="disable-step-labels" onchange="refresh()"/>
+
+                    Hide step labels
+                </label>
             </div>
 
             <div>
@@ -853,6 +859,7 @@
             gaugeMin = +document.getElementById('gauge-min').value,
             gaugeMax = +document.getElementById('gauge-max').value,
             enableTrack = document.getElementById('use-track').checked,
+            disableStepLabels = document.getElementById('disable-step-labels').checked,
             padding = +document.getElementById('tree-padding').value,
             gap = +document.getElementById('tree-gap').value,
             customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
@@ -906,6 +913,7 @@
                 min: gaugeMin,
                 max: gaugeMax,
                 enableTrack: enableTrack,
+                disableStepLabels: disableStepLabels,
                 padding: padding,
                 gap: gap,
                 innerRadius: innerRadius,

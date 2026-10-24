@@ -11,4 +11,6 @@ export default interface GaugeData extends Data {
     innerRadius: number
 
     enableTrack: boolean
+
+    disableStepLabels: boolean
 }
