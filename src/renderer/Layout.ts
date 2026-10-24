@@ -6,7 +6,7 @@ import Panel from '@/types/Panel'
 import Point from '@/types/Point'
 import ChartItem from '@/types/ChartItem'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
-import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
+import { AnimationTiming, CANVAS_CENTER, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import { TextAlignment } from '@/static/Enums'
 import { clamp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
@@ -102,7 +102,7 @@ export default class Layout {
 
         return (items: QueueItemsBuilder) => {
             items.text(Legend.truncate(title, width, font))
-                 .position(COORDS_MAX_X / 2, this.titleHeight / 2 * COORDS_MAX_Y / height)
+                 .position(CANVAS_CENTER.x, this.titleHeight / 2 * COORDS_MAX_Y / height)
                  .size(font)
                  .align(TextAlignment.Center)
                  .fixed()
@@ -120,7 +120,7 @@ export default class Layout {
 
         return (items: QueueItemsBuilder) => {
             items.text(Legend.truncate(title, width, font))
-                 .position(COORDS_MAX_X / 2, -PANEL_TITLE_HEIGHT / 2 * pixel.y)
+                 .position(CANVAS_CENTER.x, -PANEL_TITLE_HEIGHT / 2 * pixel.y)
                  .size(font)
                  .align(TextAlignment.Center)
                  .key('panel-title')
@@ -131,7 +131,7 @@ export default class Layout {
     getEmpty() {
         return (items: QueueItemsBuilder) => {
             items.text(TextResources.noData)
-                 .position(COORDS_MAX_X / 2, COORDS_MAX_Y / 2)
+                 .position(CANVAS_CENTER.x, CANVAS_CENTER.y)
                  .size(PANEL_TITLE_FONT)
                  .align(TextAlignment.Center)
                  .key('empty')

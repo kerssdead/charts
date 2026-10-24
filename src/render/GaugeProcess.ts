@@ -1,8 +1,9 @@
 import GaugeData from '@/types/data/GaugeData'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import Sector from '@/types/Sector'
-import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
+import { AnimationTiming, CANVAS_CENTER, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
 import Point from '@/types/Point'
+import ProcessSettings from '@/types/ProcessSettings'
 import Theme from '@/Theme'
 import { withAlpha } from '@/helpers/Color'
 import { clamp } from '@/helpers/Geometry'
@@ -75,8 +76,8 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
 
     private readonly values: Sector[]
 
-    constructor(data: GaugeData, pixel: Point, valuePostfix: string | undefined) {
-        super(data, pixel, valuePostfix)
+    constructor(data: GaugeData, pixel: Point, settings: ProcessSettings) {
+        super(data, pixel, settings)
 
         this.values = data.values.filter(value => !value.disabled)
         this.lines = this.getLines()
@@ -96,7 +97,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         ), 0)
         this.thickness = this.radius * (1 - this.innerRatio) / this.values.length
         this.center = {
-            x: COORDS_MAX_X / 2,
+            x: CANVAS_CENTER.x,
             y: this.units.y((height - this.radius - this.labelSpace + top) / 2 + this.radius)
         }
     }

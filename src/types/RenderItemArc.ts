@@ -1,7 +1,7 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import RenderItem from '@/types/RenderItem'
-import { AnimationTiming, COORDS_MAX_X } from '@/static/constants/Index'
+import { AnimationTiming, COORDS_MAX_X, FULL_ANGLE } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import Theme from '@/Theme'
 import { GradientCache } from '@/helpers/Canvas'
@@ -14,7 +14,7 @@ export const HOVER_OFFSET = 8
 
 const ALPHA_DELTA = 0.5
 
-const isFullCircle = (sweep: number) => sweep >= Math.PI * 2 - FULL_CIRCLE_EPSILON
+const isFullCircle = (sweep: number) => sweep >= FULL_ANGLE - FULL_CIRCLE_EPSILON
 
 type ArcGeometry = {
     x: number
@@ -81,7 +81,7 @@ export default class RenderItemArc
 
     startAngle: number = 0
 
-    endAngle: number = Math.PI * 2
+    endAngle: number = FULL_ANGLE
 
     from: ArcGeometry | null = null
 
@@ -240,11 +240,11 @@ export default class RenderItemArc
     }
 
     private circle(ctx: CanvasRenderingContext2D, shape: Shape) {
-        ctx.arc(shape.x, shape.y, this.canvas.radius, 0, Math.PI * 2)
+        ctx.arc(shape.x, shape.y, this.canvas.radius, 0, FULL_ANGLE)
 
         if (this.canvas.innerRadius > 0) {
             ctx.moveTo(shape.x + this.canvas.innerRadius, shape.y)
-            ctx.arc(shape.x, shape.y, this.canvas.innerRadius, Math.PI * 2, 0, true)
+            ctx.arc(shape.x, shape.y, this.canvas.innerRadius, FULL_ANGLE, 0, true)
         }
     }
 
@@ -362,8 +362,7 @@ export default class RenderItemArc
         if (isFullCircle(sweep))
             return true
 
-        const full = Math.PI * 2
-        const angle = ((Math.atan2(dy, dx) - this.canvas.startAngle) % full + full) % full
+        const angle = ((Math.atan2(dy, dx) - this.canvas.startAngle) % FULL_ANGLE + FULL_ANGLE) % FULL_ANGLE
 
         if (angle > sweep)
             return false

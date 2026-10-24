@@ -2,6 +2,7 @@ import { QueueAction } from '@/builders/QueueItemsBuilder'
 import Formatter from '@/helpers/Formatter'
 import Units from '@/helpers/Units'
 import Point from '@/types/Point'
+import ProcessSettings from '@/types/ProcessSettings'
 import Data from '@/types/interfaces/Data'
 import type { PanelScroll } from '@/types/Panel'
 import Value from '@/types/base/Value'
@@ -10,19 +11,22 @@ import CustomTooltip from '@/renderer/CustomTooltip'
 
 const LINE_BREAK = /<br\s*\/?>/gi
 
-export default abstract class ChartProcess<TData extends Data> {
+export default abstract class ChartProcess<
+    TData extends Data,
+    TSettings extends ProcessSettings = ProcessSettings
+> {
     protected readonly data: TData
 
     protected readonly units: Units
 
-    protected readonly valuePostfix: string | undefined
+    protected readonly settings: TSettings
 
     onChange: (() => void) | undefined
 
-    constructor(data: TData, pixel: Point, valuePostfix: string | undefined) {
+    constructor(data: TData, pixel: Point, settings: TSettings) {
         this.data = data
         this.units = new Units(pixel)
-        this.valuePostfix = valuePostfix
+        this.settings = settings
     }
 
     abstract getData(): QueueAction[]
@@ -40,7 +44,7 @@ export default abstract class ChartProcess<TData extends Data> {
     }
 
     protected formatValue(value: number | Date | string) {
-        return Formatter.value(value, this.valuePostfix)
+        return Formatter.value(value, this.settings.valuePostfix)
     }
 
     protected tooltip(...rows: (string | undefined)[]) {

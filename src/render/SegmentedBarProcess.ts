@@ -2,6 +2,7 @@ import SegmentedBarData from '@/types/data/SegmentedBarData'
 import SegmentedBarStop from '@/types/SegmentedBarStop'
 import Sector from '@/types/Sector'
 import Point from '@/types/Point'
+import ProcessSettings from '@/types/ProcessSettings'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
@@ -63,8 +64,8 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
 
     private readonly parts: Part[]
 
-    constructor(data: SegmentedBarData, pixel: Point, valuePostfix: string | undefined) {
-        super(data, pixel, valuePostfix)
+    constructor(data: SegmentedBarData, pixel: Point, settings: ProcessSettings) {
+        super(data, pixel, settings)
 
         const values = data.values.filter(value => value.value > 0)
 

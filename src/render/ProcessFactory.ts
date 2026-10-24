@@ -1,6 +1,6 @@
 import ChartProcess from '@/render/ChartProcess'
 import GaugeProcess from '@/render/GaugeProcess'
-import PieProcess from '@/render/PieProcess'
+import PieProcess from '@/render/pie/PieProcess'
 import PlotProcess from '@/render/PlotProcess'
 import TreeProcess from '@/render/TreeProcess'
 import SegmentedBarProcess from '@/render/SegmentedBarProcess'
@@ -22,17 +22,17 @@ type Factory = (chart: ChartItem, settings: ChartSettings, pixel: Point) => Char
 export default class ProcessFactory {
     private static readonly factories = new Map<ChartType, Factory>([
         [ChartType.Plot, (chart, settings, pixel) =>
-            new PlotProcess(chart.data as PlotData, pixel, settings.valuePostfix)],
+            new PlotProcess(chart.data as PlotData, pixel, settings)],
         [ChartType.Pie, (chart, settings, pixel) =>
-            new PieProcess(chart.data as PieData, pixel, settings.valuePostfix, settings.enableOther)],
+            new PieProcess(chart.data as PieData, pixel, settings)],
         [ChartType.TreeMap, (chart, settings, pixel) =>
-            new TreeProcess(chart.data as TreeData, pixel, settings.valuePostfix)],
+            new TreeProcess(chart.data as TreeData, pixel, settings)],
         [ChartType.Gauge, (chart, settings, pixel) =>
-            new GaugeProcess(chart.data as GaugeData, pixel, settings.valuePostfix)],
+            new GaugeProcess(chart.data as GaugeData, pixel, settings)],
         [ChartType.SegmentedBar, (chart, settings, pixel) =>
-            new SegmentedBarProcess(chart.data as SegmentedBarData, pixel, settings.valuePostfix)],
+            new SegmentedBarProcess(chart.data as SegmentedBarData, pixel, settings)],
         [ChartType.TreeBar, (chart, settings, pixel) =>
-            new TreeBarProcess(chart.data as TreeBarData, pixel, settings.valuePostfix)]
+            new TreeBarProcess(chart.data as TreeBarData, pixel, settings)]
     ])
 
     static create(chart: ChartItem, settings: ChartSettings, pixel: Point) {

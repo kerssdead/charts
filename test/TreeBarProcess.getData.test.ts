@@ -6,6 +6,7 @@ import RenderItemText from '@/types/RenderItemText'
 import TreeBarData, { getTreeBarRows } from '@/types/data/TreeBarData'
 import TreeBarRow from '@/types/TreeBarRow'
 import Sector from '@/types/Sector'
+import ProcessSettings from '@/types/ProcessSettings'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000', lineAxis: '#e0e0e0' }))
 
@@ -16,6 +17,8 @@ jest.mock('@/helpers/Text', () => ({
 
 const PIXEL = { x: 5000 / 1000, y: 5000 / 400 }
 
+const SETTINGS: ProcessSettings = { valuePostfix: undefined }
+
 const BAR = { x: 104 * PIXEL.x, width: 880 * PIXEL.x }
 
 const part = (value: number) => new Sector({ value, color: '#ff0000' })
@@ -24,7 +27,7 @@ const row = (id: string, values: number[], extra: Partial<TreeBarRow> = {}) =>
     new TreeBarRow({ id, label: id, parts: values.map(part), ...extra })
 
 function create(data: Partial<TreeBarData>) {
-    return new TreeBarProcess({ values: [], ...data } as TreeBarData, PIXEL, undefined)
+    return new TreeBarProcess({ values: [], ...data } as TreeBarData, PIXEL, SETTINGS)
 }
 
 function getItems(process: TreeBarProcess) {
@@ -107,7 +110,7 @@ describe('Getting tree bar data', () => {
 
     it('Should toggle sort direction by header click', () => {
         const data = { values: [row('a', [1])], columns: [{ key: 'amount', title: 'Amount' }] } as TreeBarData
-        const process = new TreeBarProcess(data, PIXEL, undefined)
+        const process = new TreeBarProcess(data, PIXEL, SETTINGS)
         const onChange = jest.fn()
 
         process.onChange = onChange

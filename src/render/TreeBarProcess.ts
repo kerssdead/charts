@@ -1,6 +1,7 @@
 import TreeBarData, { flattenTreeBarRows, getCellNumber, getTreeBarTotal, TreeBarColumn, TreeBarEntry } from '@/types/data/TreeBarData'
 import TreeBarRow from '@/types/TreeBarRow'
 import Point from '@/types/Point'
+import ProcessSettings from '@/types/ProcessSettings'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import type { PanelScroll } from '@/types/Panel'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
@@ -117,8 +118,8 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
 
     private readonly scale: number
 
-    constructor(data: TreeBarData, pixel: Point, valuePostfix: string | undefined) {
-        super(data, pixel, valuePostfix)
+    constructor(data: TreeBarData, pixel: Point, settings: ProcessSettings) {
+        super(data, pixel, settings)
 
         const all = flattenTreeBarRows(data.values)
 

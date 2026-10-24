@@ -5,15 +5,18 @@ import SegmentedBarData from '@/types/data/SegmentedBarData'
 import Sector from '@/types/Sector'
 import SegmentedBarStop from '@/types/SegmentedBarStop'
 import { COORDS_MAX_X } from '@/static/constants/Index'
+import ProcessSettings from '@/types/ProcessSettings'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
 
 const PIXEL = { x: 5000 / 1000, y: 5000 / 40 }
 
+const SETTINGS: ProcessSettings = { valuePostfix: undefined }
+
 const BAR = { x: 7 * PIXEL.x, width: COORDS_MAX_X - 14 * PIXEL.x }
 
 function getItems(data: Partial<SegmentedBarData>) {
-    const process = new SegmentedBarProcess({ values: [], stops: [], ...data } as SegmentedBarData, PIXEL, undefined)
+    const process = new SegmentedBarProcess({ values: [], stops: [], ...data } as SegmentedBarData, PIXEL, SETTINGS)
 
     return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key!, item]))
 }
@@ -87,7 +90,7 @@ describe('Getting segmented bar data', () => {
     })
 
     it('Should be empty only without parts and stops', () => {
-        const create = (stops: SegmentedBarStop[]) => new SegmentedBarProcess({ values: [part('a', 0)], stops } as SegmentedBarData, PIXEL, undefined)
+        const create = (stops: SegmentedBarStop[]) => new SegmentedBarProcess({ values: [part('a', 0)], stops } as SegmentedBarData, PIXEL, SETTINGS)
 
         expect(create([]).isEmpty()).toBe(true)
         expect(create([stop('b', 1)]).isEmpty()).toBe(false)

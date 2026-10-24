@@ -2,7 +2,7 @@ import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import RenderItem from '@/types/RenderItem'
 import Point from '@/types/Point'
-import { COORDS_MAX_X } from '@/static/constants/Index'
+import { COORDS_MAX_X, FULL_ANGLE } from '@/static/constants/Index'
 import { getImage } from '@/helpers/Images'
 import { lerp } from '@/helpers/Geometry'
 
@@ -52,7 +52,7 @@ export default class RenderItemImage
     render(ctx: CanvasRenderingContext2D): void {
         const { x, y, size } = this.canvas
 
-        ctx.arc(x, y, size / 2, 0, Math.PI * 2)
+        ctx.arc(x, y, size / 2, 0, FULL_ANGLE)
 
         const image = getImage(this.url)
 

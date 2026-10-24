@@ -2,7 +2,7 @@ import Point from '@/types/Point'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
-import { AnimationTiming } from '@/static/constants/Index'
+import { AnimationTiming, FULL_ANGLE } from '@/static/constants/Index'
 import { lerp } from '@/helpers/Geometry'
 import { sum } from '@/helpers/Collections'
 import HoverMap from '@/types/HoverMap'
@@ -108,7 +108,7 @@ export default class RenderItemLine
                       : this.canvas
 
         if (stops.length == 1) {
-            ctx.arc(stops[0].x, stops[0].y, Math.max(this.width, POINT_MIN_RADIUS), 0, Math.PI * 2)
+            ctx.arc(stops[0].x, stops[0].y, Math.max(this.width, POINT_MIN_RADIUS), 0, FULL_ANGLE)
             ctx.fill()
 
             return
@@ -133,7 +133,7 @@ export default class RenderItemLine
                 continue
 
             ctx.beginPath()
-            ctx.arc(marker.x, marker.y, radius, 0, Math.PI * 2)
+            ctx.arc(marker.x, marker.y, radius, 0, FULL_ANGLE)
             ctx.fill()
         }
     }

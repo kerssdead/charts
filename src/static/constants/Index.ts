@@ -6,6 +6,10 @@ export { default as Tooltip } from '@/static/constants/Tooltip'
 export const COORDS_MAX_X = 5000
 export const COORDS_MAX_Y = 5000
 
+export const CANVAS_CENTER = { x: COORDS_MAX_X / 2, y: COORDS_MAX_Y / 2 }
+
+export const FULL_ANGLE = Math.PI * 2
+
 export const DEFAULT_LINE_WIDTH = 1
 
 export const FONT_FAMILY = 'Arial'

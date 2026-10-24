@@ -1,6 +1,6 @@
 import PlotData from '@/types/data/PlotData'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
-import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
+import { AnimationTiming, CANVAS_CENTER, COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
 import { HorizontalAlignment, PlotAxisType, PlotType, TextAlignment, TextBaseline, VerticalAlignment } from '@/static/Enums'
 import { getRoundedValues } from '@/helpers/Numbers'
 import { maxOf } from '@/helpers/Collections'
@@ -8,6 +8,7 @@ import { scientific, short, stringWidth } from '@/helpers/Text'
 import Paddings from '@/types/Paddings'
 import PlotSeries from '@/types/PlotSeries'
 import Point from '@/types/Point'
+import ProcessSettings from '@/types/ProcessSettings'
 import Theme from '@/Theme'
 import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
@@ -111,8 +112,8 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
     private readonly scale: Point
 
-    constructor(data: PlotData, pixel: Point, valuePostfix: string | undefined) {
-        super(data, pixel, valuePostfix)
+    constructor(data: PlotData, pixel: Point, settings: ProcessSettings) {
+        super(data, pixel, settings)
 
         this.series = data.values.filter(series => !series.disabled)
         this.yMax = this.data.yMax == 0 ? undefined : this.data.yMax
@@ -528,7 +529,7 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
             if (this.bottomTitle) {
                 items.text(this.bottomTitle)
-                     .position(COORDS_MAX_X / 2, COORDS_MAX_Y - this.units.y(BOTTOM_PADDING + AXIS_TITLE_FONT / 2))
+                     .position(CANVAS_CENTER.x, COORDS_MAX_Y - this.units.y(BOTTOM_PADDING + AXIS_TITLE_FONT / 2))
                      .size(AXIS_TITLE_FONT)
                      .key('axis-title-y')
             }
