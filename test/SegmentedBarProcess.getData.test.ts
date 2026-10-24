@@ -77,6 +77,22 @@ describe('Getting segmented bar data', () => {
         expect(rects.has('segmented-bar-track')).toBe(false)
     })
 
+    it('Should show track and scale stops to the largest one when there are no parts', () => {
+        const rects = getRects({ values: [part('a', 0)], stops: [stop('small', 1), stop('large', 4), stop('percent', '50%')] })
+
+        expect(rects.get('segmented-bar-track')!.absolute.width).toBeCloseTo(BAR.width)
+        expect(rects.get('segmented-bar-stop-small')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
+        expect(rects.get('segmented-bar-stop-large')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 3 * PIXEL.x)
+        expect(rects.get('segmented-bar-stop-percent')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
+    })
+
+    it('Should be empty only without parts and stops', () => {
+        const create = (stops: SegmentedBarStop[]) => new SegmentedBarProcess({ values: [part('a', 0)], stops } as SegmentedBarData, PIXEL, undefined)
+
+        expect(create([]).isEmpty()).toBe(true)
+        expect(create([stop('b', 1)]).isEmpty()).toBe(false)
+    })
+
     it('Should show percent values in tooltips in percentage mode', () => {
         const items = getItems({
             percentageMode: true,

@@ -74,14 +74,14 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
 
         this.total = sum(values, value => value.value)
         this.isPercent = !!data.percentageMode
-        this.scale = this.isPercent ? PERCENT_SCALE : this.total
+        this.scale = this.isPercent ? PERCENT_SCALE : this.total || this.getStopsScale()
         this.padding = this.units.x(PADDING_X)
         this.bar = this.getBar()
         this.parts = this.getParts(values)
     }
 
     isEmpty() {
-        return this.parts.length == 0
+        return this.parts.length == 0 && this.data.stops.length == 0
     }
 
     getData(): QueueAction[] {
@@ -113,6 +113,10 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
             width: COORDS_MAX_X - left - right,
             height: COORDS_MAX_Y - top * 2
         }
+    }
+
+    private getStopsScale() {
+        return Math.max(...this.data.stops.filter(stop => !stop.isPercent).map(stop => stop.value), 0) || 1
     }
 
     private getLabelSpace(text: string | undefined) {
@@ -160,7 +164,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
     }
 
     private getTrack(): QueueAction {
-        if (!this.isPercent || this.total >= PERCENT_SCALE)
+        if (this.parts.length > 0 && (!this.isPercent || this.total >= PERCENT_SCALE))
             return QueueItemsBuilder.empty
 
         return (items: QueueItemsBuilder) => {
