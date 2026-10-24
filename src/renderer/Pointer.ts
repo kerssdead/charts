@@ -47,7 +47,9 @@ export default class Pointer {
 
     private dragAbort: AbortController | null = null
 
-    private isMoveEnabled: boolean | null = null
+    private isAttached: boolean = false
+
+    private isMoveEnabled: boolean = false
 
     private isScrollable: boolean = false
 
@@ -68,12 +70,13 @@ export default class Pointer {
     }
 
     attach(enableMove: boolean) {
-        if (enableMove === this.isMoveEnabled)
+        if (this.isAttached && !!enableMove === this.isMoveEnabled)
             return
 
         this.detach()
 
-        this.isMoveEnabled = enableMove
+        this.isAttached = true
+        this.isMoveEnabled = !!enableMove
 
         this.updateDragging()
 
@@ -109,7 +112,8 @@ export default class Pointer {
         this.context = null
         this.drag = null
         this.isDragged = false
-        this.isMoveEnabled = null
+        this.isAttached = false
+        this.isMoveEnabled = false
     }
 
     setScrollable(value: boolean) {
@@ -119,7 +123,7 @@ export default class Pointer {
     }
 
     private updateDragging() {
-        const isEnabled = this.isMoveEnabled != null && (this.isMoveEnabled || this.isScrollable)
+        const isEnabled = this.isAttached && (this.isMoveEnabled || this.isScrollable)
 
         this.canvas.style.touchAction = isEnabled ? Styles.TouchAction.None : ''
 
