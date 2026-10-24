@@ -160,6 +160,9 @@ export default class RenderItemRectangle
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
         const { left, top, width, height } = this.grow(item.animation.init)
 
+        if (width == 0 || height == 0)
+            return
+
         if (this.clip) {
             const clip = this.canvasClip
 
