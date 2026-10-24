@@ -82,7 +82,7 @@ describe('Getting tree bar data', () => {
     })
 
     it('Should sort siblings by column and keep missing values last', () => {
-        const cells = (value?: number | string) => ({ cells: value == undefined ? {} : { amount: value } })
+        const cells = (value?: number | string): Partial<TreeBarRow> => ({ cells: value == undefined ? {} : { amount: value } })
 
         const values = [
             row('a', [1], { ...cells(5), expanded: true, children: [row('a1', [1], cells(2)), row('a2', [1], cells(1))] }),
