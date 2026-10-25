@@ -8,38 +8,30 @@ import TreeBarProcess from '@/render/treeBar/TreeBarProcess'
 import { ChartType } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import ChartSettings from '@/types/ChartSettings'
-import GaugeData from '@/types/data/GaugeData'
-import PieData from '@/types/data/PieData'
-import PlotData from '@/types/data/PlotData'
-import TreeData from '@/types/data/TreeData'
-import SegmentedBarData from '@/types/data/SegmentedBarData'
-import TreeBarData from '@/types/data/TreeBarData'
 import Point from '@/types/Point'
 import Data from '@/types/interfaces/Data'
 
-type Factory = (chart: ChartItem, settings: ChartSettings, pixel: Point) => ChartProcess<Data>
+type ProcessConstructor = new (data: never, pixel: Point, settings: ChartSettings) => ChartProcess<Data>
 
 export default class ProcessFactory {
-    private static readonly factories = new Map<ChartType, Factory>([
-        [ChartType.Plot, (chart, settings, pixel) =>
-            new PlotProcess(chart.data as PlotData, pixel, settings)],
-        [ChartType.Pie, (chart, settings, pixel) =>
-            new PieProcess(chart.data as PieData, pixel, settings)],
-        [ChartType.TreeMap, (chart, settings, pixel) =>
-            new TreeMapProcess(chart.data as TreeData, pixel, settings)],
-        [ChartType.Gauge, (chart, settings, pixel) =>
-            new GaugeProcess(chart.data as GaugeData, pixel, settings)],
-        [ChartType.SegmentedBar, (chart, settings, pixel) =>
-            new SegmentedBarProcess(chart.data as SegmentedBarData, pixel, settings)],
-        [ChartType.TreeBar, (chart, settings, pixel) =>
-            new TreeBarProcess(chart.data as TreeBarData, pixel, settings)]
+    private static readonly processClasses = new Map<ChartType, ProcessConstructor>([
+        [ChartType.Plot, PlotProcess],
+        [ChartType.Pie, PieProcess],
+        [ChartType.TreeMap, TreeMapProcess],
+        [ChartType.Gauge, GaugeProcess],
+        [ChartType.SegmentedBar, SegmentedBarProcess],
+        [ChartType.TreeBar, TreeBarProcess]
     ])
 
-    static create(chart: ChartItem, settings: ChartSettings, pixel: Point) {
-        return ProcessFactory.factories.get(chart.type)?.(chart, settings, pixel)
+    private static readonly fixedHeaderTypes = new Set([ChartType.TreeBar])
+
+    static create(chart: ChartItem, pixel: Point, settings: ChartSettings) {
+        const ProcessClass = ProcessFactory.processClasses.get(chart.type)
+
+        return ProcessClass ? new ProcessClass(chart.data as never, pixel, settings) : undefined
     }
 
     static hasFixedHeader(type: ChartType) {
-        return type == ChartType.TreeBar
+        return ProcessFactory.fixedHeaderTypes.has(type)
     }
 }

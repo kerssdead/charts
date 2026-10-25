@@ -306,7 +306,7 @@ export default class Renderer {
             const chart = charts[index]
             const pixel = panel.pixel(this.layout.window)
 
-            const process = ProcessFactory.create(chart, this.settings, pixel)
+            const process = ProcessFactory.create(chart, pixel, this.settings)
 
             panel.plot = process instanceof PlotProcess ? process : null
 
