@@ -1,6 +1,6 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
-import type PlotProcess from '@/render/PlotProcess'
+import type PlotProcess from '@/render/plot/PlotProcess'
 import type { ScrollDrag } from '@/renderer/Pointer'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { clamp, contains } from '@/helpers/Geometry'

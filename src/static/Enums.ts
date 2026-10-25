@@ -66,6 +66,12 @@ export const enum PlotType {
     StackingColumn
 }
 
+export const enum PlotOrientation {
+    Vertical,
+
+    Horizontal
+}
+
 export const enum Tag {
     Canvas = 'canvas',
 

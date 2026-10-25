@@ -1,4 +1,4 @@
-import PlotProcess from '@/render/PlotProcess'
+import PlotProcess from '@/render/plot/PlotProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemText from '@/types/RenderItemText'
 import RenderItemRectangle from '@/types/RenderItemRectangle'

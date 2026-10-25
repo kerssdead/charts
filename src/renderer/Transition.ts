@@ -1,5 +1,5 @@
 import Queue from '@/render/Queue'
-import PlotProcess from '@/render/PlotProcess'
+import PlotProcess from '@/render/plot/PlotProcess'
 import RenderItem from '@/types/RenderItem'
 import RenderItemArc from '@/types/RenderItemArc'
 import Panel from '@/types/Panel'
