@@ -1,4 +1,4 @@
-import TreeBarProcess from '@/render/TreeBarProcess'
+import TreeBarProcess from '@/render/treeBar/TreeBarProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItem from '@/types/RenderItem'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
