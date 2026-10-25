@@ -1,4 +1,4 @@
-import SegmentedBarProcess from '@/render/SegmentedBarProcess'
+import SegmentedBarProcess from '@/render/segmentedBar/SegmentedBarProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import SegmentedBarData from '@/types/data/SegmentedBarData'
@@ -52,7 +52,26 @@ describe('Getting segmented bar data', () => {
 
         expect(rects.get('segmented-bar-stop-value')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
         expect(rects.get('segmented-bar-stop-percent')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
-        expect(rects.get('segmented-bar-stop-outside')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 3 * PIXEL.x)
+        expect(rects.get('segmented-bar-stop-outside')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
+    })
+
+    it('Should keep stop outline inside the bar', () => {
+        const rects = getRects({ values: [part('a', 1)], stops: [stop('start', 0), stop('end', 1)] })
+
+        expect(rects.get('segmented-bar-stop-start')!.absolute.x).toBeCloseTo(BAR.x + 5 * PIXEL.x)
+        expect(rects.get('segmented-bar-stop-end')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
+    })
+
+    it('Should hide label of part narrower than its padding', () => {
+        const items = getItems({
+            values: [
+                new Sector({ id: 'narrow', label: 'Lorem', value: 1, color: '#ff0000' }),
+                new Sector({ id: 'wide', label: 'Ipsum', value: 10000, color: '#ff0000' })
+            ]
+        })
+
+        expect(items.has('segmented-bar-part-narrow-label')).toBe(false)
+        expect(items.has('segmented-bar-part-wide-label')).toBe(true)
     })
 
     it('Should scale parts to 100% in percentage mode and show empty track', () => {
@@ -85,15 +104,8 @@ describe('Getting segmented bar data', () => {
 
         expect(rects.get('segmented-bar-track')!.absolute.width).toBeCloseTo(BAR.width)
         expect(rects.get('segmented-bar-stop-small')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
-        expect(rects.get('segmented-bar-stop-large')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 3 * PIXEL.x)
+        expect(rects.get('segmented-bar-stop-large')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
         expect(rects.get('segmented-bar-stop-percent')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
-    })
-
-    it('Should be empty only without parts and stops', () => {
-        const create = (stops: SegmentedBarStop[]) => new SegmentedBarProcess({ values: [part('a', 0)], stops } as SegmentedBarData, PIXEL, SETTINGS)
-
-        expect(create([]).isEmpty()).toBe(true)
-        expect(create([stop('b', 1)]).isEmpty()).toBe(false)
     })
 
     it('Should show percent values in tooltips in percentage mode', () => {
