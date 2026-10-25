@@ -2,7 +2,7 @@ import ChartProcess from '@/render/ChartProcess'
 import GaugeProcess from '@/render/gauge/GaugeProcess'
 import PieProcess from '@/render/pie/PieProcess'
 import PlotProcess from '@/render/PlotProcess'
-import TreeProcess from '@/render/TreeProcess'
+import TreeMapProcess from '@/render/tree/TreeMapProcess'
 import SegmentedBarProcess from '@/render/SegmentedBarProcess'
 import TreeBarProcess from '@/render/TreeBarProcess'
 import { ChartType } from '@/static/Enums'
@@ -26,7 +26,7 @@ export default class ProcessFactory {
         [ChartType.Pie, (chart, settings, pixel) =>
             new PieProcess(chart.data as PieData, pixel, settings)],
         [ChartType.TreeMap, (chart, settings, pixel) =>
-            new TreeProcess(chart.data as TreeData, pixel, settings)],
+            new TreeMapProcess(chart.data as TreeData, pixel, settings)],
         [ChartType.Gauge, (chart, settings, pixel) =>
             new GaugeProcess(chart.data as GaugeData, pixel, settings)],
         [ChartType.SegmentedBar, (chart, settings, pixel) =>
