@@ -39,7 +39,11 @@ export default class Queue {
 
         let hasTemp = false
 
-        for (const step of this.getSorted()) {
+        const steps = this.getSorted()
+
+        for (let i = 0; i < steps.length; i++) {
+            const step = steps[i]
+
             this.ctx.globalAlpha = step.animation.alpha
 
             step.render(this.ctx, step.isFixed ? screen : window, screen, now)
@@ -72,8 +76,8 @@ export default class Queue {
 
         let isAnimating = false
 
-        for (const item of this.queue) {
-            if (item.animate(point, now, hoveredGroups))
+        for (let i = 0; i < this.queue.length; i++) {
+            if (this.queue[i].animate(point, now, hoveredGroups))
                 isAnimating = true
         }
 

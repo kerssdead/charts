@@ -11,6 +11,10 @@ import { clamp, contains } from '@/helpers/Geometry'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { grayScale } from '@/helpers/Color'
 
+const SOLID_LINE: number[] = []
+
+const SCREEN_AREA: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
+
 export default class RenderItem {
     isInteractive: boolean = false
 
@@ -93,7 +97,10 @@ export default class RenderItem {
         const bounds = this.shape.getBounds()
         const clip = scroll?.clip
 
-        if (bounds && !RenderItem.overlaps(bounds, clip ?? { x: 0, y: 0, width: screen.width, height: screen.height })) {
+        SCREEN_AREA.width = screen.width
+        SCREEN_AREA.height = screen.height
+
+        if (bounds && !RenderItem.overlaps(bounds, clip ?? SCREEN_AREA)) {
             return
         }
 
@@ -112,7 +119,7 @@ export default class RenderItem {
         ctx.globalAlpha *= this.animation.visibility
 
         ctx.lineWidth = DEFAULT_LINE_WIDTH
-        ctx.setLineDash([])
+        ctx.setLineDash(SOLID_LINE)
 
         const fill = this.fill
         const stroke = this.stroke ?? fill

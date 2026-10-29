@@ -1,27 +1,20 @@
 import CanvasWindow from '@/types/CanvasWindow'
-import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import RenderItem from '@/types/RenderItem'
 import Point from '@/types/Point'
 import Alignment, { DEFAULT_ALIGNMENT } from '@/types/Alignment'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import { GradientCache } from '@/helpers/Canvas'
+import { unitVerticalGradient } from '@/helpers/Canvas'
 import { clamp, lerp } from '@/helpers/Geometry'
 
 const SCALE_DELTA = 0.01
 const ALPHA_DELTA = 0.5
 
-const H_FACTOR = {
-    [HorizontalAlignment.Left]: 0,
-    [HorizontalAlignment.Center]: 0.5,
-    [HorizontalAlignment.Right]: 1
-}
-const V_FACTOR = {
-    [VerticalAlignment.Top]: 0,
-    [VerticalAlignment.Center]: 0.5,
-    [VerticalAlignment.Bottom]: 1
-}
+const horizontalFactor = (x: HorizontalAlignment) => x == HorizontalAlignment.Left ? 0 : x == HorizontalAlignment.Center ? .5 : 1
+
+const verticalFactor = (y: VerticalAlignment) => y == VerticalAlignment.Top ? 0 : y == VerticalAlignment.Center ? .5 : 1
 
 type RectangleCanvas = RectangleDimensions & {
     radii: number[]
@@ -29,6 +22,13 @@ type RectangleCanvas = RectangleDimensions & {
 
 type ClipBox = RectangleDimensions & {
     radius: number
+}
+
+type CanvasBox = {
+    left: number
+    top: number
+    width: number
+    height: number
 }
 
 export default class RenderItemRectangle
@@ -59,38 +59,45 @@ export default class RenderItemRectangle
 
     fromClip: ClipBox | null = null
 
-    private canvasClip: ClipBox = { x: 0, y: 0, width: 0, height: 0, radius: 0 }
+    private readonly canvasClip: ClipBox = { x: 0, y: 0, width: 0, height: 0, radius: 0 }
 
     private canvasGrowOrigin: number = 0
 
-    private readonly gradient = new GradientCache()
+    private readonly position: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
 
-    current(morph: number = 1): RectangleDimensions {
-        const result = { ...this.absolute }
+    private readonly area: CanvasBox = { left: 0, top: 0, width: 0, height: 0 }
 
-        if (!this.from || morph >= 1)
-            return result
+    private readonly grownArea: CanvasBox = { left: 0, top: 0, width: 0, height: 0 }
 
-        result.x = lerp(this.from.x, this.absolute.x, morph)
-        result.y = lerp(this.from.y, this.absolute.y, morph)
-        result.width = lerp(this.from.width, this.absolute.width, morph)
-        result.height = lerp(this.from.height, this.absolute.height, morph)
+    private readonly edges: Bounds = { left: 0, top: 0, right: 0, bottom: 0 }
+
+    current(morph: number = 1, result: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }): RectangleDimensions {
+        const { absolute } = this
+        const from = this.from && morph < 1 ? this.from : null
+
+        result.x = from ? lerp(from.x, absolute.x, morph) : absolute.x
+        result.y = from ? lerp(from.y, absolute.y, morph) : absolute.y
+        result.width = from ? lerp(from.width, absolute.width, morph) : absolute.width
+        result.height = from ? lerp(from.height, absolute.height, morph) : absolute.height
 
         return result
     }
 
-    currentRadii(morph: number = 1): number[] {
-        if (!this.fromRadii || morph >= 1)
-            return [...this.radii]
-
+    currentRadii(morph: number = 1, result: number[] = []): number[] {
+        const isMorphing = this.fromRadii != null && morph < 1
         const flatten = 1 - Math.pow(1 - morph, 4)
         const round = Math.pow(morph, 4)
 
-        return this.radii.map((radius, i) => {
-            const from = this.fromRadii![i] ?? 0
+        result.length = this.radii.length
 
-            return lerp(from, radius, radius < from ? flatten : round)
-        })
+        for (let i = 0; i < this.radii.length; i++) {
+            const radius = this.radii[i]
+            const from = this.fromRadii?.[i] ?? 0
+
+            result[i] = isMorphing ? lerp(from, radius, radius < from ? flatten : round) : radius
+        }
+
+        return result
     }
 
     currentClip(morph: number = 1): ClipBox | null {
@@ -150,9 +157,11 @@ export default class RenderItemRectangle
     }
 
     adjust(window: CanvasWindow, morph: number = 1): void {
-        const absolute = this.current(morph)
+        const absolute = this.current(morph, this.position)
+        const radii = this.currentRadii(morph, this.canvas.radii)
 
-        this.canvas.radii = this.currentRadii(morph).map(radius => radius / COORDS_MAX_X * window.width)
+        for (let i = 0; i < radii.length; i++)
+            radii[i] = radii[i] / COORDS_MAX_X * window.width
 
         this.canvas.x = RenderItem.adjustX(window, absolute.x)
         this.canvas.y = RenderItem.adjustY(window, absolute.y)
@@ -161,14 +170,13 @@ export default class RenderItemRectangle
 
         const clip = this.currentClip(morph)
 
-        if (clip)
-            this.canvasClip = {
-                x: RenderItem.adjustX(window, clip.x),
-                y: RenderItem.adjustY(window, clip.y),
-                width: clip.width / COORDS_MAX_X * window.width,
-                height: clip.height / COORDS_MAX_Y * window.height,
-                radius: clip.radius / COORDS_MAX_X * window.width
-            }
+        if (clip) {
+            this.canvasClip.x = RenderItem.adjustX(window, clip.x)
+            this.canvasClip.y = RenderItem.adjustY(window, clip.y)
+            this.canvasClip.width = clip.width / COORDS_MAX_X * window.width
+            this.canvasClip.height = clip.height / COORDS_MAX_Y * window.height
+            this.canvasClip.radius = clip.radius / COORDS_MAX_X * window.width
+        }
 
         this.canvasGrowOrigin = this.growAxis == 'x'
                                 ? RenderItem.adjustX(window, this.growOrigin)
@@ -194,8 +202,16 @@ export default class RenderItemRectangle
 
         ctx.roundRect(left, top, width, height, this.canvas.radii)
 
-        if (this.isGradient && height != 0) {
-            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.fill!, top, top + height)
+        if (this.isGradient) {
+            const scale = Math.abs(height)
+
+            ctx.save()
+
+            ctx.translate(0, Math.min(top, top + height))
+            ctx.scale(scale, scale)
+
+            ctx.lineWidth /= scale
+            ctx.fillStyle = ctx.strokeStyle = unitVerticalGradient(ctx, item.fill!)
         }
 
         if (this.isFill) {
@@ -204,19 +220,22 @@ export default class RenderItemRectangle
 
         ctx.stroke()
 
+        if (this.isGradient)
+            ctx.restore()
+
         if (this.clip)
             ctx.restore()
     }
 
     getBounds() {
-        const { left, top, width, height } = this.bounds()
+        const { left, top, width, height } = this.bounds(1, this.area)
 
-        return {
-            left: Math.min(left, left + width),
-            top: Math.min(top, top + height),
-            right: Math.max(left, left + width),
-            bottom: Math.max(top, top + height)
-        }
+        this.edges.left = Math.min(left, left + width)
+        this.edges.top = Math.min(top, top + height)
+        this.edges.right = Math.max(left, left + width)
+        this.edges.bottom = Math.max(top, top + height)
+
+        return this.edges
     }
 
     isMouseOver(point: Point) {
@@ -246,40 +265,35 @@ export default class RenderItemRectangle
 
     private grow(progress: number) {
         if (progress >= 1) {
-            return this.bounds()
+            return this.bounds(1, this.area)
         }
 
         if (this.growAxis == null) {
-            return this.bounds(progress)
+            return this.bounds(progress, this.grownArea)
         }
 
-        const bounds = this.bounds()
+        const area = this.bounds(1, this.area)
+        const grown = this.grownArea
         const origin = this.canvasGrowOrigin
+        const isX = this.growAxis == 'x'
 
-        if (this.growAxis == 'x') {
-            return {
-                ...bounds,
-                left: lerp(origin, bounds.left, progress),
-                width: bounds.width * progress
-            }
-        }
+        grown.left = isX ? lerp(origin, area.left, progress) : area.left
+        grown.top = isX ? area.top : lerp(origin, area.top, progress)
+        grown.width = isX ? area.width * progress : area.width
+        grown.height = isX ? area.height : area.height * progress
 
-        return {
-            ...bounds,
-            top: lerp(origin, bounds.top, progress),
-            height: bounds.height * progress
-        }
+        return grown
     }
 
-    private bounds(scale = 1) {
+    private bounds(scale: number, result: CanvasBox) {
         const width = this.canvas.width * scale
         const height = this.canvas.height * scale
 
-        return {
-            left: this.canvas.x - width * H_FACTOR[this.align.x],
-            top: this.canvas.y - height * V_FACTOR[this.align.y],
-            width,
-            height,
-        }
+        result.left = this.canvas.x - width * horizontalFactor(this.align.x)
+        result.top = this.canvas.y - height * verticalFactor(this.align.y)
+        result.width = width
+        result.height = height
+
+        return result
     }
 }

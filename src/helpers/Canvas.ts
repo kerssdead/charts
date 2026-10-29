@@ -45,6 +45,31 @@ export function verticalGradient(ctx: CanvasRenderingContext2D, color: string, y
     return gradient
 }
 
+const UNIT_GRADIENT_LIMIT = 256
+
+const unitGradients = new WeakMap<CanvasRenderingContext2D, Map<string, CanvasGradient>>()
+
+export function unitVerticalGradient(ctx: CanvasRenderingContext2D, color: string) {
+    let gradients = unitGradients.get(ctx)
+
+    if (!gradients) {
+        gradients = new Map()
+        unitGradients.set(ctx, gradients)
+    }
+
+    let gradient = gradients.get(color)
+
+    if (!gradient) {
+        if (gradients.size >= UNIT_GRADIENT_LIMIT)
+            gradients.clear()
+
+        gradient = verticalGradient(ctx, color, 0, 1)
+        gradients.set(color, gradient)
+    }
+
+    return gradient
+}
+
 export function getContext(canvas: HTMLCanvasElement, willReadFrequently: boolean = false): CanvasRenderingContext2D {
     return canvas.getContext('2d', { willReadFrequently })
            ?? fail(ErrorType.NullContext)

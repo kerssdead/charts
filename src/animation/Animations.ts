@@ -12,6 +12,10 @@ const bezier = (t: number, p1: number, p2: number) => 3 * (1 - t) * (1 - t) * t 
 
 const slope = (t: number, p1: number, p2: number) => 3 * (1 - t) * (1 - t) * p1 + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (1 - p2)
 
+const SAMPLES = 1024
+
+const TABLE = Float64Array.from({ length: SAMPLES + 1 }, (_, i) => bezier(solve(i / SAMPLES), Y1, Y2))
+
 export default function ease(value: number): number {
     if (value <= 0)
         return 0
@@ -19,7 +23,10 @@ export default function ease(value: number): number {
     if (value >= 1)
         return 1
 
-    return bezier(solve(value), Y1, Y2)
+    const position = value * SAMPLES
+    const index = Math.floor(position)
+
+    return TABLE[index] + (TABLE[index + 1] - TABLE[index]) * (position - index)
 }
 
 function solve(x: number): number {

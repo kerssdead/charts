@@ -78,9 +78,12 @@ function readPixel(ctx: CanvasRenderingContext2D) {
 }
 
 export function grayScale(color: string, amount: number = 1) {
+    if (amount <= 0)
+        return color
+
     const rgb = hexToRgb(color)
 
-    if (!rgb || amount <= 0)
+    if (!rgb)
         return color
 
     const gray = .3 * rgb.r + .59 * rgb.g + .11 * rgb.b

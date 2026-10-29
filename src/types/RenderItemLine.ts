@@ -4,7 +4,6 @@ import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming, FULL_ANGLE } from '@/static/constants/Index'
 import { lerp } from '@/helpers/Geometry'
-import { sum } from '@/helpers/Collections'
 import HoverMap from '@/types/HoverMap'
 import { GradientCache } from '@/helpers/Canvas'
 
@@ -37,6 +36,8 @@ export default class RenderItemLine
     private readonly gradient = new GradientCache()
 
     private readonly markers = new HoverMap<number>()
+
+    private readonly partialEnd: Point = { x: 0, y: 0 }
 
     current(morph: number = 1): Point[] {
         if (!this.from || morph >= 1 || this.from.length != this.absolute.length)
@@ -103,22 +104,25 @@ export default class RenderItemLine
                 ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.fill!, bounds.top, bounds.bottom)
         }
 
-        const stops = progress < 1
-                      ? this.partial(progress)
-                      : this.canvas
+        const { canvas } = this
+        const whole = progress < 1 ? this.wholeStopsAt(progress) : canvas.length
+        const end = whole < canvas.length ? this.partialEnd : null
 
-        if (stops.length == 1) {
-            ctx.arc(stops[0].x, stops[0].y, Math.max(this.width, POINT_MIN_RADIUS), 0, FULL_ANGLE)
+        if (whole == 1 && !end) {
+            ctx.arc(canvas[0].x, canvas[0].y, Math.max(this.width, POINT_MIN_RADIUS), 0, FULL_ANGLE)
             ctx.fill()
 
             return
         }
 
-        ctx.moveTo(stops[0].x, stops[0].y)
+        ctx.moveTo(canvas[0].x, canvas[0].y)
 
-        for (let i = 1; i < stops.length; i++) {
-            ctx.lineTo(stops[i].x, stops[i].y)
+        for (let i = 1; i < whole; i++) {
+            ctx.lineTo(canvas[i].x, canvas[i].y)
         }
+
+        if (end)
+            ctx.lineTo(end.x, end.y)
 
         ctx.stroke()
 
@@ -148,7 +152,9 @@ export default class RenderItemLine
         let right = -Infinity
         let bottom = -Infinity
 
-        for (const stop of this.canvas) {
+        for (let i = 0; i < this.canvas.length; i++) {
+            const stop = this.canvas[i]
+
             left = Math.min(left, stop.x)
             top = Math.min(top, stop.y)
             right = Math.max(right, stop.x)
@@ -216,34 +222,39 @@ export default class RenderItemLine
         return this.markers.isAnimating
     }
 
-    private partial(progress: number): Point[] {
-        const lengths = this.canvas.slice(1).map((stop, i) => Math.hypot(stop.x - this.canvas[i].x, stop.y - this.canvas[i].y))
+    private wholeStopsAt(progress: number): number {
+        const { canvas } = this
 
-        let left = sum(lengths, length => length) * progress
+        let total = 0
 
-        const result: Point[] = [this.canvas[0]]
+        for (let i = 1; i < canvas.length; i++)
+            total += RenderItemLine.segmentLength(canvas, i)
 
-        for (let i = 0; i < lengths.length; i++) {
-            const from = this.canvas[i]
-            const to = this.canvas[i + 1]
+        let left = total * progress
 
-            if (left >= lengths[i]) {
-                result.push(to)
-                left -= lengths[i]
+        for (let i = 1; i < canvas.length; i++) {
+            const length = RenderItemLine.segmentLength(canvas, i)
+
+            if (left >= length) {
+                left -= length
 
                 continue
             }
 
-            const k = lengths[i] == 0 ? 0 : left / lengths[i]
+            const k = length == 0 ? 0 : left / length
+            const from = canvas[i - 1]
+            const to = canvas[i]
 
-            result.push({
-                x: from.x + (to.x - from.x) * k,
-                y: from.y + (to.y - from.y) * k
-            })
+            this.partialEnd.x = from.x + (to.x - from.x) * k
+            this.partialEnd.y = from.y + (to.y - from.y) * k
 
-            break
+            return i
         }
 
-        return result
+        return canvas.length
+    }
+
+    private static segmentLength(stops: Point[], index: number) {
+        return Math.hypot(stops[index].x - stops[index - 1].x, stops[index].y - stops[index - 1].y)
     }
 }
