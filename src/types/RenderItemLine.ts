@@ -1,11 +1,13 @@
 import Point from '@/types/Point'
-import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming, FULL_ANGLE } from '@/static/constants/Index'
 import { lerp } from '@/helpers/Geometry'
 import HoverMap from '@/types/HoverMap'
-import { GradientCache } from '@/helpers/Canvas'
+import { edgeFadeMask, fadingGradient, GradientCache, offscreenLayer } from '@/helpers/Canvas'
+import { CompositeOperation } from '@/static/Enums'
+import { withAlpha } from '@/helpers/Color'
 
 const ALPHA_DELTA = 0.5
 
@@ -14,6 +16,10 @@ const POINT_MIN_RADIUS = 2
 const HIT_RADIUS = 6
 
 const MARKER_RADIUS = 4
+
+const AREA_EDGE_FADE = 12
+
+const AREA_TOP_ALPHA = 0.5
 
 export default class RenderItemLine
     extends RenderItemBase {
@@ -31,13 +37,21 @@ export default class RenderItemLine
 
     from: Point[] | null = null
 
+    areaBaseline: number | null = null
+
+    private fromAreaBaseline: number | null = null
+
+    private canvasAreaBaseline: number = 0
+
     private hovered: number = -1
 
     private readonly gradient = new GradientCache()
 
+    private readonly areaGradient = new GradientCache(fadingGradient)
+
     private readonly markers = new HoverMap<number>()
 
-    private readonly partialEnd: Point = { x: 0, y: 0 }
+    private readonly partialStop: Point = { x: 0, y: 0 }
 
     current(morph: number = 1): Point[] {
         if (!this.from || morph >= 1 || this.from.length != this.absolute.length)
@@ -53,11 +67,19 @@ export default class RenderItemLine
         })
     }
 
+    private currentAreaBaseline(morph: number = 1): number | null {
+        if (this.areaBaseline == null || this.fromAreaBaseline == null || morph >= 1)
+            return this.areaBaseline
+
+        return lerp(this.fromAreaBaseline, this.areaBaseline, morph)
+    }
+
     morphFrom(previous: RenderItemBase, morph: number): boolean {
         if (!(previous instanceof RenderItemLine))
             return false
 
         this.from = previous.current(morph)
+        this.fromAreaBaseline = previous.currentAreaBaseline(morph)
 
         return true
     }
@@ -85,6 +107,11 @@ export default class RenderItemLine
             this.canvas[i].x = RenderItem.adjustX(window, stops[i].x)
             this.canvas[i].y = RenderItem.adjustY(window, stops[i].y)
         }
+
+        const areaBaseline = this.currentAreaBaseline(morph)
+
+        if (areaBaseline != null)
+            this.canvasAreaBaseline = RenderItem.adjustY(window, areaBaseline)
     }
 
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
@@ -97,34 +124,39 @@ export default class RenderItemLine
         ctx.lineWidth = this.width
         ctx.setLineDash(this.dash)
 
-        if (this.isGradient) {
-            const bounds = this.getBounds()!
+        const bounds = this.getBounds()!
 
-            if (bounds.bottom > bounds.top)
-                ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.fill!, bounds.top, bounds.bottom)
-        }
+        if (this.isGradient && bounds.bottom > bounds.top)
+            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.fill!, bounds.top, bounds.bottom)
 
         const { canvas } = this
-        const whole = progress < 1 ? this.wholeStopsAt(progress) : canvas.length
-        const end = whole < canvas.length ? this.partialEnd : null
+        const drawnStopCount = progress < 1 ? this.drawnStopCountAt(progress) : canvas.length
+        const partialStop = drawnStopCount < canvas.length ? this.partialStop : null
 
-        if (whole == 1 && !end) {
+        if (drawnStopCount == 1 && !partialStop) {
             ctx.arc(canvas[0].x, canvas[0].y, Math.max(this.width, POINT_MIN_RADIUS), 0, FULL_ANGLE)
             ctx.fill()
 
             return
         }
 
-        ctx.moveTo(canvas[0].x, canvas[0].y)
+        const isArea = this.areaBaseline != null
 
-        for (let i = 1; i < whole; i++) {
-            ctx.lineTo(canvas[i].x, canvas[i].y)
+        if (isArea) {
+            const lastStop = partialStop ?? canvas[drawnStopCount - 1]
+
+            this.fillArea(ctx, item, bounds, drawnStopCount, partialStop, lastStop)
+
+            ctx.save()
+            this.clipToArea(ctx, bounds, lastStop)
         }
 
-        if (end)
-            ctx.lineTo(end.x, end.y)
+        this.traceLine(ctx, drawnStopCount, partialStop)
 
         ctx.stroke()
+
+        if (isArea)
+            ctx.restore()
 
         if (progress < 1)
             return
@@ -159,6 +191,11 @@ export default class RenderItemLine
             top = Math.min(top, stop.y)
             right = Math.max(right, stop.x)
             bottom = Math.max(bottom, stop.y)
+        }
+
+        if (this.areaBaseline != null) {
+            top = Math.min(top, this.canvasAreaBaseline)
+            bottom = Math.max(bottom, this.canvasAreaBaseline)
         }
 
         const padding = this.width / 2
@@ -222,7 +259,80 @@ export default class RenderItemLine
         return this.markers.isAnimating
     }
 
-    private wholeStopsAt(progress: number): number {
+    private fillArea(
+        ctx: CanvasRenderingContext2D,
+        item: RenderItem,
+        { top, bottom }: Bounds,
+        drawnStopCount: number,
+        partialStop: Point | null,
+        lastStop: Point
+    ) {
+        const { canvas, canvasAreaBaseline } = this
+        const left = canvas[0].x
+        const right = lastStop.x
+        const scale = ctx.getTransform().a
+        const pixelWidth = Math.ceil((right - left) * scale)
+        const pixelHeight = Math.ceil((bottom - top) * scale)
+
+        if (pixelWidth <= 0 || pixelHeight <= 0)
+            return
+
+        const layer = offscreenLayer(ctx)
+
+        layer.setTransform(1, 0, 0, 1, 0, 0)
+        layer.clearRect(0, 0, pixelWidth, pixelHeight)
+        layer.setTransform(scale, 0, 0, scale, -left * scale, -top * scale)
+
+        layer.beginPath()
+        this.traceLine(layer, drawnStopCount, partialStop)
+        layer.lineTo(right, canvasAreaBaseline)
+        layer.lineTo(left, canvasAreaBaseline)
+        layer.closePath()
+
+        layer.fillStyle = this.areaGradient.get(layer, withAlpha(item.fill!, AREA_TOP_ALPHA), top, bottom)
+        layer.fill()
+
+        layer.globalCompositeOperation = CompositeOperation.DestinationIn
+        layer.fillStyle = edgeFadeMask(layer, left, right, AREA_EDGE_FADE)
+        layer.fillRect(left, top, right - left, bottom - top)
+        layer.globalCompositeOperation = CompositeOperation.SourceOver
+
+        ctx.drawImage(
+            layer.canvas,
+            0,
+            0,
+            pixelWidth,
+            pixelHeight,
+            left,
+            top,
+            pixelWidth / scale,
+            pixelHeight / scale
+        )
+    }
+
+    private clipToArea(ctx: CanvasRenderingContext2D, { top, bottom }: Bounds, lastStop: Point) {
+        const left = this.canvas[0].x
+
+        ctx.rect(left, top, lastStop.x - left, bottom - top)
+        ctx.clip()
+
+        ctx.beginPath()
+    }
+
+    private traceLine(ctx: CanvasRenderingContext2D, drawnStopCount: number, partialStop: Point | null) {
+        const { canvas } = this
+
+        ctx.moveTo(canvas[0].x, canvas[0].y)
+
+        for (let i = 1; i < drawnStopCount; i++) {
+            ctx.lineTo(canvas[i].x, canvas[i].y)
+        }
+
+        if (partialStop)
+            ctx.lineTo(partialStop.x, partialStop.y)
+    }
+
+    private drawnStopCountAt(progress: number): number {
         const { canvas } = this
 
         let total = 0
@@ -245,8 +355,8 @@ export default class RenderItemLine
             const from = canvas[i - 1]
             const to = canvas[i]
 
-            this.partialEnd.x = from.x + (to.x - from.x) * k
-            this.partialEnd.y = from.y + (to.y - from.y) * k
+            this.partialStop.x = from.x + (to.x - from.x) * k
+            this.partialStop.y = from.y + (to.y - from.y) * k
 
             return i
         }

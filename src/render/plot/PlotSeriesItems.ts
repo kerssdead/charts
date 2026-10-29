@@ -55,6 +55,7 @@ export default class PlotSeriesItems {
                 return this.columns.getItems(series)
 
             case PlotType.Line:
+            case PlotType.Area:
                 return this.lines.getItems(series)
 
             case PlotType.Bar:

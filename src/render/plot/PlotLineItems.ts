@@ -3,6 +3,7 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { COORDS_MAX_X } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotItemStyle from '@/render/plot/PlotItemStyle'
+import { PlotType } from '@/static/Enums'
 
 export default class PlotLineItems {
     private readonly layout: PlotLayout
@@ -34,6 +35,9 @@ export default class PlotLineItems {
 
             line.dash(Array.isArray(series.dash) ? series.dash : [])
                 .gradient()
+
+            if (series.type == PlotType.Area)
+                line.area(baseline)
 
             this.style.styleLine(line, series, 'line')
         }

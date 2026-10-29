@@ -1,6 +1,7 @@
 import { buildItems, createPlot, createSeries } from './PlotTestData'
 import PlotSeries from '@/types/PlotSeries'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
+import RenderItemLine from '@/types/RenderItemLine'
 import PlotSeriesItems from '@/render/plot/PlotSeriesItems'
 import { PlotType } from '@/static/Enums'
 
@@ -56,5 +57,20 @@ describe('Getting plot series items', () => {
 
         expect(getTops())
             .toEqual(getTops())
+    })
+
+    it('Should draw area series as line with area', () => {
+        const items = buildItems(create([createSeries(PlotType.Area, [1])]).getItems())
+
+        expect([items.map(item => item.key), (items[0].shape as RenderItemLine).areaBaseline])
+            .toEqual([['0-line'], expect.any(Number)])
+    })
+
+    it('Should skip disabled areas', () => {
+        expect(getKeys([
+            createSeries(PlotType.Area, [1], { disabled: true }),
+            createSeries(PlotType.Column, [1])
+        ]))
+            .toEqual(['1-rect-0'])
     })
 })

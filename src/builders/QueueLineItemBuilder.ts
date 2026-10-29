@@ -27,6 +27,12 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
         return this
     }
 
+    area(baseline: number) {
+        this.shape.areaBaseline = baseline
+
+        return this
+    }
+
     gradient() {
         this.shape.isGradient = true
 

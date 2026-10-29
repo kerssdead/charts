@@ -33,7 +33,7 @@ describe('Styling plot line', () => {
         expect(item.color)
             .toBe(series.color)
         expect(item.layer)
-            .toBe(Layer.Data + 1)
+            .toBe(Layer.Data + 2)
         expect(item.isInteractive)
             .toBe(true)
         expect(item.animation.initDuration)
@@ -47,5 +47,13 @@ describe('Styling plot line', () => {
             .toBe('0')
         expect(styleLine([series], series, 'line').hoverGroup)
             .toBeNull()
+    })
+
+    it('Should draw area series below lines', () => {
+        const area = createSeries(PlotType.Area, [1])
+        const line = createSeries(PlotType.Line, [1])
+
+        expect([styleLine([area, line], area, 'line').layer, styleLine([area, line], line, 'line').layer])
+            .toEqual([Layer.Data + 1, Layer.Data + 2])
     })
 })

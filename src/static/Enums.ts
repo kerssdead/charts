@@ -63,7 +63,9 @@ export const enum PlotType {
 
     Bar,
 
-    StackingColumn
+    StackingColumn,
+
+    Area
 }
 
 export const enum PlotOrientation {
@@ -106,6 +108,12 @@ export const enum TextBaseline {
     Top = 'top',
 
     Middle = 'middle'
+}
+
+export const enum CompositeOperation {
+    SourceOver = 'source-over',
+
+    DestinationIn = 'destination-in'
 }
 
 export const enum HorizontalAlignment {

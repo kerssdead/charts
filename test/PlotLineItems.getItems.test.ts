@@ -60,4 +60,19 @@ describe('Getting plot line items', () => {
         expect(getLine([series], series).line.dash)
             .toEqual([])
     })
+
+    it('Should give area series a baseline at zero', () => {
+        const series = createSeries(PlotType.Area, [10, 40])
+        const { layout, line } = getLine([series], series)
+
+        expect(line.areaBaseline)
+            .toBe(layout.vertical.baseline)
+    })
+
+    it('Should not give line series an area', () => {
+        const series = createSeries(PlotType.Line, [10, 40])
+
+        expect(getLine([series], series).line.areaBaseline)
+            .toBeNull()
+    })
 })

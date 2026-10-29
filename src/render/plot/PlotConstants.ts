@@ -43,7 +43,9 @@ export const Y_LABEL_HEIGHT = AXIS_LABEL_FONT * 1.3
 
 export const GRID_DASH = [1, 20]
 
-export const LINE_LAYER = Layer.Data + 1
+export const AREA_LAYER = Layer.Data + 1
+
+export const LINE_LAYER = Layer.Data + 2
 
 export const AXIS_LAYER = Layer.Data + 50
 

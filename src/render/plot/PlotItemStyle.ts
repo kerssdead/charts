@@ -6,7 +6,8 @@ import QueueLineItemBuilder from '@/builders/QueueLineItemBuilder'
 import { AnimationTiming, Layer } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
-import { LINE_LAYER } from '@/render/plot/PlotConstants'
+import { AREA_LAYER, LINE_LAYER } from '@/render/plot/PlotConstants'
+import { PlotType } from '@/static/Enums'
 
 export type ValueTooltip = (series: PlotSeries, value: PlotPoint) => string
 
@@ -46,7 +47,7 @@ export default class PlotItemStyle {
     styleLine(line: QueueLineItemBuilder, series: PlotSeries, suffix: string) {
         line.width(series.width)
             .color(series.color)
-            .layer(LINE_LAYER)
+            .layer(series.type == PlotType.Area ? AREA_LAYER : LINE_LAYER)
             .key(this.getKey(series, suffix))
             .interact()
             .init(AnimationTiming.plotLineInit)
