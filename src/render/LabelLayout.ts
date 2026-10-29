@@ -95,13 +95,18 @@ export default function layoutLabels(labels: LabelBox[], distance: number, bound
         return false
     }
 
-    const boxes: Box[] = labels.map((label, index) => ({
+    const allBoxes: Box[] = labels.map((label, index) => ({
         ...label,
         index,
         origin: label.angle,
         middle: label.angle,
         center: { x: 0, y: 0 }
     }))
+
+    const maxVisibleCount = getMaxVisibleCount(labels, distance, bounds)
+    const boxes = allBoxes.length > maxVisibleCount
+                  ? [...allBoxes].sort((a, b) => b.value - a.value).slice(0, maxVisibleCount)
+                  : allBoxes
 
     for (const box of boxes) {
         box.center = getCenter(box)
@@ -139,7 +144,7 @@ export default function layoutLabels(labels: LabelBox[], distance: number, bound
     for (const box of boxes)
         fit(box)
 
-    const result: LabelPlacement[] = []
+    const result: LabelPlacement[] = labels.map(label => ({ angle: label.angle, isVisible: false }))
     const kept: Box[] = []
 
     for (const box of [...boxes].sort((a, b) => b.value - a.value)) {
@@ -152,4 +157,15 @@ export default function layoutLabels(labels: LabelBox[], distance: number, bound
     }
 
     return result
+}
+
+function getMaxVisibleCount(labels: LabelBox[], distance: number, bounds: Point) {
+    const minHalfWidth = labels.reduce((min, label) => Math.min(min, label.halfWidth), Infinity)
+    const minHalfHeight = labels.reduce((min, label) => Math.min(min, label.halfHeight), Infinity)
+
+    const excludedRadius = Math.max(Math.min(distance - SPACING / 2, bounds.x, bounds.y), 0)
+    const freeArea = (2 * bounds.x + SPACING) * (2 * bounds.y + SPACING) - Math.PI * excludedRadius * excludedRadius
+    const labelArea = (2 * minHalfWidth + SPACING) * (2 * minHalfHeight + SPACING)
+
+    return Math.floor(freeArea / labelArea)
 }

@@ -46,6 +46,8 @@ export function getSectorsWithSmallGroupedIntoOther(
     if (smallSectors.length < 2)
         return keyedSectors
 
+    const smallSectorSet = new Set(smallSectors)
+
     const otherSector = new Sector({
         label: TextResources.other,
         value: sum(smallSectors, sector => sector.value),
@@ -53,8 +55,7 @@ export function getSectorsWithSmallGroupedIntoOther(
     })
 
     return [
-        // todo: smallSectors.includes() makes this O(n·m); measure before switching to a Set
-        ...keyedSectors.filter(keyedSector => !smallSectors.includes(keyedSector.sector)),
+        ...keyedSectors.filter(keyedSector => !smallSectorSet.has(keyedSector.sector)),
         { sector: otherSector, key: OTHER_KEY, groupedSectors: smallSectors }
     ]
 }
