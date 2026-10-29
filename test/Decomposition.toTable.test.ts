@@ -8,6 +8,8 @@ interface FakeElement {
     classList: { add(name: string): void }
 
     append(child: FakeElement): void
+
+    addEventListener(): void
 }
 
 function createElement(): FakeElement {
@@ -15,7 +17,8 @@ function createElement(): FakeElement {
         className: '',
         children: [],
         classList: { add: name => element.className = name },
-        append: child => element.children.push(child)
+        append: child => element.children.push(child),
+        addEventListener: () => {}
     }
 
     return element
@@ -29,7 +32,7 @@ describe('Building decomposition table', () => {
 
         const table = Decomposition.toTable({ headers: [{ value: 'value', display: 'Value' }], values }) as unknown as FakeElement
 
-        expect(table.children.map(child => child.className)).toEqual(['o-table-header', 'o-table-body', 'o-table-footer'])
+        expect(table.children.map(child => child.className)).toEqual(['o-table-header', 'o-table-body', 'o-table-footer', 'o-table-column-highlight'])
         expect(table.children[1].children.length).toBe(200000)
     })
 })

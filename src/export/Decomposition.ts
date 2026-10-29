@@ -6,6 +6,7 @@ import PlotData, { getPlotRows } from '@/types/data/PlotData'
 import TreeData, { getTreeSum } from '@/types/data/TreeData'
 import TreeBarData, { getTreeBarRows } from '@/types/data/TreeBarData'
 import TextResources from '@/static/TextResources'
+import TableColumnHighlight from '@/export/TableColumnHighlight'
 
 export default class Decomposition {
     static fromCharts(charts: ChartItem[]) {
@@ -72,10 +73,14 @@ export default class Decomposition {
             return cell(total, `${ TextResources.total }: ${ total }`)
         })
 
-        return div('o-table', [
+        const table = div('o-table', [
             div('o-table-header', [div(), ...data.headers.map(header => text(header.display))]),
             div('o-table-body', rows),
             div('o-table-footer', [div(), ...totals])
         ])
+
+        TableColumnHighlight.attach(table)
+
+        return table
     }
 }
