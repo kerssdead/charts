@@ -98,7 +98,8 @@ export default class Queue {
         if (items.length == 0)
             return
 
-        this.queue.push(...items)
+        for (const item of items)
+            this.queue.push(item)
 
         this.isSorted = false
         this.version++

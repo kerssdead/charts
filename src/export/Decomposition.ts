@@ -34,13 +34,14 @@ export default class Decomposition {
     }
 
     static toTable(data: TableData) {
-        const div = (className?: string, ...children: HTMLElement[]) => {
+        const div = (className?: string, children: HTMLElement[] = []) => {
             const element = document.createElement(Tag.Div)
 
             if (className)
                 element.classList.add(className)
 
-            element.append(...children)
+            for (const child of children)
+                element.append(child)
 
             return element
         }
@@ -62,7 +63,7 @@ export default class Decomposition {
         }
 
         const rows = data.values.map(row => {
-            return div('o-table-row', cell(row.name), ...data.headers.map(header => cell(Formatter.number(row.values.get(header.value) ?? 0))))
+            return div('o-table-row', [cell(row.name), ...data.headers.map(header => cell(Formatter.number(row.values.get(header.value) ?? 0)))])
         })
 
         const totals = getTotals(data).map(value => {
@@ -71,9 +72,10 @@ export default class Decomposition {
             return cell(total, `${ TextResources.total }: ${ total }`)
         })
 
-        return div('o-table',
-            div('o-table-header', div(), ...data.headers.map(header => text(header.display))),
-            div('o-table-body', ...rows),
-            div('o-table-footer', div(), ...totals))
+        return div('o-table', [
+            div('o-table-header', [div(), ...data.headers.map(header => text(header.display))]),
+            div('o-table-body', rows),
+            div('o-table-footer', [div(), ...totals])
+        ])
     }
 }

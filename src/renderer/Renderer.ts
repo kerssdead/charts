@@ -288,7 +288,7 @@ export default class Renderer {
     }
 
     private buildChart(isInitialized: boolean) {
-        const add = (...actions: QueueAction[]) => {
+        const add = (actions: QueueAction[]) => {
             const items = QueueItemsBuilder.build(actions, isInitialized || this.settings.staticMode)
 
             this.queue.add(items)
@@ -318,8 +318,8 @@ export default class Renderer {
 
             const isEmpty = !!process?.isEmpty()
 
-            const fixed = add(...(isEmpty ? [] : process?.getFixedData() ?? []), this.layout.getPanelTitle(chart.title, pixel))
-            const content = add(...(isEmpty ? [this.layout.getEmpty()] : process?.getData() ?? []))
+            const fixed = add([...(isEmpty ? [] : process?.getFixedData() ?? []), this.layout.getPanelTitle(chart.title, pixel)])
+            const content = add(isEmpty ? [this.layout.getEmpty()] : process?.getData() ?? [])
 
             for (const item of content)
                 item.isScrollable = panel.scroll != null
@@ -338,7 +338,7 @@ export default class Renderer {
                 this.queue.add([Renderer.getScrollbar(panel)])
         })
 
-        add(this.layout.getTitle())
+        add([this.layout.getTitle()])
 
         this.pointer.setScrollable(this.panels.some(panel => panel.canScroll))
     }
