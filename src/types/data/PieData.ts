@@ -9,4 +9,6 @@ export default interface PieData extends Data {
     innerTitle: string
 
     labelPercent: boolean
+
+    enableMerging: boolean
 }

@@ -19,6 +19,8 @@ export default interface PlotData extends Data {
     xType: PlotAxisType
 
     values: PlotSeries[]
+
+    enableMerging: boolean
 }
 
 export function getPlotRows(data: PlotData): TableData {

@@ -12,6 +12,8 @@ export default interface TreeData extends Data {
     padding: number
 
     gap: number
+
+    enableMerging: boolean
 }
 
 export function getTreeSum(value: TreeValue) {

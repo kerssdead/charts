@@ -34,7 +34,7 @@ describe('Normalizing settings', () => {
     it('Should wrap values and assign labels and ids', () => {
         const settings = normalize({
             charts: [
-                { type: ChartType.Pie, data: { values: [{ value: 1 }, { value: 2 }] } },
+                { type: ChartType.Pie, data: { values: [{ value: 1 }, { value: 2 }], enableMerging: false } },
                 { type: ChartType.Plot, data: { values: [{ values: [] }] } }
             ]
         } as unknown as ChartSettings, FALLBACK)
@@ -47,6 +47,16 @@ describe('Normalizing settings', () => {
             .toBeInstanceOf(PlotSeries)
         expect(pie.map(value => value.id))
             .toEqual([`${ TextResources.noLabel }-0`, `${ TextResources.noLabel }-1`])
+    })
+
+    it('Should merge same label sectors after parsing numbers', () => {
+        const settings = normalize({
+            type: ChartType.Pie,
+            data: { values: [{ label: 'A', value: '1' }, { label: 'A', value: '2' }] }
+        } as unknown as ChartSettings, FALLBACK)
+
+        expect(settings.charts[0].data.values.map(value => value.value))
+            .toEqual([3])
     })
 
     it('Should parse numbers and replace invalid with 0', () => {

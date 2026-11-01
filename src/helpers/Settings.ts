@@ -12,6 +12,7 @@ import Sector from '@/types/Sector'
 import TextResources from '@/static/TextResources'
 import SegmentedBarStop from '@/types/SegmentedBarStop'
 import SegmentedBarData from '@/types/data/SegmentedBarData'
+import { mergeSameLabelValues } from '@/helpers/ValueMerging'
 import TreeBarRow from '@/types/TreeBarRow'
 import TreeBarData, { colorTreeBarRows, keepTreeBarState } from '@/types/data/TreeBarData'
 
@@ -30,6 +31,7 @@ export function normalize(source: ChartSettings, fallbackColor: string, scope?: 
         prepareValues(chart)
         normalizeValues(chart.data?.values, scope)
         normalizeValues(getStops(chart), scope)
+        mergeSameLabelValues(chart)
     }
 
     applyBaseColor(settings, fallbackColor, scope)

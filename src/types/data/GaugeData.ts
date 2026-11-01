@@ -13,4 +13,6 @@ export default interface GaugeData extends Data {
     enableTrack: boolean
 
     disableStepLabels: boolean
+
+    enableMerging: boolean
 }
