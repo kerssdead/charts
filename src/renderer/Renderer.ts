@@ -39,7 +39,7 @@ export default class Renderer {
     private readonly menu: ChartMenu
 
     private readonly tick = (timestamp: DOMHighResTimeStamp) => {
-        this.draw(timestamp)
+        this.guard(() => this.draw(timestamp))
     }
 
     private frame: number | null = null
@@ -60,8 +60,11 @@ export default class Renderer {
 
     private readonly detachImages: () => void
 
-    constructor(canvas: HTMLCanvasElement) {
+    private readonly onError: (error: unknown) => void
+
+    constructor(canvas: HTMLCanvasElement, onError: (error: unknown) => void) {
         this.canvas = canvas
+        this.onError = onError
         this.queue = new Queue(getContext(this.canvas))
         this.tooltip = new TooltipOverlay(this.canvas)
         this.menu = new ChartMenu(this.canvas, this.queue, point => this.pointer.openMenu(point), () => this.drawClean())
@@ -69,7 +72,7 @@ export default class Renderer {
         this.detachImages = onImageLoad(() => this.render())
 
         this.pointer = new Pointer(this.canvas, () => this.layout.window, {
-            onClick: (point: Point) => this.onClick(point),
+            onClick: (point: Point) => this.guard(() => this.onClick(point)),
             onChange: () => this.render(),
             canDrag: (point: Point) => !this.pointer.context && !this.getClickableItemAt(point),
             hasContextMenuAt: (point: Point) => !!this.settings.contextMenu?.length
@@ -281,6 +284,14 @@ export default class Renderer {
 
         if (isAnimating)
             this.render()
+    }
+
+    private guard(action: () => void) {
+        try {
+            action()
+        } catch (error) {
+            this.onError(error)
+        }
     }
 
     private get overlays(): Overlay[] {

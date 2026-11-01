@@ -17,6 +17,8 @@ const enum TextResources {
 
     noData = 'No data',
 
+    somethingWentWrong = 'Something went wrong',
+
     noValue = '(no value)',
 
     value = 'Value',

@@ -16,7 +16,17 @@ namespace Styles {
     }
 
     export const enum Display {
-        Block = 'block'
+        Block = 'block',
+
+        Flex = 'flex'
+    }
+
+    export const enum AlignItems {
+        Center = 'center'
+    }
+
+    export const enum JustifyContent {
+        Center = 'center'
     }
 
     export const enum Size {
