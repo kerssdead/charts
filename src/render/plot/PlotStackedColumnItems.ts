@@ -25,7 +25,7 @@ export default class PlotStackedColumnItems {
         this.layout = layout
         this.style = style
         this.columnGroups = columnGroups
-        this.stackTops = getStackTops(seriesGroups.enabledSeries)
+        this.stackTops = getStackTops(seriesGroups.enabledSeries, layout.yMax)
     }
 
     getItems(series: PlotSeries, stacks: Map<string, number>) {

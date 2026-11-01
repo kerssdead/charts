@@ -29,6 +29,17 @@ describe('Getting plot stack tops', () => {
             .toBe(negative)
     })
 
+    it('Should skip series starting at or above y max', () => {
+        const bottom = series(PlotType.StackingColumn, 4, 3)
+        const top = series(PlotType.StackingColumn, 1, 2)
+        const tops = getStackTops([bottom, top], 4)
+
+        expect(tops.get('0+'))
+            .toBe(bottom)
+        expect(tops.get('1+'))
+            .toBe(top)
+    })
+
     it('Should ignore other series types', () => {
         expect(getStackTops([series(PlotType.Column, 1)]).size)
             .toBe(0)

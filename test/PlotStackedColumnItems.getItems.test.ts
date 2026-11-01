@@ -78,6 +78,18 @@ describe('Getting plot stacked column items', () => {
             .toBeCloseTo(20 * lengthPerUnit)
     })
 
+    it('Should round last visible part when stack top is clipped by y max', () => {
+        const { rects } = getStacks(
+            [createSeries(PlotType.StackingColumn, [100]), createSeries(PlotType.StackingColumn, [20])],
+            { yMax: 100 }
+        )
+
+        expect(rects[0][0].radii)
+            .toEqual([80, 80, 0, 0])
+        expect(rects[1][0].absolute.height)
+            .toBe(0)
+    })
+
     it('Should place stack after regular columns in slot', () => {
         const { layout, rects } = getStacks([createSeries(PlotType.Column, [10]), createSeries(PlotType.StackingColumn, [10])])
         const { categoryScale } = layout.vertical
