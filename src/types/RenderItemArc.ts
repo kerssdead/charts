@@ -24,6 +24,8 @@ type ArcGeometry = {
     startAngle: number
     endAngle: number
     pull: number
+    leaderOffset: number
+    leaderAnchor: number
 }
 
 type ArcCanvas = ArcGeometry & {
@@ -101,7 +103,9 @@ export default class RenderItemArc
             innerRadius: this.innerRadius,
             startAngle: this.startAngle,
             endAngle: this.endAngle,
-            pull: this.pull
+            pull: this.pull,
+            leaderOffset: this.leaderOffset,
+            leaderAnchor: this.leaderAnchor
         }
 
         if (!this.from || morph >= 1)
@@ -114,7 +118,9 @@ export default class RenderItemArc
             innerRadius: lerp(this.from.innerRadius, result.innerRadius, morph),
             startAngle: lerp(this.from.startAngle, result.startAngle, morph),
             endAngle: lerp(this.from.endAngle, result.endAngle, morph),
-            pull: lerp(this.from.pull, result.pull, morph)
+            pull: lerp(this.from.pull, result.pull, morph),
+            leaderOffset: lerp(this.from.leaderOffset, result.leaderOffset, morph),
+            leaderAnchor: lerp(this.from.leaderAnchor, result.leaderAnchor, morph)
         }
     }
 
@@ -154,7 +160,9 @@ export default class RenderItemArc
             leaderLength: this.leaderLength * scale,
             startAngle: geometry.startAngle,
             endAngle: geometry.endAngle,
-            pull: geometry.pull * scale
+            pull: geometry.pull * scale,
+            leaderOffset: geometry.leaderOffset,
+            leaderAnchor: geometry.leaderAnchor
         }
     }
 
@@ -203,8 +211,8 @@ export default class RenderItemArc
         if (visibility <= 0)
             return
 
-        const anchorAngle = shape.middle + this.leaderAnchor
-        const turn = this.leaderOffset - this.leaderAnchor
+        const anchorAngle = shape.middle + this.canvas.leaderAnchor
+        const turn = this.canvas.leaderOffset - this.canvas.leaderAnchor
         const labelAngle = anchorAngle + turn
 
         const hover = isFullCircle(shape.end - shape.start) ? 0 : HOVER_OFFSET * this.hover

@@ -4,7 +4,7 @@ import Point from '@/types/Point'
 import RenderItem from '@/types/RenderItem'
 import { TextAlignment, TextBaseline } from '@/static/Enums'
 import RenderItemArc from '@/types/RenderItemArc'
-import { boxEdgeDistance, lerp } from '@/helpers/Geometry'
+import { boxEdgeDistance, clamp, lerp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
 import { COORDS_MAX_X, FONT_FAMILY } from '@/static/constants/Index'
 import Theme from '@/Theme'
@@ -25,6 +25,7 @@ const CLIP_FACTOR = {
 type TextCanvas = Point & {
     angle: number
     radius: number
+    orbitHalfWidth: number
 }
 
 export default class RenderItemText
@@ -33,7 +34,7 @@ export default class RenderItemText
 
     absolute: Point = { x: 0, y: 0 }
 
-    canvas: TextCanvas = { x: 0, y: 0, angle: 0, radius: 0 }
+    canvas: TextCanvas = { x: 0, y: 0, angle: 0, radius: 0, orbitHalfWidth: 0 }
 
     fontSize: number = 14
 
@@ -55,6 +56,8 @@ export default class RenderItemText
 
     fromAngle: number | null = null
 
+    fromOrbitHalfWidth: number | null = null
+
     follow: RenderItemArc | null = null
 
     clipWidth: number | null = null
@@ -63,12 +66,25 @@ export default class RenderItemText
 
     private halfWidth: number | null = null
 
+    private window: CanvasWindow
+
     get defaultColor(): string {
         return Theme.text
     }
 
     private get baselineShift(): number {
         return this.orbit || this.baseline != TextBaseline.Alphabetic ? 0 : this.fontSize * 0.3
+    }
+
+    private get textHalfWidth(): number {
+        return this.halfWidth ??= stringWidth(this.value, this.fontSize) / 2
+    }
+
+    private currentOrbitHalfWidth(morph: number): number {
+        if (this.fromOrbitHalfWidth == null || morph >= 1)
+            return this.textHalfWidth
+
+        return lerp(this.fromOrbitHalfWidth, this.textHalfWidth, morph)
     }
 
     currentAngle(morph: number = 1): number {
@@ -103,6 +119,7 @@ export default class RenderItemText
 
         this.from = previous.current(morph)
         this.fromAngle = previous.orbit ? previous.currentAngle(morph) : null
+        this.fromOrbitHalfWidth = this.orbit && previous.orbit ? previous.currentOrbitHalfWidth(morph) : null
 
         return true
     }
@@ -123,12 +140,16 @@ export default class RenderItemText
     adjust(window: CanvasWindow, morph: number = 1): void {
         const position = this.current(morph)
 
+        this.window = window
         this.canvas.angle = this.currentAngle(morph)
         this.canvas.radius = (this.orbit?.radiusX ?? 0) / COORDS_MAX_X * window.width
         this.canvasClipWidth = (this.clipWidth ?? 0) / COORDS_MAX_X * window.width
 
         this.canvas.x = RenderItem.adjustX(window, position.x)
         this.canvas.y = RenderItem.adjustY(window, position.y) + (this.rotate == 0 ? this.baselineShift : 0)
+
+        if (this.orbit)
+            this.canvas.orbitHalfWidth = this.currentOrbitHalfWidth(morph)
 
         if (this.follow) {
             this.canvas.x += this.follow.pop.x
@@ -137,15 +158,24 @@ export default class RenderItemText
     }
 
     orbitBox() {
-        this.halfWidth ??= stringWidth(this.value, this.fontSize) / 2
-
+        const halfWidth = this.textHalfWidth
         const halfHeight = this.fontSize / 2
-        const distance = boxEdgeDistance(this.canvas.angle, this.halfWidth, halfHeight, this.canvas.radius)
+        const { angle, orbitHalfWidth, radius } = this.canvas
+        const distance = boxEdgeDistance(angle, orbitHalfWidth, halfHeight, radius)
+        const pieEdgeShift = Math.sign(Math.cos(this.angle)) * (halfWidth - orbitHalfWidth)
 
         return {
-            x: this.canvas.x + distance * Math.cos(this.canvas.angle),
-            y: this.canvas.y + distance * Math.sin(this.canvas.angle),
-            halfWidth: this.halfWidth,
+            x: clamp(
+                this.canvas.x + distance * Math.cos(angle) + pieEdgeShift,
+                this.window.x + halfWidth,
+                this.window.x + this.window.width - halfWidth
+            ),
+            y: clamp(
+                this.canvas.y + distance * Math.sin(angle),
+                this.window.y + halfHeight,
+                this.window.y + this.window.height - halfHeight
+            ),
+            halfWidth,
             halfHeight
         }
     }
