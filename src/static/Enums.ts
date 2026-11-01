@@ -116,6 +116,12 @@ export const enum CompositeOperation {
     DestinationIn = 'destination-in'
 }
 
+export const enum LineJoin {
+    Miter = 'miter',
+
+    Round = 'round'
+}
+
 export const enum HorizontalAlignment {
     Left = 'left',
 

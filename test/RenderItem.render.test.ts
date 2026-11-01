@@ -1,11 +1,12 @@
 import RenderItem from '@/types/RenderItem'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import CanvasWindow from '@/types/CanvasWindow'
-import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import { HorizontalAlignment, LineJoin, VerticalAlignment } from '@/static/Enums'
 
 const context = () => ({
     globalAlpha: 1,
     lineWidth: 1,
+    lineJoin: LineJoin.Miter as LineJoin,
     fillStyle: '',
     strokeStyle: '',
     beginPath: jest.fn(),
@@ -59,5 +60,16 @@ describe('Rendering item', () => {
 
         expect(ctx.setLineDash)
             .toHaveBeenCalledWith([])
+    })
+
+    it('Should reset line join left by previous item', () => {
+        const ctx = context()
+
+        ctx.lineJoin = LineJoin.Round
+
+        item(0).render(ctx as unknown as CanvasRenderingContext2D, WINDOW, new CanvasWindow(100, 100), 0)
+
+        expect(ctx.lineJoin)
+            .toBe(LineJoin.Miter)
     })
 })

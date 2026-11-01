@@ -45,4 +45,18 @@ describe('Getting plot attention line items', () => {
         expect(getAttention([attention], attention).items)
             .toEqual([])
     })
+
+    it('Should clip line to plot', () => {
+        const attention = createSeries(PlotType.AttentionLine, [30])
+        const { layout, items } = getAttention([createSeries(PlotType.Line, [10, 50]), attention], attention)
+        const { top, bottom } = layout.vertical.band
+
+        expect((items[0].shape as RenderItemLine).clip)
+            .toEqual({
+                x: layout.margin.left,
+                y: top,
+                width: 5000 - layout.margin.left - layout.margin.right,
+                height: bottom - top
+            })
+    })
 })

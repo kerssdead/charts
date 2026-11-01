@@ -75,4 +75,27 @@ describe('Getting plot line items', () => {
         expect(getLine([series], series).line.areaBaseline)
             .toBeNull()
     })
+
+    it('Should clip line to plot', () => {
+        const series = createSeries(PlotType.Line, [10, 40])
+        const { layout, line } = getLine([series], series)
+        const { top, bottom } = layout.vertical.band
+
+        expect(line.clip)
+            .toEqual({
+                x: layout.margin.left,
+                y: top,
+                width: 5000 - layout.margin.left - layout.margin.right,
+                height: bottom - top
+            })
+    })
+
+    it('Should clip line to its own band when mixed with bars', () => {
+        const series = createSeries(PlotType.Line, [10, 40])
+        const { layout, line } = getLine([createSeries(PlotType.Bar, [5, 20]), series], series)
+        const { top, bottom } = layout.vertical.band
+
+        expect([line.clip!.y, line.clip!.height, top > layout.margin.top])
+            .toEqual([top, bottom - top, true])
+    })
 })

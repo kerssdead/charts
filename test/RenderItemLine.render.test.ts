@@ -1,6 +1,7 @@
 import RenderItemLine from '@/types/RenderItemLine'
 import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
+import { LineJoin } from '@/static/Enums'
 
 const mockLayer: { current: unknown } = { current: null }
 
@@ -92,6 +93,24 @@ const renderArea = (
     shape.render(ctx as unknown as CanvasRenderingContext2D, item)
 
     return { ctx, layer }
+}
+
+const CLIP = { x: 100, y: 200, width: 1000, height: 2000 }
+
+const renderClipped = (stops: { x: number, y: number }[], clip: typeof CLIP | null) => {
+    const ctx = context()
+    const shape = new RenderItemLine()
+    const item = new RenderItem(shape)
+
+    shape.absolute = stops
+    shape.clip = clip
+    shape.adjust(WINDOW)
+
+    item.animation.init = 1
+
+    shape.render(ctx as unknown as CanvasRenderingContext2D, item)
+
+    return ctx
 }
 
 describe('Rendering line', () => {
@@ -218,5 +237,42 @@ describe('Rendering line', () => {
 
         expect(ctx.drawImage)
             .not.toHaveBeenCalled()
+    })
+
+    it('Should round joins so peaks do not overshoot stops', () => {
+        expect((render(STOPS, 1) as unknown as CanvasRenderingContext2D).lineJoin)
+            .toBe(LineJoin.Round)
+    })
+
+    it('Should clip stroke to clip box', () => {
+        const ctx = renderClipped(AREA_STOPS, CLIP)
+        const [save, clip, stroke, restore] = [ctx.save, ctx.clip, ctx.stroke, ctx.restore]
+            .map(fn => fn.mock.invocationCallOrder[0])
+
+        expect([ctx.rect.mock.calls, save < clip && clip < stroke && stroke < restore])
+            .toEqual([[[10, 20, 100, 200]], true])
+    })
+
+    it('Should start new path after clipping', () => {
+        const ctx = renderClipped(AREA_STOPS, CLIP)
+
+        expect(ctx.beginPath.mock.invocationCallOrder[0])
+            .toBeGreaterThan(ctx.clip.mock.invocationCallOrder[0])
+    })
+
+    it('Should clip point of single stop', () => {
+        const ctx = renderClipped([{ x: 200, y: 300 }], CLIP)
+        const [clip, arc, restore] = [ctx.clip, ctx.arc, ctx.restore]
+            .map(fn => fn.mock.invocationCallOrder[0])
+
+        expect(clip < arc && arc < restore)
+            .toBe(true)
+    })
+
+    it('Should not clip without clip box', () => {
+        const ctx = renderClipped(AREA_STOPS, null)
+
+        expect([ctx.save.mock.calls.length, ctx.clip.mock.calls.length])
+            .toEqual([0, 0])
     })
 })

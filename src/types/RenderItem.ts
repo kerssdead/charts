@@ -10,6 +10,7 @@ import Panel from '@/types/Panel'
 import { clamp, contains } from '@/helpers/Geometry'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { grayScale } from '@/helpers/Color'
+import { LineJoin } from '@/static/Enums'
 
 const SOLID_LINE: number[] = []
 
@@ -119,6 +120,7 @@ export default class RenderItem {
         ctx.globalAlpha *= this.animation.visibility
 
         ctx.lineWidth = DEFAULT_LINE_WIDTH
+        ctx.lineJoin = LineJoin.Miter
         ctx.setLineDash(SOLID_LINE)
 
         const fill = this.fill

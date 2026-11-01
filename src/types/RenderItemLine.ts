@@ -2,12 +2,13 @@ import Point from '@/types/Point'
 import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
-import { AnimationTiming, FULL_ANGLE } from '@/static/constants/Index'
+import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, FULL_ANGLE } from '@/static/constants/Index'
 import { lerp } from '@/helpers/Geometry'
 import HoverMap from '@/types/HoverMap'
 import { edgeFadeMask, fadingGradient, GradientCache, offscreenLayer } from '@/helpers/Canvas'
-import { CompositeOperation } from '@/static/Enums'
+import { CompositeOperation, LineJoin } from '@/static/Enums'
 import { withAlpha } from '@/helpers/Color'
+import RectangleDimensions from '@/types/RectangleDimensions'
 
 const ALPHA_DELTA = 0.5
 
@@ -38,6 +39,12 @@ export default class RenderItemLine
     from: Point[] | null = null
 
     areaBaseline: number | null = null
+
+    clip: RectangleDimensions | null = null
+
+    private fromClip: RectangleDimensions | null = null
+
+    private readonly canvasClip: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
 
     private fromAreaBaseline: number | null = null
 
@@ -74,12 +81,25 @@ export default class RenderItemLine
         return lerp(this.fromAreaBaseline, this.areaBaseline, morph)
     }
 
+    private currentClip(morph: number = 1): RectangleDimensions | null {
+        if (!this.clip || !this.fromClip || morph >= 1)
+            return this.clip
+
+        return {
+            x: lerp(this.fromClip.x, this.clip.x, morph),
+            y: lerp(this.fromClip.y, this.clip.y, morph),
+            width: lerp(this.fromClip.width, this.clip.width, morph),
+            height: lerp(this.fromClip.height, this.clip.height, morph)
+        }
+    }
+
     morphFrom(previous: RenderItemBase, morph: number): boolean {
         if (!(previous instanceof RenderItemLine))
             return false
 
         this.from = previous.current(morph)
         this.fromAreaBaseline = previous.currentAreaBaseline(morph)
+        this.fromClip = previous.currentClip(morph)
 
         return true
     }
@@ -112,16 +132,41 @@ export default class RenderItemLine
 
         if (areaBaseline != null)
             this.canvasAreaBaseline = RenderItem.adjustY(window, areaBaseline)
+
+        const clip = this.currentClip(morph)
+
+        if (clip) {
+            this.canvasClip.x = RenderItem.adjustX(window, clip.x)
+            this.canvasClip.y = RenderItem.adjustY(window, clip.y)
+            this.canvasClip.width = clip.width / COORDS_MAX_X * window.width
+            this.canvasClip.height = clip.height / COORDS_MAX_Y * window.height
+        }
     }
 
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
-        const progress = item.animation.init
-
         if (this.canvas.length == 0) {
             return
         }
 
+        if (!this.clip) {
+            this.renderLine(ctx, item)
+
+            return
+        }
+
+        ctx.save()
+
+        this.clipToBox(ctx)
+        this.renderLine(ctx, item)
+
+        ctx.restore()
+    }
+
+    private renderLine(ctx: CanvasRenderingContext2D, item: RenderItem) {
+        const progress = item.animation.init
+
         ctx.lineWidth = this.width
+        ctx.lineJoin = LineJoin.Round
         ctx.setLineDash(this.dash)
 
         const bounds = this.getBounds()!
@@ -308,6 +353,15 @@ export default class RenderItemLine
             pixelWidth / scale,
             pixelHeight / scale
         )
+    }
+
+    private clipToBox(ctx: CanvasRenderingContext2D) {
+        const { x, y, width, height } = this.canvasClip
+
+        ctx.rect(x, y, width, height)
+        ctx.clip()
+
+        ctx.beginPath()
     }
 
     private clipToArea(ctx: CanvasRenderingContext2D, { top, bottom }: Bounds, lastStop: Point) {

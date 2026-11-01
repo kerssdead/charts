@@ -1,5 +1,6 @@
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
 import RenderItemLine from '@/types/RenderItemLine'
+import RectangleDimensions from '@/types/RectangleDimensions'
 
 export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderItemLine> {
     constructor() {
@@ -29,6 +30,12 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
 
     area(baseline: number) {
         this.shape.areaBaseline = baseline
+
+        return this
+    }
+
+    clip(box: RectangleDimensions) {
+        this.shape.clip = box
 
         return this
     }

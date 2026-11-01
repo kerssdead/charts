@@ -33,7 +33,8 @@ export default class PlotLineItems {
                 )
             })
 
-            line.dash(Array.isArray(series.dash) ? series.dash : [])
+            line.clip(this.plotBox)
+                .dash(Array.isArray(series.dash) ? series.dash : [])
                 .gradient()
 
             if (series.type == PlotType.Area)
@@ -57,7 +58,19 @@ export default class PlotLineItems {
         const x2 = COORDS_MAX_X - layout.margin.right
 
         return (items: QueueItemsBuilder) => {
-            this.style.styleLine(items.line().stop(x1, y).stop(x2, y), series, 'attention')
+            this.style.styleLine(items.line().stop(x1, y).stop(x2, y).clip(this.plotBox), series, 'attention')
+        }
+    }
+
+    private get plotBox() {
+        const { margin, vertical } = this.layout
+        const { top, bottom } = vertical.band
+
+        return {
+            x: margin.left,
+            y: top,
+            width: COORDS_MAX_X - margin.left - margin.right,
+            height: bottom - top
         }
     }
 }
