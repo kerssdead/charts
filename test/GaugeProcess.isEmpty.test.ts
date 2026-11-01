@@ -9,8 +9,9 @@ jest.mock('@/helpers/Text', () => ({
     stringWidth: (text: string | undefined, font: number = 14) => (text?.length ?? 0) * font / 2
 }))
 
-const create = (values: Sector[]) =>
-    new GaugeProcess({ values } as GaugeData, { x: 5, y: 12.5 }, { valuePostfix: undefined })
+const create = (values: Sector[]) => {
+    return new GaugeProcess({ values } as GaugeData, { x: 5, y: 12.5 }, { valuePostfix: undefined })
+}
 
 describe('Checking gauge emptiness', () => {
     it('Should be empty without enabled sectors', () => {

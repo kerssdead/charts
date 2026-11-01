@@ -8,8 +8,9 @@ jest.mock('@/helpers/Text', () => ({
     stringWidth: (text: string | undefined, font: number = 14) => (text?.length ?? 0) * font / 2
 }))
 
-const create = (values: PlotData['values']) =>
-    new PlotProcess({ values } as PlotData, { x: 1, y: 1 }, { valuePostfix: undefined })
+const create = (values: PlotData['values']) => {
+    return new PlotProcess({ values } as PlotData, { x: 1, y: 1 }, { valuePostfix: undefined })
+}
 
 describe('Checking plot orientation', () => {
     it('Should be horizontal with only bars', () => {

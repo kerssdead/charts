@@ -58,8 +58,9 @@ describe('Getting plot data', () => {
                                                .filter(item => item.shape instanceof RenderItemRectangle)
                                                .map(item => [item.key!, item.shape as RenderItemRectangle]))
 
-        values.forEach((y, i) =>
+        values.forEach((y, i) => {
             expect(rects.get(`0-rect-${ i }`)!.absolute.height)
-                .toBeCloseTo(process.getAxisY(0) - process.getAxisY(Math.min(y, 250))))
+                .toBeCloseTo(process.getAxisY(0) - process.getAxisY(Math.min(y, 250)))
+        })
     })
 })

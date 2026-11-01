@@ -8,8 +8,9 @@ const MAX_VISIBLE_COUNT = 31
 
 const label = (angle: number, value: number): LabelBox => ({ angle, value, halfWidth: 20, halfHeight: 5 })
 
-const crowdWithLoneSmallLabel = (crowdCount: number) =>
-    [...Array.from({ length: crowdCount }, () => label(0, 10)), label(Math.PI, 1)]
+const crowdWithLoneSmallLabel = (crowdCount: number) => {
+    return [...Array.from({ length: crowdCount }, () => label(0, 10)), label(Math.PI, 1)]
+}
 
 describe('Laying out labels', () => {
     it('Should show lone small label when labels fit max visible count', () => {

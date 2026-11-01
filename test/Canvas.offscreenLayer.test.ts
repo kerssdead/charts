@@ -32,8 +32,9 @@ class FakeCanvas {
 
 (globalThis as unknown as { document: unknown }).document = { createElement: () => new FakeCanvas() }
 
-const chartContext = (width: number, height: number) =>
-    ({ canvas: { width, height } }) as unknown as CanvasRenderingContext2D
+const chartContext = (width: number, height: number) => {
+    return { canvas: { width, height } } as unknown as CanvasRenderingContext2D
+}
 
 const layerCanvas = (ctx: CanvasRenderingContext2D) => offscreenLayer(ctx).canvas as unknown as FakeCanvas
 

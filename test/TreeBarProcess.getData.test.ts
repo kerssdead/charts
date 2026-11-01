@@ -23,8 +23,9 @@ const BAR = { x: 104 * PIXEL.x, width: 880 * PIXEL.x }
 
 const part = (value: number) => new Sector({ value, color: '#ff0000' })
 
-const row = (id: string, values: number[], extra: Partial<TreeBarRow> = {}) =>
-    new TreeBarRow({ id, label: id, parts: values.map(part), ...extra })
+const row = (id: string, values: number[], extra: Partial<TreeBarRow> = {}) => {
+    return new TreeBarRow({ id, label: id, parts: values.map(part), ...extra })
+}
 
 function create(data: Partial<TreeBarData>) {
     return new TreeBarProcess({ values: [], ...data } as TreeBarData, PIXEL, SETTINGS)
@@ -36,11 +37,12 @@ function getItems(process: TreeBarProcess) {
 
 const rect = (items: Map<string, RenderItem>, key: string) => items.get(key)!.shape as RenderItemRectangle
 
-const texts = (items: Map<string, RenderItem>, suffix: string) =>
-    [...items.values()]
+const texts = (items: Map<string, RenderItem>, suffix: string) => {
+    return [...items.values()]
         .filter(item => item.key!.endsWith(suffix))
         .sort((a, b) => (a.shape as RenderItemText).absolute.y - (b.shape as RenderItemText).absolute.y)
         .map(item => (item.shape as RenderItemText).value)
+}
 
 describe('Getting tree bar data', () => {
     it('Should show only top level rows when collapsed', () => {

@@ -18,8 +18,9 @@ const getLabels = (all: PlotSeries[]) => {
     return { ...plot, items, texts: new Map(items.map(item => [item.key!, item.shape as RenderItemText])) }
 }
 
-const keysOf = (items: { key: string | null }[], prefix: string) =>
-    items.map(item => item.key!).filter(key => key.startsWith(prefix))
+const keysOf = (items: { key: string | null }[], prefix: string) => {
+    return items.map(item => item.key!).filter(key => key.startsWith(prefix))
+}
 
 describe('Adding plot axis labels', () => {
     it('Should put y value labels left of plot at their values', () => {

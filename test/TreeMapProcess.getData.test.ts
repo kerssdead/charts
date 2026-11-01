@@ -15,8 +15,9 @@ jest.mock('@/helpers/Text', () => ({
 
 const PIXEL = { x: 5, y: 5 }
 
-const value = (id: string, amount: number, extra: Partial<TreeValue> = {}) =>
-    new Value({ id, label: id.toUpperCase(), value: amount, color: '#ff0000', ...extra }) as TreeValue
+const value = (id: string, amount: number, extra: Partial<TreeValue> = {}) => {
+    return new Value({ id, label: id.toUpperCase(), value: amount, color: '#ff0000', ...extra }) as TreeValue
+}
 
 function getItems(data: Partial<TreeData>) {
     const process = new TreeMapProcess({ values: [], ...data } as TreeData, PIXEL, { valuePostfix: undefined })
@@ -24,8 +25,9 @@ function getItems(data: Partial<TreeData>) {
     return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key!, item]))
 }
 
-const getBox = (items: ReturnType<typeof getItems>, key: string) =>
-    (items.get(key)!.shape as RenderItemRectangle).absolute
+const getBox = (items: ReturnType<typeof getItems>, key: string) => {
+    return (items.get(key)!.shape as RenderItemRectangle).absolute
+}
 
 describe('Getting tree data', () => {
     it('Should draw values sorted descending with default gap', () => {

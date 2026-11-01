@@ -5,8 +5,9 @@ const UNITS = new Units({ x: 1, y: 1 })
 
 const BOX = { x: 0, y: 0, width: 100, height: 100 }
 
-const getBoxes = (values: number[], box = BOX, gap = 0, units = UNITS) =>
-    getCells(values, box, value => value, units, gap).map(cell => cell.box)
+const getBoxes = (values: number[], box = BOX, gap = 0, units = UNITS) => {
+    return getCells(values, box, value => value, units, gap).map(cell => cell.box)
+}
 
 describe('Getting tree cells', () => {
     it('Should split area proportionally to values', () => {

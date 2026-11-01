@@ -7,8 +7,9 @@ import Sector from '@/types/Sector'
 
 const FALLBACK = '#808080'
 
-const settings = (data: object, baseColor?: string) =>
-    normalize({ type: ChartType.TreeBar, data, baseColor } as unknown as ChartSettings, FALLBACK)
+const settings = (data: object, baseColor?: string) => {
+    return normalize({ type: ChartType.TreeBar, data, baseColor } as unknown as ChartSettings, FALLBACK)
+}
 
 const rows = (result: ChartSettings) => (result.charts[0].data as TreeBarData).values
 

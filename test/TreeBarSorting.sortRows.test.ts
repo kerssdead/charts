@@ -1,8 +1,9 @@
 import { sortRows } from '@/render/treeBar/TreeBarSorting'
 import TreeBarRow from '@/types/TreeBarRow'
 
-const row = (id: string, value?: string | number) =>
-    new TreeBarRow({ id, label: id, cells: value == undefined ? {} : { amount: value } })
+const row = (id: string, value?: string | number) => {
+    return new TreeBarRow({ id, label: id, cells: value == undefined ? {} : { amount: value } })
+}
 
 const ids = (rows: TreeBarRow[]) => rows.map(row => row.id)
 

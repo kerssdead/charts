@@ -23,8 +23,9 @@ export function getRoundedValues(
 
     const intervals = targetTicks - 1
 
-    const ticks = (start: number, step: number) =>
-        Array.from({ length: targetTicks }, (_, i) => Number((start + i * step).toFixed(12)) || 0)
+    const ticks = (start: number, step: number) => {
+        return Array.from({ length: targetTicks }, (_, i) => Number((start + i * step).toFixed(12)) || 0)
+    }
 
     if (max != undefined && max > 0) {
         const lower = Math.abs(minVal)

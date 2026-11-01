@@ -3,8 +3,12 @@ import { getSlots } from '@/render/plot/PlotSlots'
 import PlotSeries from '@/types/PlotSeries'
 import { PlotAxisType } from '@/static/Enums'
 
-const slots = (count: number) =>
-    getSlots([{ values: Array.from({ length: count }, (_, i) => ({ x: i, y: 1 })) } as PlotSeries], PlotAxisType.Number)
+const slots = (count: number) => {
+    return getSlots(
+        [{ values: Array.from({ length: count }, (_, i) => ({ x: i, y: 1 })) } as PlotSeries],
+        PlotAxisType.Number
+    )
+}
 
 describe('Creating plot category scale', () => {
     it('Should split length into equal steps with gaps between and around them', () => {

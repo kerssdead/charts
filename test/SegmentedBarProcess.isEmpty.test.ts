@@ -5,8 +5,13 @@ import SegmentedBarStop from '@/types/SegmentedBarStop'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
 
-const create = (values: Sector[], stops: SegmentedBarStop[]) =>
-    new SegmentedBarProcess({ values, stops } as SegmentedBarData, { x: 5, y: 125 }, { valuePostfix: undefined })
+const create = (values: Sector[], stops: SegmentedBarStop[]) => {
+    return new SegmentedBarProcess(
+        { values, stops } as SegmentedBarData,
+        { x: 5, y: 125 },
+        { valuePostfix: undefined }
+    )
+}
 
 describe('Checking segmented bar emptiness', () => {
     it('Should be empty without positive parts and stops', () => {

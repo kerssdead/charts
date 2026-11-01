@@ -10,8 +10,9 @@ const SLOTS = getSlots(
 
 const BAND = { top: 100, bottom: 1100 }
 
-const create = (orientation: PlotOrientation, values = [0, 50, 100]) =>
-    new PlotSection(orientation, SLOTS, values, BAND, 50, 1000)
+const create = (orientation: PlotOrientation, values = [0, 50, 100]) => {
+    return new PlotSection(orientation, SLOTS, values, BAND, 50, 1000)
+}
 
 describe('Creating plot section', () => {
     it('Should place vertical categories from left and values from bottom', () => {

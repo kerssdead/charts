@@ -5,8 +5,9 @@ import { HOVER_OFFSET } from '@/types/RenderItemArc'
 
 jest.mock('@/Theme', () => ({}))
 
-const create = (width: number, height: number, innerRadiusPercent: number = 0) =>
-    new PieSizing(new Units({ x: COORDS_MAX_X / width, y: COORDS_MAX_Y / height }), innerRadiusPercent)
+const create = (width: number, height: number, innerRadiusPercent: number = 0) => {
+    return new PieSizing(new Units({ x: COORDS_MAX_X / width, y: COORDS_MAX_Y / height }), innerRadiusPercent)
+}
 
 describe('Creating pie sizing', () => {
     it('Should fit radius to a fifth of width and show labels on normal canvas', () => {

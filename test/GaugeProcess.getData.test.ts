@@ -19,8 +19,9 @@ const TINY_PIXEL = { x: 5000 / 100, y: 5000 / 50 }
 
 const SETTINGS: ProcessSettings = { valuePostfix: undefined }
 
-const sector = (label: string, value: number, extra: Partial<Sector> = {}) =>
-    new Sector({ label, value, color: '#ff0000', ...extra })
+const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
+    return new Sector({ label, value, color: '#ff0000', ...extra })
+}
 
 function getItems(data: Partial<GaugeData>, pixel = PIXEL) {
     const process = new GaugeProcess({ values: [], ...data } as GaugeData, pixel, SETTINGS)

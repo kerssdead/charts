@@ -3,8 +3,9 @@ import { getRoundedValues } from '@/helpers/Numbers'
 import PlotSeries from '@/types/PlotSeries'
 import { PlotType } from '@/static/Enums'
 
-const series = (type: PlotType, ...ys: number[]) =>
-    ({ type, values: ys.map((y, i) => ({ x: i, y })) }) as PlotSeries
+const series = (type: PlotType, ...ys: number[]) => {
+    return { type, values: ys.map((y, i) => ({ x: i, y })) } as PlotSeries
+}
 
 describe('Getting plot axis values', () => {
     it('Should round column and line values for y axis', () => {

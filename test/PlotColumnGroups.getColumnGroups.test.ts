@@ -2,8 +2,7 @@ import { getColumnGroups } from '@/render/plot/PlotColumnGroups'
 import PlotSeries from '@/types/PlotSeries'
 import { PlotType } from '@/static/Enums'
 
-const series = (type: PlotType, ...xs: string[]) =>
-    ({ type, values: xs.map(x => ({ x, y: 1 })) }) as PlotSeries
+const series = (type: PlotType, ...xs: string[]) => ({ type, values: xs.map(x => ({ x, y: 1 })) }) as PlotSeries
 
 describe('Getting plot column groups', () => {
     it('Should collect columns per x', () => {

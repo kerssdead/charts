@@ -2,8 +2,9 @@ import { getStackTops } from '@/render/plot/PlotColumnGroups'
 import PlotSeries from '@/types/PlotSeries'
 import { PlotType } from '@/static/Enums'
 
-const series = (type: PlotType, ...ys: number[]) =>
-    ({ type, values: ys.map((y, i) => ({ x: i, y })) }) as PlotSeries
+const series = (type: PlotType, ...ys: number[]) => {
+    return { type, values: ys.map((y, i) => ({ x: i, y })) } as PlotSeries
+}
 
 describe('Getting plot stack tops', () => {
     it('Should take last stacking series with non-zero value', () => {

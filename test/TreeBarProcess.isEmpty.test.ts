@@ -9,8 +9,9 @@ jest.mock('@/helpers/Text', () => ({
     stringWidth: (text: string, font: number = 14) => text.length * font / 2
 }))
 
-const create = (values: TreeBarRow[]) =>
-    new TreeBarProcess({ values } as TreeBarData, { x: 5, y: 12.5 }, { valuePostfix: undefined })
+const create = (values: TreeBarRow[]) => {
+    return new TreeBarProcess({ values } as TreeBarData, { x: 5, y: 12.5 }, { valuePostfix: undefined })
+}
 
 describe('Checking tree bar emptiness', () => {
     it('Should be empty without rows', () => {

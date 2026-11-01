@@ -1,11 +1,13 @@
 import { getVisibleEntries } from '@/render/treeBar/TreeBarSorting'
 import TreeBarRow from '@/types/TreeBarRow'
 
-const row = (id: string, amount: number, extra: Partial<TreeBarRow> = {}) =>
-    new TreeBarRow({ id, label: id, cells: { amount }, ...extra })
+const row = (id: string, amount: number, extra: Partial<TreeBarRow> = {}) => {
+    return new TreeBarRow({ id, label: id, cells: { amount }, ...extra })
+}
 
-const entries = (rows: TreeBarRow[], sortColumn?: string) =>
-    getVisibleEntries(rows, sortColumn, false).map(({ node, level }) => [node.id, level])
+const entries = (rows: TreeBarRow[], sortColumn?: string) => {
+    return getVisibleEntries(rows, sortColumn, false).map(({ node, level }) => [node.id, level])
+}
 
 describe('Getting visible tree bar entries', () => {
     it('Should hide children of collapsed rows', () => {

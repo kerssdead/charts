@@ -19,8 +19,9 @@ const SMALL_PIXEL = { x: 5000 / 200, y: 5000 / 200 }
 
 const SETTINGS: PieProcessSettings = { valuePostfix: undefined, enableOther: false }
 
-const sector = (label: string, value: number, extra: Partial<Sector> = {}) =>
-    new Sector({ label, value, color: '#ff0000', ...extra })
+const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
+    return new Sector({ label, value, color: '#ff0000', ...extra })
+}
 
 function create(data: Partial<PieData>, settings: Partial<PieProcessSettings> = {}, pixel = PIXEL) {
     return new PieProcess({ values: [], ...data } as PieData, pixel, { ...SETTINGS, ...settings })

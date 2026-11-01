@@ -5,8 +5,9 @@ const BAR = { x: 10, y: 20, width: 100, height: 30 }
 
 const part = (value: number) => new Sector({ value })
 
-const getBoxes = (values: number[], fullBarValue: number, minPartWidth = 0) =>
-    getParts(values.map(part), BAR, fullBarValue, minPartWidth).parts.map(({ box }) => box)
+const getBoxes = (values: number[], fullBarValue: number, minPartWidth = 0) => {
+    return getParts(values.map(part), BAR, fullBarValue, minPartWidth).parts.map(({ box }) => box)
+}
 
 describe('Getting segmented bar parts', () => {
     it('Should split bar proportionally to values', () => {

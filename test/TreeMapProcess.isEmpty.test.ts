@@ -2,8 +2,9 @@ import TreeMapProcess from '@/render/tree/TreeMapProcess'
 import TreeData, { TreeValue } from '@/types/data/TreeData'
 import Value from '@/types/base/Value'
 
-const create = (values: TreeValue[]) =>
-    new TreeMapProcess({ values } as TreeData, { x: 5, y: 5 }, { valuePostfix: undefined })
+const create = (values: TreeValue[]) => {
+    return new TreeMapProcess({ values } as TreeData, { x: 5, y: 5 }, { valuePostfix: undefined })
+}
 
 describe('Checking tree emptiness', () => {
     it('Should be empty without enabled positive values', () => {

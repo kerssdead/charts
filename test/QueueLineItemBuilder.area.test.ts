@@ -1,8 +1,9 @@
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemLine from '@/types/RenderItemLine'
 
-const buildLine = (action: (items: QueueItemsBuilder) => void) =>
-    QueueItemsBuilder.build(action)[0].shape as RenderItemLine
+const buildLine = (action: (items: QueueItemsBuilder) => void) => {
+    return QueueItemsBuilder.build(action)[0].shape as RenderItemLine
+}
 
 describe('Building line area', () => {
     it('Should set area baseline', () => {
