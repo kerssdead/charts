@@ -24,14 +24,20 @@ export default class PlotItemStyle {
         this.getValueTooltip = getValueTooltip
     }
 
-    styleRect(rect: QueueRectangleItemBuilder, series: PlotSeries, value: PlotPoint, index: number) {
+    styleRect(
+        rect: QueueRectangleItemBuilder,
+        series: PlotSeries,
+        value: PlotPoint,
+        slot: number,
+        valueIndex: number
+    ) {
         const item = rect.fill()
                          .gradient()
                          .color(series.color)
                          .layer(Layer.Data)
-                         .key(this.getKey(series, 'rect', index))
+                         .key(this.getKey(series, 'rect', valueIndex))
                          .interact()
-                         .init(AnimationTiming.plotInit, index * this.initStagger)
+                         .init(AnimationTiming.plotInit, slot * this.initStagger)
                          .tooltip(this.getValueTooltip(series, value))
                          .data(value.data)
                          .contextMenu()

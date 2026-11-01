@@ -79,6 +79,30 @@ describe('Adding plot axis labels', () => {
             .toEqual([])
     })
 
+    it('Should not add vertical labels when vertical series are disabled', () => {
+        const { items } = getLabels([
+            createSeries(PlotType.Bar, [10, 40]),
+            createSeries(PlotType.Line, [5, 15], { disabled: true })
+        ])
+
+        expect(keysOf(items, 'y-label-').concat(keysOf(items, 'x-category-')))
+            .toEqual([])
+        expect(keysOf(items, 'y-category-').length)
+            .toBe(2)
+    })
+
+    it('Should not add horizontal labels when bars are disabled', () => {
+        const { items } = getLabels([
+            createSeries(PlotType.Bar, [10, 40], { disabled: true }),
+            createSeries(PlotType.Line, [5, 15])
+        ])
+
+        expect(keysOf(items, 'x-label-').concat(keysOf(items, 'y-category-')))
+            .toEqual([])
+        expect(keysOf(items, 'x-category-').length)
+            .toBe(2)
+    })
+
     it('Should add both label sets to mixed chart', () => {
         const { items } = getLabels([createSeries(PlotType.Bar, [10, 40]), createSeries(PlotType.Line, [5, 15])])
 

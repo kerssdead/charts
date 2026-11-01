@@ -9,18 +9,20 @@ jest.mock('@/helpers/Text', () => ({
     stringWidth: (text: string | undefined, font: number = 14) => (text?.length ?? 0) * font / 2
 }))
 
-const styleRect = (all: PlotSeries[], series: PlotSeries, slot: number) => {
+const styleRect = (all: PlotSeries[], series: PlotSeries, slot: number, valueIndex: number = slot) => {
     const { style } = createPlot(all)
 
-    return buildItems((items: QueueItemsBuilder) => style.styleRect(items.rect(), series, series.values[slot], slot))[0]
+    return buildItems((items: QueueItemsBuilder) => {
+        return style.styleRect(items.rect(), series, series.values[valueIndex], slot, valueIndex)
+    })[0]
 }
 
 describe('Styling plot rectangle', () => {
-    it('Should key rectangle by series index and slot', () => {
-        const series = createSeries(PlotType.Column, [1, 2])
+    it('Should key rectangle by series index and value index', () => {
+        const series = createSeries(PlotType.Column, [1, 2, 3])
 
-        expect(styleRect([createSeries(PlotType.Line, [1]), series], series, 1).key)
-            .toBe('1-rect-1')
+        expect(styleRect([createSeries(PlotType.Line, [1]), series], series, 0, 2).key)
+            .toBe('1-rect-2')
     })
 
     it('Should make interactive data rectangle with value tooltip', () => {
@@ -47,6 +49,13 @@ describe('Styling plot rectangle', () => {
             .toBe(AnimationTiming.plotInit)
         expect(item.animation.initDelay)
             .toBe(2 * AnimationTiming.plotInitStagger)
+    })
+
+    it('Should stagger values sharing a slot equally', () => {
+        const series = createSeries(PlotType.Column, [1, 2, 3, 4])
+
+        expect(styleRect([series], series, 1, 3).animation.initDelay)
+            .toBe(styleRect([series], series, 1, 1).animation.initDelay)
     })
 
     it('Should spread stagger over many slots', () => {

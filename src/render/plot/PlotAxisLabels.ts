@@ -36,7 +36,7 @@ export default class PlotAxisLabels {
     }
 
     addItems(items: QueueItemsBuilder) {
-        if (this.seriesGroups.hasBars)
+        if (this.seriesGroups.rendersBars)
             this.addHorizontalLabels(items)
 
         if (!this.seriesGroups.isHorizontal)

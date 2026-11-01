@@ -19,7 +19,7 @@ export default class PlotAxisLines {
     addItems(items: QueueItemsBuilder) {
         const { layout } = this
 
-        if (this.seriesGroups.hasBars) {
+        if (this.seriesGroups.rendersBars) {
             const { band, valueScale } = layout.horizontal
             const { top, bottom } = band
 

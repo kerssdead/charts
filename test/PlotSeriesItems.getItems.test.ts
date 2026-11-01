@@ -19,6 +19,16 @@ const create = (all: PlotSeries[]) => {
 const getKeys = (all: PlotSeries[]) => buildItems(create(all).getItems()).map(item => item.key)
 
 describe('Getting plot series items', () => {
+    it.each([PlotType.Bar, PlotType.Column, PlotType.StackingColumn])(
+        'Should keep unique %s keys for points sharing x',
+        type => {
+            const values = [{ x: 'A', y: 1 }, { x: 'A', y: 2 }, { x: 'B', y: 3 }]
+
+            expect(getKeys([createSeries(type, [], { values })]))
+                .toEqual(['0-rect-0', '0-rect-1', '0-rect-2'])
+        }
+    )
+
     it('Should draw every series type in series order', () => {
         expect(getKeys([
             createSeries(PlotType.Line, [1]),

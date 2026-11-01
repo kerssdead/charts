@@ -18,4 +18,18 @@ describe('Getting plot left title', () => {
         expect(createPlot([createSeries(PlotType.Bar, [1])], TITLES).layout.leftTitle)
             .toBe('X')
     })
+
+    it('Should show x title when mixed chart renders only bars', () => {
+        const values = [createSeries(PlotType.Bar, [1]), createSeries(PlotType.Line, [1], { disabled: true })]
+
+        expect(createPlot(values, TITLES).layout.leftTitle)
+            .toBe('X')
+    })
+
+    it('Should show y title when mixed chart renders no bars', () => {
+        const values = [createSeries(PlotType.Bar, [1], { disabled: true }), createSeries(PlotType.Line, [1])]
+
+        expect(createPlot(values, TITLES).layout.leftTitle)
+            .toBe('Y')
+    })
 })

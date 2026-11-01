@@ -42,6 +42,48 @@ describe('Creating plot layout', () => {
             .toBeCloseTo(0.35)
     })
 
+    it('Should give whole height to bars when vertical series are disabled', () => {
+        const { layout } = createPlot([
+            createSeries(PlotType.Bar, [1, 2]),
+            createSeries(PlotType.Line, [1, 2], { disabled: true })
+        ])
+
+        expect(layout.horizontal.band)
+            .toEqual({ top: layout.margin.top, bottom: 5000 - layout.margin.bottom })
+    })
+
+    it('Should give whole height to vertical section when bars are disabled', () => {
+        const { layout } = createPlot([
+            createSeries(PlotType.Bar, [1, 2], { disabled: true }),
+            createSeries(PlotType.Line, [1, 2])
+        ])
+
+        expect(layout.vertical.band)
+            .toEqual({ top: layout.margin.top, bottom: 5000 - layout.margin.bottom })
+    })
+
+    it('Should narrow left margin when disabled bars take their categories away', () => {
+        const line = createSeries(PlotType.Line, [1, 2])
+        const values = [{ x: 'a very long bar category label', y: 1 }]
+
+        const getLeft = (disabled: boolean) => {
+            return createPlot([createSeries(PlotType.Bar, [], { values, disabled }), line]).layout.margin.left
+        }
+
+        expect(getLeft(true))
+            .toBeLessThan(getLeft(false))
+    })
+
+    it('Should not limit bar axis by y max when only vertical series are disabled', () => {
+        const { layout } = createPlot(
+            [createSeries(PlotType.Bar, [300]), createSeries(PlotType.Line, [1], { disabled: true })],
+            { yMax: 100 }
+        )
+
+        expect(layout.horizontal.valueScale.values)
+            .toEqual(getRoundedValues([300], 5))
+    })
+
     it('Should take vertical categories from vertical series and horizontal ones from bars', () => {
         const bar = createSeries(PlotType.Bar, [1], { values: [{ x: 'bar', y: 1 }] })
         const line = createSeries(PlotType.Line, [1], { values: [{ x: 'line', y: 1 }] })

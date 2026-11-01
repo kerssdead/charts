@@ -34,7 +34,7 @@ export default class PlotStackedColumnItems {
         const step = categoryScale.step
         const lengthPerUnit = valueScale.lengthPerUnit
 
-        const stacked = series.values.map(value => {
+        const stacked = series.values.map((value, valueIndex) => {
             const slot = categoryScale.getSlot(value)
 
             const { columns, slots } = getColumnGroup(this.columnGroups, value)
@@ -50,6 +50,7 @@ export default class PlotStackedColumnItems {
 
             return {
                 value,
+                valueIndex,
                 slot,
                 x: categoryScale.getSlotStart(slot) + offset,
                 y: baseline + stack,
@@ -60,7 +61,7 @@ export default class PlotStackedColumnItems {
         })
 
         return (items: QueueItemsBuilder) => {
-            for (const { value, slot, x, y, width, height, isTop } of stacked) {
+            for (const { value, valueIndex, slot, x, y, width, height, isTop } of stacked) {
                 const column = items.rect()
                      .position(x, y)
                      .size(width, height)
@@ -69,7 +70,7 @@ export default class PlotStackedColumnItems {
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('y', baseline)
 
-                this.style.styleRect(column, series, value, slot)
+                this.style.styleRect(column, series, value, slot, valueIndex)
                     .fade(false)
             }
         }

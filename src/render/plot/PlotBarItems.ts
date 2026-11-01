@@ -33,10 +33,10 @@ export default class PlotBarItems {
 
             const offset = visibleBefore * heightInStep
 
-            series.values.forEach(value => {
+            series.values.forEach((value, valueIndex) => {
                 const slot = categoryScale.getSlot(value)
                 const y = categoryScale.getSlotStart(slot) - offset
-                const length = seriesGroups.isHorizontal ? layout.capToYMax(Number(value.y)) : Number(value.y)
+                const length = seriesGroups.hasOnlyBarSeries ? layout.capToYMax(Number(value.y)) : Number(value.y)
 
                 const bar = items.rect()
                      .position(baseline, y)
@@ -45,7 +45,7 @@ export default class PlotBarItems {
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', baseline)
 
-                this.style.styleRect(bar, series, value, slot)
+                this.style.styleRect(bar, series, value, slot, valueIndex)
             })
         }
     }

@@ -4,7 +4,7 @@ import { getRoundedValues } from '@/helpers/Numbers'
 import { getStackKey } from '@/render/plot/PlotColumnGroups'
 import { AXIS_VALUE_COUNT } from '@/render/plot/PlotConstants'
 
-export function getAxisValues(series: PlotSeries[], yMax: number | undefined, isHorizontal: boolean) {
+export function getAxisValues(series: PlotSeries[], yMax: number | undefined, hasOnlyBarSeries: boolean) {
     const stacks = new Map<string, number>()
     const yValues: number[] = []
     const xValues: number[] = []
@@ -27,6 +27,6 @@ export function getAxisValues(series: PlotSeries[], yMax: number | undefined, is
 
     return {
         yAxisValues: getRoundedValues([...stacks.values(), ...yValues], AXIS_VALUE_COUNT, yMax),
-        xAxisValues: getRoundedValues(xValues, AXIS_VALUE_COUNT, isHorizontal ? yMax : undefined)
+        xAxisValues: getRoundedValues(xValues, AXIS_VALUE_COUNT, hasOnlyBarSeries ? yMax : undefined)
     }
 }

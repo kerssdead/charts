@@ -30,7 +30,7 @@ describe('Getting plot axis values', () => {
             .toEqual(getRoundedValues([300], 5, 100))
     })
 
-    it('Should limit x axis by y max only for horizontal chart', () => {
+    it('Should limit x axis by y max only when all series are bars', () => {
         expect(getAxisValues([series(PlotType.Bar, 300)], 100, true).xAxisValues)
             .toEqual(getRoundedValues([300], 5, 100))
         expect(getAxisValues([series(PlotType.Bar, 300)], 100, false).xAxisValues)

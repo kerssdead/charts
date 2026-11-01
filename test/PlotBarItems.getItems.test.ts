@@ -64,7 +64,15 @@ describe('Getting plot bar items', () => {
             .toMatchObject({ width: 0, height: 0 })
     })
 
-    it('Should cap bars by y max only in horizontal chart', () => {
+    it('Should not cap bars by y max after disabling all other series', () => {
+        const bar = createSeries(PlotType.Bar, [10, 400])
+        const { layout, rects } = getBars([bar, createSeries(PlotType.Line, [1], { disabled: true })], bar, { yMax: 100 })
+
+        expect(rects[1].absolute.width)
+            .toBe(400 * layout.horizontal.valueScale.lengthPerUnit)
+    })
+
+    it('Should cap bars by y max only when all series are bars', () => {
         const bar = createSeries(PlotType.Bar, [10, 400])
         const horizontal = getBars([bar], bar, { yMax: 100 })
         const mixed = getBars([bar, createSeries(PlotType.Line, [1])], bar, { yMax: 100 })

@@ -41,7 +41,7 @@ export default class PlotLayout {
         const { yAxisValues, xAxisValues } = getAxisValues(
             seriesGroups.enabledSeries,
             this.yMax,
-            seriesGroups.isHorizontal
+            seriesGroups.hasOnlyBarSeries
         )
 
         this.margin = getMargin(
@@ -98,7 +98,7 @@ export default class PlotLayout {
     }
 
     private get isMixed() {
-        return this.seriesGroups.hasBars && !this.seriesGroups.isHorizontal
+        return this.seriesGroups.rendersBars && !this.seriesGroups.isHorizontal
     }
 
     private get bandGap() {
@@ -111,7 +111,7 @@ export default class PlotLayout {
 
     private getLeftLabels(horizontalSlots: Slots, yAxisValues: number[]) {
         return [
-            ...(this.seriesGroups.hasBars ? this.formatCategories(horizontalSlots) : []),
+            ...(this.seriesGroups.rendersBars ? this.formatCategories(horizontalSlots) : []),
             ...(this.seriesGroups.isHorizontal ? [] : yAxisValues.map(value => short(value, this.data.shortLabels)))
         ]
     }

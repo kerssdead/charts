@@ -35,7 +35,7 @@ export default class PlotColumnItems {
         const index = this.seriesGroups.indexOf(series)
 
         return (items: QueueItemsBuilder) => {
-            series.values.forEach(value => {
+            series.values.forEach((value, valueIndex) => {
                 const slot = categoryScale.getSlot(value)
 
                 const { columns, slots } = getColumnGroup(this.columnGroups, value)
@@ -54,7 +54,7 @@ export default class PlotColumnItems {
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                      .grow('y', baseline)
 
-                this.style.styleRect(column, series, value, slot)
+                this.style.styleRect(column, series, value, slot, valueIndex)
             })
         }
     }

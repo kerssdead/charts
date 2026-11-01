@@ -65,6 +65,26 @@ describe('Adding plot axis lines', () => {
             .toBe(false)
     })
 
+    it('Should not draw y lines when vertical series are disabled', () => {
+        const { items } = getLines([
+            createSeries(PlotType.Bar, [10, 40]),
+            createSeries(PlotType.Line, [5, 15], { disabled: true })
+        ])
+
+        expect(items.some(item => item.key!.startsWith('axis-y') || item.key!.startsWith('grid-y')))
+            .toBe(false)
+    })
+
+    it('Should not draw x lines when bars are disabled', () => {
+        const { items } = getLines([
+            createSeries(PlotType.Bar, [10, 40], { disabled: true }),
+            createSeries(PlotType.Line, [5, 15])
+        ])
+
+        expect(items.some(item => item.key!.startsWith('axis-x') || item.key!.startsWith('grid-x')))
+            .toBe(false)
+    })
+
     it('Should draw axis line even without values', () => {
         const { lines } = getLines([])
 
