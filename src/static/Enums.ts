@@ -68,6 +68,12 @@ export const enum PlotType {
     Area
 }
 
+export const enum LineDrawMode {
+    Straight,
+
+    Smooth
+}
+
 export const enum PlotOrientation {
     Vertical,
 

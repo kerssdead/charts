@@ -1,6 +1,8 @@
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
 import RenderItemLine from '@/types/RenderItemLine'
 import RectangleDimensions from '@/types/RectangleDimensions'
+import { LineDrawMode } from '@/static/Enums'
+import LinePathTracer from '@/render/LinePathTracer'
 
 export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderItemLine> {
     constructor() {
@@ -24,6 +26,12 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
 
     dash(segments: number[]) {
         this.shape.dash = segments
+
+        return this
+    }
+
+    drawMode(mode?: LineDrawMode) {
+        this.shape.pathTracer = new LinePathTracer(mode)
 
         return this
     }

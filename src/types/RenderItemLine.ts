@@ -9,6 +9,7 @@ import { edgeFadeMask, fadingGradient, GradientCache, offscreenLayer } from '@/h
 import { CompositeOperation, LineJoin } from '@/static/Enums'
 import { withAlpha } from '@/helpers/Color'
 import RectangleDimensions from '@/types/RectangleDimensions'
+import LinePathTracer from '@/render/LinePathTracer'
 
 const ALPHA_DELTA = 0.5
 
@@ -31,6 +32,8 @@ export default class RenderItemLine
     width: number = 1
 
     dash: number[] = []
+
+    pathTracer = new LinePathTracer()
 
     tooltips: string[] = []
 
@@ -57,8 +60,6 @@ export default class RenderItemLine
     private readonly areaGradient = new GradientCache(fadingGradient)
 
     private readonly markers = new HoverMap<number>()
-
-    private readonly partialStop: Point = { x: 0, y: 0 }
 
     current(morph: number = 1): Point[] {
         if (!this.from || morph >= 1 || this.from.length != this.absolute.length)
@@ -128,6 +129,8 @@ export default class RenderItemLine
             this.canvas[i].y = RenderItem.adjustY(window, stops[i].y)
         }
 
+        this.pathTracer.updateCurve(this.canvas)
+
         const areaBaseline = this.currentAreaBaseline(morph)
 
         if (areaBaseline != null)
@@ -176,7 +179,7 @@ export default class RenderItemLine
 
         const { canvas } = this
         const drawnStopCount = progress < 1 ? this.drawnStopCountAt(progress) : canvas.length
-        const partialStop = drawnStopCount < canvas.length ? this.partialStop : null
+        const partialStop = drawnStopCount < canvas.length ? this.pathTracer.partialStop : null
 
         if (drawnStopCount == 1 && !partialStop) {
             ctx.arc(canvas[0].x, canvas[0].y, Math.max(this.width, POINT_MIN_RADIUS), 0, FULL_ANGLE)
@@ -196,7 +199,7 @@ export default class RenderItemLine
             this.clipToArea(ctx, bounds, lastStop)
         }
 
-        this.traceLine(ctx, drawnStopCount, partialStop)
+        this.pathTracer.trace(ctx, canvas, drawnStopCount, partialStop != null)
 
         ctx.stroke()
 
@@ -329,7 +332,7 @@ export default class RenderItemLine
         layer.setTransform(scale, 0, 0, scale, -left * scale, -top * scale)
 
         layer.beginPath()
-        this.traceLine(layer, drawnStopCount, partialStop)
+        this.pathTracer.trace(layer, canvas, drawnStopCount, partialStop != null)
         layer.lineTo(right, canvasAreaBaseline)
         layer.lineTo(left, canvasAreaBaseline)
         layer.closePath()
@@ -373,19 +376,6 @@ export default class RenderItemLine
         ctx.beginPath()
     }
 
-    private traceLine(ctx: CanvasRenderingContext2D, drawnStopCount: number, partialStop: Point | null) {
-        const { canvas } = this
-
-        ctx.moveTo(canvas[0].x, canvas[0].y)
-
-        for (let i = 1; i < drawnStopCount; i++) {
-            ctx.lineTo(canvas[i].x, canvas[i].y)
-        }
-
-        if (partialStop)
-            ctx.lineTo(partialStop.x, partialStop.y)
-    }
-
     private drawnStopCountAt(progress: number): number {
         const { canvas } = this
 
@@ -405,12 +395,7 @@ export default class RenderItemLine
                 continue
             }
 
-            const k = length == 0 ? 0 : left / length
-            const from = canvas[i - 1]
-            const to = canvas[i]
-
-            this.partialStop.x = from.x + (to.x - from.x) * k
-            this.partialStop.y = from.y + (to.y - from.y) * k
+            this.pathTracer.placePartialStop(canvas, i, length == 0 ? 0 : left / length)
 
             return i
         }

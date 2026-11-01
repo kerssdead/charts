@@ -3,7 +3,7 @@ import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemLine from '@/types/RenderItemLine'
 import PlotLineItems from '@/render/plot/PlotLineItems'
-import { PlotAxisType, PlotType } from '@/static/Enums'
+import { LineDrawMode, PlotAxisType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -15,6 +15,15 @@ const getLine = (all: PlotSeries[], series: PlotSeries, data: Partial<PlotData> 
     const lines = new PlotLineItems(plot.layout, plot.style)
 
     return { ...plot, line: buildItems(lines.getItems(series))[0].shape as RenderItemLine }
+}
+
+const curveCount = (line: RenderItemLine) => {
+    const ctx = { moveTo: jest.fn(), lineTo: jest.fn(), bezierCurveTo: jest.fn() }
+
+    line.pathTracer.updateCurve(line.absolute)
+    line.pathTracer.trace(ctx as unknown as CanvasRenderingContext2D, line.absolute, line.absolute.length, false)
+
+    return ctx.bezierCurveTo.mock.calls.length
 }
 
 describe('Getting plot line items', () => {
@@ -59,6 +68,27 @@ describe('Getting plot line items', () => {
 
         expect(getLine([series], series).line.dash)
             .toEqual([])
+    })
+
+    it('Should use series draw mode for line', () => {
+        const series = createSeries(PlotType.Line, [1, 2, 3], { drawMode: LineDrawMode.Smooth })
+
+        expect(curveCount(getLine([series], series).line))
+            .toBe(2)
+    })
+
+    it('Should use series draw mode for area', () => {
+        const series = createSeries(PlotType.Area, [1, 2, 3], { drawMode: LineDrawMode.Smooth })
+
+        expect(curveCount(getLine([series], series).line))
+            .toBe(2)
+    })
+
+    it('Should draw straight without series draw mode', () => {
+        const series = createSeries(PlotType.Line, [1, 2, 3])
+
+        expect(curveCount(getLine([series], series).line))
+            .toBe(0)
     })
 
     it('Should give area series a baseline at zero', () => {

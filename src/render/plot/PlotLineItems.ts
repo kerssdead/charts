@@ -35,6 +35,7 @@ export default class PlotLineItems {
 
             line.clip(this.plotBox)
                 .dash(Array.isArray(series.dash) ? series.dash : [])
+                .drawMode(series.drawMode)
                 .gradient()
 
             if (series.type == PlotType.Area)

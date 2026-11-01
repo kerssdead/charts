@@ -313,6 +313,12 @@
                 </label>
 
                 <label>
+                    <input type="checkbox" id="smooth-line" onchange="refresh()"/>
+
+                    Smooth line
+                </label>
+
+                <label>
                     <input type="checkbox" id="short-labels" onchange="refresh()"/>
 
                     Short Labels
@@ -553,7 +559,8 @@
             indexedCustomLabel = document.getElementById('indexed-custom-label').checked,
             isCustomLabel = customLabel.trim().length !== 0,
             enableNegativeValuesInPlot = document.getElementById('negative-values-in-plot').checked,
-            lineType = document.getElementById('line-type').value
+            lineType = document.getElementById('line-type').value,
+            lineDrawMode = document.getElementById('smooth-line').checked ? 1 : 0
 
         function getData(index) {
             return {
@@ -650,6 +657,7 @@
                             : `Series ${i}`,
                         data: getData(i),
                         dash: JSON.parse(lineType),
+                        drawMode: lineDrawMode,
                         color: getColor()
                     })
                 }

@@ -1,7 +1,8 @@
 import RenderItemLine from '@/types/RenderItemLine'
 import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
-import { LineJoin } from '@/static/Enums'
+import { LineDrawMode, LineJoin } from '@/static/Enums'
+import LinePathTracer from '@/render/LinePathTracer'
 
 const mockLayer: { current: unknown } = { current: null }
 
@@ -19,6 +20,7 @@ const context = (ratio: number = 1) => ({
     setLineDash: jest.fn(),
     moveTo: jest.fn(),
     lineTo: jest.fn(),
+    bezierCurveTo: jest.fn(),
     arc: jest.fn(),
     fill: jest.fn(),
     stroke: jest.fn(),
@@ -42,6 +44,7 @@ const layerContext = () => {
         beginPath: jest.fn(),
         moveTo: jest.fn(),
         lineTo: jest.fn(),
+        bezierCurveTo: jest.fn(),
         closePath: jest.fn(),
         fill: jest.fn(),
         fillRect: jest.fn(),
@@ -95,6 +98,27 @@ const renderArea = (
     return { ctx, layer }
 }
 
+const renderSmooth = (areaBaseline: number | null, progress: number) => {
+    const ctx = context()
+    const layer = layerContext()
+    const shape = new RenderItemLine()
+    const item = new RenderItem(shape)
+
+    mockLayer.current = layer
+
+    shape.pathTracer = new LinePathTracer(LineDrawMode.Smooth)
+    shape.absolute = AREA_STOPS
+    shape.areaBaseline = areaBaseline
+    shape.adjust(WINDOW)
+
+    item.color = '#ff0000'
+    item.animation.init = progress
+
+    shape.render(ctx as unknown as CanvasRenderingContext2D, item)
+
+    return { ctx, layer, shape }
+}
+
 const CLIP = { x: 100, y: 200, width: 1000, height: 2000 }
 
 const renderClipped = (stops: { x: number, y: number }[], clip: typeof CLIP | null) => {
@@ -114,6 +138,29 @@ const renderClipped = (stops: { x: number, y: number }[], clip: typeof CLIP | nu
 }
 
 describe('Rendering line', () => {
+    it('Should draw smooth line with curves only', () => {
+        const { ctx } = renderSmooth(null, 1)
+
+        expect([ctx.bezierCurveTo.mock.calls.length, ctx.lineTo.mock.calls.length])
+            .toEqual([2, 0])
+    })
+
+    it('Should end partial smooth line on partial stop', () => {
+        const { ctx, shape } = renderSmooth(null, .75)
+        const { partialStop } = shape.pathTracer
+
+        expect(ctx.bezierCurveTo.mock.calls.at(-1)!.slice(4))
+            .toEqual([partialStop.x, partialStop.y])
+    })
+
+    it('Should close smooth area under partial stop', () => {
+        const { layer, shape } = renderSmooth(200, .75)
+        const { partialStop } = shape.pathTracer
+
+        expect([layer.bezierCurveTo.mock.calls.at(-1)!.slice(4), layer.lineTo.mock.calls[0][0]])
+            .toEqual([[partialStop.x, partialStop.y], partialStop.x])
+    })
+
     it('Should draw all stops when initialized', () => {
         const ctx = render(STOPS, 1)
 

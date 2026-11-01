@@ -1,6 +1,6 @@
 import Value from '@/types/base/Value'
 import PlotPoint from '@/types/PlotPoint'
-import { PlotType } from '@/static/Enums'
+import { LineDrawMode, PlotType } from '@/static/Enums'
 
 export default class PlotSeries extends Value {
     values: PlotPoint[]
@@ -10,6 +10,8 @@ export default class PlotSeries extends Value {
     width: number
 
     dash: number[]
+
+    drawMode?: LineDrawMode
 
     canToggle(): boolean {
         return true
