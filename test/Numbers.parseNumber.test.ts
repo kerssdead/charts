@@ -1,5 +1,14 @@
 import { parseNumber } from '@/helpers/Numbers'
-import Utils from '@e2e/utils/Utils'
+
+const measureParsing = (text: string) => {
+    const start = performance.now()
+    let parsed = 0
+
+    for (let i = 0; i < 10000; i++)
+        parsed = parseNumber(text)
+
+    return { parsed, elapsed: performance.now() - start }
+}
 
 describe('Parsing string to number', () => {
     it('US, no thousands', () => {
@@ -23,23 +32,21 @@ describe('Parsing string to number', () => {
     })
 
     it('US, performance test, 10000 values', () => {
-        const start = performance.now()
+        const { parsed, elapsed } = measureParsing('123,456.789')
 
-        for (let i = 0; i < 10000; i++)
-            expect(parseNumber('123,456.789'))
-                .toStrictEqual(123456.789)
-
-        Utils.elapsed(start, 600)
+        expect(parsed)
+            .toStrictEqual(123456.789)
+        expect(elapsed)
+            .toBeLessThanOrEqual(600)
     })
 
     it('EU, performance test, 10000 values', () => {
-        const start = performance.now()
+        const { parsed, elapsed } = measureParsing('123.456,789')
 
-        for (let i = 0; i < 10000; i++)
-            expect(parseNumber('123.456,789'))
-                .toStrictEqual(123456.789)
-
-        Utils.elapsed(start, 600)
+        expect(parsed)
+            .toStrictEqual(123456.789)
+        expect(elapsed)
+            .toBeLessThanOrEqual(600)
     })
 
     it('US, 0 test', () => {
