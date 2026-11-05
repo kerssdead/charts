@@ -9,6 +9,7 @@ import Decomposition from '@/export/Decomposition'
 import TextResources from '@/static/TextResources'
 import { ContextMenu } from '@/static/constants/Index'
 import { ChartType } from '@/static/Enums'
+import Theme, { ColorTheme } from '@/Theme'
 
 export default class ChartMenu {
     ratio: number = 1
@@ -74,7 +75,11 @@ export default class ChartMenu {
             DIVIDER,
             {
                 text: TextResources.decomposeToTable,
-                action: () => new Modal(Decomposition.fromCharts(charts), title || TextResources.dataAsTable).open()
+                action: () => new Modal(
+                    Decomposition.fromCharts(charts, () => Export.asCsv(charts, title)),
+                    title || TextResources.dataAsTable,
+                    Theme.currentTheme == ColorTheme.dark
+                ).open()
             }
         ]
     }

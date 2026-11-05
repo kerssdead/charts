@@ -9,7 +9,9 @@ const enum ModalClasses {
 
     Header = 'o-modal-header',
 
-    Content = 'o-modal-content'
+    Content = 'o-modal-content',
+
+    Dark = 'o-dark'
 }
 
 class Modal {
@@ -17,10 +19,13 @@ class Modal {
 
     private isClosed: boolean = false
 
-    constructor(content?: HTMLElement, title?: string) {
+    constructor(content?: HTMLElement, title?: string, isDark: boolean = false) {
         this.modal = document.createElement(Tag.Dialog)
 
         this.modal.classList.add(ModalClasses.Modal)
+
+        if (isDark)
+            this.modal.classList.add(ModalClasses.Dark)
 
         this.modal.oncancel = () => this.close()
 

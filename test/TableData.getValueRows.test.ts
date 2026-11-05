@@ -60,4 +60,22 @@ describe('Getting value rows for decomposition', () => {
         expect(getValueRows(data.values, getTreeSum).values[0].values.get('Value'))
             .toBe(5)
     })
+
+    it('Should keep value color and disabled state', () => {
+        const data = {
+            values: [
+                {
+                    value: 1,
+                    label: 'Sector 1',
+                    color: '#ff0000',
+                    disabled: true
+                }
+            ]
+        } as PieData
+
+        const row = getValueRows(data.values).values[0]
+
+        expect([row.color, row.disabled])
+            .toEqual(['#ff0000', true])
+    })
 })

@@ -1,12 +1,29 @@
 .o-modal {
+    --o-modal-background: #ffffff;
+    --o-modal-text-color: #1f2328;
+    --o-modal-border-color: #d8dee4;
+    --o-modal-shadow-color: rgb(0 0 0 / .15);
+}
+
+.o-modal.o-dark {
+    --o-modal-background: #16191c;
+    --o-modal-text-color: #e3e8ec;
+    --o-modal-border-color: #2f3a42;
+    --o-modal-shadow-color: rgb(0 0 0 / .5);
+}
+
+.o-modal {
     max-width: 80vw;
-    border-radius: 6px;
-    padding: 12px;
-    border: 2px solid #aeaeae;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid var(--o-modal-border-color);
+    box-shadow: 0 8px 24px var(--o-modal-shadow-color);
+    background: var(--o-modal-background);
+    color: var(--o-modal-text-color);
     display: flex;
     flex-direction: column;
     gap: 12px;
-    font-family: Arial;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 .o-modal::backdrop {
@@ -24,6 +41,7 @@
 .o-modal-header > .o-modal-title {
     flex-grow: 1;
     font-size: 16px;
+    font-weight: 600;
 }
 
 .o-modal-header > .o-modal-close {
@@ -31,6 +49,7 @@
     border: 0;
     outline: 0;
     background: transparent;
+    color: inherit;
     width: fit-content;
     font-size: 20px;
     line-height: 16px;

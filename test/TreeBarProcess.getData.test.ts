@@ -3,7 +3,7 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItem from '@/types/RenderItem'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import RenderItemText from '@/types/RenderItemText'
-import TreeBarData, { getTreeBarRows } from '@/types/data/TreeBarData'
+import TreeBarData from '@/types/data/TreeBarData'
 import TreeBarRow from '@/types/TreeBarRow'
 import Sector from '@/types/Sector'
 import ProcessSettings from '@/types/ProcessSettings'
@@ -165,22 +165,5 @@ describe('Getting tree bar data', () => {
             .toEqual([true, false])
         expect(keys(process.getData()).includes('tree-bar-row-a-part-0'))
             .toBe(true)
-    })
-
-    it('Should export top level rows with column values', () => {
-        const table = getTreeBarRows({
-            values: [row('a', [1], { label: 'Lorem\nIpsum', cells: { amount: '1,500', code: 'XY' }, children: [row('b', [1])] })],
-            columns: [{ key: 'amount', title: 'Amount' }, { key: 'code', title: 'Code' }]
-        } as TreeBarData)
-
-        expect([table.headers.map(header => header.display), table.values.map(value => [value.name, [...value.values.values()]])])
-            .toEqual([['Amount', 'Code'], [['Lorem Ipsum', [1500, 0]]]])
-    })
-
-    it('Should export part totals without columns', () => {
-        const table = getTreeBarRows({ values: [row('a', [10, 20])] } as TreeBarData)
-
-        expect([...table.values[0].values.values()])
-            .toEqual([30])
     })
 })

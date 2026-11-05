@@ -1,9 +1,10 @@
-import { Events, Tag } from '@/static/Enums'
+import { Attribute, Events, TableClasses, Tag } from '@/static/Enums'
 
 export default class TableColumnHighlight {
     static attach(table: HTMLElement) {
         const highlight = document.createElement(Tag.Div)
-        highlight.classList.add('o-table-column-highlight')
+        highlight.classList.add(TableClasses.ColumnHighlight)
+        highlight.setAttribute(Attribute.AriaHidden, 'true')
         highlight.hidden = true
 
         let highlightedCell: HTMLElement | null = null
@@ -14,7 +15,7 @@ export default class TableColumnHighlight {
         }
 
         table.addEventListener(Events.PointerMove, event => {
-            const cell = (event.target as HTMLElement).closest<HTMLElement>('.o-table-row > div')
+            const cell = (event.target as HTMLElement).closest<HTMLElement>(`.${ TableClasses.Row } > div`)
 
             if (!cell) {
                 hide()

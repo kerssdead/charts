@@ -9,6 +9,10 @@ interface FakeHighlight {
     style: { left?: string, width?: string, height?: string }
 
     classList: { add(name: string): void }
+
+    attributes: Record<string, string>
+
+    setAttribute(name: string, value: string): void
 }
 
 interface FakeCell {
@@ -22,7 +26,9 @@ function createElement(): FakeHighlight {
         className: '',
         hidden: false,
         style: {},
-        classList: { add: name => element.className = name }
+        classList: { add: name => element.className = name },
+        attributes: {},
+        setAttribute: (name, value) => element.attributes[name] = value
     }
 
     return element
@@ -54,6 +60,13 @@ describe('Attaching table column highlight', () => {
 
         expect([children.length, highlight.className, highlight.hidden])
             .toEqual([1, 'o-table-column-highlight', true])
+    })
+
+    it('Should hide the highlight from screen readers', () => {
+        const { highlight } = attach()
+
+        expect(highlight.attributes)
+            .toEqual({ 'aria-hidden': 'true' })
     })
 
     it('Should cover the hovered cell column for the full table height', () => {

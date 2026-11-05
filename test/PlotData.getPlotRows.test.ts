@@ -156,4 +156,27 @@ describe('Getting plot rows for decomposition', () => {
         expect(getPlotRows(data).headers.length)
             .toBe(6)
     })
+
+    it('Should keep series color and disabled state', () => {
+        const data = {
+            values: [
+                {
+                    values: [
+                        {
+                            x: 1,
+                            y: 1
+                        }
+                    ],
+                    label: 'Series 1',
+                    color: '#00ff00',
+                    disabled: true
+                }
+            ]
+        } as PlotData
+
+        const row = getPlotRows(data).values[0]
+
+        expect([row.color, row.disabled])
+            .toEqual(['#00ff00', true])
+    })
 })

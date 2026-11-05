@@ -42,7 +42,7 @@ export function getPlotRows(data: PlotData): TableData {
                 headers.set(key, { value: key, display: Formatter.axis(value.x, data.xType) })
         }
 
-        return { name: series.label, values: seriesValues }
+        return { name: series.label, color: series.color, disabled: series.disabled, values: seriesValues }
     })
 
     const uniqueHeaders = [...headers.values()]

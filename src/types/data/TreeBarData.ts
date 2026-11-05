@@ -68,19 +68,25 @@ export function getCellNumber(value: string | number | undefined) {
 
 export function getTreeBarRows(data: TreeBarData): TableData {
     const columns = data.columns ?? []
+    const entries = flattenTreeBarRows(data.values)
+    const nodes = entries.map(({ node }) => node)
 
-    const table = columns.length > 0
+    const table: TableData = columns.length > 0
                   ? {
                       headers: columns.map(column => ({ value: column.key, display: column.title })),
-                      values: data.values.map(row => ({
+                      values: nodes.map(row => ({
                           name: row.label,
+                          color: row.color,
+                          disabled: row.disabled,
                           values: new Map(columns.map(column => [column.key, getCellNumber(row.cells?.[column.key]) || 0]))
                       }))
                   }
-                  : getValueRows(data.values, getTreeBarTotal)
+                  : getValueRows(nodes, getTreeBarTotal)
 
-    for (const row of table.values)
+    for (const [index, row] of table.values.entries()) {
         row.name = row.name.replace(/\n/g, ' ')
+        row.level = entries[index].level
+    }
 
     return table
 }

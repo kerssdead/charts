@@ -31,6 +31,8 @@ export const enum Events {
 
     PointerLeave = 'pointerleave',
 
+    Input = 'input',
+
     LostPointerCapture = 'lostpointercapture',
 
     Wheel = 'wheel'
@@ -107,7 +109,83 @@ export const enum Tag {
 
     Button = 'button',
 
-    Span = 'span'
+    Span = 'span',
+
+    Input = 'input'
+}
+
+export const enum TableClasses {
+    Tables = 'o-tables',
+
+    Toolbar = 'o-table-toolbar',
+
+    Filter = 'o-table-filter',
+
+    Action = 'o-table-action',
+
+    List = 'o-table-list',
+
+    Group = 'o-table-group',
+
+    Caption = 'o-table-caption',
+
+    Table = 'o-table',
+
+    Header = 'o-table-header',
+
+    Body = 'o-table-body',
+
+    Row = 'o-table-row',
+
+    Footer = 'o-table-footer',
+
+    Number = 'o-table-number',
+
+    Swatch = 'o-table-swatch',
+
+    Disabled = 'o-table-disabled',
+
+    Empty = 'o-table-empty',
+
+    Sortable = 'o-table-sortable',
+
+    ColumnHighlight = 'o-table-column-highlight'
+}
+
+export const enum Attribute {
+    Role = 'role',
+
+    AriaSort = 'aria-sort',
+
+    AriaHidden = 'aria-hidden'
+}
+
+export const enum TableColumnKey {
+    RowTotal = '\u0000rowTotal',
+
+    Share = '\u0000share'
+}
+
+export const enum AriaRole {
+    Table = 'table',
+
+    RowGroup = 'rowgroup',
+
+    Row = 'row',
+
+    ColumnHeader = 'columnheader',
+
+    RowHeader = 'rowheader',
+
+    Cell = 'cell'
+}
+
+export const enum SortDirection {
+    None = 'none',
+
+    Ascending = 'ascending',
+
+    Descending = 'descending'
 }
 
 export const enum Icon {

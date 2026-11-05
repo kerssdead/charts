@@ -23,6 +23,18 @@ const enum TextResources {
 
     value = 'Value',
 
+    name = 'Name',
+
+    share = 'Share',
+
+    filter = 'Filter...',
+
+    copy = 'Copy',
+
+    copied = 'Copied',
+
+    saveCsv = 'Save as CSV',
+
     defaultImageName = 'chart',
 
     defaultTableName = 'table'
