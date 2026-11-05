@@ -289,6 +289,38 @@
                 </label>
 
                 <label>
+                    X-axis scale
+
+                    <select id="x-scale" onchange="refresh()">
+                        <option value="0">
+                            Category
+                        </option>
+
+                        <option value="1">
+                            Linear
+                        </option>
+
+                        <option value="2">
+                            Log
+                        </option>
+                    </select>
+                </label>
+
+                <label>
+                    Y-axis scale
+
+                    <select id="y-scale" onchange="refresh()">
+                        <option value="1">
+                            Linear
+                        </option>
+
+                        <option value="2">
+                            Log
+                        </option>
+                    </select>
+                </label>
+
+                <label>
                     <input type="checkbox" id="negative-values-in-plot" onchange="refresh()"/>
 
                     Enable negative values in plot
@@ -906,6 +938,8 @@
             customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
             innerRadius = +document.getElementById('inner-radius').value,
             xType = +document.getElementById('x-axis-type').value,
+            xScale = +document.getElementById('x-scale').value,
+            yScale = +document.getElementById('y-scale').value,
             postfix = document.getElementById('postfix').value,
             innerTitle = document.getElementById('inner-title').value,
             yMax = document.getElementById('y-max').value,
@@ -960,6 +994,8 @@
                 xTitle: xAxisTitle,
                 yTitle: yAxisTitle,
                 xType: xType,
+                xScale: xScale,
+                yScale: yScale,
                 min: gaugeMin,
                 max: gaugeMax,
                 enableTrack: enableTrack,

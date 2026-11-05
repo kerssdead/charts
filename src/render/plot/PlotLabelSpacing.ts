@@ -9,9 +9,12 @@ export default class PlotLabelSpacing {
 
     private readonly leftBoundary: number
 
-    constructor(units: Units, leftBoundary: number) {
+    private readonly plotRight: number
+
+    constructor(units: Units, leftBoundary: number, plotRight: number) {
         this.units = units
         this.leftBoundary = leftBoundary
+        this.plotRight = plotRight
     }
 
     getValueLabels(values: number[], positions: number[], shortLabels: boolean) {
@@ -32,6 +35,12 @@ export default class PlotLabelSpacing {
             every++
 
         return every
+    }
+
+    fitsInPlot(text: string, x: number) {
+        const half = this.units.x(stringWidth(text, X_LABEL_FONT) / 2)
+
+        return x - half >= this.leftBoundary && x + half <= this.plotRight
     }
 
     clampLabel(text: string, x: number) {

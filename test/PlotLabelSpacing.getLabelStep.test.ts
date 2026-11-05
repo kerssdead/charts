@@ -6,7 +6,7 @@ jest.mock('@/helpers/Text', () => ({
     stringWidth: (text: string | undefined, font: number = 14) => (text?.length ?? 0) * font / 2
 }))
 
-const spacing = new PlotLabelSpacing(new Units({ x: 1, y: 1 }), 0)
+const spacing = new PlotLabelSpacing(new Units({ x: 1, y: 1 }), 0, 5000)
 
 const LABELS = ['aa', 'aa', 'aa', 'aa']
 

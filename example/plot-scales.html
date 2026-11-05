@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Plot Scales
+    </title>
+
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
+
+    <script src="../dist/ocharts.js"></script>
+</head>
+
+<body>
+<div></div>
+</body>
+
+<script>
+    const pairs = (xs, ys) => xs.map((x, i) => ({ x: x, y: ys[i] }))
+
+    const unevenX = [1, 2, 5, 10, 20, 50, 100]
+
+    const unevenSeries = [
+        { type: 0, label: 'Line', width: 2, values: pairs(unevenX, [12, 18, 15, 24, 20, 28, 26]) },
+        { type: 2, label: 'Column', values: pairs(unevenX, [10, 14, 9, 16, 12, 18, 15]) }
+    ]
+
+    const unevenPlot = (title, xScale) => ({
+        type: 0,
+        title: title,
+        data: { xType: 0, xScale: xScale, xTitle: 'X', yTitle: 'Y', values: unevenSeries }
+    })
+
+    const dates = ['2025-01-03', '2025-01-10', '2025-02-14', '2025-02-20', '2025-04-01', '2025-06-15', '2025-07-01']
+
+    const growth = [3, 40, 250, 0, 1800, 12000, 50000]
+
+    const chart = OCharts.chart(
+        document.querySelector('div'),
+        {
+            title: 'Plot Scales',
+            enableTooltip: true,
+            enableLegend: true,
+            charts: [
+                unevenPlot('Category X', 0),
+                unevenPlot('Linear X', 1),
+                unevenPlot('Log X', 2),
+                {
+                    type: 0,
+                    title: 'Linear Date X',
+                    data: {
+                        xType: 1,
+                        xScale: 1,
+                        values: [{ type: 0, label: 'Visits', width: 2, values: pairs(dates, [5, 9, 7, 14, 11, 18, 16]) }]
+                    }
+                },
+                {
+                    type: 0,
+                    title: 'Log Y',
+                    data: {
+                        xType: 2,
+                        yScale: 2,
+                        values: [
+                            { type: 0, label: 'Users', width: 2, values: pairs(dates, growth) },
+                            { type: 2, label: 'Orders', values: pairs(dates, growth.map(y => y / 5)) }
+                        ]
+                    }
+                },
+                {
+                    type: 0,
+                    title: 'Log Bars',
+                    data: {
+                        xType: 2,
+                        yScale: 2,
+                        values: [{ type: 3, label: 'Revenue', values: pairs(['A', 'B', 'C', 'D'], [8, 120, 4500, 90000]) }]
+                    }
+                }
+            ]
+        }
+    )
+
+    chart.render()
+</script>
+</html>

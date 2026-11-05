@@ -137,4 +137,26 @@ describe('Adding plot axis labels', () => {
         expect(texts.get('y-category-2')!.absolute.y)
             .toBe(layout.horizontal.categoryScale.getSlotCenter(1))
     })
+
+    it('Should drop continuous x labels crossing plot edges instead of clamping them', () => {
+        const values = [0, 0.01, 40].map(x => ({ x, y: 1 }))
+        const { layout, items, texts } = getLabels(
+            [createSeries(PlotType.Line, [], { values })],
+            { xType: PlotAxisType.Number, xScale: PlotScaleType.Linear }
+        )
+        const { categoryScale } = layout.vertical
+        const keys = keysOf(items, 'x-category-')
+
+        expect(keys)
+            .not.toContain('x-category-0')
+        expect(keys)
+            .not.toContain('x-category-8')
+
+        for (const key of keys) {
+            const index = Number(key.replace('x-category-', ''))
+
+            expect(texts.get(key)!.absolute.x)
+                .toBe(categoryScale.getLabelCoordinate(index))
+        }
+    })
 })

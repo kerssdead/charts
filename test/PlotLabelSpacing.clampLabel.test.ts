@@ -6,7 +6,7 @@ jest.mock('@/helpers/Text', () => ({
     stringWidth: (text: string | undefined, font: number = 14) => (text?.length ?? 0) * font / 2
 }))
 
-const spacing = new PlotLabelSpacing(new Units({ x: 1, y: 1 }), 100)
+const spacing = new PlotLabelSpacing(new Units({ x: 1, y: 1 }), 100, 5000)
 
 describe('Clamping plot label', () => {
     it('Should keep label position inside bounds', () => {

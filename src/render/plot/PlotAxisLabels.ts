@@ -4,9 +4,11 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { maxOf } from '@/helpers/Collections'
 import { short, stringWidth } from '@/helpers/Text'
 import { TextAlignment, TextBaseline } from '@/static/Enums'
+import { COORDS_MAX_X } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotLabelSpacing from '@/render/plot/PlotLabelSpacing'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
+import PlotSection from '@/render/plot/PlotSection'
 import {
     AXIS_LABEL_FONT,
     LEFT_GAP,
@@ -32,7 +34,7 @@ export default class PlotAxisLabels {
         this.units = units
         this.layout = layout
         this.seriesGroups = seriesGroups
-        this.labelSpacing = new PlotLabelSpacing(units, layout.margin.left)
+        this.labelSpacing = new PlotLabelSpacing(units, layout.margin.left, COORDS_MAX_X - layout.margin.right)
     }
 
     addItems(items: QueueItemsBuilder) {
@@ -77,9 +79,10 @@ export default class PlotAxisLabels {
                 `y-label-${ value }`
             ).axisValue(value)
 
-        const labels = layout.getCategoryLabels(section)
+        const categories = this.getBottomCategories(section)
 
-        const positions = labels.map((_, i) => categoryScale.getLabelCoordinate(i))
+        const labels = categories.map(category => category.label)
+        const positions = categories.map(category => category.position)
 
         const labelDistance = this.units.toPxX(categoryScale.minLabelDistance)
         const widest = maxOf(labels, label => stringWidth(label, X_LABEL_FONT))
@@ -89,10 +92,23 @@ export default class PlotAxisLabels {
             Math.ceil((widest + X_LABEL_SPACING) / labelDistance)
         )
 
-        labels.forEach((label, i) => {
+        categories.forEach(({ label, index, position }, i) => {
             if (i % every == 0)
-                this.bottomLabel(items, label, positions[i], band.bottom, `x-category-${ i }`)
+                this.bottomLabel(items, label, position, band.bottom, `x-category-${ index }`)
         })
+    }
+
+    private getBottomCategories(section: PlotSection) {
+        const { categoryScale } = section
+
+        const categories = this.layout.getCategoryLabels(section).map((label, index) => {
+            return { label, index, position: categoryScale.getLabelCoordinate(index) }
+        })
+
+        if (!categoryScale.isContinuous)
+            return categories
+
+        return categories.filter(({ label, position }) => this.labelSpacing.fitsInPlot(label, position))
     }
 
     private leftLabel(items: QueueItemsBuilder, text: string, y: number, key: string) {

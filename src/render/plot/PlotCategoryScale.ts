@@ -8,6 +8,8 @@ import PlotContinuousAxis from '@/render/plot/PlotContinuousAxis'
 export default class PlotCategoryScale {
     readonly slots: Slots
 
+    readonly isContinuous: boolean
+
     private readonly layout: PlotSlotLayout
 
     private constructor(
@@ -18,6 +20,7 @@ export default class PlotCategoryScale {
         continuousAxis: PlotContinuousAxis | null
     ) {
         this.slots = slots
+        this.isContinuous = continuousAxis != null
         this.layout = continuousAxis
                       ? new PlotContinuousSlotLayout(continuousAxis, start, length, direction)
                       : new PlotEvenSlotLayout(slots, start, length, direction)
