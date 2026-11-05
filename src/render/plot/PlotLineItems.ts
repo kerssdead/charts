@@ -22,13 +22,14 @@ export default class PlotLineItems {
         return (items: QueueItemsBuilder) => {
             const line = items.line()
 
-            const slots = series.values.map(value => ({ value, slot: categoryScale.getSlot(value) }))
+            const slots = series.values.filter(value => valueScale.canShow(Number(value.y)))
+                                .map(value => ({ value, slot: categoryScale.getSlot(value) }))
                                 .sort((a, b) => a.slot - b.slot)
 
             slots.forEach(({ value, slot }) => {
                 line.stop(
                     categoryScale.getSlotCenter(slot),
-                    baseline - layout.capToYMax(Number(value.y)) * valueScale.lengthPerUnit,
+                    valueScale.getCoordinate(layout.capToYMax(Number(value.y))),
                     this.style.getValueTooltip(series, value)
                 )
             })
@@ -46,14 +47,14 @@ export default class PlotLineItems {
     }
 
     getAttentionItems(series: PlotSeries) {
-        if (series.values.length == 0)
-            return QueueItemsBuilder.empty
-
         const { layout } = this
 
-        const { valueScale, baseline } = layout.vertical
+        const { valueScale } = layout.vertical
 
-        const y = baseline - layout.capToYMax(Number(series.values[0].y)) * valueScale.lengthPerUnit
+        if (series.values.length == 0 || !valueScale.canShow(Number(series.values[0].y)))
+            return QueueItemsBuilder.empty
+
+        const y = valueScale.getCoordinate(layout.capToYMax(Number(series.values[0].y)))
 
         const x1 = layout.margin.left
         const x2 = COORDS_MAX_X - layout.margin.right

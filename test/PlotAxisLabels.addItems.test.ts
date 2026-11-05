@@ -1,17 +1,18 @@
 import { buildItems, createPlot, createSeries, UNITS } from './PlotTestData'
 import PlotSeries from '@/types/PlotSeries'
+import PlotData from '@/types/data/PlotData'
 import RenderItemText from '@/types/RenderItemText'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import PlotAxisLabels from '@/render/plot/PlotAxisLabels'
-import { PlotType, TextAlignment } from '@/static/Enums'
+import { PlotAxisType, PlotScaleType, PlotType, TextAlignment } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
     stringWidth: (text: string | undefined, font: number = 14) => (text?.length ?? 0) * font / 2
 }))
 
-const getLabels = (all: PlotSeries[]) => {
-    const plot = createPlot(all)
+const getLabels = (all: PlotSeries[], data: Partial<PlotData> = {}) => {
+    const plot = createPlot(all, data)
     const labels = new PlotAxisLabels(plot.data, UNITS, plot.layout, plot.seriesGroups)
     const items = buildItems((builder: QueueItemsBuilder) => labels.addItems(builder))
 
@@ -110,5 +111,30 @@ describe('Adding plot axis labels', () => {
             .toBe(2)
         expect(keysOf(items, 'x-category-').length)
             .toBe(2)
+    })
+
+    it('Should put x labels at ticks of continuous scale', () => {
+        const values = [0, 10, 40].map(x => ({ x, y: 1 }))
+        const { layout, texts } = getLabels(
+            [createSeries(PlotType.Line, [], { values })],
+            { xType: PlotAxisType.Number, xScale: PlotScaleType.Linear }
+        )
+        const { categoryScale } = layout.vertical
+
+        expect(texts.get('x-category-2')!.value)
+            .toBe('10')
+        expect(texts.get('x-category-2')!.absolute.x)
+            .toBe(categoryScale.getSlotCenter(1))
+    })
+
+    it('Should put bar category labels at ticks of continuous scale', () => {
+        const values = [0, 10, 40].map(x => ({ x, y: 1 }))
+        const { layout, texts } = getLabels(
+            [createSeries(PlotType.Bar, [], { values })],
+            { xType: PlotAxisType.Number, xScale: PlotScaleType.Linear }
+        )
+
+        expect(texts.get('y-category-2')!.absolute.y)
+            .toBe(layout.horizontal.categoryScale.getSlotCenter(1))
     })
 })

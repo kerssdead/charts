@@ -1,6 +1,7 @@
-import { PlotOrientation } from '@/static/Enums'
+import { PlotOrientation, PlotScaleType } from '@/static/Enums'
 import PlotCategoryScale from '@/render/plot/PlotCategoryScale'
 import PlotValueScale from '@/render/plot/PlotValueScale'
+import PlotContinuousAxis from '@/render/plot/PlotContinuousAxis'
 import { Slots } from '@/render/plot/PlotSlots'
 
 export type Band = {
@@ -23,20 +24,22 @@ export default class PlotSection {
         axisValues: number[],
         band: Band,
         left: number,
-        width: number
+        width: number,
+        continuousAxis: PlotContinuousAxis | null = null,
+        valueScaleType = PlotScaleType.Linear
     ) {
         const height = band.bottom - band.top
 
         this.band = band
 
         if (orientation == PlotOrientation.Vertical) {
-            this.categoryScale = PlotCategoryScale.fromLeft(slots, left, width)
-            this.valueScale = PlotValueScale.fromBottom(axisValues, band.bottom, height)
+            this.categoryScale = PlotCategoryScale.fromLeft(slots, left, width, continuousAxis)
+            this.valueScale = PlotValueScale.fromBottom(axisValues, band.bottom, height, valueScaleType)
         } else {
-            this.categoryScale = PlotCategoryScale.fromBottom(slots, band.bottom, height)
-            this.valueScale = PlotValueScale.fromLeft(axisValues, left, width)
+            this.categoryScale = PlotCategoryScale.fromBottom(slots, band.bottom, height, continuousAxis)
+            this.valueScale = PlotValueScale.fromLeft(axisValues, left, width, valueScaleType)
         }
 
-        this.baseline = this.valueScale.getCoordinate(0)
+        this.baseline = this.valueScale.baseline
     }
 }

@@ -1,6 +1,7 @@
 import { createPlot, createSeries } from './PlotTestData'
 import { getRoundedValues } from '@/helpers/Numbers'
-import { PlotType } from '@/static/Enums'
+import { getLogAxisValues } from '@/helpers/AxisTicks'
+import { PlotAxisType, PlotScaleType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -109,5 +110,32 @@ describe('Creating plot layout', () => {
             .toBeUndefined()
         expect(createPlot([], { yMax: 100 }).layout.yMax)
             .toBe(100)
+    })
+
+    it('Should use log values for value axes on log y scale', () => {
+        const { layout } = createPlot([createSeries(PlotType.Line, [3, 700])], { yScale: PlotScaleType.Log })
+
+        expect(layout.vertical.valueScale.values)
+            .toEqual(getLogAxisValues([3, 700]))
+    })
+
+    it('Should place categories by value on continuous x scale', () => {
+        const values = [0, 10, 40].map(x => ({ x, y: 1 }))
+        const { layout } = createPlot(
+            [createSeries(PlotType.Line, [], { values })],
+            { xType: PlotAxisType.Number, xScale: PlotScaleType.Linear }
+        )
+        const { categoryScale } = layout.vertical
+        const center = (slot: number) => categoryScale.getSlotCenter(slot)
+
+        expect((center(1) - center(0)) / (center(2) - center(0)))
+            .toBeCloseTo(0.25)
+    })
+
+    it('Should keep even categories for text values on continuous x scale', () => {
+        const { layout } = createPlot([createSeries(PlotType.Line, [1, 2])], { xScale: PlotScaleType.Linear })
+
+        expect(layout.vertical.categoryScale.labelValues)
+            .toEqual(['C0', 'C1'])
     })
 })

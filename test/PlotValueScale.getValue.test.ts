@@ -1,4 +1,5 @@
 import PlotValueScale from '@/render/plot/PlotValueScale'
+import { PlotScaleType } from '@/static/Enums'
 
 describe('Getting plot value at coordinate', () => {
     it('Should invert left to right mapping', () => {
@@ -24,5 +25,10 @@ describe('Getting plot value at coordinate', () => {
     it('Should return first value for flat range', () => {
         expect(PlotValueScale.fromBottom([5, 5], 1000, 800).getValue(300))
             .toBe(5)
+    })
+
+    it('Should invert log mapping', () => {
+        expect(PlotValueScale.fromBottom([1, 10, 100, 1000], 1000, 900, PlotScaleType.Log).getValue(700))
+            .toBeCloseTo(10)
     })
 })

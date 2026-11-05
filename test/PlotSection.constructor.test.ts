@@ -1,7 +1,8 @@
 import PlotSection from '@/render/plot/PlotSection'
 import { getSlots } from '@/render/plot/PlotSlots'
 import PlotSeries from '@/types/PlotSeries'
-import { PlotAxisType, PlotOrientation } from '@/static/Enums'
+import { PlotAxisType, PlotOrientation, PlotScaleType } from '@/static/Enums'
+import { CONTINUOUS_AXIS, CONTINUOUS_SLOTS } from './PlotCategoryScaleTestData'
 
 const SLOTS = getSlots(
     [{ values: Array.from({ length: 4 }, (_, i) => ({ x: i, y: 1 })) } as PlotSeries],
@@ -45,5 +46,38 @@ describe('Creating plot section', () => {
     it('Should keep band', () => {
         expect(create(PlotOrientation.Vertical).band)
             .toBe(BAND)
+    })
+
+    it('Should put log baseline at band bottom', () => {
+        const section = new PlotSection(
+            PlotOrientation.Vertical,
+            SLOTS,
+            [1, 10, 100],
+            BAND,
+            50,
+            1000,
+            null,
+            PlotScaleType.Log
+        )
+
+        expect(section.baseline)
+            .toBe(1100)
+        expect(section.valueScale.getCoordinate(10))
+            .toBe(600)
+    })
+
+    it('Should place categories by continuous axis', () => {
+        const section = new PlotSection(
+            PlotOrientation.Vertical,
+            CONTINUOUS_SLOTS,
+            [0, 100],
+            BAND,
+            0,
+            1000,
+            CONTINUOUS_AXIS
+        )
+
+        expect(section.categoryScale.getSlotCenter(1))
+            .toBe(300)
     })
 })

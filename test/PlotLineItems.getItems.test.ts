@@ -3,7 +3,7 @@ import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemLine from '@/types/RenderItemLine'
 import PlotLineItems from '@/render/plot/PlotLineItems'
-import { LineDrawMode, PlotAxisType, PlotType } from '@/static/Enums'
+import { LineDrawMode, PlotAxisType, PlotScaleType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -34,8 +34,8 @@ describe('Getting plot line items', () => {
 
         expect(line.absolute)
             .toEqual([
-                { x: categoryScale.getSlotCenter(0), y: baseline - 10 * valueScale.lengthPerUnit },
-                { x: categoryScale.getSlotCenter(1), y: baseline - 40 * valueScale.lengthPerUnit }
+                { x: categoryScale.getSlotCenter(0), y: valueScale.getCoordinate(10) },
+                { x: categoryScale.getSlotCenter(1), y: valueScale.getCoordinate(40) }
             ])
     })
 
@@ -53,7 +53,7 @@ describe('Getting plot line items', () => {
         const { baseline, valueScale } = layout.vertical
 
         expect(line.absolute[1].y)
-            .toBe(baseline - 100 * valueScale.lengthPerUnit)
+            .toBe(valueScale.getCoordinate(100))
     })
 
     it('Should use series dash', () => {
@@ -127,5 +127,17 @@ describe('Getting plot line items', () => {
 
         expect([line.clip!.y, line.clip!.height, top > layout.margin.top])
             .toEqual([top, bottom - top, true])
+    })
+
+    it('Should skip stops that are not positive on log scale', () => {
+        const series = createSeries(PlotType.Line, [10, 0, 100])
+        const { layout, line } = getLine([series], series, { yScale: PlotScaleType.Log })
+        const { categoryScale, valueScale } = layout.vertical
+
+        expect(line.absolute)
+            .toEqual([
+                { x: categoryScale.getSlotCenter(0), y: valueScale.getCoordinate(10) },
+                { x: categoryScale.getSlotCenter(2), y: valueScale.getCoordinate(100) }
+            ])
     })
 })

@@ -3,7 +3,7 @@ import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemLine from '@/types/RenderItemLine'
 import PlotLineItems from '@/render/plot/PlotLineItems'
-import { PlotType } from '@/static/Enums'
+import { PlotScaleType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -21,8 +21,8 @@ describe('Getting plot attention line items', () => {
     it('Should draw horizontal line across plot at first value', () => {
         const attention = createSeries(PlotType.AttentionLine, [30])
         const { layout, items } = getAttention([createSeries(PlotType.Line, [10, 50]), attention], attention)
-        const { baseline, valueScale } = layout.vertical
-        const y = baseline - 30 * valueScale.lengthPerUnit
+        const { valueScale } = layout.vertical
+        const y = valueScale.getCoordinate(30)
 
         expect((items[0].shape as RenderItemLine).absolute)
             .toEqual([{ x: layout.margin.left, y }, { x: 5000 - layout.margin.right, y }])
@@ -36,7 +36,7 @@ describe('Getting plot attention line items', () => {
         const { baseline, valueScale } = layout.vertical
 
         expect((items[0].shape as RenderItemLine).absolute[0].y)
-            .toBe(baseline - 100 * valueScale.lengthPerUnit)
+            .toBe(valueScale.getCoordinate(100))
     })
 
     it('Should draw nothing without values', () => {
@@ -58,5 +58,13 @@ describe('Getting plot attention line items', () => {
                 width: 5000 - layout.margin.left - layout.margin.right,
                 height: bottom - top
             })
+    })
+
+    it('Should draw nothing for value that is not positive on log scale', () => {
+        const attention = createSeries(PlotType.AttentionLine, [0])
+        const line = createSeries(PlotType.Line, [10, 50])
+
+        expect(getAttention([line, attention], attention, { yScale: PlotScaleType.Log }).items)
+            .toEqual([])
     })
 })

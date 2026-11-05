@@ -1,35 +1,58 @@
 import PlotPoint from '@/types/PlotPoint'
-import { getGap, Slots } from '@/render/plot/PlotSlots'
+import { Slots } from '@/render/plot/PlotSlots'
+import PlotSlotLayout from '@/render/plot/PlotSlotLayout'
+import PlotEvenSlotLayout from '@/render/plot/PlotEvenSlotLayout'
+import PlotContinuousSlotLayout from '@/render/plot/PlotContinuousSlotLayout'
+import PlotContinuousAxis from '@/render/plot/PlotContinuousAxis'
 
 export default class PlotCategoryScale {
     readonly slots: Slots
 
-    readonly step: number
+    private readonly layout: PlotSlotLayout
 
-    readonly gap: number
-
-    private readonly start: number
-
-    private readonly direction: number
-
-    private constructor(slots: Slots, start: number, length: number, direction: number) {
+    private constructor(
+        slots: Slots,
+        start: number,
+        length: number,
+        direction: number,
+        continuousAxis: PlotContinuousAxis | null
+    ) {
         this.slots = slots
-        this.start = start
-        this.direction = direction
-        this.gap = getGap(length, slots.values.length)
-        this.step = (length - this.gap) / slots.values.length - this.gap
+        this.layout = continuousAxis
+                      ? new PlotContinuousSlotLayout(continuousAxis, start, length, direction)
+                      : new PlotEvenSlotLayout(slots, start, length, direction)
     }
 
-    static fromBottom(slots: Slots, bottom: number, height: number) {
-        return new PlotCategoryScale(slots, bottom, height, -1)
+    static fromBottom(slots: Slots, bottom: number, height: number, continuousAxis: PlotContinuousAxis | null = null) {
+        return new PlotCategoryScale(slots, bottom, height, -1, continuousAxis)
     }
 
-    static fromLeft(slots: Slots, left: number, width: number) {
-        return new PlotCategoryScale(slots, left, width, 1)
+    static fromLeft(slots: Slots, left: number, width: number, continuousAxis: PlotContinuousAxis | null = null) {
+        return new PlotCategoryScale(slots, left, width, 1, continuousAxis)
     }
 
     get count() {
         return this.slots.values.length
+    }
+
+    get step() {
+        return this.layout.step
+    }
+
+    get gap() {
+        return this.layout.gap
+    }
+
+    get labelValues() {
+        return this.layout.labelValues
+    }
+
+    get minLabelDistance() {
+        return this.layout.minLabelDistance
+    }
+
+    getLabelCoordinate(index: number) {
+        return this.layout.getLabelCoordinate(index)
     }
 
     getSlot(value: PlotPoint) {
@@ -37,10 +60,10 @@ export default class PlotCategoryScale {
     }
 
     getSlotStart(slot: number) {
-        return this.start + this.direction * slot * this.step + this.direction * (slot + 1) * this.gap
+        return this.layout.getSlotStart(slot)
     }
 
     getSlotCenter(slot: number) {
-        return this.getSlotStart(slot) + this.direction * this.step / 2
+        return this.layout.getSlotCenter(slot)
     }
 }

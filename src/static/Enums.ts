@@ -80,6 +80,22 @@ export const enum PlotOrientation {
     Horizontal
 }
 
+export const enum PlotScaleType {
+    Category,
+
+    Linear,
+
+    Log
+}
+
+export const enum TimeUnit {
+    Day,
+
+    Month,
+
+    Year
+}
+
 export const enum Tag {
     Canvas = 'canvas',
 

@@ -36,6 +36,9 @@ export default class PlotColumnItems {
 
         return (items: QueueItemsBuilder) => {
             series.values.forEach((value, valueIndex) => {
+                if (!valueScale.canShow(Number(value.y)))
+                    return
+
                 const slot = categoryScale.getSlot(value)
 
                 const { columns, slots } = getColumnGroup(this.columnGroups, value)
@@ -48,7 +51,7 @@ export default class PlotColumnItems {
                      .position(categoryScale.getSlotStart(slot) + offset + width / 2, baseline)
                      .size(
                          width,
-                         series.disabled ? 0 : layout.capToYMax(Number(value.y)) * valueScale.lengthPerUnit
+                         series.disabled ? 0 : baseline - valueScale.getCoordinate(layout.capToYMax(Number(value.y)))
                      )
                      .round([CORNER_RADIUS, CORNER_RADIUS, 0, 0])
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)

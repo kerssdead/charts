@@ -2,6 +2,7 @@ import PlotCategoryScale from '@/render/plot/PlotCategoryScale'
 import { getSlots } from '@/render/plot/PlotSlots'
 import PlotSeries from '@/types/PlotSeries'
 import { PlotAxisType } from '@/static/Enums'
+import { CONTINUOUS_AXIS, CONTINUOUS_SLOTS } from './PlotCategoryScaleTestData'
 
 const slots = getSlots(
     [{ values: Array.from({ length: 4 }, (_, i) => ({ x: i, y: 1 })) } as PlotSeries],
@@ -29,5 +30,12 @@ describe('Getting plot category slot start', () => {
             .toBe(727.5)
         expect(scale.getSlotStart(3) - scale.step)
             .toBe(30)
+    })
+
+    it('Should center continuous slots around their value', () => {
+        expect(PlotCategoryScale.fromLeft(CONTINUOUS_SLOTS, 0, 1000, CONTINUOUS_AXIS).getSlotStart(1))
+            .toBe(215)
+        expect(PlotCategoryScale.fromBottom(CONTINUOUS_SLOTS, 1000, 1000, CONTINUOUS_AXIS).getSlotStart(1))
+            .toBe(785)
     })
 })

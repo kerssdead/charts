@@ -5,11 +5,12 @@ import Units from '@/helpers/Units'
 import Formatter from '@/helpers/Formatter'
 import { short } from '@/helpers/Text'
 import { COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
-import { PlotOrientation } from '@/static/Enums'
+import { PlotOrientation, PlotScaleType } from '@/static/Enums'
 import PlotSection from '@/render/plot/PlotSection'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
+import PlotContinuousAxis from '@/render/plot/PlotContinuousAxis'
 import { getAxisValues } from '@/render/plot/PlotAxisValues'
-import { getSlots, Slots } from '@/render/plot/PlotSlots'
+import { getSlots } from '@/render/plot/PlotSlots'
 import { getMargin } from '@/render/plot/PlotMargins'
 import { BAND_SPACING, BAR_BAND_RATIO, X_LABEL_HEIGHT } from '@/render/plot/PlotConstants'
 
@@ -38,10 +39,16 @@ export default class PlotLayout {
         const verticalSlots = getSlots(seriesGroups.verticalSeries, data.xType)
         const horizontalSlots = getSlots(seriesGroups.barSeries, data.xType)
 
+        const xScale = data.xScale ?? PlotScaleType.Category
+        const yScale = data.yScale ?? PlotScaleType.Linear
+        const verticalAxis = PlotContinuousAxis.create(verticalSlots, data.xType, xScale)
+        const horizontalAxis = PlotContinuousAxis.create(horizontalSlots, data.xType, xScale)
+
         const { yAxisValues, xAxisValues } = getAxisValues(
             seriesGroups.enabledSeries,
             this.yMax,
-            seriesGroups.hasOnlyBarSeries
+            seriesGroups.hasOnlyBarSeries,
+            yScale
         )
 
         this.margin = getMargin(
@@ -49,7 +56,7 @@ export default class PlotLayout {
             data.simple,
             this.leftTitle,
             this.bottomTitle,
-            this.getLeftLabels(horizontalSlots, yAxisValues)
+            this.getLeftLabels(horizontalAxis?.ticks ?? horizontalSlots.values, yAxisValues)
         )
 
         const left = this.margin.left
@@ -64,7 +71,9 @@ export default class PlotLayout {
             xAxisValues,
             { top, bottom: barBottom },
             left,
-            width
+            width,
+            horizontalAxis,
+            yScale
         )
 
         this.vertical = new PlotSection(
@@ -73,7 +82,9 @@ export default class PlotLayout {
             yAxisValues,
             { top: this.isMixed ? barBottom + this.bandGap : top, bottom },
             left,
-            width
+            width,
+            verticalAxis,
+            yScale
         )
     }
 
@@ -86,7 +97,7 @@ export default class PlotLayout {
     }
 
     getCategoryLabels(section: PlotSection) {
-        return this.formatCategories(section.categoryScale.slots)
+        return this.formatCategories(section.categoryScale.labelValues)
     }
 
     formatX(x: PlotPoint['x']) {
@@ -105,13 +116,13 @@ export default class PlotLayout {
         return this.units.y(X_LABEL_HEIGHT + BAND_SPACING)
     }
 
-    private formatCategories(slots: Slots) {
-        return slots.values.map(x => this.formatX(x))
+    private formatCategories(values: PlotPoint['x'][]) {
+        return values.map(x => this.formatX(x))
     }
 
-    private getLeftLabels(horizontalSlots: Slots, yAxisValues: number[]) {
+    private getLeftLabels(horizontalCategories: PlotPoint['x'][], yAxisValues: number[]) {
         return [
-            ...(this.seriesGroups.rendersBars ? this.formatCategories(horizontalSlots) : []),
+            ...(this.seriesGroups.rendersBars ? this.formatCategories(horizontalCategories) : []),
             ...(this.seriesGroups.isHorizontal ? [] : yAxisValues.map(value => short(value, this.data.shortLabels)))
         ]
     }

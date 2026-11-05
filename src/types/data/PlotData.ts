@@ -3,7 +3,7 @@ import TableHeaderValue from '@/types/TableHeaderValue'
 import TableData from '@/types/TableData'
 import Data from '@/types/interfaces/Data'
 import Formatter from '@/helpers/Formatter'
-import { PlotAxisType } from '@/static/Enums'
+import { PlotAxisType, PlotScaleType } from '@/static/Enums'
 
 export default interface PlotData extends Data {
     shortLabels: boolean
@@ -17,6 +17,10 @@ export default interface PlotData extends Data {
     yTitle: string
 
     xType: PlotAxisType
+
+    xScale?: PlotScaleType
+
+    yScale?: PlotScaleType
 
     values: PlotSeries[]
 

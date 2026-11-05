@@ -3,7 +3,7 @@ import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import PlotBarItems from '@/render/plot/PlotBarItems'
-import { PlotType } from '@/static/Enums'
+import { PlotScaleType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -27,7 +27,7 @@ describe('Getting plot bar items', () => {
             expect(rect.absolute.x)
                 .toBe(baseline)
             expect(rect.absolute.width)
-                .toBe(series.values[i].y as number * valueScale.lengthPerUnit)
+                .toBe(valueScale.getCoordinate(series.values[i].y as number) - baseline)
         })
     })
 
@@ -69,7 +69,7 @@ describe('Getting plot bar items', () => {
         const { layout, rects } = getBars([bar, createSeries(PlotType.Line, [1], { disabled: true })], bar, { yMax: 100 })
 
         expect(rects[1].absolute.width)
-            .toBe(400 * layout.horizontal.valueScale.lengthPerUnit)
+            .toBe(layout.horizontal.valueScale.getCoordinate(400) - layout.horizontal.baseline)
     })
 
     it('Should cap bars by y max only when all series are bars', () => {
@@ -78,8 +78,17 @@ describe('Getting plot bar items', () => {
         const mixed = getBars([bar, createSeries(PlotType.Line, [1])], bar, { yMax: 100 })
 
         expect(horizontal.rects[1].absolute.width)
-            .toBe(100 * horizontal.layout.horizontal.valueScale.lengthPerUnit)
+            .toBe(horizontal.layout.horizontal.valueScale.getCoordinate(100) - horizontal.layout.horizontal.baseline)
         expect(mixed.rects[1].absolute.width)
-            .toBe(400 * mixed.layout.horizontal.valueScale.lengthPerUnit)
+            .toBe(mixed.layout.horizontal.valueScale.getCoordinate(400) - mixed.layout.horizontal.baseline)
+    })
+
+    it('Should skip bars that are not positive on log scale', () => {
+        const series = createSeries(PlotType.Bar, [10, -5, 100])
+        const { layout, rects } = getBars([series], series, { yScale: PlotScaleType.Log })
+        const { baseline, valueScale } = layout.horizontal
+
+        expect(rects.map(rect => rect.absolute.width))
+            .toEqual([valueScale.getCoordinate(10) - baseline, valueScale.getCoordinate(100) - baseline])
     })
 })

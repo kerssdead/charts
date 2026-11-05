@@ -1,4 +1,5 @@
 import PlotValueScale from '@/render/plot/PlotValueScale'
+import { PlotScaleType } from '@/static/Enums'
 
 describe('Getting plot value coordinate', () => {
     it('Should map values from left to right', () => {
@@ -38,5 +39,16 @@ describe('Getting plot value coordinate', () => {
     it('Should return start for flat range', () => {
         expect(PlotValueScale.fromBottom([5, 5], 1000, 800).getCoordinate(50))
             .toBe(1000)
+    })
+
+    it('Should map powers of ten evenly on log scale', () => {
+        const scale = PlotValueScale.fromBottom([1, 10, 100, 1000], 1000, 900, PlotScaleType.Log)
+
+        expect(scale.getCoordinate(1))
+            .toBe(1000)
+        expect(scale.getCoordinate(10))
+            .toBeCloseTo(700)
+        expect(scale.getCoordinate(1000))
+            .toBe(100)
     })
 })

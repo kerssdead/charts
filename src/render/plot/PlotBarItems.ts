@@ -34,13 +34,16 @@ export default class PlotBarItems {
             const offset = visibleBefore * heightInStep
 
             series.values.forEach((value, valueIndex) => {
+                if (!valueScale.canShow(Number(value.y)))
+                    return
+
                 const slot = categoryScale.getSlot(value)
                 const y = categoryScale.getSlotStart(slot) - offset
                 const length = seriesGroups.hasOnlyBarSeries ? layout.capToYMax(Number(value.y)) : Number(value.y)
 
                 const bar = items.rect()
                      .position(baseline, y)
-                     .size(series.disabled ? 0 : length * valueScale.lengthPerUnit, height)
+                     .size(series.disabled ? 0 : valueScale.getCoordinate(length) - baseline, height)
                      .round([0, CORNER_RADIUS, CORNER_RADIUS, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', baseline)

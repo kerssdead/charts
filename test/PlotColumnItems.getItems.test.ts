@@ -4,7 +4,7 @@ import PlotData from '@/types/data/PlotData'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import PlotColumnItems from '@/render/plot/PlotColumnItems'
 import { getColumnGroups } from '@/render/plot/PlotColumnGroups'
-import { PlotType } from '@/static/Enums'
+import { PlotScaleType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -33,7 +33,7 @@ describe('Getting plot column items', () => {
             expect(rect.absolute.y)
                 .toBe(baseline)
             expect(rect.absolute.height)
-                .toBe(series.values[i].y as number * valueScale.lengthPerUnit)
+                .toBe(baseline - valueScale.getCoordinate(series.values[i].y as number))
         })
     })
 
@@ -67,7 +67,7 @@ describe('Getting plot column items', () => {
         const { layout, rects } = getColumns([series], series, { yMax: 100 })
 
         expect(rects[1].absolute.height)
-            .toBe(100 * layout.vertical.valueScale.lengthPerUnit)
+            .toBe(layout.vertical.baseline - layout.vertical.valueScale.getCoordinate(100))
     })
 
     it('Should collapse disabled column', () => {
@@ -75,5 +75,14 @@ describe('Getting plot column items', () => {
 
         expect(getColumns([series, createSeries(PlotType.Line, [5])], series).rects[0].absolute)
             .toMatchObject({ width: 0, height: 0 })
+    })
+
+    it('Should skip columns that are not positive on log scale', () => {
+        const series = createSeries(PlotType.Column, [10, -5, 0, 100])
+        const { layout, rects } = getColumns([series], series, { yScale: PlotScaleType.Log })
+        const { baseline, valueScale } = layout.vertical
+
+        expect(rects.map(rect => rect.absolute.height))
+            .toEqual([baseline - valueScale.getCoordinate(10), baseline - valueScale.getCoordinate(100)])
     })
 })

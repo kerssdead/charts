@@ -4,7 +4,7 @@ import PlotData from '@/types/data/PlotData'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import PlotStackedColumnItems from '@/render/plot/PlotStackedColumnItems'
 import { getColumnGroups } from '@/render/plot/PlotColumnGroups'
-import { PlotType } from '@/static/Enums'
+import { PlotScaleType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -35,11 +35,11 @@ describe('Getting plot stacked column items', () => {
         expect(bottom.y)
             .toBe(baseline)
         expect(bottom.height)
-            .toBe(10 * valueScale.lengthPerUnit)
+            .toBe(baseline - valueScale.getCoordinate(10))
         expect(top.y)
             .toBe(baseline - bottom.height)
         expect(top.height)
-            .toBe(30 * valueScale.lengthPerUnit)
+            .toBeCloseTo(valueScale.getCoordinate(10) - valueScale.getCoordinate(40))
     })
 
     it('Should stack negative values down separately', () => {
@@ -53,7 +53,7 @@ describe('Getting plot stacked column items', () => {
         expect(rects[1][0].absolute.y)
             .toBe(baseline)
         expect(rects[2][0].absolute.y)
-            .toBe(baseline + 20 * valueScale.lengthPerUnit)
+            .toBe(valueScale.getCoordinate(-20))
     })
 
     it('Should round only top of stack', () => {
@@ -70,12 +70,12 @@ describe('Getting plot stacked column items', () => {
             [createSeries(PlotType.StackingColumn, [80]), createSeries(PlotType.StackingColumn, [80])],
             { yMax: 100 }
         )
-        const { lengthPerUnit } = layout.vertical.valueScale
+        const { baseline, valueScale } = layout.vertical
 
         expect(rects[0][0].absolute.height)
-            .toBe(80 * lengthPerUnit)
+            .toBe(baseline - valueScale.getCoordinate(80))
         expect(rects[1][0].absolute.height)
-            .toBeCloseTo(20 * lengthPerUnit)
+            .toBeCloseTo(valueScale.getCoordinate(80) - valueScale.getCoordinate(100))
     })
 
     it('Should round last visible part when stack top is clipped by y max', () => {
@@ -103,6 +103,43 @@ describe('Getting plot stacked column items', () => {
         const { rects } = getStacks([createSeries(PlotType.StackingColumn, [10]), disabled])
 
         expect(rects[1][0].absolute.height)
+            .toBe(0)
+    })
+
+    it('Should stack from log baseline between stacked values on log scale', () => {
+        const { layout, rects } = getStacks(
+            [createSeries(PlotType.StackingColumn, [10]), createSeries(PlotType.StackingColumn, [30])],
+            { yScale: PlotScaleType.Log }
+        )
+        const { baseline, valueScale } = layout.vertical
+        const [bottom, top] = rects.map(series => series[0].absolute)
+
+        expect([bottom.y, bottom.height])
+            .toEqual([baseline, baseline - valueScale.getCoordinate(10)])
+        expect(top.y)
+            .toBe(valueScale.getCoordinate(10))
+        expect(top.height)
+            .toBeCloseTo(valueScale.getCoordinate(10) - valueScale.getCoordinate(40))
+    })
+
+    it('Should skip stack parts that are not positive on log scale', () => {
+        const { rects } = getStacks(
+            [createSeries(PlotType.StackingColumn, [10]), createSeries(PlotType.StackingColumn, [-5])],
+            { yScale: PlotScaleType.Log }
+        )
+
+        expect(rects.map(series => series.length))
+            .toEqual([1, 0])
+    })
+
+    it('Should collapse disabled stack part on log scale', () => {
+        const disabled = createSeries(PlotType.StackingColumn, [10], { disabled: true })
+        const { rects } = getStacks(
+            [disabled, createSeries(PlotType.StackingColumn, [10])],
+            { yScale: PlotScaleType.Log }
+        )
+
+        expect(rects[0][0].absolute.height)
             .toBe(0)
     })
 })

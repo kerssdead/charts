@@ -1,7 +1,8 @@
 import { getAxisValues } from '@/render/plot/PlotAxisValues'
 import { getRoundedValues } from '@/helpers/Numbers'
 import PlotSeries from '@/types/PlotSeries'
-import { PlotType } from '@/static/Enums'
+import { getLogAxisValues } from '@/helpers/AxisTicks'
+import { PlotScaleType, PlotType } from '@/static/Enums'
 
 const series = (type: PlotType, ...ys: number[]) => {
     return { type, values: ys.map((y, i) => ({ x: i, y })) } as PlotSeries
@@ -35,5 +36,17 @@ describe('Getting plot axis values', () => {
             .toEqual(getRoundedValues([300], 5, 100))
         expect(getAxisValues([series(PlotType.Bar, 300)], 100, false).xAxisValues)
             .toEqual(getRoundedValues([300], 5))
+    })
+
+    it('Should use log values on log scale', () => {
+        const all = [series(PlotType.Column, 3, 700), series(PlotType.Bar, 20)]
+
+        expect(getAxisValues(all, undefined, false, PlotScaleType.Log))
+            .toEqual({ yAxisValues: getLogAxisValues([3, 700]), xAxisValues: getLogAxisValues([20]) })
+    })
+
+    it('Should limit log axis by y max', () => {
+        expect(getAxisValues([series(PlotType.Column, 700)], 500, false, PlotScaleType.Log).yAxisValues)
+            .toEqual(getLogAxisValues([700], 500))
     })
 })

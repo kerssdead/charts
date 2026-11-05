@@ -55,12 +55,12 @@ export default class PlotAxisLabels {
                 this.bottomLabel(items, label, positions[i], band.bottom, `x-label-${ xValues[i] }`)
         })
 
-        const slot = this.units.toPxY(categoryScale.step + categoryScale.gap)
-        const every = Math.max(1, Math.ceil(Y_LABEL_HEIGHT / slot))
+        const labelDistance = this.units.toPxY(categoryScale.minLabelDistance)
+        const every = Math.max(1, Math.ceil(Y_LABEL_HEIGHT / labelDistance))
 
         layout.getCategoryLabels(section).forEach((category, i) => {
             if (i % every == 0)
-                this.leftLabel(items, category, categoryScale.getSlotCenter(i), `y-category-${ i }`)
+                this.leftLabel(items, category, categoryScale.getLabelCoordinate(i), `y-category-${ i }`)
         })
     }
 
@@ -79,14 +79,14 @@ export default class PlotAxisLabels {
 
         const labels = layout.getCategoryLabels(section)
 
-        const positions = labels.map((_, i) => categoryScale.getSlotCenter(i))
+        const positions = labels.map((_, i) => categoryScale.getLabelCoordinate(i))
 
-        const slot = this.units.toPxX(categoryScale.step + categoryScale.gap)
+        const labelDistance = this.units.toPxX(categoryScale.minLabelDistance)
         const widest = maxOf(labels, label => stringWidth(label, X_LABEL_FONT))
         const every = this.labelSpacing.getLabelStep(
             labels,
             positions,
-            Math.ceil((widest + X_LABEL_SPACING) / slot)
+            Math.ceil((widest + X_LABEL_SPACING) / labelDistance)
         )
 
         labels.forEach((label, i) => {

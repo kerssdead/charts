@@ -1,7 +1,7 @@
 import PlotProcess from '@/render/plot/PlotProcess'
 import PlotData from '@/types/data/PlotData'
 import { createSeries } from './PlotTestData'
-import { PlotType } from '@/static/Enums'
+import { PlotScaleType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -25,5 +25,16 @@ describe('Getting plot value at y coordinate', () => {
 
         expect(process.getAxisValue(1000))
             .toBe(0)
+    })
+
+    it('Should invert y coordinate on log scale', () => {
+        const process = new PlotProcess(
+            { values: [createSeries(PlotType.Line, [3, 700])], yScale: PlotScaleType.Log } as PlotData,
+            { x: 1, y: 1 },
+            { valuePostfix: undefined }
+        )
+
+        expect(process.getAxisValue(process.getAxisY(37)))
+            .toBeCloseTo(37)
     })
 })

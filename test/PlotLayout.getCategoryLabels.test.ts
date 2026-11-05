@@ -1,5 +1,5 @@
 import { createPlot, createSeries } from './PlotTestData'
-import { PlotAxisType, PlotType } from '@/static/Enums'
+import { PlotAxisType, PlotScaleType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -22,5 +22,16 @@ describe('Getting plot category labels', () => {
 
         expect(layout.getCategoryLabels(layout.vertical))
             .toEqual([new Date(2025, 0, 2).toLocaleDateString()])
+    })
+
+    it('Should format ticks of continuous scale', () => {
+        const values = [0, 10, 40].map(x => ({ x, y: 1 }))
+        const { layout } = createPlot(
+            [createSeries(PlotType.Line, [], { values })],
+            { xType: PlotAxisType.Number, xScale: PlotScaleType.Linear }
+        )
+
+        expect(layout.getCategoryLabels(layout.vertical))
+            .toEqual(['0', '5', '10', '15', '20', '25', '30', '35', '40'])
     })
 })

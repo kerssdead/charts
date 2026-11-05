@@ -15,6 +15,8 @@ export const AXIS_LABEL_FONT = 14
 
 export const AXIS_VALUE_COUNT = 5
 
+export const CONTINUOUS_TICK_COUNT = 10
+
 export const BOTTOM_PADDING = 6
 
 export const BOTTOM_GAP = 6

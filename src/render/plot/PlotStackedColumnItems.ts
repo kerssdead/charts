@@ -32,9 +32,11 @@ export default class PlotStackedColumnItems {
         const { layout } = this
         const { categoryScale, valueScale, baseline } = layout.vertical
         const step = categoryScale.step
-        const lengthPerUnit = valueScale.lengthPerUnit
 
-        const stacked = series.values.map((value, valueIndex) => {
+        const stacked = series.values.flatMap((value, valueIndex) => {
+            if (!valueScale.canShow(Number(value.y)))
+                return []
+
             const slot = categoryScale.getSlot(value)
 
             const { columns, slots } = getColumnGroup(this.columnGroups, value)
@@ -43,21 +45,22 @@ export default class PlotStackedColumnItems {
 
             const key = getStackKey(value)
             const stack = stacks.get(key) ?? 0
-            const room = layout.yMax == undefined ? Infinity : Math.max(layout.yMax * lengthPerUnit + stack, 0)
-            const height = series.disabled ? 0 : Math.min(Number(value.y) * lengthPerUnit, room)
+            const top = series.disabled ? stack : stack + Number(value.y)
+            const bottomY = stack == 0 ? baseline : valueScale.getCoordinate(layout.capToYMax(stack))
+            const topY = series.disabled ? bottomY : valueScale.getCoordinate(layout.capToYMax(top))
 
-            stacks.set(key, stack - height)
+            stacks.set(key, top)
 
-            return {
+            return [{
                 value,
                 valueIndex,
                 slot,
                 x: categoryScale.getSlotStart(slot) + offset,
-                y: baseline + stack,
+                y: bottomY,
                 width,
-                height,
+                height: bottomY - topY,
                 isTop: this.stackTops.get(key) === series
-            }
+            }]
         })
 
         return (items: QueueItemsBuilder) => {
