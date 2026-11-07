@@ -17,8 +17,14 @@ class Value {
 
     labelIndex: number
 
-    constructor(obj: object = {}) {
-        Object.assign(this, obj)
+    constructor(fields: object = {}) {
+        for (const [key, value] of Object.entries(fields))
+            if (!this.isGetterOrMethod(key))
+                (this as Record<string, unknown>)[key] = value
+    }
+
+    private isGetterOrMethod(key: string): boolean {
+        return key in this
     }
 
     get isBlank(): boolean {
