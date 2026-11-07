@@ -91,6 +91,12 @@ export const enum PlotScaleType {
 }
 
 export const enum TimeUnit {
+    Second,
+
+    Minute,
+
+    Hour,
+
     Day,
 
     Month,

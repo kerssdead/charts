@@ -6,13 +6,28 @@ type TimeStep = {
     size: number
 }
 
-const DAY = 24 * 60 * 60 * 1000
+const SECOND = 1000
+
+const MINUTE = 60 * SECOND
+
+const HOUR = 60 * MINUTE
+
+const DAY = 24 * HOUR
 
 const UNIT_DURATIONS = {
+    [TimeUnit.Second]: SECOND,
+    [TimeUnit.Minute]: MINUTE,
+    [TimeUnit.Hour]: HOUR,
     [TimeUnit.Day]: DAY,
     [TimeUnit.Month]: 30.44 * DAY,
     [TimeUnit.Year]: 365.25 * DAY
 }
+
+const SECOND_SIZES = [1, 5, 15, 30]
+
+const MINUTE_SIZES = [1, 5, 15, 30]
+
+const HOUR_SIZES = [1, 3, 6, 12]
 
 const DAY_SIZES = [1, 2, 7, 14]
 
@@ -35,13 +50,16 @@ export function getDateTicks(min: number, max: number, targetTicks: number) {
 
 function getTimeStep(rawDuration: number): TimeStep {
     const steps = [
+        ...SECOND_SIZES.map(size => ({ unit: TimeUnit.Second, size })),
+        ...MINUTE_SIZES.map(size => ({ unit: TimeUnit.Minute, size })),
+        ...HOUR_SIZES.map(size => ({ unit: TimeUnit.Hour, size })),
         ...DAY_SIZES.map(size => ({ unit: TimeUnit.Day, size })),
         ...MONTH_SIZES.map(size => ({ unit: TimeUnit.Month, size }))
     ]
 
     const rawYears = rawDuration / UNIT_DURATIONS[TimeUnit.Year]
 
-    return steps.find(step => step.size * UNIT_DURATIONS[step.unit] >= rawDuration)
+    return steps.find(step => getStepDuration(step) >= rawDuration)
            ?? { unit: TimeUnit.Year, size: Math.max(1, getNiceStep(rawYears, YEAR_MULTIPLIERS)) }
 }
 
@@ -49,6 +67,20 @@ function getFirstTick(min: number, step: TimeStep) {
     const date = new Date(min)
 
     switch (step.unit) {
+        case TimeUnit.Second:
+        case TimeUnit.Minute: {
+            const duration = getStepDuration(step)
+            const offset = date.getTimezoneOffset() * MINUTE
+
+            return advanceIfBefore(min, new Date(Math.floor((min - offset) / duration) * duration + offset), step)
+        }
+
+        case TimeUnit.Hour: {
+            const hour = Math.floor(date.getHours() / step.size) * step.size
+
+            return advanceIfBefore(min, new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour), step)
+        }
+
         case TimeUnit.Day:
             return advanceIfBefore(
                 min,
@@ -71,12 +103,23 @@ function getFirstTick(min: number, step: TimeStep) {
     }
 }
 
+function getStepDuration(step: TimeStep) {
+    return step.size * UNIT_DURATIONS[step.unit]
+}
+
 function advanceIfBefore(min: number, candidate: Date, step: TimeStep) {
     return candidate.getTime() < min ? addStep(candidate, step) : candidate
 }
 
 function addStep(date: Date, step: TimeStep) {
     switch (step.unit) {
+        case TimeUnit.Second:
+        case TimeUnit.Minute:
+            return new Date(date.getTime() + getStepDuration(step))
+
+        case TimeUnit.Hour:
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours() + step.size)
+
         case TimeUnit.Day:
             return new Date(date.getFullYear(), date.getMonth(), date.getDate() + step.size)
 

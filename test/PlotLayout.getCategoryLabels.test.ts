@@ -24,6 +24,17 @@ describe('Getting plot category labels', () => {
             .toEqual([new Date(2025, 0, 2).toLocaleDateString()])
     })
 
+    it('Should format intraday date ticks of continuous scale with time', () => {
+        const values = [10, 13].map(hours => ({ x: new Date(2025, 0, 5, hours), y: 1 }))
+        const { layout } = createPlot(
+            [createSeries(PlotType.Line, [], { values })],
+            { xType: PlotAxisType.Date, xScale: PlotScaleType.Linear }
+        )
+
+        expect(layout.getCategoryLabels(layout.vertical).map(label => label.replace(/\s/g, ' ')))
+            .toEqual(['10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM'])
+    })
+
     it('Should format ticks of continuous scale', () => {
         const values = [0, 10, 40].map(x => ({ x, y: 1 }))
         const { layout } = createPlot(

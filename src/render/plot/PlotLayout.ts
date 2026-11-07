@@ -10,7 +10,7 @@ import PlotSection from '@/render/plot/PlotSection'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import PlotContinuousAxis from '@/render/plot/PlotContinuousAxis'
 import { getAxisValues } from '@/render/plot/PlotAxisValues'
-import { getSlots } from '@/render/plot/PlotSlots'
+import { getSlots, Slots } from '@/render/plot/PlotSlots'
 import { getMargin } from '@/render/plot/PlotMargins'
 import { BAND_SPACING, BAR_BAND_RATIO, X_LABEL_HEIGHT } from '@/render/plot/PlotConstants'
 
@@ -56,7 +56,7 @@ export default class PlotLayout {
             data.simple,
             this.leftTitle,
             this.bottomTitle,
-            this.getLeftLabels(horizontalAxis?.ticks ?? horizontalSlots.values, yAxisValues)
+            this.getLeftLabels(horizontalAxis, horizontalSlots, yAxisValues)
         )
 
         const left = this.margin.left
@@ -97,7 +97,9 @@ export default class PlotLayout {
     }
 
     getCategoryLabels(section: PlotSection) {
-        return this.formatCategories(section.categoryScale.labelValues)
+        const { isContinuous, labelValues } = section.categoryScale
+
+        return isContinuous ? this.formatTicks(labelValues) : this.formatCategories(labelValues)
     }
 
     formatX(x: PlotPoint['x']) {
@@ -124,9 +126,17 @@ export default class PlotLayout {
         return values.map(x => this.formatX(x))
     }
 
-    private getLeftLabels(horizontalCategories: PlotPoint['x'][], yAxisValues: number[]) {
+    private formatTicks(ticks: PlotPoint['x'][]) {
+        return Formatter.axisTicks(ticks, this.data.xType)
+    }
+
+    private getHorizontalCategoryLabels(horizontalAxis: PlotContinuousAxis | null, horizontalSlots: Slots) {
+        return horizontalAxis ? this.formatTicks(horizontalAxis.ticks) : this.formatCategories(horizontalSlots.values)
+    }
+
+    private getLeftLabels(horizontalAxis: PlotContinuousAxis | null, horizontalSlots: Slots, yAxisValues: number[]) {
         return [
-            ...(this.seriesGroups.rendersBars ? this.formatCategories(horizontalCategories) : []),
+            ...(this.seriesGroups.rendersBars ? this.getHorizontalCategoryLabels(horizontalAxis, horizontalSlots) : []),
             ...(this.seriesGroups.isHorizontal ? [] : yAxisValues.map(value => short(value, this.data.shortLabels)))
         ]
     }

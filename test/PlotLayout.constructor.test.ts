@@ -75,6 +75,20 @@ describe('Creating plot layout', () => {
             .toBeLessThan(getLeft(false))
     })
 
+    it('Should size left margin by formatted continuous ticks', () => {
+        const values = [10, 13].map(hours => ({ x: new Date(2025, 0, 5, hours), y: 1 }))
+        const { layout } = createPlot(
+            [createSeries(PlotType.Bar, [], { values })],
+            { xType: PlotAxisType.Date, xScale: PlotScaleType.Linear }
+        )
+
+        const tickValues = layout.getCategoryLabels(layout.horizontal).map(x => ({ x, y: 1 }))
+        const textLayout = createPlot([createSeries(PlotType.Bar, [], { values: tickValues })]).layout
+
+        expect(layout.margin.left)
+            .toBe(textLayout.margin.left)
+    })
+
     it('Should not limit bar axis by y max when only vertical series are disabled', () => {
         const { layout } = createPlot(
             [createSeries(PlotType.Bar, [300]), createSeries(PlotType.Line, [1], { disabled: true })],
