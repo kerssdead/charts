@@ -2,7 +2,9 @@ import TextResources from '@/static/TextResources'
 import { Events, TableClasses, Tag } from '@/static/Enums'
 import { button, div } from '@/export/TableElements'
 
-const COPIED_FEEDBACK_DURATION = 1500
+const COPY_FEEDBACK_DURATION = 1500
+
+const copyResultTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>()
 
 export type TableToolbarOptions = {
     canFilter: boolean
@@ -30,16 +32,27 @@ export default class TableToolbar {
         }
 
         toolbar.append(
-            button(TextResources.copy, element => {
-                navigator.clipboard.writeText(options.getText()).then(() => {
-                    element.textContent = TextResources.copied
-
-                    setTimeout(() => element.textContent = TextResources.copy, COPIED_FEEDBACK_DURATION)
-                })
-            }),
+            button(TextResources.copy, copyButton => TableToolbar.copyText(copyButton, options.getText())),
             button(TextResources.saveCsv, options.onSave)
         )
 
         return toolbar
+    }
+
+    private static async copyText(copyButton: HTMLElement, text: string) {
+        try {
+            await navigator.clipboard.writeText(text)
+
+            TableToolbar.showCopyResult(copyButton, TextResources.copied)
+        } catch {
+            TableToolbar.showCopyResult(copyButton, TextResources.copyFailed)
+        }
+    }
+
+    private static showCopyResult(copyButton: HTMLElement, result: TextResources) {
+        copyButton.textContent = result
+
+        clearTimeout(copyResultTimers.get(copyButton))
+        copyResultTimers.set(copyButton, setTimeout(() => copyButton.textContent = TextResources.copy, COPY_FEEDBACK_DURATION))
     }
 }

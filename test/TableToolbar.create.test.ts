@@ -3,6 +3,15 @@ import TextResources from '@/static/TextResources'
 import { Events, TableClasses, Tag } from '@/static/Enums'
 import { FakeElement, installFakeDocument } from './FakeDocument'
 
+function installClipboard(clipboard: Partial<Clipboard> | undefined) {
+    Object.defineProperty(globalThis, 'navigator', { value: { clipboard }, configurable: true })
+}
+
+async function flushPromises() {
+    for (let i = 0; i < 3; i++)
+        await Promise.resolve()
+}
+
 function create(options: Partial<TableToolbarOptions> = {}) {
     installFakeDocument()
 
@@ -61,13 +70,13 @@ describe('Creating table toolbar', () => {
 
         const writeText = jest.fn(() => Promise.resolve())
 
-        Object.defineProperty(globalThis, 'navigator', { value: { clipboard: { writeText } }, configurable: true })
+        installClipboard({ writeText })
 
         const { toolbar } = create()
         const copy = toolbar.elements[1]
 
         copy.click()
-        await Promise.resolve()
+        await flushPromises()
 
         const feedback = copy.textContent
 
@@ -75,5 +84,59 @@ describe('Creating table toolbar', () => {
 
         expect([writeText.mock.calls, feedback, copy.textContent])
             .toEqual([[['text']], TextResources.copied, TextResources.copy])
+    })
+
+    it('Should show copy failure when the clipboard rejects the text', async () => {
+        jest.useFakeTimers()
+
+        installClipboard({ writeText: () => Promise.reject(new Error('Denied')) })
+
+        const { toolbar } = create()
+        const copy = toolbar.elements[1]
+
+        copy.click()
+        await flushPromises()
+
+        expect(copy.textContent)
+            .toBe(TextResources.copyFailed)
+    })
+
+    it('Should show copy failure when the clipboard is unavailable', async () => {
+        jest.useFakeTimers()
+
+        installClipboard(undefined)
+
+        const { toolbar } = create()
+        const copy = toolbar.elements[1]
+
+        copy.click()
+        await flushPromises()
+
+        expect(copy.textContent)
+            .toBe(TextResources.copyFailed)
+    })
+
+    it('Should restart the feedback timeout on a repeated copy', async () => {
+        jest.useFakeTimers()
+
+        installClipboard({ writeText: () => Promise.resolve() })
+
+        const { toolbar } = create()
+        const copy = toolbar.elements[1]
+
+        copy.click()
+        await flushPromises()
+        jest.advanceTimersByTime(1000)
+
+        copy.click()
+        await flushPromises()
+        jest.advanceTimersByTime(1000)
+
+        const feedback = copy.textContent
+
+        jest.runAllTimers()
+
+        expect([feedback, copy.textContent])
+            .toEqual([TextResources.copied, TextResources.copy])
     })
 })

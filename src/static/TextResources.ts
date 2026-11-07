@@ -33,6 +33,8 @@ const enum TextResources {
 
     copied = 'Copied',
 
+    copyFailed = 'Copy failed',
+
     saveCsv = 'Save as CSV',
 
     defaultImageName = 'chart',
