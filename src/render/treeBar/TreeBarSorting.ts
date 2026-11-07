@@ -6,7 +6,12 @@ function isMissing(value: string | number | undefined) {
     return value == undefined || value === ''
 }
 
-export function sortRows(rows: TreeBarRow[], sortColumn: string | undefined, isDescending: boolean | undefined) {
+export function sortRows(
+    rows: TreeBarRow[],
+    sortColumn: string | undefined,
+    isDescending: boolean | undefined,
+    numberLocale?: string
+) {
     if (sortColumn == undefined)
         return rows
 
@@ -17,8 +22,8 @@ export function sortRows(rows: TreeBarRow[], sortColumn: string | undefined, isD
         if (isMissing(first) || isMissing(second))
             return +isMissing(first) - +isMissing(second)
 
-        const firstNumber = getCellNumber(first)
-        const secondNumber = getCellNumber(second)
+        const firstNumber = getCellNumber(first, numberLocale)
+        const secondNumber = getCellNumber(second, numberLocale)
 
         const result = Number.isFinite(firstNumber) && Number.isFinite(secondNumber)
                        ? firstNumber - secondNumber
@@ -34,12 +39,13 @@ export function getVisibleEntries(
     rows: TreeBarRow[],
     sortColumn: string | undefined,
     isDescending: boolean | undefined,
+    numberLocale?: string,
     level: number = 0
 ): TreeBarEntry[] {
-    return sortRows(rows, sortColumn, isDescending).flatMap(node => [
+    return sortRows(rows, sortColumn, isDescending, numberLocale).flatMap(node => [
         { node, level },
         ...(node.expanded && node.children
-            ? getVisibleEntries(node.children, sortColumn, isDescending, level + 1)
+            ? getVisibleEntries(node.children, sortColumn, isDescending, numberLocale, level + 1)
             : [])
     ])
 }

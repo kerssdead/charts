@@ -4,6 +4,7 @@ import ChartSettings from '@/types/ChartSettings'
 import PlotSeries from '@/types/PlotSeries'
 import Sector from '@/types/Sector'
 import TextResources from '@/static/TextResources'
+import SegmentedBarData from '@/types/data/SegmentedBarData'
 
 const FALLBACK = '#808080'
 
@@ -83,6 +84,26 @@ describe('Normalizing settings', () => {
             .toEqual([12, null, null, null])
         expect((plot[0] as PlotSeries).values[0].y)
             .toBe(3.5)
+    })
+
+    it('Should parse values, points and stops with number locale', () => {
+        const settings = normalize({
+            numberLocale: 'de-DE',
+            charts: [
+                { type: ChartType.Pie, data: { values: [{ label: 'A', value: '1.234,5' }] } },
+                { type: ChartType.Plot, data: { values: [{ label: 'B', values: [{ x: 1, y: '2.000' }] }] } },
+                { type: ChartType.SegmentedBar, data: { values: [{ value: 1 }], stops: [{ value: '12,5%' }] } }
+            ]
+        } as unknown as ChartSettings, FALLBACK)
+
+        const [pie, plot, segmentedBar] = settings.charts.map(chart => chart.data)
+
+        expect(pie.values[0].value)
+            .toBe(1234.5)
+        expect((plot.values[0] as PlotSeries).values[0].y)
+            .toBe(2000)
+        expect((segmentedBar as SegmentedBarData).stops[0].value)
+            .toBe(12.5)
     })
 
     it('Should replace missing and invalid y with null', () => {

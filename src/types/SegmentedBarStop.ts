@@ -4,7 +4,7 @@ import { parseNumber } from '@/helpers/Numbers'
 class SegmentedBarStop extends Sector {
     isPercent: boolean
 
-    constructor(obj: object = {}) {
+    constructor(obj: object = {}, numberLocale?: string) {
         super(obj)
 
         const text = String(this.value).trim()
@@ -12,7 +12,7 @@ class SegmentedBarStop extends Sector {
         this.isPercent = text.endsWith('%')
 
         if (this.isPercent)
-            this.value = parseNumber(text.slice(0, -1))
+            this.value = parseNumber(text.slice(0, -1), numberLocale)
     }
 }
 

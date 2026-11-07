@@ -28,9 +28,9 @@ export function normalize(source: ChartSettings, fallbackColor: string, scope?: 
     const settings = { ...clone, charts }
 
     for (const chart of charts) {
-        prepareValues(chart)
-        normalizeValues(chart.data?.values, scope)
-        normalizeValues(getStops(chart), scope)
+        prepareValues(chart, settings.numberLocale)
+        normalizeValues(chart.data?.values, settings.numberLocale, scope)
+        normalizeValues(getStops(chart), settings.numberLocale, scope)
         mergeSameLabelValues(chart)
     }
 
@@ -43,7 +43,7 @@ export function normalize(source: ChartSettings, fallbackColor: string, scope?: 
     }
 }
 
-function prepareValues(chart: ChartItem) {
+function prepareValues(chart: ChartItem, numberLocale: string | undefined) {
     if (!chart.data?.values)
         return
 
@@ -77,7 +77,10 @@ function prepareValues(chart: ChartItem) {
             return row
         }
 
-        chart.data.values = (chart.data as TreeBarData).values.map(prepareRow)
+        const data = chart.data as TreeBarData
+
+        data.values = data.values.map(prepareRow)
+        data.numberLocale = numberLocale
 
         return
     }
@@ -94,7 +97,9 @@ function prepareValues(chart: ChartItem) {
     if (chart.type == ChartType.SegmentedBar) {
         const data = chart.data as SegmentedBarData
 
-        data.stops = (data.stops ?? []).map(stop => prepare(stop instanceof Value ? stop : new SegmentedBarStop(stop)))
+        const toStop = (stop: SegmentedBarStop) => stop instanceof Value ? stop : new SegmentedBarStop(stop, numberLocale)
+
+        data.stops = (data.stops ?? []).map(stop => prepare(toStop(stop)))
     }
 }
 
@@ -128,12 +133,12 @@ export function keepDisabled(previous: ChartSettings, next: ChartSettings) {
             value.disabled = true
 }
 
-function normalizeValues(values: Value[] | undefined, scope?: Element) {
+function normalizeValues(values: Value[] | undefined, numberLocale: string | undefined, scope?: Element) {
     const toNumber = <T>(value: T) => {
         if (typeof value != 'string' && typeof value != 'number')
             return value
 
-        const number = value === '' ? NaN : parseNumber(value)
+        const number = value === '' ? NaN : parseNumber(value, numberLocale)
 
         return Number.isFinite(number) ? number : null
     }
@@ -154,9 +159,9 @@ function normalizeValues(values: Value[] | undefined, scope?: Element) {
                 point.x = TextResources.noLabel
         }
 
-        normalizeValues((value as TreeValue).sectors, scope)
-        normalizeValues((value as TreeBarRow).parts, scope)
-        normalizeValues((value as TreeBarRow).children, scope)
+        normalizeValues((value as TreeValue).sectors, numberLocale, scope)
+        normalizeValues((value as TreeBarRow).parts, numberLocale, scope)
+        normalizeValues((value as TreeBarRow).children, numberLocale, scope)
     }
 }
 

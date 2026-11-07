@@ -31,4 +31,12 @@ describe('Getting visible tree bar entries', () => {
         expect(entries(rows, 'amount'))
             .toEqual([['b', 0], ['a', 0], ['a2', 1], ['a1', 1]])
     })
+
+    it('Should sort children with number locale', () => {
+        const child = (id: string, amount: string) => new TreeBarRow({ id, label: id, cells: { amount } })
+        const rows = [row('a', 1, { expanded: true, children: [child('a1', '1.500'), child('a2', '20')] })]
+
+        expect(getVisibleEntries(rows, 'amount', false, 'de-DE').map(({ node }) => node.id))
+            .toEqual(['a', 'a2', 'a1'])
+    })
 })

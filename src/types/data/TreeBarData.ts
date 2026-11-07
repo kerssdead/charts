@@ -18,6 +18,8 @@ export default interface TreeBarData extends Data {
     sortColumn?: string
 
     sortDescending?: boolean
+
+    numberLocale?: string
 }
 
 export type TreeBarEntry = {
@@ -62,14 +64,15 @@ export function getTreeBarTotal(row: TreeBarRow) {
     return sum(row.parts, part => Math.max(part.value || 0, 0))
 }
 
-export function getCellNumber(value: string | number | undefined) {
-    return typeof value == 'number' ? value : parseNumber(value)
+export function getCellNumber(value: string | number | undefined, numberLocale?: string) {
+    return typeof value == 'number' ? value : parseNumber(value, numberLocale)
 }
 
 export function getTreeBarRows(data: TreeBarData): TableData {
     const columns = data.columns ?? []
     const entries = flattenTreeBarRows(data.values)
     const nodes = entries.map(({ node }) => node)
+    const getCellValue = (row: TreeBarRow, key: string) => getCellNumber(row.cells?.[key], data.numberLocale) || 0
 
     const table: TableData = columns.length > 0
                   ? {
@@ -78,7 +81,7 @@ export function getTreeBarRows(data: TreeBarData): TableData {
                           name: row.label,
                           color: row.color,
                           disabled: row.disabled,
-                          values: new Map(columns.map(column => [column.key, getCellNumber(row.cells?.[column.key]) || 0]))
+                          values: new Map(columns.map(column => [column.key, getCellValue(row, column.key)]))
                       }))
                   }
                   : getValueRows(nodes, getTreeBarTotal)

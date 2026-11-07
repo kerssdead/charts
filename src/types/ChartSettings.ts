@@ -38,6 +38,8 @@ export default interface ChartSettings {
 
     columns?: number
 
+    numberLocale?: string
+
     width?: string
 
     height?: string

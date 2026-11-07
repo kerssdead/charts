@@ -1,16 +1,38 @@
 import { parseNumber } from '@/helpers/Numbers'
 
-const measureParsing = (text: string) => {
+const measureParsing = (text: string, locale?: string) => {
     const start = performance.now()
     let parsed = 0
 
     for (let i = 0; i < 10000; i++)
-        parsed = parseNumber(text)
+        parsed = parseNumber(text, locale)
 
     return { parsed, elapsed: performance.now() - start }
 }
 
+const NumberFormat = Intl.NumberFormat
+
+const parseForViewer = (text: string, viewerLocale: string) => {
+    jest.spyOn(Intl, 'NumberFormat').mockImplementation((locale, options) => {
+        return new NumberFormat(locale ?? viewerLocale, options)
+    })
+
+    let parsed = NaN
+
+    jest.isolateModules(() => {
+        const numbers: typeof import('@/helpers/Numbers') = require('@/helpers/Numbers')
+
+        parsed = numbers.parseNumber(text)
+    })
+
+    return parsed
+}
+
 describe('Parsing string to number', () => {
+    afterEach(() => {
+        jest.restoreAllMocks()
+    })
+
     it('US, no thousands', () => {
         expect(parseNumber('123.45'))
             .toStrictEqual(123.45)
@@ -192,5 +214,64 @@ describe('Parsing string to number', () => {
     it('trailing garbage', () => {
         expect(parseNumber('12abc'))
             .toStrictEqual(NaN)
+    })
+
+    it('single comma with three digits is thousands for every viewer locale', () => {
+        expect([parseForViewer('1,234', 'en-US'), parseForViewer('1,234', 'de-DE')])
+            .toStrictEqual([1234, 1234])
+    })
+
+    it('single dot with three digits is decimal for every viewer locale', () => {
+        expect([parseForViewer('1.234', 'en-US'), parseForViewer('1.234', 'de-DE')])
+            .toStrictEqual([1.234, 1.234])
+    })
+
+    it('DE locale, dot is thousands', () => {
+        expect(parseNumber('1.234', 'de-DE'))
+            .toStrictEqual(1234)
+    })
+
+    it('DE locale, thousands and fraction', () => {
+        expect(parseNumber('-1.234.567,89', 'de-DE'))
+            .toStrictEqual(-1234567.89)
+    })
+
+    it('US locale, comma is thousands', () => {
+        expect(parseNumber('1,5', 'en-US'))
+            .toStrictEqual(15)
+    })
+
+    it('FR locale, narrow no-break space as thousands', () => {
+        expect(parseNumber('1\u202f234,5', 'fr-FR'))
+            .toStrictEqual(1234.5)
+    })
+
+    it('CH locale, apostrophe as thousands', () => {
+        expect(parseNumber('1\u2019234.5', 'de-CH'))
+            .toStrictEqual(1234.5)
+    })
+
+    it('ES locale, four digits without grouping', () => {
+        expect(parseNumber('1234,5', 'es-ES'))
+            .toStrictEqual(1234.5)
+    })
+
+    it('locale, second decimal separator is not a number', () => {
+        expect(parseNumber('1,2,3', 'de-DE'))
+            .toStrictEqual(NaN)
+    })
+
+    it('locale, number is returned as is', () => {
+        expect(parseNumber(1.5, 'de-DE'))
+            .toStrictEqual(1.5)
+    })
+
+    it('DE locale, performance test, 10000 values', () => {
+        const { parsed, elapsed } = measureParsing('1.234.567,89', 'de-DE')
+
+        expect(parsed)
+            .toStrictEqual(1234567.89)
+        expect(elapsed)
+            .toBeLessThanOrEqual(600)
     })
 })

@@ -86,7 +86,12 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
 
         let y = HEADER_HEIGHT
 
-        for (const entry of TreeBarSorting.getVisibleEntries(data.values, data.sortColumn, data.sortDescending)) {
+        for (const entry of TreeBarSorting.getVisibleEntries(
+            data.values,
+            data.sortColumn,
+            data.sortDescending,
+            data.numberLocale
+        )) {
             const height = TreeBarRowText.getRowHeight(entry.node)
 
             this.rows.push({ ...entry, y, height })

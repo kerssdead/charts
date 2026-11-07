@@ -56,4 +56,15 @@ describe('Getting tree bar rows for decomposition', () => {
         expect([table.values[0].color, table.values[0].disabled])
             .toEqual(['#0000ff', true])
     })
+
+    it('Should parse column values with number locale', () => {
+        const table = getTreeBarRows({
+            values: [row('a', [1], { cells: { amount: '1.500,5' } })],
+            columns: [{ key: 'amount', title: 'Amount' }],
+            numberLocale: 'de-DE'
+        } as TreeBarData)
+
+        expect([...table.values[0].values.values()])
+            .toEqual([1500.5])
+    })
 })

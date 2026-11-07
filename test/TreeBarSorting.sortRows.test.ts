@@ -47,4 +47,9 @@ describe('Sorting tree bar rows', () => {
         expect(ids(rows))
             .toEqual(['a', 'b'])
     })
+
+    it('Should parse numeric strings with number locale', () => {
+        expect(ids(sortRows([row('a', '1.500'), row('b', '20')], 'amount', false, 'de-DE')))
+            .toEqual(['b', 'a'])
+    })
 })

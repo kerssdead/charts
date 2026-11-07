@@ -7,8 +7,8 @@ import Sector from '@/types/Sector'
 
 const FALLBACK = '#808080'
 
-const settings = (data: object, baseColor?: string) => {
-    return normalize({ type: ChartType.TreeBar, data, baseColor } as unknown as ChartSettings, FALLBACK)
+const settings = (data: object, baseColor?: string, numberLocale?: string) => {
+    return normalize({ type: ChartType.TreeBar, data, baseColor, numberLocale } as unknown as ChartSettings, FALLBACK)
 }
 
 const rows = (result: ChartSettings) => (result.charts[0].data as TreeBarData).values
@@ -26,6 +26,13 @@ describe('Normalizing tree bar settings', () => {
             .toEqual([true, true, true])
         expect([root.parts[0].value, root.parts[0].label, child.id])
             .toEqual([5, undefined, 'Ipsum-0'])
+    })
+
+    it('Should parse parts and keep number locale for cells', () => {
+        const result = settings({ values: [{ label: 'Lorem', parts: [{ value: '1.500' }] }] }, undefined, 'de-DE')
+
+        expect([rows(result)[0].parts[0].value, (result.charts[0].data as TreeBarData).numberLocale])
+            .toEqual([1500, 'de-DE'])
     })
 
     it('Should inherit colors from parent rows and base color', () => {

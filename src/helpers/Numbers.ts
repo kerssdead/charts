@@ -103,17 +103,66 @@ const GROUP_SPACES = /[\s\u00a0\u202f'\u2019_]/g
 
 const MINUS = /^[-\u2212]/
 
-let localeGroup: string | undefined
+type NumberSeparators = {
+    group: string
 
-function isGrouping(text: string, separator: string) {
-    localeGroup ??= new Intl.NumberFormat().formatToParts(1000).find(part => part.type == 'group')?.value ?? ','
-
-    const [integer, fraction] = text.split(separator)
-
-    return separator == localeGroup && /^[1-9]\d{0,2}$/.test(integer) && /^\d{3}$/.test(fraction)
+    decimal: string
 }
 
-export function parseNumber(value: string | number | null | undefined): number {
+const separatorsByLocale = new Map<string, NumberSeparators>()
+
+function getSeparators(locale: string) {
+    let separators = separatorsByLocale.get(locale)
+
+    if (!separators) {
+        const parts = new Intl.NumberFormat(locale).formatToParts(1234567.5)
+
+        separators = {
+            group: parts.find(part => part.type == 'group')?.value ?? '',
+            decimal: parts.find(part => part.type == 'decimal')?.value ?? '.'
+        }
+
+        separatorsByLocale.set(locale, separators)
+    }
+
+    return separators
+}
+
+function isThousandsComma(text: string) {
+    const [integer, fraction] = text.split(',')
+
+    return /^[1-9]\d{0,2}$/.test(integer) && /^\d{3}$/.test(fraction)
+}
+
+function normalizeByLocale(text: string, locale: string) {
+    const { group, decimal } = getSeparators(locale)
+
+    return text.split(group).join('').replace(decimal, '.')
+}
+
+function normalizeByDetection(text: string) {
+    const lastDot = text.lastIndexOf('.')
+    const lastComma = text.lastIndexOf(',')
+
+    let decimal: string | null = null
+
+    if (lastDot >= 0 && lastComma >= 0) {
+        decimal = lastDot > lastComma ? '.' : ','
+    } else if (lastDot >= 0 || lastComma >= 0) {
+        const separator = lastDot >= 0 ? '.' : ','
+        const isSingle = text.indexOf(separator) == text.lastIndexOf(separator)
+
+        const isGrouping = separator == ',' && isThousandsComma(text)
+
+        decimal = isSingle && !isGrouping ? separator : null
+    }
+
+    const normalized = text.replace(decimal == '.' ? /,/g : decimal == ',' ? /\./g : /[.,]/g, '')
+
+    return decimal == ',' ? normalized.replace(',', '.') : normalized
+}
+
+export function parseNumber(value: string | number | null | undefined, locale?: string): number {
     if (value == null || value === '')
         return 0
 
@@ -130,24 +179,7 @@ export function parseNumber(value: string | number | null | undefined): number {
         text = text.slice(1)
     }
 
-    const lastDot = text.lastIndexOf('.')
-    const lastComma = text.lastIndexOf(',')
-
-    let decimal: string | null = null
-
-    if (lastDot >= 0 && lastComma >= 0) {
-        decimal = lastDot > lastComma ? '.' : ','
-    } else if (lastDot >= 0 || lastComma >= 0) {
-        const separator = lastDot >= 0 ? '.' : ','
-        const isSingle = text.indexOf(separator) == text.lastIndexOf(separator)
-
-        decimal = isSingle && !isGrouping(text, separator) ? separator : null
-    }
-
-    let normalized = text.replace(decimal == '.' ? /,/g : decimal == ',' ? /\./g : /[.,]/g, '')
-
-    if (decimal == ',')
-        normalized = normalized.replace(',', '.')
+    const normalized = locale ? normalizeByLocale(text, locale) : normalizeByDetection(text)
 
     return NUMBER_PATTERN.test(normalized) ? sign * Number(normalized) : NaN
 }
