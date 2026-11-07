@@ -74,6 +74,18 @@ describe('Getting segmented bar data', () => {
         expect(items.has('segmented-bar-part-wide-label')).toBe(true)
     })
 
+    it('Should pick label color with higher contrast on part color', () => {
+        const items = getItems({
+            values: [
+                new Sector({ id: 'mid', label: 'Lorem', value: 1, color: '#959595' }),
+                new Sector({ id: 'dark', label: 'Ipsum', value: 1, color: '#0000ff' })
+            ]
+        })
+
+        expect(items.get('segmented-bar-part-mid-label')!.color).toBe('#000000')
+        expect(items.get('segmented-bar-part-dark-label')!.color).toBe('#ffffff')
+    })
+
     it('Should scale parts to 100% in percentage mode and show empty track', () => {
         const rects = getRects({ percentageMode: true, values: [part('a', 20), part('b', 30)], stops: [stop('value', 60)] })
 

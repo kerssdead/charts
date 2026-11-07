@@ -18,12 +18,6 @@ export const PART_PADDING = 6
 
 export const MIN_PART_WIDTH = 4
 
-export const LIGHT_LUMINANCE = .5
-
-export const LABEL_COLOR_ON_LIGHT = '#000000'
-
-export const LABEL_COLOR_ON_DARK = '#ffffff'
-
 
 export const STOP_WIDTH = 6
 

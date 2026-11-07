@@ -2,7 +2,7 @@ import TreeData, { getTreeSum, TreeValue } from '@/types/data/TreeData'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
-import { contrastText, spreadColor } from '@/helpers/Color'
+import { contrastTextColor, spreadColor } from '@/helpers/Color'
 import { stringWidth } from '@/helpers/Text'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import ChartProcess from '@/render/ChartProcess'
@@ -93,7 +93,7 @@ export default class TreeMapProcess extends ChartProcess<TreeData> {
                      .position(box.x + box.width / 2, box.y + box.height / 2)
                      .size(LABEL_FONT_SIZE)
                      .align(TextAlignment.Center)
-                     .color(contrastText(color))
+                     .color(contrastTextColor(color))
                      .key(`${ key }-label`)
                      .init(AnimationTiming.treeInit, delay, true)
         }

@@ -7,7 +7,7 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
 import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/Enums'
-import { luminance, withAlpha } from '@/helpers/Color'
+import { contrastTextColor, withAlpha } from '@/helpers/Color'
 import { clamp } from '@/helpers/Geometry'
 import { sum } from '@/helpers/Collections'
 import ChartProcess from '@/render/ChartProcess'
@@ -16,11 +16,8 @@ import * as SegmentedBarLayout from '@/render/segmentedBar/SegmentedBarLayout'
 import * as SegmentedBarParts from '@/render/segmentedBar/SegmentedBarParts'
 import { Part, PartsLayout } from '@/render/segmentedBar/SegmentedBarParts'
 import {
-    LABEL_COLOR_ON_DARK,
-    LABEL_COLOR_ON_LIGHT,
     LABEL_FONT_SIZE,
     LABEL_MAX_SHARE,
-    LIGHT_LUMINANCE,
     MIN_PART_WIDTH,
     PADDING_X,
     PART_FONT_SIZE,
@@ -144,7 +141,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                  .position(box.x + padding, box.y + box.height / 2)
                  .size(PART_FONT_SIZE)
                  .align(TextAlignment.Left)
-                 .color(luminance(sector.color) > LIGHT_LUMINANCE ? LABEL_COLOR_ON_LIGHT : LABEL_COLOR_ON_DARK)
+                 .color(contrastTextColor(sector.color))
                  .layer(Layer.Data)
                  .key(`${ key }-label`)
                  .clip(visibleWidth - padding)

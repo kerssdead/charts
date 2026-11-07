@@ -4,6 +4,16 @@ import { scratchContext } from '@/helpers/Text'
 
 const RESET_COLOR = '#000000'
 
+const BLACK = '#000000'
+
+const WHITE = '#ffffff'
+
+const BLACK_LUMINANCE = 0
+
+const WHITE_LUMINANCE = 1
+
+const CONTRAST_FLARE = .05
+
 const CSS_VARIABLE = /^(?:var\(\s*)?(--[\w-]+)\s*(?:,\s*([^)]+))?\)?$/
 
 export function adjustColor(color: string, amount: number) {
@@ -95,10 +105,14 @@ export function randomColor() {
     return '#' + Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, '0')
 }
 
-export function contrastText(background: string) {
+export function contrastTextColor(background: string) {
     const value = luminance(background)
 
-    return (value + .05) / .05 > 1.05 / (value + .05) ? '#000000' : '#ffffff'
+    return contrastRatio(value, BLACK_LUMINANCE) > contrastRatio(WHITE_LUMINANCE, value) ? BLACK : WHITE
+}
+
+function contrastRatio(lighter: number, darker: number) {
+    return (lighter + CONTRAST_FLARE) / (darker + CONTRAST_FLARE)
 }
 
 export function luminance(color: string) {
