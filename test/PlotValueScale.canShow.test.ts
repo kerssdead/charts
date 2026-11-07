@@ -15,4 +15,12 @@ describe('Checking plot value can be shown', () => {
         expect([-5, 0, 5].map(value => scale.canShow(value)))
             .toEqual([false, false, true])
     })
+
+    it('Should not show missing value', () => {
+        const linear = PlotValueScale.fromBottom([-100, 0, 100], 1000, 800)
+        const log = PlotValueScale.fromBottom([1, 10, 100], 1000, 800, PlotScaleType.Log)
+
+        expect([linear.canShow(null), log.canShow(null)])
+            .toEqual([false, false])
+    })
 })

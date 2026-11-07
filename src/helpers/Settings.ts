@@ -133,13 +133,13 @@ function normalizeValues(values: Value[] | undefined, scope?: Element) {
         if (typeof value != 'string' && typeof value != 'number')
             return value
 
-        const number = parseNumber(value)
+        const number = value === '' ? NaN : parseNumber(value)
 
-        return Number.isFinite(number) ? number : 0
+        return Number.isFinite(number) ? number : null
     }
 
     for (const value of values ?? []) {
-        value.value = toNumber(value.value)
+        value.value = toNumber(value.value) as number
 
         if (value.color)
             value.color = normalizeColor(value.color, scope)
@@ -148,7 +148,7 @@ function normalizeValues(values: Value[] | undefined, scope?: Element) {
             (value as PlotSeries).values = (value as PlotSeries).values.filter(point => point.x != null)
 
         for (const point of (value as PlotSeries).values ?? []) {
-            point.y = toNumber(point.y ?? 0)
+            point.y = toNumber(point.y) ?? null
 
             if (point.x === '')
                 point.x = TextResources.noLabel

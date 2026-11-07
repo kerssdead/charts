@@ -49,6 +49,8 @@ export const AREA_LAYER = Layer.Data + 1
 
 export const LINE_LAYER = Layer.Data + 2
 
+export const BREAK_MARK_LAYER = Layer.Data + 3
+
 export const AXIS_LAYER = Layer.Data + 50
 
 export const GHOST_TYPES = [PlotType.Column, PlotType.Bar, PlotType.StackingColumn]

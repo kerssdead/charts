@@ -17,6 +17,8 @@ import * as GaugeLegend from '@/render/gauge/GaugeLegend'
 import { LegendItem } from '@/render/gauge/GaugeLegend'
 import * as GaugeValueLabels from '@/render/gauge/GaugeValueLabels'
 import {
+    ABOVE_MAX_MARK,
+    BELOW_MIN_MARK,
     CANVAS_PADDING,
     LABEL_FONT_SIZE,
     LABEL_GAP,
@@ -52,7 +54,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         this.enabledSectors = data.values.filter(sector => !sector.disabled)
         // todo: legend items are measured even for a single value with no legend; measure before skipping it
         this.legendLines = GaugeLegend.getLegendLines(
-            GaugeLegend.getLegendItems(this.enabledSectors, formatValue),
+            GaugeLegend.getLegendItems(this.enabledSectors, value => this.formatValueWithRangeMark(value)),
             legendAvailableWidth
         )
         this.steps = this.data.disableStepLabels ? [] : GaugeSteps.getSteps(this.min, this.max, formatValue)
@@ -101,10 +103,27 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         ]
     }
 
-    private getValueRatio(value: number) {
+    private getUnclampedRatio(value: number) {
         const range = this.max - this.min
 
-        return range == 0 || !Number.isFinite(value) ? 0 : clamp((value - this.min) / range, 0, 1)
+        return range == 0 || !Number.isFinite(value) ? 0 : (value - this.min) / range
+    }
+
+    private getValueRatio(value: number) {
+        return clamp(this.getUnclampedRatio(value), 0, 1)
+    }
+
+    private formatValueWithRangeMark(value: number) {
+        if (!Number.isFinite(value))
+            return this.formatValue(value)
+
+        if (value > this.max)
+            return `${ this.formatValue(value) } ${ ABOVE_MAX_MARK }`
+
+        if (value < this.min)
+            return `${ this.formatValue(value) } ${ BELOW_MIN_MARK }`
+
+        return this.formatValue(value)
     }
 
     private addRingShape(items: QueueItemsBuilder, ringIndex: number, endAngle: number) {
@@ -134,7 +153,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     }
 
     private addRing(items: QueueItemsBuilder, sector: Sector, ringIndex: number) {
-        // todo: getValueRatio() runs twice per ring (here and in getTooltipText); measure before caching it
+        // todo: the value ratio is computed twice per ring (here and in getTooltipText); measure before caching it
         this.addRingShape(items, ringIndex, START_ANGLE + SWEEP_ANGLE * this.getValueRatio(sector.value))
             .grow(START_ANGLE)
             .color(sector.color)
@@ -214,7 +233,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         const { x, y } = this.sizing.centerInCoords
 
         const singleSector = this.enabledSectors[0]
-        const valueText = this.formatValue(singleSector.value)
+        const valueText = this.formatValueWithRangeMark(singleSector.value)
 
         // todo: min/max are formatted and measured again on every getData(); measure before caching them
         const rangeLabelWidth = Math.max(
@@ -279,6 +298,6 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     }
 
     private getTooltipText(sector: Sector) {
-        return this.tooltip(sector.label, this.share(sector.value, this.getValueRatio(sector.value)))
+        return this.tooltip(sector.label, this.share(sector.value, this.getUnclampedRatio(sector.value)))
     }
 }

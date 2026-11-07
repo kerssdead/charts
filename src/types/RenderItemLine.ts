@@ -274,6 +274,9 @@ export default class RenderItemLine
         let distance = this.width / 2 + HIT_RADIUS
 
         this.canvas.forEach((stop, i) => {
+            if (!this.isInsideClip(stop))
+                return
+
             const current = Math.hypot(point.x - stop.x, point.y - stop.y)
 
             if (current <= distance) {
@@ -283,6 +286,15 @@ export default class RenderItemLine
         })
 
         return closest
+    }
+
+    private isInsideClip(stop: Point) {
+        if (!this.clip)
+            return true
+
+        const { x, y, width, height } = this.canvasClip
+
+        return x <= stop.x && stop.x <= x + width && y <= stop.y && stop.y <= y + height
     }
 
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp): void {

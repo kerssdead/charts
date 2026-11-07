@@ -9,7 +9,7 @@ import PlotItemStyle from '@/render/plot/PlotItemStyle'
 
 export const UNITS = new Units({ x: 1, y: 1 })
 
-export function createSeries(type: PlotType, ys: number[], extra: Partial<PlotSeries> = {}) {
+export function createSeries(type: PlotType, ys: (number | null)[], extra: Partial<PlotSeries> = {}) {
     return {
         type,
         label: `Series ${ type }`,

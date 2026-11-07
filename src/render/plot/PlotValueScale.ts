@@ -51,8 +51,8 @@ export default class PlotValueScale {
         return new PlotValueScale(values, left, width, 1, scaleType)
     }
 
-    canShow(value: number) {
-        return !this.isLog || value > 0
+    canShow(value: number | null): value is number {
+        return value != null && (!this.isLog || value > 0)
     }
 
     getCoordinate(value: number) {

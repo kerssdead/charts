@@ -54,6 +54,39 @@ describe('Getting gauge data', () => {
             .toBe(Math.PI)
     })
 
+    it('Should show real percentage in tooltip for values outside range', () => {
+        const items = getItems({ values: [sector('A', 130), sector('B', -20), sector('C', 60)] })
+        const offset = getItems({ values: [sector('D', 60)], min: 20, max: 50 })
+
+        expect([items.get('gauge-value-0')!.tooltipTemplate, items.get('gauge-value-1')!.tooltipTemplate])
+            .toEqual(['A\n130.00 (130%)', 'B\n-20.00 (-20%)'])
+        expect(offset.get('gauge-value-0')!.tooltipTemplate)
+            .toBe('D\n60.00 (133.3%)')
+    })
+
+    it('Should mark single value above max and below min', () => {
+        const above = getItems({ values: [sector('A', 130)] })
+        const below = getItems({ values: [sector('A', -20)] })
+        const atMax = getItems({ values: [sector('A', 100)] })
+
+        expect([above, below, atMax].map(items => getText(items, 'gauge-value-label').value))
+            .toEqual(['130.00 ▲', '-20.00 ▼', '100.00'])
+    })
+
+    it('Should mark legend values outside range', () => {
+        const items = getItems({ values: [sector('A', 130), sector('B', -20), sector('C', 50)] })
+
+        expect(['gauge-label-0', 'gauge-label-1', 'gauge-label-2'].map(key => getText(items, key).value))
+            .toEqual(['A: 130.00 ▲', 'B: -20.00 ▼', 'C: 50.00'])
+    })
+
+    it('Should not mark missing value', () => {
+        const items = getItems({ values: [sector('A', null as unknown as number)], min: 20 })
+
+        expect(getText(items, 'gauge-value-label').value)
+            .not.toMatch(/[▲▼]/)
+    })
+
     it('Should treat value as min when min equals max', () => {
         const items = getItems({ values: [sector('A', 5)], min: 5, max: 5 })
 

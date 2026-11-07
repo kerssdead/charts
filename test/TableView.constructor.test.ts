@@ -63,11 +63,11 @@ describe('Building table view', () => {
             ])
     })
 
-    it('Should format values with percent columns and zero for missing values', () => {
+    it('Should format values with percent columns and empty missing values', () => {
         const [, body] = build(data).elements
 
         expect(body.elements.map(row => texts(row).slice(1)))
-            .toEqual([['1.00', '25.00%'], ['3.00', '0.00%']])
+            .toEqual([['1.00', '25.00%'], ['3.00', '']])
     })
 
     it('Should total top level rows in the footer with tooltips', () => {

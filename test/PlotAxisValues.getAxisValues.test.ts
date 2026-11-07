@@ -4,7 +4,7 @@ import PlotSeries from '@/types/PlotSeries'
 import { getLogAxisValues } from '@/helpers/AxisTicks'
 import { PlotScaleType, PlotType } from '@/static/Enums'
 
-const series = (type: PlotType, ...ys: number[]) => {
+const series = (type: PlotType, ...ys: (number | null)[]) => {
     return { type, values: ys.map((y, i) => ({ x: i, y })) } as PlotSeries
 }
 
@@ -48,5 +48,21 @@ describe('Getting plot axis values', () => {
     it('Should limit log axis by y max', () => {
         expect(getAxisValues([series(PlotType.Column, 700)], 500, false, PlotScaleType.Log).yAxisValues)
             .toEqual(getLogAxisValues([700], 500))
+    })
+
+    it('Should ignore missing values', () => {
+        const all = [
+            series(PlotType.Column, 30, null),
+            series(PlotType.StackingColumn, 50, null),
+            series(PlotType.Bar, null, 20)
+        ]
+
+        expect(getAxisValues(all, undefined, false))
+            .toEqual({ yAxisValues: getRoundedValues([50, 30], 5), xAxisValues: getRoundedValues([20], 5) })
+    })
+
+    it('Should give no axis values when every value is missing', () => {
+        expect(getAxisValues([series(PlotType.Line, null, null)], undefined, false))
+            .toEqual({ yAxisValues: [], xAxisValues: [] })
     })
 })

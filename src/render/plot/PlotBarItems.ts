@@ -1,10 +1,12 @@
 import PlotSeries from '@/types/PlotSeries'
+import { getY } from '@/types/PlotPoint'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotItemStyle from '@/render/plot/PlotItemStyle'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { CORNER_RADIUS } from '@/render/plot/PlotConstants'
+import { addBarBreakMark } from '@/render/plot/PlotBreakMarks'
 
 export default class PlotBarItems {
     private readonly layout: PlotLayout
@@ -34,21 +36,31 @@ export default class PlotBarItems {
             const offset = visibleBefore * heightInStep
 
             series.values.forEach((value, valueIndex) => {
-                if (!valueScale.canShow(Number(value.y)))
+                const y = getY(value)
+
+                if (!valueScale.canShow(y))
                     return
 
                 const slot = categoryScale.getSlot(value)
-                const y = categoryScale.getSlotStart(slot) - offset
-                const length = seriesGroups.hasOnlyBarSeries ? layout.capToYMax(Number(value.y)) : Number(value.y)
+                const bottom = categoryScale.getSlotStart(slot) - offset
+                const length = seriesGroups.hasOnlyBarSeries ? layout.capToYMax(y) : y
+
+                const end = valueScale.getCoordinate(length)
 
                 const bar = items.rect()
-                     .position(baseline, y)
-                     .size(series.disabled ? 0 : valueScale.getCoordinate(length) - baseline, height)
+                     .position(baseline, bottom)
+                     .size(series.disabled ? 0 : end - baseline, height)
                      .round([0, CORNER_RADIUS, CORNER_RADIUS, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', baseline)
 
                 this.style.styleRect(bar, series, value, slot, valueIndex)
+
+                if (!series.disabled && seriesGroups.hasOnlyBarSeries && layout.isAboveYMax(y)) {
+                    const mark = addBarBreakMark(items, layout.units, bottom - height, bottom, end)
+
+                    this.style.styleBreakMark(mark, series, slot, valueIndex)
+                }
             })
         }
     }

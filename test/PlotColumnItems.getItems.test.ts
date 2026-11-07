@@ -2,6 +2,7 @@ import { buildItems, createPlot, createSeries } from './PlotTestData'
 import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
+import RenderItemLine from '@/types/RenderItemLine'
 import PlotColumnItems from '@/render/plot/PlotColumnItems'
 import { getColumnGroups } from '@/render/plot/PlotColumnGroups'
 import { PlotScaleType, PlotType } from '@/static/Enums'
@@ -20,7 +21,13 @@ const getColumns = (all: PlotSeries[], series: PlotSeries, data: Partial<PlotDat
         getColumnGroups(plot.seriesGroups.enabledSeries)
     )
 
-    return { ...plot, rects: buildItems(columns.getItems(series)).map(item => item.shape as RenderItemRectangle) }
+    const items = buildItems(columns.getItems(series))
+
+    return {
+        ...plot,
+        rects: items.filter(item => item.shape instanceof RenderItemRectangle).map(item => item.shape as RenderItemRectangle),
+        marks: items.filter(item => item.shape instanceof RenderItemLine)
+    }
 }
 
 describe('Getting plot column items', () => {
@@ -68,6 +75,44 @@ describe('Getting plot column items', () => {
 
         expect(rects[1].absolute.height)
             .toBe(layout.vertical.baseline - layout.vertical.valueScale.getCoordinate(100))
+    })
+
+    it('Should skip columns with missing values', () => {
+        const series = createSeries(PlotType.Column, [10, null, 40])
+        const { layout, rects } = getColumns([series], series)
+        const { categoryScale } = layout.vertical
+
+        expect(rects.map(rect => rect.absolute.x))
+            .toEqual([categoryScale.getSlotCenter(0), categoryScale.getSlotCenter(2)])
+    })
+
+    it('Should mark column cut by y max', () => {
+        const series = createSeries(PlotType.Column, [10, 400])
+        const { layout, rects, marks } = getColumns([series], series, { yMax: 100 })
+        const { valueScale } = layout.vertical
+        const { x, width } = rects[1].absolute
+
+        expect(marks.map(mark => mark.key))
+            .toEqual(['0-break-1'])
+        expect((marks[0].shape as RenderItemLine).absolute)
+            .toEqual([
+                { x: x - width / 2, y: valueScale.getCoordinate(100) + 11 },
+                { x: x + width / 2, y: valueScale.getCoordinate(100) + 5 }
+            ])
+    })
+
+    it('Should not mark column equal to y max', () => {
+        const series = createSeries(PlotType.Column, [10, 100])
+
+        expect(getColumns([series], series, { yMax: 100 }).marks)
+            .toEqual([])
+    })
+
+    it('Should not mark disabled column above y max', () => {
+        const series = createSeries(PlotType.Column, [400], { disabled: true })
+
+        expect(getColumns([series, createSeries(PlotType.Line, [5])], series, { yMax: 100 }).marks)
+            .toEqual([])
     })
 
     it('Should collapse disabled column', () => {

@@ -98,7 +98,9 @@ export default class TableView {
 
     private buildRow(row: TableValue) {
         const valueCell = (header: TableHeaderValue) => {
-            return asNumberCell(cell(formatValue(row.values.get(header.value) ?? 0, header)))
+            const value = row.values.get(header.value)
+
+            return asNumberCell(cell(value == undefined ? '' : formatValue(value, header)))
         }
 
         const element = div(TableClasses.Row, [nameCell(row), ...this.data.headers.map(valueCell)], AriaRole.Row)

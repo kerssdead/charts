@@ -1,4 +1,5 @@
 import PlotSeries from '@/types/PlotSeries'
+import { getY } from '@/types/PlotPoint'
 import TableHeaderValue from '@/types/TableHeaderValue'
 import TableData from '@/types/TableData'
 import Data from '@/types/interfaces/Data'
@@ -36,7 +37,10 @@ export function getPlotRows(data: PlotData): TableData {
         for (const value of series.values) {
             const key = value.x.toString()
 
-            seriesValues.set(key, Number(value.y))
+            const y = getY(value)
+
+            if (y != null)
+                seriesValues.set(key, y)
 
             if (!headers.has(key))
                 headers.set(key, { value: key, display: Formatter.axis(value.x, data.xType) })

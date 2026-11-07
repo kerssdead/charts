@@ -4,6 +4,13 @@ import { COORDS_MAX_X } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotItemStyle from '@/render/plot/PlotItemStyle'
 import { PlotType } from '@/static/Enums'
+import PlotPoint, { getY } from '@/types/PlotPoint'
+
+type LineStop = {
+    value: PlotPoint
+    y: number
+    slot: number
+}
 
 export default class PlotLineItems {
     private readonly layout: PlotLayout
@@ -20,30 +27,46 @@ export default class PlotLineItems {
         const { categoryScale, valueScale, baseline } = layout.vertical
 
         return (items: QueueItemsBuilder) => {
-            const line = items.line()
+            this.getUnbrokenRuns(series).forEach((run, runIndex) => {
+                const line = items.line()
 
-            const slots = series.values.filter(value => valueScale.canShow(Number(value.y)))
-                                .map(value => ({ value, slot: categoryScale.getSlot(value) }))
-                                .sort((a, b) => a.slot - b.slot)
+                run.forEach(({ value, y, slot }) => {
+                    line.stop(
+                        categoryScale.getSlotCenter(slot),
+                        valueScale.getCoordinate(y),
+                        this.style.getValueTooltip(series, value)
+                    )
+                })
 
-            slots.forEach(({ value, slot }) => {
-                line.stop(
-                    categoryScale.getSlotCenter(slot),
-                    valueScale.getCoordinate(layout.capToYMax(Number(value.y))),
-                    this.style.getValueTooltip(series, value)
-                )
+                line.clip(this.plotBox)
+                    .dash(Array.isArray(series.dash) ? series.dash : [])
+                    .drawMode(series.drawMode)
+                    .gradient()
+
+                if (series.type == PlotType.Area)
+                    line.area(baseline)
+
+                this.style.styleLine(line, series, `line-${ runIndex }`)
             })
-
-            line.clip(this.plotBox)
-                .dash(Array.isArray(series.dash) ? series.dash : [])
-                .drawMode(series.drawMode)
-                .gradient()
-
-            if (series.type == PlotType.Area)
-                line.area(baseline)
-
-            this.style.styleLine(line, series, 'line')
         }
+    }
+
+    private getUnbrokenRuns(series: PlotSeries) {
+        const { categoryScale, valueScale } = this.layout.vertical
+
+        const stops = series.values.map(value => ({ value, y: getY(value), slot: categoryScale.getSlot(value) }))
+                            .sort((a, b) => a.slot - b.slot)
+
+        const runs: LineStop[][] = [[]]
+
+        for (const { value, y, slot } of stops) {
+            if (valueScale.canShow(y))
+                runs[runs.length - 1].push({ value, y, slot })
+            else if (runs[runs.length - 1].length > 0)
+                runs.push([])
+        }
+
+        return runs.filter(run => run.length > 0)
     }
 
     getAttentionItems(series: PlotSeries) {
@@ -51,10 +74,12 @@ export default class PlotLineItems {
 
         const { valueScale } = layout.vertical
 
-        if (series.values.length == 0 || !valueScale.canShow(Number(series.values[0].y)))
+        const value = series.values.length > 0 ? getY(series.values[0]) : null
+
+        if (!valueScale.canShow(value))
             return QueueItemsBuilder.empty
 
-        const y = valueScale.getCoordinate(layout.capToYMax(Number(series.values[0].y)))
+        const y = valueScale.getCoordinate(value)
 
         const x1 = layout.margin.left
         const x2 = COORDS_MAX_X - layout.margin.right

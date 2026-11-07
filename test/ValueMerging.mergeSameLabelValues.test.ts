@@ -200,4 +200,24 @@ describe('Merging same label values', () => {
             .not
             .toThrow()
     })
+
+    it('Should keep defined y when merging with missing y', () => {
+        const merged = merge(ChartType.Plot, [
+            series('A', [{ x: 'a', y: null }, { x: 'b', y: 2 }]),
+            series('A', [{ x: 'a', y: 3 }, { x: 'b', y: null }])
+        ], true)
+
+        expect(merged[0].values.map(point => point.y))
+            .toEqual([3, 2])
+    })
+
+    it('Should keep y missing when merging two missing y', () => {
+        const merged = merge(ChartType.Plot, [
+            series('A', [{ x: 'a', y: null }]),
+            series('A', [{ x: 'a', y: null }])
+        ], true)
+
+        expect(merged[0].values[0].y)
+            .toBeNull()
+    })
 })

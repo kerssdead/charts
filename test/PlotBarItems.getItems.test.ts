@@ -2,6 +2,7 @@ import { buildItems, createPlot, createSeries } from './PlotTestData'
 import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
+import RenderItemLine from '@/types/RenderItemLine'
 import PlotBarItems from '@/render/plot/PlotBarItems'
 import { PlotScaleType, PlotType } from '@/static/Enums'
 
@@ -14,7 +15,13 @@ const getBars = (all: PlotSeries[], series: PlotSeries, data: Partial<PlotData> 
     const plot = createPlot(all, data)
     const bars = new PlotBarItems(plot.layout, plot.style, plot.seriesGroups)
 
-    return { ...plot, rects: buildItems(bars.getItems(series)).map(item => item.shape as RenderItemRectangle) }
+    const items = buildItems(bars.getItems(series))
+
+    return {
+        ...plot,
+        rects: items.filter(item => item.shape instanceof RenderItemRectangle).map(item => item.shape as RenderItemRectangle),
+        marks: items.filter(item => item.shape instanceof RenderItemLine)
+    }
 }
 
 describe('Getting plot bar items', () => {
@@ -81,6 +88,34 @@ describe('Getting plot bar items', () => {
             .toBe(horizontal.layout.horizontal.valueScale.getCoordinate(100) - horizontal.layout.horizontal.baseline)
         expect(mixed.rects[1].absolute.width)
             .toBe(mixed.layout.horizontal.valueScale.getCoordinate(400) - mixed.layout.horizontal.baseline)
+    })
+
+    it('Should skip bars with missing values', () => {
+        const series = createSeries(PlotType.Bar, [10, null, 40])
+        const { layout, rects } = getBars([series], series)
+        const { baseline, valueScale } = layout.horizontal
+
+        expect(rects.map(rect => rect.absolute.width))
+            .toEqual([valueScale.getCoordinate(10) - baseline, valueScale.getCoordinate(40) - baseline])
+    })
+
+    it('Should mark bar cut by y max', () => {
+        const bar = createSeries(PlotType.Bar, [10, 400])
+        const { layout, rects, marks } = getBars([bar], bar, { yMax: 100 })
+        const end = layout.horizontal.valueScale.getCoordinate(100)
+        const { y, height } = rects[1].absolute
+
+        expect(marks.map(mark => mark.key))
+            .toEqual(['0-break-1'])
+        expect((marks[0].shape as RenderItemLine).absolute)
+            .toEqual([{ x: end - 11, y }, { x: end - 5, y: y - height }])
+    })
+
+    it('Should not mark bar above y max when mixed with other series', () => {
+        const bar = createSeries(PlotType.Bar, [10, 400])
+
+        expect(getBars([bar, createSeries(PlotType.Line, [1])], bar, { yMax: 100 }).marks)
+            .toEqual([])
     })
 
     it('Should skip bars that are not positive on log scale', () => {

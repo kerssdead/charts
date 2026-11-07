@@ -2,7 +2,7 @@ import { toTabSeparatedText } from '@/types/TableData'
 import TextResources from '@/static/TextResources'
 
 describe('Converting a table to tab separated text', () => {
-    it('Should write header, rows and totals as tab separated lines', () => {
+    it('Should write header, rows and totals as tab separated lines with empty missing cells', () => {
         const table = {
             headers: [{ value: 'a', display: 'A' }, { value: 'b', display: 'B' }],
             values: [
@@ -12,7 +12,7 @@ describe('Converting a table to tab separated text', () => {
         }
 
         expect(toTabSeparatedText(table))
-            .toBe(`\tA\tB\nOne\t1\t2.5\nTwo\t3\t0\n${ TextResources.total }\t4\t2.5`)
+            .toBe(`\tA\tB\nOne\t1\t2.5\nTwo\t3\t\n${ TextResources.total }\t4\t2.5`)
     })
 
     it('Should replace tabs and line breaks in names with spaces', () => {

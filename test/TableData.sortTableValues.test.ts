@@ -26,11 +26,18 @@ describe('Sorting table values', () => {
             .toEqual(['a', 'c', 'b'])
     })
 
-    it('Should treat a missing column value as zero', () => {
+    it('Should put a missing column value last in ascending order', () => {
         const values = [row('a', 5), { name: 'b', values: new Map() }, row('c', -1)]
 
         expect(names(sortTableValues(values, 'amount', SortDirection.Ascending)))
-            .toEqual(['c', 'b', 'a'])
+            .toEqual(['c', 'a', 'b'])
+    })
+
+    it('Should put a missing column value last in descending order', () => {
+        const values = [{ name: 'b', values: new Map() }, row('a', 5), row('c', -1)]
+
+        expect(names(sortTableValues(values, 'amount', SortDirection.Descending)))
+            .toEqual(['a', 'c', 'b'])
     })
 
     it('Should sort names naturally without column', () => {

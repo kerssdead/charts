@@ -36,3 +36,7 @@ export const VALUE_FONT_SIZE = 32
 export const VALUE_MIN_FONT_SIZE = 12
 
 export const VALUE_WIDTH_RATIO = .8
+
+export const ABOVE_MAX_MARK = '▲'
+
+export const BELOW_MIN_MARK = '▼'

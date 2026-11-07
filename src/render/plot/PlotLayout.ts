@@ -23,9 +23,9 @@ export default class PlotLayout {
 
     readonly horizontal: PlotSection
 
-    private readonly data: PlotData
+    readonly units: Units
 
-    private readonly units: Units
+    private readonly data: PlotData
 
     private readonly seriesGroups: PlotSeriesGroups
 
@@ -106,6 +106,10 @@ export default class PlotLayout {
 
     capToYMax(y: number) {
         return this.yMax == undefined ? y : Math.min(y, this.yMax)
+    }
+
+    isAboveYMax(y: number) {
+        return this.yMax != undefined && y > this.yMax
     }
 
     private get isMixed() {

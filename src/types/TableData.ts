@@ -47,9 +47,21 @@ export function sortTableValues(
 
     const sign = direction == SortDirection.Ascending ? 1 : -1
 
-    const compare = column == undefined
-                    ? (a: TableValue, b: TableValue) => a.name.localeCompare(b.name, undefined, { numeric: true })
-                    : (a: TableValue, b: TableValue) => (a.values.get(column) ?? 0) - (b.values.get(column) ?? 0)
+    const compareNames = (a: TableValue, b: TableValue) => {
+        return sign * a.name.localeCompare(b.name, undefined, { numeric: true })
+    }
+
+    const compareCells = (key: string) => (a: TableValue, b: TableValue) => {
+        const first = a.values.get(key)
+        const second = b.values.get(key)
+
+        if (first == undefined || second == undefined)
+            return Number(first == undefined) - Number(second == undefined)
+
+        return sign * (first - second)
+    }
+
+    const compare = column == undefined ? compareNames : compareCells(column)
 
     const childrenByParent = new Map<TableValue | undefined, TableValue[]>()
     const path: TableValue[] = []
@@ -71,7 +83,7 @@ export function sortTableValues(
     const sorted: TableValue[] = []
 
     const appendChildren = (parent: TableValue | undefined) => {
-        for (const child of (childrenByParent.get(parent) ?? []).sort((a, b) => sign * compare(a, b))) {
+        for (const child of (childrenByParent.get(parent) ?? []).sort(compare)) {
             sorted.push(child)
             appendChildren(child)
         }
@@ -135,7 +147,7 @@ export function withShares(table: TableData, column: string): TableData {
 
 export function toTabSeparatedText(table: TableData): string {
     const clean = (value: string) => value.replace(/[\t\r\n]+/g, ' ')
-    const getCells = (row: TableValue) => table.headers.map(header => `${ row.values.get(header.value) ?? 0 }`)
+    const getCells = (row: TableValue) => table.headers.map(header => `${ row.values.get(header.value) ?? '' }`)
 
     const lines = [
         ['', ...table.headers.map(header => clean(header.display))],

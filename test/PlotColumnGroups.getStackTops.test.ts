@@ -2,7 +2,7 @@ import { getStackTops } from '@/render/plot/PlotColumnGroups'
 import PlotSeries from '@/types/PlotSeries'
 import { PlotType } from '@/static/Enums'
 
-const series = (type: PlotType, ...ys: number[]) => {
+const series = (type: PlotType, ...ys: (number | null)[]) => {
     return { type, values: ys.map((y, i) => ({ x: i, y })) } as PlotSeries
 }
 
@@ -43,5 +43,13 @@ describe('Getting plot stack tops', () => {
     it('Should ignore other series types', () => {
         expect(getStackTops([series(PlotType.Column, 1)]).size)
             .toBe(0)
+    })
+
+    it('Should skip missing values', () => {
+        const bottom = series(PlotType.StackingColumn, 1)
+        const top = series(PlotType.StackingColumn, null)
+
+        expect(getStackTops([bottom, top]).get('0+'))
+            .toBe(bottom)
     })
 })

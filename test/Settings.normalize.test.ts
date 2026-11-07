@@ -59,20 +59,51 @@ describe('Normalizing settings', () => {
             .toEqual([3])
     })
 
-    it('Should parse numbers and replace invalid with 0', () => {
+    it('Should parse numbers and replace invalid with null', () => {
         const settings = normalize({
             charts: [
-                { type: ChartType.Pie, data: { values: [{ label: 'A', value: '12' }, { label: 'B', value: 'abc' }] } },
-                { type: ChartType.Plot, data: { values: [{ label: 'C', values: [{ x: 1, y: '3.5' }] }] } }
+                {
+                    type: ChartType.Pie,
+                    data: {
+                        values: [
+                            { label: 'A', value: '12' },
+                            { label: 'B', value: 'abc' },
+                            { label: 'C', value: '' },
+                            { label: 'D', value: NaN }
+                        ]
+                    }
+                },
+                { type: ChartType.Plot, data: { values: [{ label: 'E', values: [{ x: 1, y: '3.5' }] }] } }
             ]
         } as unknown as ChartSettings, FALLBACK)
 
         const [pie, plot] = settings.charts.map(chart => chart.data.values)
 
         expect(pie.map(value => value.value))
-            .toEqual([12, 0])
+            .toEqual([12, null, null, null])
         expect((plot[0] as PlotSeries).values[0].y)
             .toBe(3.5)
+    })
+
+    it('Should replace missing and invalid y with null', () => {
+        const ys = [undefined, null, '', 'N/A', NaN, Infinity, -Infinity, '1 000', 0]
+        const settings = normalize({
+            type: ChartType.Plot,
+            data: { values: [{ label: 'A', values: ys.map((y, x) => ({ x, y })) }] }
+        } as unknown as ChartSettings, FALLBACK)
+
+        expect((settings.charts[0].data.values[0] as PlotSeries).values.map(point => point.y))
+            .toEqual([null, null, null, null, null, null, null, 1000, 0])
+    })
+
+    it('Should replace a point without y with null', () => {
+        const settings = normalize({
+            type: ChartType.Plot,
+            data: { values: [{ label: 'A', values: [{ x: 1 }] }] }
+        } as unknown as ChartSettings, FALLBACK)
+
+        expect((settings.charts[0].data.values[0] as PlotSeries).values[0].y)
+            .toBeNull()
     })
 
     it('Should disable tooltip and legend when not applicable', () => {

@@ -30,13 +30,20 @@ describe('Getting plot attention line items', () => {
             .toBe('1-attention')
     })
 
-    it('Should cap line by y max', () => {
+    it('Should not cap line by y max', () => {
         const attention = createSeries(PlotType.AttentionLine, [300])
         const { layout, items } = getAttention([createSeries(PlotType.Line, [10, 50]), attention], attention, { yMax: 100 })
-        const { baseline, valueScale } = layout.vertical
+        const { valueScale } = layout.vertical
 
         expect((items[0].shape as RenderItemLine).absolute[0].y)
-            .toBe(valueScale.getCoordinate(100))
+            .toBe(valueScale.getCoordinate(300))
+    })
+
+    it('Should draw nothing when first value is missing', () => {
+        const attention = createSeries(PlotType.AttentionLine, [null])
+
+        expect(getAttention([createSeries(PlotType.Line, [10, 50]), attention], attention).items)
+            .toEqual([])
     })
 
     it('Should draw nothing without values', () => {

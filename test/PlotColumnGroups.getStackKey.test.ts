@@ -12,4 +12,9 @@ describe('Getting plot stack key', () => {
         expect(getStackKey({ x: 3, y: '0' }))
             .toBe('3+')
     })
+
+    it('Should treat missing value as positive', () => {
+        expect(getStackKey({ x: 'a', y: null }))
+            .toBe('a+')
+    })
 })

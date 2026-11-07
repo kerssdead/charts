@@ -1,4 +1,5 @@
 import PlotSeries from '@/types/PlotSeries'
+import { getY } from '@/types/PlotPoint'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 import PlotLayout from '@/render/plot/PlotLayout'
@@ -6,6 +7,7 @@ import PlotItemStyle from '@/render/plot/PlotItemStyle'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { ColumnGroup, getColumnGroup } from '@/render/plot/PlotColumnGroups'
 import { CORNER_RADIUS } from '@/render/plot/PlotConstants'
+import { addColumnBreakMark } from '@/render/plot/PlotBreakMarks'
 
 export default class PlotColumnItems {
     private readonly layout: PlotLayout
@@ -36,7 +38,9 @@ export default class PlotColumnItems {
 
         return (items: QueueItemsBuilder) => {
             series.values.forEach((value, valueIndex) => {
-                if (!valueScale.canShow(Number(value.y)))
+                const y = getY(value)
+
+                if (!valueScale.canShow(y))
                     return
 
                 const slot = categoryScale.getSlot(value)
@@ -47,17 +51,23 @@ export default class PlotColumnItems {
                 const width = series.disabled ? 0 : widthInStep
                 const offset = visibleBefore * widthInStep
 
+                const left = categoryScale.getSlotStart(slot) + offset
+                const top = valueScale.getCoordinate(layout.capToYMax(y))
+
                 const column = items.rect()
-                     .position(categoryScale.getSlotStart(slot) + offset + width / 2, baseline)
-                     .size(
-                         width,
-                         series.disabled ? 0 : baseline - valueScale.getCoordinate(layout.capToYMax(Number(value.y)))
-                     )
+                     .position(left + width / 2, baseline)
+                     .size(width, series.disabled ? 0 : baseline - top)
                      .round([CORNER_RADIUS, CORNER_RADIUS, 0, 0])
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                      .grow('y', baseline)
 
                 this.style.styleRect(column, series, value, slot, valueIndex)
+
+                if (!series.disabled && layout.isAboveYMax(y)) {
+                    const mark = addColumnBreakMark(items, layout.units, left, left + width, top)
+
+                    this.style.styleBreakMark(mark, series, slot, valueIndex)
+                }
             })
         }
     }

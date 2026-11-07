@@ -2,6 +2,7 @@ import { buildItems, createPlot, createSeries } from './PlotTestData'
 import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
+import RenderItemLine from '@/types/RenderItemLine'
 import PlotStackedColumnItems from '@/render/plot/PlotStackedColumnItems'
 import { getColumnGroups } from '@/render/plot/PlotColumnGroups'
 import { PlotScaleType, PlotType } from '@/static/Enums'
@@ -20,10 +21,15 @@ const getStacks = (all: PlotSeries[], data: Partial<PlotData> = {}) => {
         getColumnGroups(plot.seriesGroups.enabledSeries)
     )
     const stacks = new Map<string, number>()
-    const rects = all.filter(series => series.type == PlotType.StackingColumn)
-                     .map(series => buildItems(stackedColumns.getItems(series, stacks)).map(item => item.shape as RenderItemRectangle))
+    const items = all.filter(series => series.type == PlotType.StackingColumn)
+                     .map(series => buildItems(stackedColumns.getItems(series, stacks)))
+    const rects = items.map(seriesItems => {
+        return seriesItems.filter(item => item.shape instanceof RenderItemRectangle)
+                          .map(item => item.shape as RenderItemRectangle)
+    })
+    const marks = items.map(seriesItems => seriesItems.filter(item => item.shape instanceof RenderItemLine))
 
-    return { ...plot, rects }
+    return { ...plot, rects, marks }
 }
 
 describe('Getting plot stacked column items', () => {
@@ -88,6 +94,47 @@ describe('Getting plot stacked column items', () => {
             .toEqual([80, 80, 0, 0])
         expect(rects[1][0].absolute.height)
             .toBe(0)
+    })
+
+    it('Should skip stack parts with missing values', () => {
+        const { layout, rects } = getStacks([
+            createSeries(PlotType.StackingColumn, [10, null]),
+            createSeries(PlotType.StackingColumn, [20, 30])
+        ])
+        const { baseline, valueScale } = layout.vertical
+
+        expect(rects[0].length)
+            .toBe(1)
+        expect(rects[1][1].absolute)
+            .toMatchObject({ y: baseline, height: baseline - valueScale.getCoordinate(30) })
+    })
+
+    it('Should mark only stack part cut by y max', () => {
+        const { layout, rects, marks } = getStacks(
+            [
+                createSeries(PlotType.StackingColumn, [60]),
+                createSeries(PlotType.StackingColumn, [60]),
+                createSeries(PlotType.StackingColumn, [60])
+            ],
+            { yMax: 100 }
+        )
+        const top = layout.vertical.valueScale.getCoordinate(100)
+        const { x, width } = rects[1][0].absolute
+
+        expect(marks.map(seriesMarks => seriesMarks.map(mark => mark.key)))
+            .toEqual([[], ['1-break-0'], []])
+        expect((marks[1][0].shape as RenderItemLine).absolute)
+            .toEqual([{ x, y: top + 11 }, { x: x + width, y: top + 5 }])
+    })
+
+    it('Should not mark stack that fits y max', () => {
+        const { marks } = getStacks(
+            [createSeries(PlotType.StackingColumn, [40]), createSeries(PlotType.StackingColumn, [60])],
+            { yMax: 100 }
+        )
+
+        expect(marks.flat())
+            .toEqual([])
     })
 
     it('Should place stack after regular columns in slot', () => {

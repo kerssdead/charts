@@ -6,8 +6,11 @@ import QueueLineItemBuilder from '@/builders/QueueLineItemBuilder'
 import { AnimationTiming, Layer } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
-import { AREA_LAYER, LINE_LAYER } from '@/render/plot/PlotConstants'
+import { AREA_LAYER, BREAK_MARK_LAYER, LINE_LAYER } from '@/render/plot/PlotConstants'
+import Theme from '@/Theme'
 import { PlotType } from '@/static/Enums'
+
+const BREAK_MARK_WIDTH = 3
 
 export type ValueTooltip = (series: PlotSeries, value: PlotPoint) => string
 
@@ -59,6 +62,14 @@ export default class PlotItemStyle {
             .init(AnimationTiming.plotLineInit)
 
         this.groupHover(line, series)
+    }
+
+    styleBreakMark(line: QueueLineItemBuilder, series: PlotSeries, slot: number, valueIndex: number) {
+        line.width(BREAK_MARK_WIDTH)
+            .stroke(Theme.canvasBackground)
+            .layer(BREAK_MARK_LAYER)
+            .key(this.getKey(series, 'break', valueIndex))
+            .init(AnimationTiming.plotBreakInit, AnimationTiming.plotInit + slot * this.initStagger, true)
     }
 
     private get initStagger() {

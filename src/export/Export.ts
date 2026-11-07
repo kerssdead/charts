@@ -94,7 +94,7 @@ export default class Export {
             const table = Decomposition.getRows(chart)
             const { headers, values } = table
 
-            const rows = values.map(row => [row.name, ...headers.map(header => Number(row.values.get(header.value) ?? 0))])
+            const rows = values.map(row => [row.name, ...headers.map(header => row.values.get(header.value))])
 
             return [['', ...headers.map(header => header.display)], ...rows, ['', ...getTotals(table)]]
                 .map(row => row.map(escape).join(','))

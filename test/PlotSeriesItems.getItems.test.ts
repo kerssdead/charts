@@ -37,7 +37,7 @@ describe('Getting plot series items', () => {
             createSeries(PlotType.Bar, [1]),
             createSeries(PlotType.AttentionLine, [1])
         ]))
-            .toEqual(['0-line', '1-rect-0', '2-rect-0', '3-rect-0', '4-attention'])
+            .toEqual(['0-line-0', '1-rect-0', '2-rect-0', '3-rect-0', '4-attention'])
     })
 
     it('Should skip disabled lines and attention lines', () => {
@@ -73,7 +73,7 @@ describe('Getting plot series items', () => {
         const items = buildItems(create([createSeries(PlotType.Area, [1])]).getItems())
 
         expect([items.map(item => item.key), (items[0].shape as RenderItemLine).areaBaseline])
-            .toEqual([['0-line'], expect.any(Number)])
+            .toEqual([['0-line-0'], expect.any(Number)])
     })
 
     it('Should skip disabled areas', () => {

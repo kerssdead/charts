@@ -4,6 +4,7 @@ import ChartItem from '@/types/ChartItem'
 import Value from '@/types/base/Value'
 import Sector from '@/types/Sector'
 import PlotSeries from '@/types/PlotSeries'
+import PlotPoint, { getY } from '@/types/PlotPoint'
 import PieData from '@/types/data/PieData'
 import GaugeData from '@/types/data/GaugeData'
 import PlotData from '@/types/data/PlotData'
@@ -90,10 +91,20 @@ function addPoints(target: PlotSeries, source: PlotSeries) {
         const pointAtSameX = pointsByX.get(x)
 
         if (pointAtSameX) {
-            pointAtSameX.y = Number(pointAtSameX.y) + Number(point.y)
+            pointAtSameX.y = addY(pointAtSameX, point)
         } else {
             target.values.push(point)
             pointsByX.set(x, point)
         }
     }
+}
+
+function addY(first: PlotPoint, second: PlotPoint) {
+    const firstY = getY(first)
+    const secondY = getY(second)
+
+    if (firstY == null || secondY == null)
+        return firstY ?? secondY
+
+    return firstY + secondY
 }

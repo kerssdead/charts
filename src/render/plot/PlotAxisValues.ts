@@ -1,4 +1,5 @@
 import PlotSeries from '@/types/PlotSeries'
+import { getY } from '@/types/PlotPoint'
 import { PlotScaleType, PlotType } from '@/static/Enums'
 import { getRoundedValues } from '@/helpers/Numbers'
 import { getLogAxisValues } from '@/helpers/AxisTicks'
@@ -17,7 +18,10 @@ export function getAxisValues(
 
     for (const item of series) {
         for (const value of item.values) {
-            const y = Number(value.y)
+            const y = getY(value)
+
+            if (y == null)
+                continue
 
             if (item.type == PlotType.Bar) {
                 xValues.push(y)

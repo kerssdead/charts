@@ -179,4 +179,15 @@ describe('Getting plot rows for decomposition', () => {
         expect([row.color, row.disabled])
             .toEqual(['#00ff00', true])
     })
+
+    it('Should leave cell empty for missing y', () => {
+        const data = {
+            values: [{ label: 'Series 1', values: [{ x: 1, y: 1 }, { x: 2, y: null }] }]
+        } as PlotData
+
+        const row = getPlotRows(data).values[0]
+
+        expect([...row.values])
+            .toEqual([['1', 1]])
+    })
 })

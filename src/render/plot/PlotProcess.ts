@@ -61,6 +61,6 @@ export default class PlotProcess extends ChartProcess<PlotData> {
     }
 
     private getValueTooltip(series: PlotSeries, value: PlotPoint) {
-        return this.tooltip(series.label, value.label ?? this.layout.formatX(value.x), this.formatValue(value.y))
+        return this.tooltip(series.label, value.label ?? this.layout.formatX(value.x), this.formatValue(value.y ?? ''))
     }
 }

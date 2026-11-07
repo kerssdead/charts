@@ -1,5 +1,5 @@
 import PlotSeries from '@/types/PlotSeries'
-import PlotPoint from '@/types/PlotPoint'
+import PlotPoint, { getY } from '@/types/PlotPoint'
 import { PlotType } from '@/static/Enums'
 
 export type ColumnGroup = {
@@ -8,7 +8,7 @@ export type ColumnGroup = {
 }
 
 export function getStackKey(value: PlotPoint) {
-    return `${ value.x.toString() }${ Number(value.y) < 0 ? '-' : '+' }`
+    return `${ value.x.toString() }${ (getY(value) ?? 0) < 0 ? '-' : '+' }`
 }
 
 export function getStackTops(series: PlotSeries[], yMax: number = Infinity) {
@@ -18,8 +18,11 @@ export function getStackTops(series: PlotSeries[], yMax: number = Infinity) {
     for (const stackedSeries of series.filter(item => item.type == PlotType.StackingColumn)) {
         for (const value of stackedSeries.values) {
             const key = getStackKey(value)
-            const y = Number(value.y)
+            const y = getY(value)
             const total = totals.get(key) ?? 0
+
+            if (y == null)
+                continue
 
             if (y != 0 && total < yMax)
                 stackTops.set(key, stackedSeries)
