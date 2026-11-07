@@ -34,4 +34,11 @@ describe('Getting log axis values', () => {
         expect(getLogAxisValues([1e-3, 1e12]))
             .toEqual([1e-3, 1e-1, 1e1, 1e3, 1e5, 1e7, 1e9, 1e11, 1e12])
     })
+
+    it('Should handle a million values', () => {
+        const values = Array.from({ length: 1_000_000 }, (_, i) => i + 1)
+
+        expect(getLogAxisValues(values))
+            .toEqual([1, 10, 100, 1e3, 1e4, 1e5, 1e6])
+    })
 })

@@ -25,12 +25,15 @@ export function getLogAxisValues(all: number[], max?: number) {
     if (positive.length == 0)
         return []
 
+    const largest = positive.reduce((acc, value) => Math.max(acc, value))
+    const smallest = positive.reduce((acc, value) => Math.min(acc, value))
+
     const top = max != undefined && max > 0
                 ? max
-                : powerOfTen(Math.ceil(Math.log10(Math.max(...positive))))
+                : powerOfTen(Math.ceil(Math.log10(largest)))
 
     const topExponent = Math.log10(top)
-    const lowExponent = Math.min(Math.floor(Math.log10(Math.min(...positive))), Math.ceil(topExponent) - 1)
+    const lowExponent = Math.min(Math.floor(Math.log10(smallest)), Math.ceil(topExponent) - 1)
     const every = Math.ceil((Math.ceil(topExponent) - lowExponent) / (MAX_LOG_TICKS - 1))
 
     const ticks: number[] = []
