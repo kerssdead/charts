@@ -11,12 +11,16 @@ import { clamp, lerp } from '@/helpers/Geometry'
 
 const ALPHA_DELTA = 0.5
 
-const horizontalFactor = (x: HorizontalAlignment) => {
-    return x == HorizontalAlignment.Left ? 0 : x == HorizontalAlignment.Center ? .5 : 1
+const HORIZONTAL_FACTOR = {
+    [HorizontalAlignment.Left]: 0,
+    [HorizontalAlignment.Center]: .5,
+    [HorizontalAlignment.Right]: 1,
 }
 
-const verticalFactor = (y: VerticalAlignment) => {
-    return y == VerticalAlignment.Top ? 0 : y == VerticalAlignment.Center ? .5 : 1
+const VERTICAL_FACTOR = {
+    [VerticalAlignment.Top]: 0,
+    [VerticalAlignment.Center]: .5,
+    [VerticalAlignment.Bottom]: 1
 }
 
 type RectangleCanvas = RectangleDimensions & {
@@ -294,8 +298,8 @@ export default class RenderItemRectangle
         const width = this.canvas.width * scale
         const height = this.canvas.height * scale
 
-        result.left = this.canvas.x - width * horizontalFactor(this.align.x)
-        result.top = this.canvas.y - height * verticalFactor(this.align.y)
+        result.left = this.canvas.x - width * HORIZONTAL_FACTOR[this.align.x]
+        result.top = this.canvas.y - height * VERTICAL_FACTOR[this.align.y]
         result.width = width
         result.height = height
 

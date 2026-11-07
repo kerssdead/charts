@@ -140,6 +140,13 @@ function normalizeByLocale(text: string, locale: string) {
     return text.split(group).join('').replace(decimal, '.')
 }
 
+const REPLACE_PATTERNS: Record<string, RegExp> = {
+    '.': /,/g,
+    ',': /\./g
+}
+
+const DEFAULT_PATTERN = /[.,]/g
+
 function normalizeByDetection(text: string) {
     const lastDot = text.lastIndexOf('.')
     const lastComma = text.lastIndexOf(',')
@@ -157,7 +164,8 @@ function normalizeByDetection(text: string) {
         decimal = isSingle && !isGrouping ? separator : null
     }
 
-    const normalized = text.replace(decimal == '.' ? /,/g : decimal == ',' ? /\./g : /[.,]/g, '')
+    const pattern = REPLACE_PATTERNS[decimal ?? ''] || DEFAULT_PATTERN
+    const normalized = text.replace(pattern, '')
 
     return decimal == ',' ? normalized.replace(',', '.') : normalized
 }
