@@ -2,13 +2,11 @@ import { keepDisabled, normalize } from '@/helpers/Settings'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 
-const FALLBACK = '#808080'
-
 describe('Keeping disabled values', () => {
     const create = (disabled?: boolean) => normalize({
         type: ChartType.Pie,
         data: { values: [{ label: 'A', value: 1, disabled }, { label: 'B', value: 1 }] }
-    } as unknown as ChartSettings, FALLBACK)
+    } as unknown as ChartSettings)
 
     it('Should keep value disabled between settings', () => {
         const next = create()

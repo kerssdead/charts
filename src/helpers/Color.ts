@@ -1,6 +1,7 @@
 import Color from '@/types/Color'
 import { clamp, lerp } from '@/helpers/Geometry'
 import { scratchContext } from '@/helpers/Text'
+import Palette from '@/static/constants/Palette'
 
 const RESET_COLOR = '#000000'
 
@@ -13,6 +14,8 @@ const BLACK_LUMINANCE = 0
 const WHITE_LUMINANCE = 1
 
 const CONTRAST_FLARE = .05
+
+const PALETTE_ROUND_SHIFT = 40
 
 const CSS_VARIABLE = /^(?:var\(\s*)?(--[\w-]+)\s*(?:,\s*([^)]+))?\)?$/
 
@@ -101,8 +104,11 @@ export function grayScale(color: string, amount: number = 1) {
     return '#' + [rgb.r, rgb.g, rgb.b].map(channel => toHex(lerp(channel, gray, amount))).join('') + expandHex(color).slice(7)
 }
 
-export function randomColor() {
-    return '#' + Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, '0')
+export function paletteColor(index: number) {
+    const round = Math.floor(index / Palette.length)
+    const shift = Math.ceil(round / 2) * PALETTE_ROUND_SHIFT * (round % 2 ? -1 : 1)
+
+    return adjustColor(Palette[index % Palette.length], shift)
 }
 
 export function contrastTextColor(background: string) {

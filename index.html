@@ -157,9 +157,21 @@
                 </label>
 
                 <label>
-                    <input type="checkbox" id="use-base-color" onchange="refresh()"/>
+                    Colors
 
-                    Use base color
+                    <select id="color-mode" onchange="refresh()">
+                        <option value="0">
+                            Random
+                        </option>
+
+                        <option value="1">
+                            Palette
+                        </option>
+
+                        <option value="2">
+                            Base color
+                        </option>
+                    </select>
                 </label>
 
                 <label>
@@ -578,8 +590,8 @@
     function getColor() {
         const color = `#${Math.floor(rng.nextFloat() * 16777215).toString(16).padStart(6, '0')}`
 
-        // random value is taken anyway, so other generated values don't change when base color is toggled
-        return document.getElementById('use-base-color').checked ? undefined : color
+        // random value is taken anyway, so other generated values don't change when color mode is switched
+        return +document.getElementById('color-mode').value === 0 ? color : undefined
     }
 
     function getValues(type, count, valuesType, pointsCount, plotType) {
@@ -926,7 +938,7 @@
             valuesType = +document.getElementById('values-type').value,
             pointsCount = +document.getElementById('points-count').value,
             plotType = +document.getElementById('plot-type').value,
-            baseColor = document.getElementById('use-base-color').checked
+            baseColor = +document.getElementById('color-mode').value === 2
                         ? document.getElementById('base-color').value
                         : null,
             gaugeMin = +document.getElementById('gauge-min').value,

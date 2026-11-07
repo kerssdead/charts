@@ -1,6 +1,6 @@
 import ChartSettings from '@/types/ChartSettings'
 import { ChartType, PlotType } from '@/static/Enums'
-import { normalizeColor, spreadColor } from '@/helpers/Color'
+import { normalizeColor, paletteColor, spreadColor } from '@/helpers/Color'
 import { deepClone, groupBy } from '@/helpers/Collections'
 import { parseNumber } from '@/helpers/Numbers'
 import Legend from '@/Legend'
@@ -18,7 +18,7 @@ import TreeBarData, { colorTreeBarRows, keepTreeBarState } from '@/types/data/Tr
 
 const BASE_COLOR_RANGE = 67
 
-export function normalize(source: ChartSettings, fallbackColor: string, scope?: Element): ChartSettings {
+export function normalize(source: ChartSettings, scope?: Element): ChartSettings {
     const clone = deepClone(source)
 
     const charts = clone.charts?.length
@@ -34,7 +34,7 @@ export function normalize(source: ChartSettings, fallbackColor: string, scope?: 
         mergeSameLabelValues(chart)
     }
 
-    applyBaseColor(settings, fallbackColor, scope)
+    applyDefaultColors(settings, scope)
 
     return {
         ...settings,
@@ -165,13 +165,13 @@ function normalizeValues(values: Value[] | undefined, numberLocale: string | und
     }
 }
 
-export function applyBaseColor(settings: ChartSettings, fallbackColor: string, scope?: Element) {
+export function applyDefaultColors(settings: ChartSettings, scope?: Element) {
     const isShared = settings.charts.length > 1
     const isTreeBar = (chart: ChartItem) => chart.type == ChartType.TreeBar
-    const base = settings.baseColor ? normalizeColor(settings.baseColor, scope) : fallbackColor
+    const base = settings.baseColor ? normalizeColor(settings.baseColor, scope) : undefined
 
     for (const chart of settings.charts.filter(isTreeBar))
-        colorTreeBarRows((chart.data as TreeBarData | undefined)?.values, base)
+        colorTreeBarRows((chart.data as TreeBarData | undefined)?.values, base ?? paletteColor(0))
 
     const groups = groupBy(settings.charts.filter(chart => !isTreeBar(chart)).flatMap(chart => chart.data?.values ?? []),
         (value): string | Value => isShared ? Legend.getGroupKey(value, true) : value)
@@ -192,7 +192,7 @@ export function applyBaseColor(settings: ChartSettings, fallbackColor: string, s
         return
 
     uncolored.forEach((values, index) => {
-        const color = spreadColor(base, index, uncolored.length, BASE_COLOR_RANGE)
+        const color = base ? spreadColor(base, index, uncolored.length, BASE_COLOR_RANGE) : paletteColor(index)
 
         for (const value of values)
             value.color = color

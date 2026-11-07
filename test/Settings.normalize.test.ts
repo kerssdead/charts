@@ -6,18 +6,16 @@ import Sector from '@/types/Sector'
 import TextResources from '@/static/TextResources'
 import SegmentedBarData from '@/types/data/SegmentedBarData'
 
-const FALLBACK = '#808080'
-
 describe('Normalizing settings', () => {
     it('Should convert legacy type and data to charts', () => {
-        const settings = normalize({ type: ChartType.Pie, data: { values: [] } } as unknown as ChartSettings, FALLBACK)
+        const settings = normalize({ type: ChartType.Pie, data: { values: [] } } as unknown as ChartSettings)
 
         expect(settings.charts.map(chart => chart.type))
             .toEqual([ChartType.Pie])
     })
 
     it('Should default chart type to plot', () => {
-        const settings = normalize({ charts: [{ data: { values: [] } }] } as unknown as ChartSettings, FALLBACK)
+        const settings = normalize({ charts: [{ data: { values: [] } }] } as unknown as ChartSettings)
 
         expect(settings.charts[0].type)
             .toBe(ChartType.Plot)
@@ -26,7 +24,7 @@ describe('Normalizing settings', () => {
     it('Should not mutate source', () => {
         const source = { type: ChartType.Pie, data: { values: [{ value: '5' }] } } as unknown as ChartSettings
 
-        normalize(source, FALLBACK)
+        normalize(source)
 
         expect(source.data.values[0].value)
             .toBe('5')
@@ -38,7 +36,7 @@ describe('Normalizing settings', () => {
                 { type: ChartType.Pie, data: { values: [{ value: 1 }, { value: 2 }], enableMerging: false } },
                 { type: ChartType.Plot, data: { values: [{ values: [] }] } }
             ]
-        } as unknown as ChartSettings, FALLBACK)
+        } as unknown as ChartSettings)
 
         const [pie, plot] = settings.charts.map(chart => chart.data.values)
 
@@ -54,7 +52,7 @@ describe('Normalizing settings', () => {
         const settings = normalize({
             type: ChartType.Pie,
             data: { values: [{ label: 'A', value: '1' }, { label: 'A', value: '2' }] }
-        } as unknown as ChartSettings, FALLBACK)
+        } as unknown as ChartSettings)
 
         expect(settings.charts[0].data.values.map(value => value.value))
             .toEqual([3])
@@ -76,7 +74,7 @@ describe('Normalizing settings', () => {
                 },
                 { type: ChartType.Plot, data: { values: [{ label: 'E', values: [{ x: 1, y: '3.5' }] }] } }
             ]
-        } as unknown as ChartSettings, FALLBACK)
+        } as unknown as ChartSettings)
 
         const [pie, plot] = settings.charts.map(chart => chart.data.values)
 
@@ -94,7 +92,7 @@ describe('Normalizing settings', () => {
                 { type: ChartType.Plot, data: { values: [{ label: 'B', values: [{ x: 1, y: '2.000' }] }] } },
                 { type: ChartType.SegmentedBar, data: { values: [{ value: 1 }], stops: [{ value: '12,5%' }] } }
             ]
-        } as unknown as ChartSettings, FALLBACK)
+        } as unknown as ChartSettings)
 
         const [pie, plot, segmentedBar] = settings.charts.map(chart => chart.data)
 
@@ -111,7 +109,7 @@ describe('Normalizing settings', () => {
         const settings = normalize({
             type: ChartType.Plot,
             data: { values: [{ label: 'A', values: ys.map((y, x) => ({ x, y })) }] }
-        } as unknown as ChartSettings, FALLBACK)
+        } as unknown as ChartSettings)
 
         expect((settings.charts[0].data.values[0] as PlotSeries).values.map(point => point.y))
             .toEqual([null, null, null, null, null, null, null, 1000, 0])
@@ -121,7 +119,7 @@ describe('Normalizing settings', () => {
         const settings = normalize({
             type: ChartType.Plot,
             data: { values: [{ label: 'A', values: [{ x: 1 }] }] }
-        } as unknown as ChartSettings, FALLBACK)
+        } as unknown as ChartSettings)
 
         expect((settings.charts[0].data.values[0] as PlotSeries).values[0].y)
             .toBeNull()
@@ -134,7 +132,7 @@ describe('Normalizing settings', () => {
             enableTooltip: true,
             enableLegend: true,
             disableInteractions: true
-        } as unknown as ChartSettings, FALLBACK)
+        } as unknown as ChartSettings)
 
         expect([settings.enableTooltip, settings.enableLegend])
             .toEqual([false, false])

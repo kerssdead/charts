@@ -5,10 +5,8 @@ import TreeBarData from '@/types/data/TreeBarData'
 import TreeBarRow from '@/types/TreeBarRow'
 import Sector from '@/types/Sector'
 
-const FALLBACK = '#808080'
-
 const settings = (data: object, baseColor?: string, numberLocale?: string) => {
-    return normalize({ type: ChartType.TreeBar, data, baseColor, numberLocale } as unknown as ChartSettings, FALLBACK)
+    return normalize({ type: ChartType.TreeBar, data, baseColor, numberLocale } as unknown as ChartSettings)
 }
 
 const rows = (result: ChartSettings) => (result.charts[0].data as TreeBarData).values
