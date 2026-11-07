@@ -9,7 +9,6 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import { unitVerticalGradient } from '@/helpers/Canvas'
 import { clamp, lerp } from '@/helpers/Geometry'
 
-const SCALE_DELTA = 0.01
 const ALPHA_DELTA = 0.5
 
 const horizontalFactor = (x: HorizontalAlignment) => x == HorizontalAlignment.Left ? 0 : x == HorizontalAlignment.Center ? .5 : 1
@@ -259,7 +258,6 @@ export default class RenderItemRectangle
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp) {
         const k = item.hoverFactor(isBackward, now, AnimationTiming.hover)
 
-        item.animation.scale = 1 - SCALE_DELTA * k
         item.animation.alpha = 1 - ALPHA_DELTA * k
     }
 

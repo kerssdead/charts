@@ -1,8 +1,6 @@
 export default class AnimationData {
     alpha: number = 1
 
-    scale: number = 1
-
     mono: number = 0
 
     init: number = 1
