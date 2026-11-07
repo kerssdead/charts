@@ -53,7 +53,9 @@ export function getColumns(
     return [...columns].reverse().map(column => {
         const width = Math.min(Math.max(
             stringWidth(column.title + SORT_ASCENDING, HEADER_FONT_SIZE),
-            maxOf(entries, ({ node }) => stringWidth(TreeBarRowText.formatCell(node.cells?.[column.key]), CELL_FONT_SIZE))
+            maxOf(entries, ({ node }) => {
+                return stringWidth(TreeBarRowText.formatCell(node.cells?.[column.key]), CELL_FONT_SIZE)
+            })
         ), chartWidth * COLUMN_MAX_SHARE)
 
         const result = { ...column, left: right - width, right, width }
@@ -64,7 +66,12 @@ export function getColumns(
     }).reverse()
 }
 
-export function getBarArea(nameWidth: number, columns: Column[], contentRight: number, barLabelWidth: number): BarArea {
+export function getBarArea(
+    nameWidth: number,
+    columns: Column[],
+    contentRight: number,
+    barLabelWidth: number
+): BarArea {
     const x = PADDING + nameWidth + GAP
     const end = columns.length > 0 ? columns[0].left - GAP : contentRight
 

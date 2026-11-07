@@ -66,7 +66,9 @@ export function normalizeColor(color: string, scope?: Element) {
     if (!rgba)
         return style.startsWith('#') ? style : readPixel(ctx)
 
-    return '#' + toHex(+rgba[1]) + toHex(+rgba[2]) + toHex(+rgba[3]) + (rgba[4] == undefined ? '' : toHex(+rgba[4] * 255))
+    const alpha = rgba[4] == undefined ? '' : toHex(+rgba[4] * 255)
+
+    return '#' + toHex(+rgba[1]) + toHex(+rgba[2]) + toHex(+rgba[3]) + alpha
 }
 
 function resolveVariable(color: string, scope?: Element) {
@@ -101,7 +103,9 @@ export function grayScale(color: string, amount: number = 1) {
 
     const gray = .3 * rgb.r + .59 * rgb.g + .11 * rgb.b
 
-    return '#' + [rgb.r, rgb.g, rgb.b].map(channel => toHex(lerp(channel, gray, amount))).join('') + expandHex(color).slice(7)
+    const channels = [rgb.r, rgb.g, rgb.b].map(channel => toHex(lerp(channel, gray, amount))).join('')
+
+    return '#' + channels + expandHex(color).slice(7)
 }
 
 export function paletteColor(index: number) {

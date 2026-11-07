@@ -72,7 +72,8 @@ export default class PlotValueScale {
         if (!range || this.length == 0)
             return 0
 
-        const units = range.min + this.direction * (coordinate - this.start) / this.length * (range.max - range.min)
+        const ratio = this.direction * (coordinate - this.start) / this.length
+        const units = range.min + ratio * (range.max - range.min)
 
         return fromScaleUnits(units, this.isLog)
     }

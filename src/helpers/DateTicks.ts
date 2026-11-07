@@ -92,7 +92,11 @@ function getFirstTick(min: number, step: TimeStep) {
             const monthStart = new Date(date.getFullYear(), date.getMonth(), 1)
             const offset = (step.size - monthStart.getMonth() % step.size) % step.size
 
-            return advanceIfBefore(min, new Date(monthStart.getFullYear(), monthStart.getMonth() + offset, 1), step)
+            return advanceIfBefore(
+                min,
+                new Date(monthStart.getFullYear(), monthStart.getMonth() + offset, 1),
+                step
+            )
         }
 
         case TimeUnit.Year: {

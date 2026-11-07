@@ -64,5 +64,7 @@ export function boxEdgeDistance(angle: number, halfWidth: number, halfHeight: nu
 
     const b = cos * halfWidth + sin * halfHeight
 
-    return b + Math.sqrt(Math.max(b * b - halfWidth * halfWidth - halfHeight * halfHeight + distance * distance, 0)) - distance
+    const discriminant = b * b - halfWidth * halfWidth - halfHeight * halfHeight + distance * distance
+
+    return b + Math.sqrt(Math.max(discriminant, 0)) - distance
 }

@@ -203,8 +203,12 @@ export default class RenderItemText
         } else if (this.clipWidth != null) {
             ctx.save()
 
-            ctx.rect(this.canvas.x - this.canvasClipWidth * CLIP_FACTOR[this.alignment], this.canvas.y - this.fontSize,
-                this.canvasClipWidth, this.fontSize * 2)
+            ctx.rect(
+                this.canvas.x - this.canvasClipWidth * CLIP_FACTOR[this.alignment],
+                this.canvas.y - this.fontSize,
+                this.canvasClipWidth,
+                this.fontSize * 2
+            )
             ctx.clip()
 
             ctx.fillText(this.value, this.canvas.x, this.canvas.y)

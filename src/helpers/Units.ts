@@ -17,7 +17,10 @@ export default class Units {
     }
 
     static fromWindow(window: CanvasWindow) {
-        return new Units({ x: COORDS_MAX_X / window.width, y: COORDS_MAX_Y / window.height }, { x: window.x, y: window.y })
+        return new Units(
+            { x: COORDS_MAX_X / window.width, y: COORDS_MAX_Y / window.height },
+            { x: window.x, y: window.y }
+        )
     }
 
     x(px: number) {

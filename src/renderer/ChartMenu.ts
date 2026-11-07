@@ -65,7 +65,14 @@ export default class ChartMenu {
             {
                 text: TextResources.exportPNG,
                 action: () => setTimeout(() => {
-                    Export.asPng(this.canvas, this.ratio, title, this.button?.bounds, this.settings.isDarkThemeFunction, this.drawClean)
+                    Export.asPng(
+                        this.canvas,
+                        this.ratio,
+                        title,
+                        this.button?.bounds,
+                        this.settings.isDarkThemeFunction,
+                        this.drawClean
+                    )
                 }, ContextMenu.fadeDuration)
             },
             {

@@ -15,7 +15,9 @@ export function getLabelSpace(units: Units, text: string | undefined) {
     if (!text)
         return 0
 
-    return Math.min(units.x(stringWidth(text, LABEL_FONT_SIZE)), COORDS_MAX_X * LABEL_MAX_SHARE) + units.x(LABEL_GAP)
+    const labelWidth = Math.min(units.x(stringWidth(text, LABEL_FONT_SIZE)), COORDS_MAX_X * LABEL_MAX_SHARE)
+
+    return labelWidth + units.x(LABEL_GAP)
 }
 
 export function getBarBox(

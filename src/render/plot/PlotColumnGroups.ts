@@ -37,7 +37,9 @@ export function getStackTops(series: PlotSeries[], yMax: number = Infinity) {
 export function getColumnGroups(series: PlotSeries[]) {
     const groups = new Map<string, ColumnGroup>()
 
-    for (const columnSeries of series.filter(item => item.type == PlotType.Column || item.type == PlotType.StackingColumn)) {
+    const isColumn = (item: PlotSeries) => item.type == PlotType.Column || item.type == PlotType.StackingColumn
+
+    for (const columnSeries of series.filter(isColumn)) {
         for (const value of columnSeries.values) {
             const key = value.x.toString()
             const group = groups.get(key) ?? { columns: [], hasStacking: false }

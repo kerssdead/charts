@@ -19,7 +19,9 @@ export default class PlotSeriesGroups {
     constructor(series: PlotSeries[]) {
         this.enabledSeries = series.filter(item => !item.disabled)
         this.barSeries = series.filter(item => item.type == PlotType.Bar)
-        this.verticalSeries = series.filter(item => item.type != PlotType.Bar && item.type != PlotType.AttentionLine)
+        this.verticalSeries = series.filter(item => {
+            return item.type != PlotType.Bar && item.type != PlotType.AttentionLine
+        })
 
         const seriesWithValues = this.enabledSeries.filter(item => item.values.length > 0)
         const layoutSeries = seriesWithValues.length > 0 ? seriesWithValues : series

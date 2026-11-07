@@ -72,7 +72,11 @@ export default class Panel {
         const track = this.clip
         const { top, height: content } = this.scroll
 
-        const height = clamp(track.height * (this.baseHeight - top) / (content - top), THUMB_MIN_HEIGHT, track.height)
+        const height = clamp(
+            track.height * (this.baseHeight - top) / (content - top),
+            THUMB_MIN_HEIGHT,
+            track.height
+        )
 
         return {
             x: track.x + track.width - THUMB_WIDTH - THUMB_INSET,
@@ -170,7 +174,9 @@ export default class Panel {
     isOnScrollbar(point: Point) {
         const { x, y, width, height } = this.clip
 
-        return this.canScroll && contains({ x: x + width - THUMB_HIT_WIDTH, y, width: THUMB_HIT_WIDTH, height }, point)
+        const hitArea = { x: x + width - THUMB_HIT_WIDTH, y, width: THUMB_HIT_WIDTH, height }
+
+        return this.canScroll && contains(hitArea, point)
     }
 
     private thumbRatio() {

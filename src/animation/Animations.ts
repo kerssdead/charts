@@ -8,9 +8,13 @@ const EPSILON = 1e-6
 
 const NEWTON_ITERATIONS = 8
 
-const bezier = (t: number, p1: number, p2: number) => 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t
+const bezier = (t: number, p1: number, p2: number) => {
+    return 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t
+}
 
-const slope = (t: number, p1: number, p2: number) => 3 * (1 - t) * (1 - t) * p1 + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (1 - p2)
+const slope = (t: number, p1: number, p2: number) => {
+    return 3 * (1 - t) * (1 - t) * p1 + 6 * (1 - t) * t * (p2 - p1) + 3 * t * t * (1 - p2)
+}
 
 const SAMPLES = 1024
 

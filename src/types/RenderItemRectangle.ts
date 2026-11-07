@@ -11,9 +11,13 @@ import { clamp, lerp } from '@/helpers/Geometry'
 
 const ALPHA_DELTA = 0.5
 
-const horizontalFactor = (x: HorizontalAlignment) => x == HorizontalAlignment.Left ? 0 : x == HorizontalAlignment.Center ? .5 : 1
+const horizontalFactor = (x: HorizontalAlignment) => {
+    return x == HorizontalAlignment.Left ? 0 : x == HorizontalAlignment.Center ? .5 : 1
+}
 
-const verticalFactor = (y: VerticalAlignment) => y == VerticalAlignment.Top ? 0 : y == VerticalAlignment.Center ? .5 : 1
+const verticalFactor = (y: VerticalAlignment) => {
+    return y == VerticalAlignment.Top ? 0 : y == VerticalAlignment.Center ? .5 : 1
+}
 
 type RectangleCanvas = RectangleDimensions & {
     radii: number[]
@@ -70,7 +74,10 @@ export default class RenderItemRectangle
 
     private readonly edges: Bounds = { left: 0, top: 0, right: 0, bottom: 0 }
 
-    current(morph: number = 1, result: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }): RectangleDimensions {
+    current(
+        morph: number = 1,
+        result: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
+    ): RectangleDimensions {
         const { absolute } = this
         const from = this.from && morph < 1 ? this.from : null
 

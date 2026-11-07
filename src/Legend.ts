@@ -237,7 +237,11 @@ class Legend extends Overlay {
             const from = this.from.get(this.getKey(entry.value))
             const current = this.getCurrent(entry, progress)
 
-            const { items, background } = this.createEntry(current, this.hover.value(entry.value.id), from ? 1 : progress)
+            const { items, background } = this.createEntry(
+                current,
+                this.hover.value(entry.value.id),
+                from ? 1 : progress
+            )
 
             this.backgrounds.set(entry.value.id, background)
 
@@ -336,7 +340,14 @@ class Legend extends Overlay {
         const isDisabled = value.disabled || value.isBlank
         const textColor = isDisabled ? withAlpha(Theme.text, .5) : Theme.text
 
-        const background = this.buttonRect(items, this.units, { x, y, width, height: ITEM_HEIGHT }, 6, hover, () => this.toggle(value))
+        const background = this.buttonRect(
+            items,
+            this.units,
+            { x, y, width, height: ITEM_HEIGHT },
+            6,
+            hover,
+            () => this.toggle(value)
+        )
 
         items.arc()
              .position(this.units.x(x + 11), this.units.y(centerY))
@@ -431,7 +442,9 @@ class Legend extends Overlay {
     private calculateVertical(width: number, height: number) {
         const values = this.visibleValues()
         const widest = maxOf(values, value => stringWidth(Legend.getLabel(value))) + ITEM_EXTRA_WIDTH
-        const areaWidth = Math.max(Math.min(Math.max(widest, this.buttonWidth) + PADDING_X * 2, width / 4), this.buttonWidth + PADDING_X * 2)
+        const minWidth = this.buttonWidth + PADDING_X * 2
+        const preferredWidth = Math.max(widest, this.buttonWidth) + PADDING_X * 2
+        const areaWidth = Math.max(Math.min(preferredWidth, width / 4), minWidth)
         const available = areaWidth - PADDING_X * 2
         const areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
 

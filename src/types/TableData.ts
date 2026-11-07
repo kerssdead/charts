@@ -11,7 +11,10 @@ export default interface TableData {
     values: TableValue[]
 }
 
-export function getValueRows<T extends Value>(values: T[], getValue: (value: T) => number = value => value.value): TableData {
+export function getValueRows<T extends Value>(
+    values: T[],
+    getValue: (value: T) => number = value => value.value
+): TableData {
     const key = TextResources.value
 
     return {
@@ -119,7 +122,10 @@ export function getMatchingValues(values: TableValue[], query: string): Set<Tabl
 function withColumn(table: TableData, header: TableHeaderValue, getValue: (row: TableValue) => number): TableData {
     return {
         headers: [...table.headers, header],
-        values: table.values.map(row => ({ ...row, values: new Map([...row.values, [header.value, getValue(row)]]) }))
+        values: table.values.map(row => ({
+            ...row,
+            values: new Map([...row.values, [header.value, getValue(row)]])
+        }))
     }
 }
 

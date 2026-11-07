@@ -53,6 +53,9 @@ export default class TableToolbar {
         copyButton.textContent = result
 
         clearTimeout(copyResultTimers.get(copyButton))
-        copyResultTimers.set(copyButton, setTimeout(() => copyButton.textContent = TextResources.copy, COPY_FEEDBACK_DURATION))
+        copyResultTimers.set(
+            copyButton,
+            setTimeout(() => copyButton.textContent = TextResources.copy, COPY_FEEDBACK_DURATION)
+        )
     }
 }

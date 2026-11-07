@@ -131,13 +131,23 @@ export default class PlotLayout {
     }
 
     private getHorizontalCategoryLabels(horizontalAxis: PlotContinuousAxis | null, horizontalSlots: Slots) {
-        return horizontalAxis ? this.formatTicks(horizontalAxis.ticks) : this.formatCategories(horizontalSlots.values)
+        return horizontalAxis
+               ? this.formatTicks(horizontalAxis.ticks)
+               : this.formatCategories(horizontalSlots.values)
     }
 
-    private getLeftLabels(horizontalAxis: PlotContinuousAxis | null, horizontalSlots: Slots, yAxisValues: number[]) {
-        return [
-            ...(this.seriesGroups.rendersBars ? this.getHorizontalCategoryLabels(horizontalAxis, horizontalSlots) : []),
-            ...(this.seriesGroups.isHorizontal ? [] : yAxisValues.map(value => short(value, this.data.shortLabels)))
-        ]
+    private getLeftLabels(
+        horizontalAxis: PlotContinuousAxis | null,
+        horizontalSlots: Slots,
+        yAxisValues: number[]
+    ) {
+        const categoryLabels = this.seriesGroups.rendersBars
+                               ? this.getHorizontalCategoryLabels(horizontalAxis, horizontalSlots)
+                               : []
+        const valueLabels = this.seriesGroups.isHorizontal
+                            ? []
+                            : yAxisValues.map(value => short(value, this.data.shortLabels))
+
+        return [...categoryLabels, ...valueLabels]
     }
 }

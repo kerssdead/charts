@@ -81,7 +81,9 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
         const state = this.state
 
         if (!this.isBuilt(state.point, state.template, window)) {
-            this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => this.build(builder, window, state.point, state.template)))
+            this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => {
+                this.build(builder, window, state.point, state.template)
+            }))
 
             this.built = { point: state.point, template: state.template, window: copyRect(window) }
         }
@@ -142,7 +144,10 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
 
         rows.forEach((row, index) => {
             items.text(row)
-                 .position(units.positionX(left + Tooltip.padding), units.positionY(top + Tooltip.padding + (index + .5) * Tooltip.rowHeight))
+                 .position(
+                     units.positionX(left + Tooltip.padding),
+                     units.positionY(top + Tooltip.padding + (index + .5) * Tooltip.rowHeight)
+                 )
                  .size(Tooltip.fontSize)
                  .align(TextAlignment.Left)
                  .color(Theme.text)

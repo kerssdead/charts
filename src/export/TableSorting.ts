@@ -17,7 +17,9 @@ export function getNextSortDirection(direction: SortDirection) {
 
 export default class TableSorting {
     static attach(header: HTMLElement, body: HTMLElement, data: TableData, rows: HTMLElement[]) {
-        const rowByValue = new Map<TableValue, HTMLElement>(data.values.map((value, index) => [value, rows[index]]))
+        const rowByValue = new Map<TableValue, HTMLElement>(
+            data.values.map((value, index) => [value, rows[index]])
+        )
         const columns = [undefined, ...data.headers.map(header => header.value)]
         const headerCells = [...header.children] as HTMLElement[]
 

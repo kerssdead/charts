@@ -56,7 +56,12 @@ export default class Layout {
         this.window = new CanvasWindow(this.width, this.height)
     }
 
-    update(title: string | undefined, legend: Legend | undefined, menu: MenuButton | undefined, reserveMenuRow: boolean = false): boolean {
+    update(
+        title: string | undefined,
+        legend: Legend | undefined,
+        menu: MenuButton | undefined,
+        reserveMenuRow: boolean = false
+    ): boolean {
         this.title = title
         this.hasMenuRow = reserveMenuRow && !!menu
 

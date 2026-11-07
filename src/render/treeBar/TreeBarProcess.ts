@@ -151,7 +151,11 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
         }
 
         for (const column of this.columns) {
-            const sortIndicator = TreeBarSorting.getSortIndicator(column.key, this.data.sortColumn, this.data.sortDescending)
+            const sortIndicator = TreeBarSorting.getSortIndicator(
+                column.key,
+                this.data.sortColumn,
+                this.data.sortDescending
+            )
 
             items.text(column.title + sortIndicator)
                  .position(this.x(column.right), this.y(HEADER_HEIGHT / 2))
@@ -181,8 +185,15 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
         const center = y + height / 2
         const left = PADDING + level * INDENT
 
+        const gridLine = {
+            x: PADDING,
+            y: y + height - GRID_WIDTH,
+            width: this.width - PADDING * 2,
+            height: GRID_WIDTH
+        }
+
         items.rect()
-             .box(this.units, { x: PADDING, y: y + height - GRID_WIDTH, width: this.width - PADDING * 2, height: GRID_WIDTH })
+             .box(this.units, gridLine)
              .collapse(false, false)
              .fill()
              .color(Theme.lineAxis)
@@ -288,6 +299,7 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
         parts.forEach((part, index) => {
             const partKey = `${ key }-part-${ index }`
             const width = part.value * widthPerValue
+            const label = part.label || node.label.replace(/\n/g, ' ')
 
             items.rect()
                  .box(this.units, { x, y: top, width, height: BAR_HEIGHT })
@@ -302,7 +314,7 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
                  .monochrome()
                  .interact()
                  .contextMenu()
-                 .tooltipHtml(this.valueTooltip(part, part.label || node.label.replace(/\n/g, ' '), this.formatValue(part.value)))
+                 .tooltipHtml(this.valueTooltip(part, label, this.formatValue(part.value)))
                  .data(TreeBarProcess.getItemData(part))
 
             x += width

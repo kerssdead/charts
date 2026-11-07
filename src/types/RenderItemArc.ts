@@ -312,7 +312,15 @@ export default class RenderItemArc
         ctx.arc(center.x, center.y, radius, from, from + turn, turn < 0)
     }
 
-    private corner(shape: Shape, edgeAngle: number, side: 1 | -1, radius: number, corner: number, isOuter: boolean, half: number) {
+    private corner(
+        shape: Shape,
+        edgeAngle: number,
+        side: 1 | -1,
+        radius: number,
+        corner: number,
+        isOuter: boolean,
+        half: number
+    ) {
         const offset = half + corner
         const distance = isOuter ? radius - corner : radius + corner
         const along = Math.sqrt(Math.max(distance * distance - offset * offset, 0))
@@ -364,7 +372,8 @@ export default class RenderItemArc
 
         const distance = dx * dx + dy * dy
 
-        if (distance > this.canvas.radius * this.canvas.radius || distance < this.canvas.innerRadius * this.canvas.innerRadius)
+        if (distance > this.canvas.radius * this.canvas.radius
+            || distance < this.canvas.innerRadius * this.canvas.innerRadius)
             return false
 
         if (isFullCircle(sweep))

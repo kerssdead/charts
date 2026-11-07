@@ -55,7 +55,9 @@ export default class PlotContinuousAxis {
         if (isLog)
             return getLogTicksBetween(min, max)
 
-        return isDate ? getDateTicks(min, max, CONTINUOUS_TICK_COUNT) : getLinearTicks(min, max, CONTINUOUS_TICK_COUNT)
+        return isDate
+               ? getDateTicks(min, max, CONTINUOUS_TICK_COUNT)
+               : getLinearTicks(min, max, CONTINUOUS_TICK_COUNT)
     }
 
     getRatio(value: number) {

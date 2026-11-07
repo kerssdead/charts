@@ -26,7 +26,12 @@ export default class PlotCategoryScale {
                       : new PlotEvenSlotLayout(slots, start, length, direction)
     }
 
-    static fromBottom(slots: Slots, bottom: number, height: number, continuousAxis: PlotContinuousAxis | null = null) {
+    static fromBottom(
+        slots: Slots,
+        bottom: number,
+        height: number,
+        continuousAxis: PlotContinuousAxis | null = null
+    ) {
         return new PlotCategoryScale(slots, bottom, height, -1, continuousAxis)
     }
 

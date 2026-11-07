@@ -50,7 +50,11 @@ export function getVisibleEntries(
     ])
 }
 
-export function getSortIndicator(columnKey: string, sortColumn: string | undefined, isDescending: boolean | undefined) {
+export function getSortIndicator(
+    columnKey: string,
+    sortColumn: string | undefined,
+    isDescending: boolean | undefined
+) {
     if (sortColumn != columnKey)
         return ''
 

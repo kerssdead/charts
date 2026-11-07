@@ -271,7 +271,12 @@ export default class RenderItem {
                && bounds.top >= area.y + margin && bounds.bottom <= area.y + area.height - margin
     }
 
-    private static progress(now: DOMHighResTimeStamp, start: DOMHighResTimeStamp, delay: number, duration: number) {
+    private static progress(
+        now: DOMHighResTimeStamp,
+        start: DOMHighResTimeStamp,
+        delay: number,
+        duration: number
+    ) {
         return clamp((now - start - delay) / duration, 0, 1)
     }
 
@@ -309,7 +314,12 @@ export default class RenderItem {
 
         animation.morphStart ??= now
 
-        const progress = RenderItem.progress(now, animation.morphStart, animation.morphDelay, animation.morphDuration)
+        const progress = RenderItem.progress(
+            now,
+            animation.morphStart,
+            animation.morphDelay,
+            animation.morphDuration
+        )
 
         animation.morph = ease(progress)
 

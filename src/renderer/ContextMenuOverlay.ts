@@ -96,7 +96,9 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         if (!this.isBuilt(window, isVisible)) {
             this.remove(queue)
 
-            this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => this.build(builder, window, bounds, buttons, isVisible)))
+            this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => {
+                this.build(builder, window, bounds, buttons, isVisible)
+            }))
 
             this.built = {
                 state: this.state,
@@ -138,7 +140,12 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
                && sameRect(built.window, window)
     }
 
-    private updateHover(bounds: RectangleDimensions, buttons: ButtonOptions[], mouse: Point | null, now: DOMHighResTimeStamp) {
+    private updateHover(
+        bounds: RectangleDimensions,
+        buttons: ButtonOptions[],
+        mouse: Point | null,
+        now: DOMHighResTimeStamp
+    ) {
         const targets = ContextMenuOverlay.getRows(bounds, buttons).flatMap((row, index): [number, boolean][] => {
             return row.isDivider || !this.buttonRects[index] ? [] : [[index, contains(row, mouse)]]
         })
@@ -154,8 +161,11 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
     }
 
     private getBounds(screen: CanvasWindow, point: Point, buttons: ButtonOptions[]): RectangleDimensions {
-        const width = Math.max(ContextMenu.minWidth,
-            maxOf(buttons, button => stringWidth(button.text, ContextMenu.fontSize)) + ContextMenu.textPadding * 2 + ContextMenu.padding * 2)
+        const widestText = maxOf(buttons, button => stringWidth(button.text, ContextMenu.fontSize))
+        const width = Math.max(
+            ContextMenu.minWidth,
+            widestText + ContextMenu.textPadding * 2 + ContextMenu.padding * 2
+        )
         const height = sum(buttons, ContextMenuOverlay.getButtonHeight) + ContextMenu.padding * 2
 
         const { x, y } = placeNear(point, width, height, ContextMenu.offset, screen)
@@ -211,7 +221,10 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
             this.buttonRects.push(rect.dispose())
 
             items.text(buttons[index].text)
-                 .position(units.positionX(button.x + ContextMenu.textPadding), units.positionY(button.y + button.height / 2))
+                 .position(
+                     units.positionX(button.x + ContextMenu.textPadding),
+                     units.positionY(button.y + button.height / 2)
+                 )
                  .size(ContextMenu.fontSize)
                  .align(TextAlignment.Left)
                  .color(Theme.text)
@@ -230,7 +243,13 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
 
         return buttons.map(button => {
             const height = ContextMenuOverlay.getButtonHeight(button)
-            const row = { x: bounds.x + ContextMenu.padding, y, width: bounds.width - ContextMenu.padding * 2, height, isDivider: !!button.isDivider }
+            const row = {
+                x: bounds.x + ContextMenu.padding,
+                y,
+                width: bounds.width - ContextMenu.padding * 2,
+                height,
+                isDivider: !!button.isDivider
+            }
 
             y += height
 

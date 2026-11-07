@@ -7,7 +7,13 @@ import { stringWidth } from '@/helpers/Text'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import ChartProcess from '@/render/ChartProcess'
 import * as TreeMapLayout from '@/render/tree/TreeMapLayout'
-import { COLOR_RANGE, CORNER_RADIUS, DEFAULT_GAP, LABEL_FONT_SIZE, LABEL_PADDING } from '@/render/tree/TreeMapConstants'
+import {
+    COLOR_RANGE,
+    CORNER_RADIUS,
+    DEFAULT_GAP,
+    LABEL_FONT_SIZE,
+    LABEL_PADDING
+} from '@/render/tree/TreeMapConstants'
 
 type Block = {
     color: string

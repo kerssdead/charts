@@ -66,7 +66,9 @@ class Theme {
     }
 
     static hoverBackground(hover: number) {
-        return adjustColor(Theme.canvasBackground, Math.round((Theme.currentTheme == ColorTheme.dark ? 25 : -25) * hover))
+        const fullAdjustment = Theme.currentTheme == ColorTheme.dark ? 25 : -25
+
+        return adjustColor(Theme.canvasBackground, Math.round(fullAdjustment * hover))
     }
 
     static update(isDark?: () => boolean) {

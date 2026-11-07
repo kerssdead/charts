@@ -32,16 +32,23 @@ export default class CustomTooltip {
 
         return data => {
             if (last?.data !== data)
-                last = { data, html: template.innerHTML.replace(PLACEHOLDER, (_, key: string) => escapeHtml(data[key])) }
+                last = {
+                    data,
+                    html: template.innerHTML.replace(PLACEHOLDER, (_, key: string) => escapeHtml(data[key]))
+                }
 
             return last.html
         }
     }
 
     static fromText(text: string) {
-        const style = `padding: ${ Tooltip.padding }px; border: ${ DEFAULT_LINE_WIDTH }px solid ${ Theme.dropdownBorder };
-                       border-radius: ${ Tooltip.radius }px; background: ${ Theme.background }; color: ${ Theme.text };
-                       font: ${ Tooltip.fontSize }px/${ Tooltip.rowHeight }px ${ FONT_FAMILY }; white-space: pre`
+        const style = `padding: ${ Tooltip.padding }px;
+                       border: ${ DEFAULT_LINE_WIDTH }px solid ${ Theme.dropdownBorder };
+                       border-radius: ${ Tooltip.radius }px;
+                       background: ${ Theme.background };
+                       color: ${ Theme.text };
+                       font: ${ Tooltip.fontSize }px/${ Tooltip.rowHeight }px ${ FONT_FAMILY };
+                       white-space: pre`
 
         return `<div style="${ style }">${ escapeHtml(text) }</div>`
     }
@@ -90,8 +97,13 @@ export default class CustomTooltip {
         const canvas = this.canvas.getBoundingClientRect()
         const { clientWidth, clientHeight } = document.documentElement
 
-        const { x, y } = placeNear({ x: canvas.left + point.x, y: canvas.top + point.y }, this.size.width, this.size.height, Tooltip.offset,
-            { x: 0, y: 0, width: clientWidth, height: clientHeight })
+        const { x, y } = placeNear(
+            { x: canvas.left + point.x, y: canvas.top + point.y },
+            this.size.width,
+            this.size.height,
+            Tooltip.offset,
+            { x: 0, y: 0, width: clientWidth, height: clientHeight }
+        )
 
         element.style.left = `${ x }px`
         element.style.top = `${ y }px`

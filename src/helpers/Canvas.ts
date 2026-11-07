@@ -126,7 +126,10 @@ export function unitVerticalGradient(ctx: CanvasRenderingContext2D, color: strin
     return gradient
 }
 
-export function getContext(canvas: HTMLCanvasElement, willReadFrequently: boolean = false): CanvasRenderingContext2D {
+export function getContext(
+    canvas: HTMLCanvasElement,
+    willReadFrequently: boolean = false
+): CanvasRenderingContext2D {
     return canvas.getContext('2d', { willReadFrequently })
            ?? fail(ErrorType.NullContext)
 }

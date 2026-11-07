@@ -164,7 +164,8 @@ function getMaxVisibleCount(labels: LabelBox[], distance: number, bounds: Point)
     const minHalfHeight = labels.reduce((min, label) => Math.min(min, label.halfHeight), Infinity)
 
     const excludedRadius = Math.max(Math.min(distance - SPACING / 2, bounds.x, bounds.y), 0)
-    const freeArea = (2 * bounds.x + SPACING) * (2 * bounds.y + SPACING) - Math.PI * excludedRadius * excludedRadius
+    const boundsArea = (2 * bounds.x + SPACING) * (2 * bounds.y + SPACING)
+    const freeArea = boundsArea - Math.PI * excludedRadius * excludedRadius
     const labelArea = (2 * minHalfWidth + SPACING) * (2 * minHalfHeight + SPACING)
 
     return Math.floor(freeArea / labelArea)

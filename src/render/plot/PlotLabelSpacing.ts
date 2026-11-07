@@ -22,7 +22,8 @@ export default class PlotLabelSpacing {
             .map(isShort => values.map(value => short(value, isShort)))
             .concat([values.map(scientific)])
 
-        const labels = variants.find(labels => !this.isOverlapping(labels, positions, 1)) ?? variants[variants.length - 1]
+        const labels = variants.find(labels => !this.isOverlapping(labels, positions, 1))
+                       ?? variants[variants.length - 1]
         const every = this.getLabelStep(labels, positions, 1)
 
         return labels.map((label, i) => i % every == 0 ? label : '')

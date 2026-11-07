@@ -67,7 +67,12 @@ export default class Renderer {
         this.onError = onError
         this.queue = new Queue(getContext(this.canvas))
         this.tooltip = new TooltipOverlay(this.canvas)
-        this.menu = new ChartMenu(this.canvas, this.queue, point => this.pointer.openMenu(point), () => this.drawClean())
+        this.menu = new ChartMenu(
+            this.canvas,
+            this.queue,
+            point => this.pointer.openMenu(point),
+            () => this.drawClean()
+        )
         this.contextMenu.fixedButtons = () => this.menu.getButtons()
         this.detachImages = onImageLoad(() => this.render())
 
@@ -262,7 +267,9 @@ export default class Renderer {
         const { context } = this.pointer
         const position = this.isClean ? null : this.pointer.position
 
-        let isAnimating = this.queue.animate(position && !this.contextMenu.isOver(position) ? position : null, timestamp)
+        const hoverPosition = position && !this.contextMenu.isOver(position) ? position : null
+
+        let isAnimating = this.queue.animate(hoverPosition, timestamp)
 
         const isLegendMoving = this.legend?.isMoving
 
@@ -295,7 +302,8 @@ export default class Renderer {
     }
 
     private get overlays(): Overlay[] {
-        return [this.tooltip, this.contextMenu, this.legend, this.menu.button].filter(overlay => overlay != undefined)
+        return [this.tooltip, this.contextMenu, this.legend, this.menu.button]
+            .filter(overlay => overlay != undefined)
     }
 
     private buildChart(isInitialized: boolean) {
@@ -329,7 +337,8 @@ export default class Renderer {
 
             const isEmpty = !!process?.isEmpty()
 
-            const fixed = add([...(isEmpty ? [] : process?.getFixedData() ?? []), this.layout.getPanelTitle(chart.title, pixel)])
+            const fixedData = isEmpty ? [] : process?.getFixedData() ?? []
+            const fixed = add([...fixedData, this.layout.getPanelTitle(chart.title, pixel)])
             const content = add(isEmpty ? [this.layout.getEmpty()] : process?.getData() ?? [])
 
             for (const item of content)

@@ -113,7 +113,9 @@ export default class Transition {
         const previousEnd = (item: RenderItem, visited: Set<RenderItem>): number => {
             visited.add(item)
 
-            const before = (newByEnd.get(key(item, arc(item).startAngle)) ?? []).filter(other => !visited.has(other))
+            const start = arc(item).startAngle
+
+            const before = (newByEnd.get(key(item, start)) ?? []).filter(other => !visited.has(other))
 
             const matched = before.find(other => matches.has(other))
 
@@ -125,7 +127,7 @@ export default class Transition {
 
             return before.length > 0
                    ? previousEnd(before[0], visited)
-                   : arc(item).startAngle
+                   : start
         }
 
         const nextEnd = (item: RenderItem, visited: Set<RenderItem>): number => {
@@ -146,7 +148,9 @@ export default class Transition {
         }
 
         const appearAngles = appeared.map(item => previousEnd(item, new Set()))
-        const removeAngles = removed.map(item => Transition.isArc(item) && !item.isGhost ? nextEnd(item, new Set()) : 0)
+        const removeAngles = removed.map(item => {
+            return Transition.isArc(item) && !item.isGhost ? nextEnd(item, new Set()) : 0
+        })
 
         appeared.forEach((item, i) => {
             arc(item).appearFromAngle(appearAngles[i])

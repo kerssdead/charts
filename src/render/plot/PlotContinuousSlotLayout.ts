@@ -56,6 +56,8 @@ export default class PlotContinuousSlotLayout implements PlotSlotLayout {
     }
 
     private getCoordinate(x: number) {
-        return this.start + this.direction * (this.padding + this.axis.getRatio(x) * (this.length - 2 * this.padding))
+        const ratio = this.axis.getRatio(x)
+
+        return this.start + this.direction * (this.padding + ratio * (this.length - 2 * this.padding))
     }
 }

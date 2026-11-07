@@ -49,7 +49,10 @@ function prepareValues(chart: ChartItem, numberLocale: string | undefined) {
 
     const counts = new Map<string, number>()
 
-    const prepare = <T extends Value>(value: T, hasDefaultLabel: boolean = chart.type != ChartType.SegmentedBar) => {
+    const prepare = <T extends Value>(
+        value: T,
+        hasDefaultLabel: boolean = chart.type != ChartType.SegmentedBar
+    ) => {
         if (value instanceof PlotSeries)
             value.type ??= PlotType.Line
 
@@ -71,7 +74,9 @@ function prepareValues(chart: ChartItem, numberLocale: string | undefined) {
         const prepareRow = (value: TreeBarRow): TreeBarRow => {
             const row = prepare(value instanceof TreeBarRow ? value : new TreeBarRow(value))
 
-            row.parts = (row.parts ?? []).map(part => prepare(part instanceof Value ? part : new Sector(part), false))
+            row.parts = (row.parts ?? []).map(part => {
+                return prepare(part instanceof Value ? part : new Sector(part), false)
+            })
             row.children = row.children?.map(prepareRow)
 
             return row
@@ -97,7 +102,9 @@ function prepareValues(chart: ChartItem, numberLocale: string | undefined) {
     if (chart.type == ChartType.SegmentedBar) {
         const data = chart.data as SegmentedBarData
 
-        const toStop = (stop: SegmentedBarStop) => stop instanceof Value ? stop : new SegmentedBarStop(stop, numberLocale)
+        const toStop = (stop: SegmentedBarStop) => {
+            return stop instanceof Value ? stop : new SegmentedBarStop(stop, numberLocale)
+        }
 
         data.stops = (data.stops ?? []).map(stop => prepare(toStop(stop)))
     }
@@ -173,8 +180,10 @@ export function applyDefaultColors(settings: ChartSettings, scope?: Element) {
     for (const chart of settings.charts.filter(isTreeBar))
         colorTreeBarRows((chart.data as TreeBarData | undefined)?.values, base ?? paletteColor(0))
 
-    const groups = groupBy(settings.charts.filter(chart => !isTreeBar(chart)).flatMap(chart => chart.data?.values ?? []),
-        (value): string | Value => isShared ? Legend.getGroupKey(value, true) : value)
+    const groups = groupBy(
+        settings.charts.filter(chart => !isTreeBar(chart)).flatMap(chart => chart.data?.values ?? []),
+        (value): string | Value => isShared ? Legend.getGroupKey(value, true) : value
+    )
 
     for (const values of groups.values()) {
         const color = values.find(value => value.color)?.color

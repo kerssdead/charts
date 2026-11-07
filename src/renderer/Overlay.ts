@@ -26,7 +26,14 @@ export default abstract class Overlay {
         this.items.clear()
     }
 
-    protected buttonRect(items: QueueItemsBuilder, units: Units, rect: RectangleDimensions, radius: number, hover: number, onClick: () => void) {
+    protected buttonRect(
+        items: QueueItemsBuilder,
+        units: Units,
+        rect: RectangleDimensions,
+        radius: number,
+        hover: number,
+        onClick: () => void
+    ) {
         return items.rect()
                     .box(units, rect)
                     .round(units.x(radius))
@@ -37,7 +44,13 @@ export default abstract class Overlay {
                     .onClick(onClick)
     }
 
-    protected buttonText(items: QueueItemsBuilder, units: Units, rect: RectangleDimensions, text: string, size: number) {
+    protected buttonText(
+        items: QueueItemsBuilder,
+        units: Units,
+        rect: RectangleDimensions,
+        text: string,
+        size: number
+    ) {
         items.text(text)
              .position(units.x(rect.x + rect.width / 2), units.y(rect.y + rect.height / 2))
              .size(size)

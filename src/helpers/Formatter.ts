@@ -73,7 +73,9 @@ function getDateFormat(withDay: boolean, withTime: boolean, withSeconds: boolean
     if (!format) {
         format = new Intl.DateTimeFormat(undefined, {
             ...(withDay ? { year: 'numeric', month: 'numeric', day: 'numeric' } : {}),
-            ...(withTime ? { hour: 'numeric', minute: '2-digit', second: withSeconds ? '2-digit' : undefined } : {})
+            ...(withTime
+                ? { hour: 'numeric', minute: '2-digit', second: withSeconds ? '2-digit' : undefined }
+                : {})
         })
         dateFormats.set(key, format)
     }
