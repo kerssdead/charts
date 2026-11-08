@@ -40,7 +40,6 @@ export function getParts(
     let x = bar.x
 
     const parts = values.map(sector => {
-        // todo: minWidthValues.includes() makes this O(n·m); measure before switching to a Set
         const width = minWidthValues.includes(sector) ? minPartWidth : sector.value * widthPerValue
         const box = { x, y: bar.y, width, height: bar.height }
 

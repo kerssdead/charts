@@ -8,6 +8,13 @@ import Theme from '@/Theme'
 import { Layer } from '@/static/constants/Index'
 import { TextAlignment } from '@/static/Enums'
 
+type ButtonRect = {
+    rect: RectangleDimensions
+    radius: number
+    hover: number
+    onClick: () => void
+}
+
 export default abstract class Overlay {
     protected items: Set<RenderItem> = new Set()
 
@@ -26,14 +33,7 @@ export default abstract class Overlay {
         this.items.clear()
     }
 
-    protected buttonRect(
-        items: QueueItemsBuilder,
-        units: Units,
-        rect: RectangleDimensions,
-        radius: number,
-        hover: number,
-        onClick: () => void
-    ) {
+    protected buttonRect(items: QueueItemsBuilder, units: Units, { rect, radius, hover, onClick }: ButtonRect) {
         return items.rect()
                     .box(units, rect)
                     .round(units.x(radius))

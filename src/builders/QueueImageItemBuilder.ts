@@ -1,8 +1,7 @@
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
 import RenderItemImage from '@/types/RenderItemImage'
 
-export default class QueueImageItemBuilder
-    extends QueueItemBaseBuilder<RenderItemImage> {
+export default class QueueImageItemBuilder extends QueueItemBaseBuilder<RenderItemImage> {
     constructor(url: string) {
         super(new RenderItemImage())
 

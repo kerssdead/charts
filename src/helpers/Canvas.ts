@@ -135,7 +135,7 @@ export function getContext(
 }
 
 export function isPixelBusy(pixel: number) {
-    return pixel != undefined && pixel !== Theme.canvasBackgroundInt
+    return pixel != undefined && pixel != Theme.canvasBackgroundInt
 }
 
 export function createCanvas() {

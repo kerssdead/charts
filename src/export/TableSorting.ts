@@ -37,8 +37,12 @@ export default class TableSorting {
                 for (const other of headerCells)
                     other.setAttribute(Attribute.AriaSort, other == cell ? direction : SortDirection.None)
 
-                for (const value of sortTableValues(data.values, columns[index], direction))
-                    body.append(rowByValue.get(value)!)
+                for (const value of sortTableValues(data.values, columns[index], direction)) {
+                    const row = rowByValue.get(value)
+
+                    if (row)
+                        body.append(row)
+                }
             })
         }
     }

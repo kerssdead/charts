@@ -1,18 +1,25 @@
 import { PlotAxisType } from '@/static/Enums'
 
-let numberFormat: Intl.NumberFormat | undefined
+const DEFAULT_DECIMALS = 2
+
+const numberFormats = new Map<number, Intl.NumberFormat>()
 
 const dateFormats = new Map<string, Intl.DateTimeFormat>()
 
 export default abstract class Formatter {
-    static number(value: number | undefined) {
+    static number(value: number | undefined, decimals: number = DEFAULT_DECIMALS) {
         if (typeof value != 'number')
             return value == undefined ? '' : String(value)
 
-        numberFormat ??= new Intl.NumberFormat(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })
+        let numberFormat = numberFormats.get(decimals)
+
+        if (!numberFormat) {
+            numberFormat = new Intl.NumberFormat(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            })
+            numberFormats.set(decimals, numberFormat)
+        }
 
         return numberFormat.format(value)
     }
@@ -38,19 +45,24 @@ export default abstract class Formatter {
         return dates.map(date => hasTime(date) ? timeFormat.format(date) : dayFormat.format(date))
     }
 
-    static format(value: number | Date | string | undefined, type: PlotAxisType, postfix?: string | undefined) {
+    static format(
+        value: number | Date | string | undefined,
+        type: PlotAxisType,
+        postfix?: string | undefined,
+        decimals?: number
+    ) {
         let result = String(value ?? '')
 
         if (type == PlotAxisType.Number && !isNaN(Number(value)))
-            result = Formatter.number(Number(value))
+            result = Formatter.number(Number(value), decimals)
         else if (type == PlotAxisType.Date)
             result = Formatter.toDate(value ?? '').toLocaleDateString()
 
         return result + (postfix ?? '')
     }
 
-    static value(value: number | Date | string | undefined, postfix?: string | undefined) {
-        return Formatter.format(value, PlotAxisType.Number, postfix)
+    static value(value: number | Date | string | undefined, postfix?: string | undefined, decimals?: number) {
+        return Formatter.format(value, PlotAxisType.Number, postfix, decimals)
     }
 
     private static formatDateTime(date: Date) {

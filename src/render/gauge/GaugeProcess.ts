@@ -9,7 +9,8 @@ import { withAlpha } from '@/helpers/Color'
 import { clamp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
 import ChartProcess from '@/render/ChartProcess'
-import { TextAlignment } from '@/static/Enums'
+import { ErrorType, TextAlignment } from '@/static/Enums'
+import fail from '@/helpers/Errors'
 import GaugeSizing from '@/render/gauge/GaugeSizing'
 import * as GaugeSteps from '@/render/gauge/GaugeSteps'
 import { GaugeStep } from '@/render/gauge/GaugeSteps'
@@ -48,11 +49,14 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     constructor(data: GaugeData, pixel: Point, settings: ProcessSettings) {
         super(data, pixel, settings)
 
+        // todo: unit-test: gauge with min greater than max fails
+        if (this.min > this.max)
+            fail(ErrorType.InvalidGaugeRange)
+
         const formatValue = (value: number) => this.formatValue(value)
         const legendAvailableWidth = this.units.toPxX(COORDS_MAX_X) - this.units.toPxX(CANVAS_PADDING) * 2
 
         this.enabledSectors = data.values.filter(sector => !sector.disabled)
-        // todo: legend items are measured even for a single value with no legend; measure before skipping it
         this.legendLines = GaugeLegend.getLegendLines(
             GaugeLegend.getLegendItems(this.enabledSectors, value => this.formatValueWithRangeMark(value)),
             legendAvailableWidth
@@ -153,7 +157,6 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     }
 
     private addRing(items: QueueItemsBuilder, sector: Sector, ringIndex: number) {
-        // todo: the value ratio is computed twice per ring (here and in getTooltipText); measure before caching it
         this.addRingShape(items, ringIndex, START_ANGLE + SWEEP_ANGLE * this.getValueRatio(sector.value))
             .grow(START_ANGLE)
             .color(sector.color)
@@ -235,7 +238,6 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         const singleSector = this.enabledSectors[0]
         const valueText = this.formatValueWithRangeMark(singleSector.value)
 
-        // todo: min/max are formatted and measured again on every getData(); measure before caching them
         const rangeLabelWidth = Math.max(
             stringWidth(this.formatValue(this.min), RANGE_FONT_SIZE),
             stringWidth(this.formatValue(this.max), RANGE_FONT_SIZE)

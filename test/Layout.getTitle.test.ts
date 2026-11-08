@@ -12,7 +12,7 @@ function getTitle(title: string, width: number, menuLeft?: number) {
 
     const menu = menuLeft == undefined ? undefined : { resize: () => {}, bounds: { left: menuLeft } } as unknown as MenuButton
 
-    layout.update(title, undefined, menu)
+    layout.update({ title, menu })
 
     const result = { text: '', font: 0 }
 

@@ -11,4 +11,6 @@ export default interface PieData extends Data {
     labelPercent: boolean
 
     enableMerging: boolean
+
+    startAngle?: number
 }

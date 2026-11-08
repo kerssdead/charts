@@ -3,7 +3,7 @@ import TextResources from '@/static/TextResources'
 import Theme from '@/Theme'
 import { sum } from '@/helpers/Collections'
 import { FULL_ANGLE } from '@/static/constants/Index'
-import { OTHER_KEY, START_ANGLE } from '@/render/pie/PieConstants'
+import { OTHER_KEY } from '@/render/pie/PieConstants'
 
 export type KeyedSector = {
     sector: Sector
@@ -60,8 +60,8 @@ export function getSectorsWithSmallGroupedIntoOther(
     ]
 }
 
-export function getSlices(keyedSectors: KeyedSector[], radiansPerUnit: number): PieSlice[] {
-    let startAngle = START_ANGLE
+export function getSlices(keyedSectors: KeyedSector[], radiansPerUnit: number, firstAngle: number): PieSlice[] {
+    let startAngle = firstAngle
 
     return keyedSectors.map(keyedSector => {
         const angle = hasVisibleValue(keyedSector.sector) ? keyedSector.sector.value * radiansPerUnit : 0

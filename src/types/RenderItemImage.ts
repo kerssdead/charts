@@ -10,8 +10,7 @@ type ImageCanvas = Point & {
     size: number
 }
 
-export default class RenderItemImage
-    extends RenderItemBase {
+export default class RenderItemImage extends RenderItemBase {
     url: string
 
     absolute: Point = { x: 0, y: 0 }

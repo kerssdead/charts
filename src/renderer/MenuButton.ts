@@ -52,7 +52,12 @@ export default class MenuButton extends Overlay {
         const units = Units.fromSize(this.size.width, this.size.height)
 
         this.show(queue, QueueItemsBuilder.build((items: QueueItemsBuilder) => {
-            this.buttonRect(items, units, bounds, 4, this.hover.value, () => this.onClick?.())
+            this.buttonRect(items, units, {
+                rect: bounds,
+                radius: 4,
+                hover: this.hover.value,
+                onClick: () => this.onClick?.()
+            })
             this.buttonText(items, units, bounds, Icon.ThreeDots, FONT_SIZE)
         }))
 

@@ -22,7 +22,7 @@ export default class TableColumnHighlight {
                 return
             }
 
-            if (cell === highlightedCell)
+            if (cell == highlightedCell)
                 return
 
             highlightedCell = cell

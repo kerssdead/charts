@@ -32,14 +32,14 @@ export default class PlotTitles {
                      .baseline(TextBaseline.Top)
                      .size(AXIS_TITLE_FONT)
                      .rotate(Math.PI * 1.5)
-                     .key('axis-title-x')
+                     .key('axis-title-left')
             }
 
             if (bottomTitle) {
                 items.text(bottomTitle)
                      .position(CANVAS_CENTER.x, COORDS_MAX_Y - this.units.y(BOTTOM_PADDING + AXIS_TITLE_FONT / 2))
                      .size(AXIS_TITLE_FONT)
-                     .key('axis-title-y')
+                     .key('axis-title-bottom')
             }
         }
     }

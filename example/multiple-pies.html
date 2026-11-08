@@ -19,7 +19,7 @@
 <script>
     const sectors = values => Object.entries(values).map(([label, value]) => ({ label: label, value: value }))
 
-    const chart = OCharts.chart(
+    OCharts.chart(
         document.querySelector('div'),
         {
             title: 'Sales by Region',
@@ -49,7 +49,5 @@
             ]
         }
     )
-
-    chart.render()
 </script>
 </html>

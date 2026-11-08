@@ -13,7 +13,13 @@ export const enum ChartType {
 }
 
 export const enum ErrorType {
-    NullContext = 'Can\'t find context'
+    NullContext = 'Can\'t find context',
+
+    InvalidHexColor = 'Invalid hex color',
+
+    UnknownPlotSlot = 'Unknown plot slot',
+
+    InvalidGaugeRange = 'Gauge min is greater than max'
 }
 
 export const enum Events {
@@ -234,6 +240,12 @@ export const enum HorizontalAlignment {
     Center = 'center',
 
     Right = 'right'
+}
+
+export const enum ArcEdge {
+    Start = 'start',
+
+    End = 'end'
 }
 
 export const enum VerticalAlignment {

@@ -1,6 +1,7 @@
 import { adjustColor, hexToRgb, withAlpha } from '@/helpers/Color'
 import ThemeOptions from '@/static/ThemeOptions'
-import { Events } from '@/static/Enums'
+import { ErrorType, Events } from '@/static/Enums'
+import fail from '@/helpers/Errors'
 
 export enum ColorTheme {
     light = 0,
@@ -58,7 +59,7 @@ class Theme {
 
         Theme.dropdownItemHoverColor = adjustColor(Theme.background, index == ColorTheme.light ? -50 : 50)
 
-        const { r, g, b } = hexToRgb(Theme.canvasBackground)!
+        const { r, g, b } = hexToRgb(Theme.canvasBackground) ?? fail(ErrorType.InvalidHexColor)
         Theme.canvasBackgroundInt = new Uint32Array(new Uint8ClampedArray([r, g, b, 255]).buffer)[0]
         Theme.contextMenuBackground = withAlpha(Theme.background, ThemeOptions.contextMenuOpacity)
         Theme.contextMenuButton = withAlpha(Theme.dropdownItemHoverColor, 0)

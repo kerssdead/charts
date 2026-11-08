@@ -61,16 +61,18 @@ export default class Pointer {
 
     private readonly handlers: PointerHandlers
 
-    constructor(canvas: HTMLCanvasElement,
-                getWindow: () => CanvasWindow,
-                handlers: PointerHandlers) {
+    constructor(
+        canvas: HTMLCanvasElement,
+        getWindow: () => CanvasWindow,
+        handlers: PointerHandlers
+    ) {
         this.canvas = canvas
         this.getWindow = getWindow
         this.handlers = handlers
     }
 
     attach(enableMove: boolean) {
-        if (this.isAttached && !!enableMove === this.isMoveEnabled)
+        if (this.isAttached && !!enableMove == this.isMoveEnabled)
             return
 
         this.detach()
@@ -93,7 +95,7 @@ export default class Pointer {
                 this.closeContext()
         })
         this.listen(document, Events.Click, event => {
-            if (event.target !== this.canvas)
+            if (event.target != this.canvas)
                 this.closeContext()
         })
         this.listen(window, Events.Blur, () => this.setPosition(null))
@@ -158,10 +160,12 @@ export default class Pointer {
         this.handlers.onChange()
     }
 
-    private listen<E extends Events>(target: EventTarget,
-                                     type: E,
-                                     listener: (event: HTMLElementEventMap[`${E}`]) => void,
-                                     signal: AbortSignal = this.abort.signal) {
+    private listen<E extends Events>(
+        target: EventTarget,
+        type: E,
+        listener: (event: HTMLElementEventMap[`${E}`]) => void,
+        signal: AbortSignal = this.abort.signal
+    ) {
         target.addEventListener(type, listener as EventListener, { signal })
     }
 
@@ -189,7 +193,7 @@ export default class Pointer {
     private onDragStart(event: PointerEvent) {
         this.isDragged = false
 
-        if (!event.isPrimary || event.button !== 0)
+        if (!event.isPrimary || event.button != 0)
             return
 
         const point = this.toPoint(event)
@@ -213,7 +217,7 @@ export default class Pointer {
     }
 
     private onDrag(event: PointerEvent): boolean {
-        if (this.drag?.pointerId !== event.pointerId)
+        if (this.drag?.pointerId != event.pointerId)
             return false
 
         const dx = event.clientX - this.drag.x
@@ -241,7 +245,7 @@ export default class Pointer {
     }
 
     private onWheel(event: WheelEvent) {
-        const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? WHEEL_LINE_HEIGHT : 1)
+        const delta = event.deltaY * (event.deltaMode == WheelEvent.DOM_DELTA_LINE ? WHEEL_LINE_HEIGHT : 1)
 
         if (!event.ctrlKey && !event.metaKey) {
             if (delta != 0)

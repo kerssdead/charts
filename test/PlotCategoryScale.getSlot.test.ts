@@ -15,8 +15,8 @@ describe('Getting plot category slot', () => {
             .toBe(1)
     })
 
-    it('Should fall back to first slot for unknown x', () => {
-        expect(scale.getSlot({ x: 'z', y: 5 }))
-            .toBe(0)
+    it('Should fail for unknown x', () => {
+        expect(() => scale.getSlot({ x: 'z', y: 5 }))
+            .toThrow('Unknown plot slot')
     })
 })

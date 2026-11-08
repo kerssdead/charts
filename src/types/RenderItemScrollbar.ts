@@ -7,8 +7,7 @@ import { withAlpha } from '@/helpers/Color'
 
 const ALPHA = .3
 
-export default class RenderItemScrollbar
-    extends RenderItemBase {
+export default class RenderItemScrollbar extends RenderItemBase {
     private readonly panel: Panel
 
     private thumb: RectangleDimensions | null = null

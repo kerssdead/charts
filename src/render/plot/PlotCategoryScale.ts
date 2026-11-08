@@ -4,6 +4,8 @@ import PlotSlotLayout from '@/render/plot/PlotSlotLayout'
 import PlotEvenSlotLayout from '@/render/plot/PlotEvenSlotLayout'
 import PlotContinuousSlotLayout from '@/render/plot/PlotContinuousSlotLayout'
 import PlotContinuousAxis from '@/render/plot/PlotContinuousAxis'
+import fail from '@/helpers/Errors'
+import { ErrorType } from '@/static/Enums'
 
 export default class PlotCategoryScale {
     readonly slots: Slots
@@ -64,7 +66,7 @@ export default class PlotCategoryScale {
     }
 
     getSlot(value: PlotPoint) {
-        return this.slots.index.get(value.x.toString()) ?? 0
+        return this.slots.index.get(value.x.toString()) ?? fail(ErrorType.UnknownPlotSlot)
     }
 
     getSlotStart(slot: number) {

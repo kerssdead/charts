@@ -19,7 +19,7 @@ export default class QueueItemsBuilder {
         this.isInitialized = isInitialized
     }
 
-    dispose() {
+    build() {
         this.add()
 
         return this.items
@@ -59,7 +59,7 @@ export default class QueueItemsBuilder {
         for (const action of Array.isArray(actions) ? actions : [actions])
             action(builder)
 
-        return builder.dispose()
+        return builder.build()
     }
 
     static readonly empty: QueueAction = () => { }
@@ -69,7 +69,7 @@ export default class QueueItemsBuilder {
             return
         }
 
-        const item = this.current.dispose()
+        const item = this.current.build()
 
         if (this.isInitialized) {
             item.animation.init = 1

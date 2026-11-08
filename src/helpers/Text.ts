@@ -1,6 +1,6 @@
 import fail from '@/helpers/Errors'
 import { ErrorType, Tag } from '@/static/Enums'
-import { FONT_FAMILY } from '@/static/constants/Index'
+import { DEFAULT_FONT_SIZE, FONT_FAMILY } from '@/static/constants/Index'
 
 const MEASURE_FONT_SIZE = 100
 
@@ -19,11 +19,9 @@ const MEASURE_CACHE_LIMIT = 10000
 
 const textWidths = new Map<string, number>()
 
-export function stringWidth(str: string | undefined, font?: number) {
-    if (!str)
+export function stringWidth(text: string | undefined, font: number = DEFAULT_FONT_SIZE) {
+    if (!text)
         return 0
-
-    const text = str
 
     let width = textWidths.get(text)
 
@@ -44,7 +42,7 @@ export function stringWidth(str: string | undefined, font?: number) {
         textWidths.set(text, width)
     }
 
-    return width * (font || 14)
+    return width * font
 }
 
 const HTML_ESCAPES: { [key: string]: string } = {

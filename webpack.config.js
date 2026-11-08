@@ -1,13 +1,11 @@
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
     entry: './src/OCharts.ts',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'ocharts.js',
-        cssFilename: 'ocharts.css',
         clean: true
     },
     mode: 'production',
@@ -45,8 +43,5 @@ module.exports = {
                 },
             })
         ]
-    },
-    plugins: [
-        new MiniCssExtractPlugin()
-    ]
+    }
 }

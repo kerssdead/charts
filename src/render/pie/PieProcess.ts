@@ -3,7 +3,7 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import Sector from '@/types/Sector'
 import { AnimationTiming, CANVAS_CENTER } from '@/static/constants/Index'
 import Point from '@/types/Point'
-import { clamp, normalizeAngle } from '@/helpers/Geometry'
+import { clamp, normalizeAngle, toRadians } from '@/helpers/Geometry'
 import layoutLabels, { LabelPlacement } from '@/render/LabelLayout'
 import { stringWidth } from '@/helpers/Text'
 import ChartProcess from '@/render/ChartProcess'
@@ -24,23 +24,26 @@ import {
     PINNED_SECTOR_OFFSET,
     SECTOR_CORNER_RADIUS,
     SECTOR_GAP,
-    START_ANGLE
+    TOP_ANGLE
 } from '@/render/pie/PieConstants'
 
 export default class PieProcess extends ChartProcess<PieData, PieProcessSettings> {
     private readonly sizing: PieSizing
 
+    private readonly startAngle: number
+
     constructor(data: PieData, pixel: Point, settings: PieProcessSettings) {
         super(data, pixel, settings)
 
         this.sizing = new PieSizing(this.units, this.data.innerRadius)
+        this.startAngle = TOP_ANGLE + toRadians(this.data.startAngle ?? 0)
     }
 
     getData() {
         const visibleTotal = PieSlices.getVisibleTotal(this.data.values)
         const radiansPerUnit = PieSlices.getRadiansPerUnit(visibleTotal)
 
-        const slices = PieSlices.getSlices(this.getKeyedSectors(radiansPerUnit), radiansPerUnit)
+        const slices = PieSlices.getSlices(this.getKeyedSectors(radiansPerUnit), radiansPerUnit, this.startAngle)
         const labelPlacements = this.getLabelPlacements(slices, visibleTotal)
 
         return [
@@ -78,7 +81,6 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             (slice, sliceIndex) => PieSlices.hasVisibleValue(slice.sector) ? [sliceIndex] : []
         )
 
-        // todo: getLabelText() runs twice per slice (here and in addSlice); measure before caching it
         const layoutPlacements = layoutLabels(
             visibleSliceIndexes.map(sliceIndex => {
                 const sector = slices[sliceIndex].sector
@@ -134,7 +136,6 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
         const radius = this.units.x(this.sizing.radius)
         const innerRadius = radius * this.sizing.innerRadiusRatio
 
-        // todo: labelOrbit is the same for every slice; measure before computing it once
         const labelOrbit = {
             ...CANVAS_CENTER,
             radiusX: this.units.x(this.sizing.labelDistance),
@@ -150,7 +151,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             .gap(SECTOR_GAP)
             .cornerRadius(SECTOR_CORNER_RADIUS)
             .pull(sector.pinned && !sector.disabled ? this.units.x(PINNED_SECTOR_OFFSET) : 0)
-            .grow(START_ANGLE)
+            .grow(this.startAngle)
             .leader(
                 LEADER_GAP,
                 LEADER_LENGTH,
@@ -185,7 +186,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             .key(`sector-label-${ key }`)
             .init(AnimationTiming.pieLabelInit, AnimationTiming.pieInit, true)
 
-        arc.shape.leaderLabel = text.dispose()
+        arc.shape.leaderLabel = text.build()
 
         if (sector.disabled)
             text.ghost()

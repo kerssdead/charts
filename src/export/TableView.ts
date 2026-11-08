@@ -8,8 +8,8 @@ import { asNumberCell, cell, div } from '@/export/TableElements'
 import TableSorting from '@/export/TableSorting'
 import TableColumnHighlight from '@/export/TableColumnHighlight'
 
-function formatValue(value: number, header: TableHeaderValue) {
-    const text = Formatter.number(value)
+function formatValue(value: number, header: TableHeaderValue, decimals: number | undefined) {
+    const text = Formatter.number(value, decimals)
 
     return header.percent ? `${ text }%` : text
 }
@@ -42,10 +42,15 @@ export default class TableView {
 
     private readonly data: TableData
 
+    private readonly decimals: number | undefined
+
     private readonly rowElements: HTMLElement[] = []
 
-    constructor(data: TableData) {
+    private totalElements: HTMLElement[] = []
+
+    constructor(data: TableData, decimals?: number) {
         this.data = data
+        this.decimals = decimals
         this.element = this.build()
     }
 
@@ -54,6 +59,9 @@ export default class TableView {
 
         for (const [index, rowElement] of this.rowElements.entries())
             rowElement.hidden = !matching.has(this.data.values[index])
+
+        // todo: unit-test: footer totals include only the rows matching the filter
+        this.showTotals(this.data.values.filter(value => matching.has(value)))
     }
 
     private build() {
@@ -100,7 +108,7 @@ export default class TableView {
         const valueCell = (header: TableHeaderValue) => {
             const value = row.values.get(header.value)
 
-            return asNumberCell(cell(value == undefined ? '' : formatValue(value, header)))
+            return asNumberCell(cell(value == undefined ? '' : formatValue(value, header, this.decimals)))
         }
 
         const element = div(TableClasses.Row, [nameCell(row), ...this.data.headers.map(valueCell)], AriaRole.Row)
@@ -112,12 +120,25 @@ export default class TableView {
     }
 
     private buildFooterRow() {
-        const totals = getTotals(this.data).map((value, index) => {
-            const total = formatValue(value, this.data.headers[index])
+        this.totalElements = this.data.headers.map(() => asNumberCell(cell('')))
 
-            return asNumberCell(cell(total, AriaRole.Cell, `${ TextResources.total }: ${ total }`))
-        })
+        this.showTotals(this.data.values)
 
-        return div(TableClasses.Footer, [cell(TextResources.total, AriaRole.RowHeader), ...totals], AriaRole.Row)
+        return div(
+            TableClasses.Footer,
+            [cell(TextResources.total, AriaRole.RowHeader), ...this.totalElements],
+            AriaRole.Row
+        )
+    }
+
+    private showTotals(values: TableValue[]) {
+        const totals = getTotals({ headers: this.data.headers, values })
+
+        for (const [index, element] of this.totalElements.entries()) {
+            const total = formatValue(totals[index], this.data.headers[index], this.decimals)
+
+            element.textContent = total
+            element.title = `${ TextResources.total }: ${ total }`
+        }
     }
 }

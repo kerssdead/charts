@@ -19,7 +19,7 @@
 <script>
     const points = values => values.map((y, x) => ({ x: x, y: y }))
 
-    const chart = OCharts.chart(
+    OCharts.chart(
         document.querySelector('div'),
         {
             type: 0,
@@ -74,7 +74,5 @@
             }
         }
     )
-
-    chart.render()
 </script>
 </html>

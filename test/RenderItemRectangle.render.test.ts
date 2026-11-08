@@ -115,4 +115,18 @@ describe('Rendering rectangle', () => {
         expect([ctx.save.mock.calls.length, ctx.translate.mock.calls.length, ctx.lineWidth])
             .toEqual([0, 0, 1])
     })
+
+    it('Should skip gradient when item has no fill colour', () => {
+        const ctx = context()
+        const shape = new RenderItemRectangle()
+
+        shape.isGradient = true
+        shape.absolute = { x: 1000, y: 2000, width: 500, height: 1000 }
+        shape.adjust(WINDOW)
+        shape.render(ctx as unknown as CanvasRenderingContext2D, new RenderItem(shape))
+
+        expect([ctx.createLinearGradient.mock.calls.length, ctx.save.mock.calls.length, ctx.restore.mock.calls.length])
+            .toEqual([0, 0, 0])
+    })
+
 })

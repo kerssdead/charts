@@ -158,9 +158,16 @@ export default class Chart {
     }
 
     private bindMenuActions() {
-        for (const item of this.settings.contextMenu ?? [])
-            if (item.id != undefined)
-                item.action ??= data => this.element.dispatchEvent(new CustomEvent(item.id!, { detail: data }))
+        for (const item of this.settings.contextMenu ?? []) {
+            const id = item.id
+
+            if (id == undefined)
+                continue
+
+            item.action ??= data => {
+                this.element.dispatchEvent(new CustomEvent(id, { detail: data }))
+            }
+        }
     }
 
     private applySize() {
@@ -242,6 +249,7 @@ export default class Chart {
         try {
             observer.observe(this.canvas, { box: 'device-pixel-content-box' })
         } catch {
+            // Safari has no device-pixel-content-box; the node observer above still tracks resizes
         }
 
         return observer

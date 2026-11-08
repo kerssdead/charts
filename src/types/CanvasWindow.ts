@@ -63,8 +63,10 @@ export default class CanvasWindow {
         this.width = Math.round(this.base.width * scale)
         this.height = Math.round(this.base.height * scale)
 
-        this.moveTo(anchor.x - (anchor.x - this.x) * ratio,
-            anchor.y - (anchor.y - this.y) * ratio)
+        this.moveTo(
+            anchor.x - (anchor.x - this.x) * ratio,
+            anchor.y - (anchor.y - this.y) * ratio
+        )
     }
 
     moveTo(x: number, y: number) {

@@ -23,8 +23,7 @@ const AREA_EDGE_FADE = 12
 
 const AREA_TOP_ALPHA = 0.5
 
-export default class RenderItemLine
-    extends RenderItemBase {
+export default class RenderItemLine extends RenderItemBase {
     absolute: Point[] = []
 
     canvas: Point[] = []
@@ -62,15 +61,15 @@ export default class RenderItemLine
     private readonly markers = new HoverMap<number>()
 
     current(morph: number = 1): Point[] {
-        if (!this.from || morph >= 1 || this.from.length != this.absolute.length)
+        const from = this.from
+
+        if (!from || morph >= 1 || from.length != this.absolute.length)
             return this.absolute.map(stop => ({ x: stop.x, y: stop.y }))
 
         return this.absolute.map((stop, i) => {
-            const from = this.from![i]
-
             return {
-                x: lerp(from.x, stop.x, morph),
-                y: lerp(from.y, stop.y, morph)
+                x: lerp(from[i].x, stop.x, morph),
+                y: lerp(from[i].y, stop.y, morph)
             }
         })
     }
@@ -147,12 +146,13 @@ export default class RenderItemLine
     }
 
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
-        if (this.canvas.length == 0) {
+        const bounds = this.getBounds()
+
+        if (!bounds)
             return
-        }
 
         if (!this.clip) {
-            this.renderLine(ctx, item)
+            this.renderLine(ctx, item, bounds)
 
             return
         }
@@ -160,22 +160,22 @@ export default class RenderItemLine
         ctx.save()
 
         this.clipToBox(ctx)
-        this.renderLine(ctx, item)
+        this.renderLine(ctx, item, bounds)
 
         ctx.restore()
     }
 
-    private renderLine(ctx: CanvasRenderingContext2D, item: RenderItem) {
+    private renderLine(ctx: CanvasRenderingContext2D, item: RenderItem, bounds: Bounds) {
         const progress = item.animation.init
 
         ctx.lineWidth = this.width
         ctx.lineJoin = LineJoin.Round
         ctx.setLineDash(this.dash)
 
-        const bounds = this.getBounds()!
+        const fill = item.fill
 
-        if (this.isGradient && bounds.bottom > bounds.top)
-            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.fill!, bounds.top, bounds.bottom)
+        if (this.isGradient && fill && bounds.bottom > bounds.top)
+            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, fill, bounds.top, bounds.bottom)
 
         const { canvas } = this
         const drawnStopCount = progress < 1 ? this.drawnStopCountAt(progress) : canvas.length
@@ -193,7 +193,8 @@ export default class RenderItemLine
         if (isArea) {
             const lastStop = partialStop ?? canvas[drawnStopCount - 1]
 
-            this.fillArea(ctx, item, bounds, drawnStopCount, partialStop, lastStop)
+            if (fill)
+                this.fillArea(ctx, fill, bounds, drawnStopCount, partialStop, lastStop)
 
             ctx.save()
             this.clipToArea(ctx, bounds, lastStop)
@@ -307,8 +308,8 @@ export default class RenderItemLine
     animateHover(now: DOMHighResTimeStamp): boolean {
         const targets = new Map<number, boolean>()
 
-        for (const index of this.markers.keys())
-            if (!this.markers.get(index)!.isIdle)
+        for (const [index, hover] of this.markers.entries())
+            if (!hover.isIdle)
                 targets.set(index, false)
 
         if (this.hovered >= 0)
@@ -321,7 +322,7 @@ export default class RenderItemLine
 
     private fillArea(
         ctx: CanvasRenderingContext2D,
-        item: RenderItem,
+        fill: string,
         { top, bottom }: Bounds,
         drawnStopCount: number,
         partialStop: Point | null,
@@ -349,7 +350,7 @@ export default class RenderItemLine
         layer.lineTo(left, canvasAreaBaseline)
         layer.closePath()
 
-        layer.fillStyle = this.areaGradient.get(layer, withAlpha(item.fill!, AREA_TOP_ALPHA), top, bottom)
+        layer.fillStyle = this.areaGradient.get(layer, withAlpha(fill, AREA_TOP_ALPHA), top, bottom)
         layer.fill()
 
         layer.globalCompositeOperation = CompositeOperation.DestinationIn

@@ -28,9 +28,11 @@ export type TreeBarEntry = {
     level: number
 }
 
-export function flattenTreeBarRows(rows: TreeBarRow[] | undefined,
-                                   isOpen: (node: TreeBarRow) => boolean = () => true,
-                                   level: number = 0): TreeBarEntry[] {
+export function flattenTreeBarRows(
+    rows: TreeBarRow[] | undefined,
+    isOpen: (node: TreeBarRow) => boolean = () => true,
+    level: number = 0
+): TreeBarEntry[] {
     return (rows ?? []).flatMap(node => [
         { node, level },
         ...(isOpen(node) ? flattenTreeBarRows(node.children, isOpen, level + 1) : [])

@@ -28,6 +28,8 @@ export default interface ChartSettings {
 
     valuePostfix: string | undefined
 
+    decimals?: number
+
     legendPlace: LegendPlace
 
     data: Data

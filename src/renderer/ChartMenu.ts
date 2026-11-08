@@ -65,14 +65,13 @@ export default class ChartMenu {
             {
                 text: TextResources.exportPNG,
                 action: () => setTimeout(() => {
-                    Export.asPng(
-                        this.canvas,
-                        this.ratio,
+                    Export.asPng(this.canvas, {
+                        ratio: this.ratio,
                         title,
-                        this.button?.bounds,
-                        this.settings.isDarkThemeFunction,
-                        this.drawClean
-                    )
+                        exclude: this.button?.bounds,
+                        isDark: this.settings.isDarkThemeFunction,
+                        prepare: this.drawClean
+                    })
                 }, ContextMenu.fadeDuration)
             },
             {
@@ -83,7 +82,11 @@ export default class ChartMenu {
             {
                 text: TextResources.decomposeToTable,
                 action: () => new Modal(
-                    Decomposition.fromCharts(charts, () => Export.asCsv(charts, title)),
+                    Decomposition.fromCharts(
+                        charts,
+                        () => Export.asCsv(charts, title),
+                        this.settings.decimals
+                    ),
                     title || TextResources.dataAsTable,
                     Theme.currentTheme == ColorTheme.dark
                 ).open()

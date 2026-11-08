@@ -19,11 +19,9 @@
 <script>
     const values = JSON.parse(`[]`)
 
-    const chart = OCharts.chart(
+    OCharts.chart(
         document.querySelector('div'),
-        { }
+        { data: { values } }
     )
-
-    chart.render()
 </script>
 </html>

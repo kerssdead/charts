@@ -12,7 +12,7 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         this.current = new RenderItem(shape)
     }
 
-    dispose(): RenderItem {
+    build(): RenderItem {
         return this.current
     }
 
@@ -134,7 +134,7 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         return this
     }
 
-    onClick(action:() => void) {
+    onClick(action: () => void) {
         this.current.onClick = action
 
         return this

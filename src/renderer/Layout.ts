@@ -26,6 +26,13 @@ const PANEL_TITLE_PADDING = 8
 
 const PANEL_TITLE_HEIGHT = PANEL_TITLE_FONT + PANEL_TITLE_PADDING * 2
 
+type LayoutContent = {
+    title?: string
+    legend?: Legend
+    menu?: MenuButton
+    reserveMenuRow?: boolean
+}
+
 export default class Layout {
     width: number = 0
 
@@ -56,12 +63,7 @@ export default class Layout {
         this.window = new CanvasWindow(this.width, this.height)
     }
 
-    update(
-        title: string | undefined,
-        legend: Legend | undefined,
-        menu: MenuButton | undefined,
-        reserveMenuRow: boolean = false
-    ): boolean {
+    update({ title, legend, menu, reserveMenuRow = false }: LayoutContent): boolean {
         this.title = title
         this.hasMenuRow = reserveMenuRow && !!menu
 
@@ -80,9 +82,12 @@ export default class Layout {
 
         top += this.titleHeight
 
-        return this.window.fit(left, top,
+        return this.window.fit(
+            left,
+            top,
             Math.max(width - left - right, 0),
-            Math.max(height - top - bottom, 0))
+            Math.max(height - top - bottom, 0)
+        )
     }
 
     getPanels(charts: ChartItem[], columns?: number) {

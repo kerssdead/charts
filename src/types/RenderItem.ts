@@ -160,6 +160,10 @@ export default class RenderItem {
         return this.hover.isAnimating || isShapeAnimating
     }
 
+    canHoverGroupAt(point: Point) {
+        return this.hoverGroup != null && this.isInteractive && !this.isInitializing && this.in(point)
+    }
+
     hasTooltipAt(point: Point) {
         return !this.isInitializing && this.in(point) && !!(this.tooltipAt(point) || this.tooltipHtml)
     }
@@ -188,7 +192,17 @@ export default class RenderItem {
 
         Object.assign(this.hover, previous.hover)
 
-        this.startMorph(previous.isGhost ? 'in' : this.isGhost ? 'out' : null, duration)
+        this.startMorph(this.getMorphFade(previous), duration)
+    }
+
+    private getMorphFade(previous: RenderItem) {
+        if (previous.isGhost)
+            return 'in'
+
+        if (this.isGhost)
+            return 'out'
+
+        return null
     }
 
     private startInit(duration: number, isLeaving: boolean) {

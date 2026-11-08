@@ -12,9 +12,9 @@ import { caption, div } from '@/export/TableElements'
 const FILTER_MIN_ROWS = 10
 
 export default class Decomposition {
-    static fromCharts(charts: ChartItem[], onSave: () => void) {
+    static fromCharts(charts: ChartItem[], onSave: () => void, decimals?: number) {
         const tables = charts.map(chart => Decomposition.getDisplayRows(chart))
-        const views = tables.map(table => new TableView(table))
+        const views = tables.map(table => new TableView(table, decimals))
 
         const list = div(TableClasses.List, views.map((view, index) => {
             const chartTitle = charts[index].title

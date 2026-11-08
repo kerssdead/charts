@@ -9,7 +9,7 @@ function getTop(title: string | undefined, hasMenu: boolean, reserveMenuRow: boo
     layout.width = 800
     layout.height = 300
 
-    layout.update(title, undefined, hasMenu ? menu : undefined, reserveMenuRow)
+    layout.update({ title, menu: hasMenu ? menu : undefined, reserveMenuRow })
 
     return layout.window.y
 }

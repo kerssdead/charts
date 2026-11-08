@@ -3,7 +3,7 @@ import PlotProcess from '@/render/plot/PlotProcess'
 import RenderItem from '@/types/RenderItem'
 import RenderItemArc from '@/types/RenderItemArc'
 import Panel from '@/types/Panel'
-import { groupBy } from '@/helpers/Collections'
+import { firstMappedValue, groupBy } from '@/helpers/Collections'
 
 export default class Transition {
     static snapshot(queue: Queue): Map<string, RenderItem> {
@@ -16,11 +16,13 @@ export default class Transition {
         return previous
     }
 
-    static apply(queue: Queue,
-                 previous: Map<string, RenderItem>,
-                 previousPanels: Panel[],
-                 panels: Panel[],
-                 duration: number) {
+    static apply(
+        queue: Queue,
+        previous: Map<string, RenderItem>,
+        previousPanels: Panel[],
+        panels: Panel[],
+        duration: number
+    ) {
         const vertical = (panels: Panel[], item: RenderItem) => {
             const plot = item.panel ? panels[item.panel.index]?.plot : null
 
@@ -88,11 +90,13 @@ export default class Transition {
         }
     }
 
-    private static animateArcs(queue: Queue,
-                               appeared: RenderItem[],
-                               removed: RenderItem[],
-                               matches: Map<RenderItem, RenderItem>,
-                               duration: number) {
+    private static animateArcs(
+        queue: Queue,
+        appeared: RenderItem[],
+        removed: RenderItem[],
+        matches: Map<RenderItem, RenderItem>,
+        duration: number
+    ) {
         const epsilon = 1e-9
 
         const arc = (item: RenderItem) => item.shape as RenderItemArc
@@ -117,13 +121,10 @@ export default class Transition {
 
             const before = (newByEnd.get(key(item, start)) ?? []).filter(other => !visited.has(other))
 
-            const matched = before.find(other => matches.has(other))
+            const old = firstMappedValue(before, matches)
 
-            if (matched) {
-                const old = matches.get(matched)!
-
+            if (old)
                 return arc(old).current(old.animation.morph).endAngle
-            }
 
             return before.length > 0
                    ? previousEnd(before[0], visited)
@@ -137,10 +138,10 @@ export default class Transition {
 
             const before = (oldByEnd.get(key(item, start)) ?? []).filter(other => !visited.has(other))
 
-            const matched = before.find(other => newByOld.has(other))
+            const matchedNew = firstMappedValue(before, newByOld)
 
-            if (matched)
-                return arc(newByOld.get(matched)!).endAngle
+            if (matchedNew)
+                return arc(matchedNew).endAngle
 
             return before.length > 0
                    ? nextEnd(before[0], visited)

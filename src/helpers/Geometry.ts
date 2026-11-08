@@ -14,11 +14,11 @@ export function lerp(from: number, to: number, t: number) {
 }
 
 export function samePoint(a: Point | null | undefined, b: Point | null | undefined) {
-    return a?.x === b?.x && a?.y === b?.y
+    return a?.x == b?.x && a?.y == b?.y
 }
 
 export function sameRect(a: RectangleDimensions, b: RectangleDimensions) {
-    return a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height
+    return a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height
 }
 
 export function copyRect({ x, y, width, height }: RectangleDimensions): RectangleDimensions {
@@ -31,11 +31,13 @@ export function contains(rect: RectangleDimensions, point: Point | null) {
            && rect.y <= point.y && point.y <= rect.y + rect.height
 }
 
-export function placeNear(point: Point,
-                          width: number,
-                          height: number,
-                          offset: number,
-                          bounds: RectangleDimensions): Point {
+export function placeNear(
+    point: Point,
+    width: number,
+    height: number,
+    offset: number,
+    bounds: RectangleDimensions
+): Point {
     let x = point.x + offset
     let y = point.y + offset
 
@@ -48,6 +50,10 @@ export function placeNear(point: Point,
     return { x: Math.max(x, bounds.x), y: Math.max(y, bounds.y) }
 }
 
+export function toRadians(degrees: number) {
+    return degrees * Math.PI / 180
+}
+
 export function normalizeAngle(angle: number) {
     return Math.atan2(Math.sin(angle), Math.cos(angle))
 }
@@ -56,15 +62,23 @@ export function boxEdgeDistance(angle: number, halfWidth: number, halfHeight: nu
     const cos = Math.abs(Math.cos(angle))
     const sin = Math.abs(Math.sin(angle))
 
-    if (sin > 1e-6 && (distance + halfHeight) / sin * cos <= halfWidth)
-        return (distance + halfHeight) / sin - distance
+    if (sin > 1e-6) {
+        const horizontalEdgeCenter = (distance + halfHeight) / sin
 
-    if (cos > 1e-6 && (distance + halfWidth) / cos * sin <= halfHeight)
-        return (distance + halfWidth) / cos - distance
+        if (horizontalEdgeCenter * cos <= halfWidth)
+            return horizontalEdgeCenter - distance
+    }
 
-    const b = cos * halfWidth + sin * halfHeight
+    if (cos > 1e-6) {
+        const verticalEdgeCenter = (distance + halfWidth) / cos
 
-    const discriminant = b * b - halfWidth * halfWidth - halfHeight * halfHeight + distance * distance
+        if (verticalEdgeCenter * sin <= halfHeight)
+            return verticalEdgeCenter - distance
+    }
 
-    return b + Math.sqrt(Math.max(discriminant, 0)) - distance
+    const cornerProjection = cos * halfWidth + sin * halfHeight
+
+    const discriminant = cornerProjection * cornerProjection - halfWidth * halfWidth - halfHeight * halfHeight + distance * distance
+
+    return cornerProjection + Math.sqrt(Math.max(discriminant, 0)) - distance
 }

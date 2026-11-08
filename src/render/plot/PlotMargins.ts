@@ -34,7 +34,7 @@ export function getMargin(
 
 function getLeftMargin(units: Units, leftTitle: string, leftLabels: string[]) {
     const titleWidth = leftTitle ? AXIS_TITLE_FONT + LEFT_GAP : 0
-    const labelsWidth = maxOf(leftLabels, label => stringWidth(label, AXIS_LABEL_FONT))
+    const labelsWidth = Math.max(maxOf(leftLabels, label => stringWidth(label, AXIS_LABEL_FONT)), 0)
 
     return units.x(LEFT_PADDING + titleWidth + labelsWidth + LEFT_GAP)
 }

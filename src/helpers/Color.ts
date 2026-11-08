@@ -103,9 +103,10 @@ export function grayScale(color: string, amount: number = 1) {
 
     const gray = .3 * rgb.r + .59 * rgb.g + .11 * rgb.b
 
-    const channels = [rgb.r, rgb.g, rgb.b].map(channel => toHex(lerp(channel, gray, amount))).join('')
+    const grayChannels = [rgb.r, rgb.g, rgb.b].map(channel => lerp(channel, gray, amount))
+    const alpha = expandHex(color).slice(7)
 
-    return '#' + channels + expandHex(color).slice(7)
+    return '#' + grayChannels.map(toHex).join('') + alpha
 }
 
 export function paletteColor(index: number) {

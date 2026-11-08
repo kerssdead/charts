@@ -7,6 +7,7 @@ import Theme from '@/Theme'
 import { GradientCache } from '@/helpers/Canvas'
 import { clamp, lerp } from '@/helpers/Geometry'
 import type RenderItemText from '@/types/RenderItemText'
+import { ArcEdge } from '@/static/Enums'
 
 const FULL_CIRCLE_EPSILON = 1e-6
 
@@ -43,8 +44,13 @@ type Shape = {
     middle: number
 }
 
-export default class RenderItemArc
-    extends RenderItemBase {
+type Ring = {
+    radius: number
+    cornerRadius: number
+    isOuter: boolean
+}
+
+export default class RenderItemArc extends RenderItemBase {
     isFill: boolean = false
 
     isGradient: boolean = false
@@ -168,10 +174,15 @@ export default class RenderItemArc
 
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
         const shape = this.shape(item.animation.init)
+        const fill = item.fill
 
-        if (this.isGradient)
-            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, item.fill!,
-                shape.y - this.canvas.radius, shape.y + this.canvas.radius)
+        if (this.isGradient && fill)
+            ctx.fillStyle = ctx.strokeStyle = this.gradient.get(
+                ctx,
+                fill,
+                shape.y - this.canvas.radius,
+                shape.y + this.canvas.radius
+            )
 
         if (isFullCircle(shape.end - shape.start))
             this.circle(ctx, shape)
@@ -206,9 +217,10 @@ export default class RenderItemArc
     }
 
     private leader(ctx: CanvasRenderingContext2D, shape: Shape) {
-        const visibility = this.leaderLabel?.animation.visibility ?? 0
+        const label = this.leaderLabel
+        const visibility = label?.animation.visibility ?? 0
 
-        if (visibility <= 0)
+        if (!label || visibility <= 0)
             return
 
         const anchorAngle = shape.middle + this.canvas.leaderAnchor
@@ -228,7 +240,6 @@ export default class RenderItemArc
 
         const endX = x + end * Math.cos(labelAngle)
         const endY = y + end * Math.sin(labelAngle)
-        const label = this.leaderLabel!
 
         label.shape.adjust(this.window, label.animation.morph)
 
@@ -264,27 +275,22 @@ export default class RenderItemArc
 
         const sin = Math.sin(Math.min(angle, Math.PI) / 2)
         const outer = this.canvas.radius
-        const half = Math.min(this.canvas.gap / 2, outer * sin / 2)
+        const halfGap = Math.min(this.canvas.gap / 2, outer * sin / 2)
 
-        const isApex = this.canvas.innerRadius * sin <= half
-        const inner = isApex
-                      ? Math.max(Math.min(half / sin, this.canvas.gap), this.canvas.innerRadius)
-                      : this.canvas.innerRadius
+        const isApex = this.canvas.innerRadius * sin <= halfGap
+        const apexRadius = Math.max(Math.min(halfGap / sin, this.canvas.gap), this.canvas.innerRadius)
+        const inner = isApex ? apexRadius : this.canvas.innerRadius
 
-        const radial = (outer - inner) / 2
-        const outerCorner = Math.max(Math.min(
-            this.canvas.cornerRadius,
-            radial,
-            angle < Math.PI ? (outer * sin - half) / (1 + sin) : Infinity
-        ), 0)
-        const innerCorner = isApex ? 0 : Math.max(Math.min(
-            this.canvas.cornerRadius,
-            radial,
-            sin < 1 ? (inner * sin - half) / (1 - sin) : Infinity
-        ), 0)
+        const radialLimit = (outer - inner) / 2
+        const outerArcLimit = angle < Math.PI ? (outer * sin - halfGap) / (1 + sin) : Infinity
+        const innerArcLimit = sin < 1 ? (inner * sin - halfGap) / (1 - sin) : Infinity
 
-        const outerStart = this.corner(shape, shape.start, 1, outer, outerCorner, true, half)
-        const outerEnd = this.corner(shape, shape.end, -1, outer, outerCorner, true, half)
+        const outerCorner = Math.max(Math.min(this.canvas.cornerRadius, radialLimit, outerArcLimit), 0)
+        const innerCorner = isApex ? 0 : Math.max(Math.min(this.canvas.cornerRadius, radialLimit, innerArcLimit), 0)
+
+        const outerRing = { radius: outer, cornerRadius: outerCorner, isOuter: true }
+        const outerStart = this.corner(shape, ArcEdge.Start, outerRing, halfGap)
+        const outerEnd = this.corner(shape, ArcEdge.End, outerRing, halfGap)
 
         this.cornerArc(ctx, outerStart, outerCorner, outerStart.edge, outerStart.circle)
         ctx.arc(shape.x, shape.y, outer, outerStart.angle, outerEnd.angle)
@@ -293,8 +299,9 @@ export default class RenderItemArc
         if (isApex) {
             ctx.lineTo(shape.x + inner * Math.cos(shape.middle), shape.y + inner * Math.sin(shape.middle))
         } else {
-            const innerEnd = this.corner(shape, shape.end, -1, inner, innerCorner, false, half)
-            const innerStart = this.corner(shape, shape.start, 1, inner, innerCorner, false, half)
+            const innerRing = { radius: inner, cornerRadius: innerCorner, isOuter: false }
+            const innerEnd = this.corner(shape, ArcEdge.End, innerRing, halfGap)
+            const innerStart = this.corner(shape, ArcEdge.Start, innerRing, halfGap)
 
             this.cornerArc(ctx, innerEnd, innerCorner, innerEnd.edge, innerEnd.circle)
             ctx.arc(shape.x, shape.y, inner, innerEnd.angle, innerStart.angle, true)
@@ -312,17 +319,11 @@ export default class RenderItemArc
         ctx.arc(center.x, center.y, radius, from, from + turn, turn < 0)
     }
 
-    private corner(
-        shape: Shape,
-        edgeAngle: number,
-        side: 1 | -1,
-        radius: number,
-        corner: number,
-        isOuter: boolean,
-        half: number
-    ) {
-        const offset = half + corner
-        const distance = isOuter ? radius - corner : radius + corner
+    private corner(shape: Shape, edge: ArcEdge, { radius, cornerRadius, isOuter }: Ring, halfGap: number) {
+        const edgeAngle = edge == ArcEdge.Start ? shape.start : shape.end
+        const side = edge == ArcEdge.Start ? 1 : -1
+        const offset = halfGap + cornerRadius
+        const distance = isOuter ? radius - cornerRadius : radius + cornerRadius
         const along = Math.sqrt(Math.max(distance * distance - offset * offset, 0))
 
         const angle = edgeAngle + Math.atan2(side * offset, along)
@@ -330,8 +331,8 @@ export default class RenderItemArc
         const x = shape.x + distance * Math.cos(angle)
         const y = shape.y + distance * Math.sin(angle)
 
-        const edgeX = shape.x + along * Math.cos(edgeAngle) - side * half * Math.sin(edgeAngle)
-        const edgeY = shape.y + along * Math.sin(edgeAngle) + side * half * Math.cos(edgeAngle)
+        const edgeX = shape.x + along * Math.cos(edgeAngle) - side * halfGap * Math.sin(edgeAngle)
+        const edgeY = shape.y + along * Math.sin(edgeAngle) + side * halfGap * Math.cos(edgeAngle)
 
         return {
             x,

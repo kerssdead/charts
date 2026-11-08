@@ -31,7 +31,7 @@ export default class CustomTooltip {
         let last: { data: ItemData, html: string } | null = null
 
         return data => {
-            if (last?.data !== data)
+            if (last?.data != data)
                 last = {
                     data,
                     html: template.innerHTML.replace(PLACEHOLDER, (_, key: string) => escapeHtml(data[key]))
@@ -54,7 +54,7 @@ export default class CustomTooltip {
     }
 
     show(html: string, point: Point) {
-        if (html !== this.html || !this.element) {
+        if (html != this.html || !this.element) {
             this.hide()
 
             this.element = this.build(html)

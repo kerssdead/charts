@@ -12,15 +12,16 @@ const REVOKE_DELAY = 1000
 
 const CSV_FORMULA = /^[=+\-@\t\r]/
 
+type PngOptions = {
+    ratio: number
+    title: string
+    exclude?: DOMRect
+    isDark?: () => boolean
+    prepare?: () => void
+}
+
 export default class Export {
-    static asPng(
-        canvas: HTMLCanvasElement,
-        ratio: number,
-        title: string,
-        exclude?: DOMRect,
-        isDark?: () => boolean,
-        prepare?: () => void
-    ) {
+    static asPng(canvas: HTMLCanvasElement, { ratio, title, exclude, isDark, prepare }: PngOptions) {
         requestAnimationFrame(() => {
             prepare?.()
 
@@ -105,9 +106,11 @@ export default class Export {
             const table = Decomposition.getRows(chart)
             const { headers, values } = table
 
+            const headerRow = ['', ...headers.map(header => header.display)]
             const rows = values.map(row => [row.name, ...headers.map(header => row.values.get(header.value))])
+            const totalsRow = ['', ...getTotals(table)]
 
-            return [['', ...headers.map(header => header.display)], ...rows, ['', ...getTotals(table)]]
+            return [headerRow, ...rows, totalsRow]
                 .map(row => row.map(escape).join(','))
                 .join('\n')
         })

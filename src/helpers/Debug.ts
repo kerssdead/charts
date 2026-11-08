@@ -6,7 +6,7 @@ export default class Debug {
         if (!settings.enableDebugMode)
             return
 
-        console.log('OCharts:', Debug.json({
+        console.log('OCharts:', {
             input,
             settings,
             size: {
@@ -14,14 +14,6 @@ export default class Debug {
                 height: canvas.parentElement?.clientHeight
             },
             theme: ColorTheme[Theme.currentTheme]
-        }))
-    }
-
-    private static json(value: object) {
-        try {
-            return JSON.stringify(value)
-        } catch {
-            return value
-        }
+        })
     }
 }

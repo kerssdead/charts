@@ -3,7 +3,7 @@ import { getCellNumber, TreeBarEntry } from '@/types/data/TreeBarData'
 import { SORT_ASCENDING, SORT_DESCENDING } from '@/render/treeBar/TreeBarConstants'
 
 function isMissing(value: string | number | undefined) {
-    return value == undefined || value === ''
+    return String(value ?? '') == ''
 }
 
 export function sortRows(

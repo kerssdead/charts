@@ -63,7 +63,7 @@ export default class PlotStackedColumnItems {
                 y: bottomY,
                 width,
                 height: bottomY - topY,
-                isTop: this.stackTops.get(key) === series,
+                isTop: this.stackTops.get(key) == series,
                 hasBreakMark: !series.disabled && layout.isAboveYMax(top) && !layout.isAboveYMax(stack)
             }]
         })

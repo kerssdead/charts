@@ -21,7 +21,7 @@ describe('Getting plot titles', () => {
         const text = title.shape as RenderItemText
 
         expect(title.key)
-            .toBe('axis-title-x')
+            .toBe('axis-title-left')
         expect(text.value)
             .toBe('Orders')
         expect(text.absolute)
@@ -35,7 +35,7 @@ describe('Getting plot titles', () => {
         const text = title.shape as RenderItemText
 
         expect(title.key)
-            .toBe('axis-title-y')
+            .toBe('axis-title-bottom')
         expect(text.value)
             .toBe('Days')
         expect(text.absolute)

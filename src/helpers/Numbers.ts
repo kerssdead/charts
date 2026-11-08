@@ -1,5 +1,3 @@
-import { maxOf } from '@/helpers/Collections'
-
 const NEGLIGIBLE = 0.01
 
 export function getRoundedValues(
@@ -7,14 +5,14 @@ export function getRoundedValues(
     targetTicks: number = 5,
     max?: number
 ) {
-    if (!Array.isArray(all) || all.length === 0 || targetTicks < 2) {
+    if (!Array.isArray(all) || all.length == 0 || targetTicks < 2) {
         return []
     }
 
     const lowest = all.reduce((acc, value) => Math.min(acc, value), 0)
-    const highest = maxOf(all, value => value)
+    const highest = all.reduce((acc, value) => Math.max(acc, value), 0)
 
-    if (!Number.isFinite(lowest) || !Number.isFinite(highest) || lowest === 0 && highest === 0) {
+    if (!Number.isFinite(lowest) || !Number.isFinite(highest) || lowest == 0 && highest == 0) {
         return []
     }
 
@@ -78,9 +76,9 @@ export function getRoundedValues(
 
     const remaining = intervals - negIntervals - posIntervals
 
-    if (minVal === 0) {
+    if (minVal == 0) {
         posIntervals += remaining
-    } else if (maxVal === 0) {
+    } else if (maxVal == 0) {
         negIntervals += remaining
     } else {
         for (let i = 0; i < remaining; i++) {
@@ -171,11 +169,11 @@ function normalizeByDetection(text: string) {
 }
 
 export function parseNumber(value: string | number | null | undefined, locale?: string): number {
-    if (value == null || value === '')
-        return 0
-
     if (typeof value == 'number')
         return value
+
+    if (value == null || value == '')
+        return 0
 
     let text = String(value).replace(GROUP_SPACES, '')
     let sign = 1

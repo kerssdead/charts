@@ -322,4 +322,34 @@ describe('Rendering line', () => {
         expect([ctx.save.mock.calls.length, ctx.clip.mock.calls.length])
             .toEqual([0, 0])
     })
+
+    it('Should skip gradient when item has no fill colour', () => {
+        const ctx = { ...context(), createLinearGradient: jest.fn() }
+        const shape = new RenderItemLine()
+
+        shape.canvas = STOPS
+        shape.isGradient = true
+
+        shape.render(ctx as unknown as CanvasRenderingContext2D, new RenderItem(shape))
+
+        expect(ctx.createLinearGradient)
+            .not.toHaveBeenCalled()
+    })
+
+    it('Should skip area fill when item has no fill colour', () => {
+        const layer = layerContext()
+        const shape = new RenderItemLine()
+
+        mockLayer.current = layer
+
+        shape.absolute = AREA_STOPS
+        shape.areaBaseline = 400
+        shape.adjust(WINDOW)
+
+        shape.render(context() as unknown as CanvasRenderingContext2D, new RenderItem(shape))
+
+        expect(layer.fill)
+            .not.toHaveBeenCalled()
+    })
+
 })

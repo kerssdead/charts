@@ -40,9 +40,9 @@ describe('Getting pie data', () => {
         const items = getItems(create({ values: [sector('A', 1), sector('B', 3)] }))
 
         expect([getArc(items, 'sector-0').startAngle, getArc(items, 'sector-0').endAngle])
-            .toEqual([0, Math.PI / 2])
+            .toEqual([-Math.PI / 2, 0])
         expect([getArc(items, 'sector-1').startAngle, getArc(items, 'sector-1').endAngle])
-            .toEqual([Math.PI / 2, Math.PI * 2])
+            .toEqual([0, Math.PI * 3 / 2])
     })
 
     it('Should show label and tooltip text', () => {

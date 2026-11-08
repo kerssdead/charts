@@ -76,9 +76,9 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
 
         this.nameWidth = TreeBarLayout.getNameWidth(allEntries, this.width)
         this.columns = TreeBarLayout.getColumns(data.columns ?? [], allEntries, contentRight, this.width)
-        this.barLabelWidth = maxOf(allEntries, ({ node }) => {
+        this.barLabelWidth = Math.max(maxOf(allEntries, ({ node }) => {
             return node.barLabel ? stringWidth(node.barLabel, BAR_LABEL_FONT_SIZE) + BAR_LABEL_GAP : 0
-        })
+        }), 0)
         this.barArea = TreeBarLayout.getBarArea(this.nameWidth, this.columns, contentRight, this.barLabelWidth)
 
         this.ticks = getRoundedValues(allEntries.map(({ node }) => getTreeBarTotal(node)), TICKS)

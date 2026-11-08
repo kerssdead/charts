@@ -24,6 +24,12 @@ type MenuState = {
     buttons: ButtonOptions[]
 }
 
+type MenuContent = {
+    bounds: RectangleDimensions
+    buttons: ButtonOptions[]
+    isInteractive: boolean
+}
+
 type BuildKey = {
     state: MenuState
     window: RectangleDimensions
@@ -53,11 +59,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         const previous = this.state
         const isSame = previous != null && samePoint(previous.point, point)
 
-        const targetButtons = !fixedButtons && !target
-                              ? []
-                              : isSame
-                                ? previous.buttons
-                                : fixedButtons ?? fromDropdownItems(this.menu, target?.data ?? undefined)
+        const targetButtons = this.getTargetButtons(isSame, fixedButtons, target)
 
         const isVisible = point != null && targetButtons.length > 0
 
@@ -97,7 +99,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
             this.remove(queue)
 
             this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => {
-                this.build(builder, window, bounds, buttons, isVisible)
+                this.build(builder, window, { bounds, buttons, isInteractive: isVisible })
             }))
 
             this.built = {
@@ -135,7 +137,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         const built = this.built
 
         return built != null
-               && built.state === this.state
+               && built.state == this.state
                && built.isInteractive == isInteractive
                && sameRect(built.window, window)
     }
@@ -173,11 +175,8 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         return { x, y, width, height }
     }
 
-    private build(items: QueueItemsBuilder,
-                  window: CanvasWindow,
-                  bounds: RectangleDimensions,
-                  buttons: ButtonOptions[],
-                  isInteractive: boolean) {
+    private build(items: QueueItemsBuilder, window: CanvasWindow, content: MenuContent) {
+        const { bounds, buttons, isInteractive } = content
         const { x, width } = bounds
 
         const units = Units.fromWindow(window)
@@ -218,7 +217,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
                 rect.menuButton()
                     .onClick(buttons[index].action)
 
-            this.buttonRects.push(rect.dispose())
+            this.buttonRects.push(rect.build())
 
             items.text(buttons[index].text)
                  .position(
@@ -230,6 +229,16 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
                  .color(Theme.text)
                  .layer(Layer.ContextMenu)
         })
+    }
+
+    private getTargetButtons(isSame: boolean, fixedButtons?: ButtonOptions[], target?: RenderItem) {
+        if (!fixedButtons && !target)
+            return []
+
+        if (isSame && this.state)
+            return this.state.buttons
+
+        return fixedButtons ?? fromDropdownItems(this.menu, target?.data ?? undefined)
     }
 
     private static getButtonColor(hover: HoverProgress | undefined) {

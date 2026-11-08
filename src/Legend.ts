@@ -13,7 +13,7 @@ import Theme from '@/Theme'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import TextResources from '@/static/TextResources'
-import { AnimationTiming, Layer } from '@/static/constants/Index'
+import { AnimationTiming, DEFAULT_FONT_SIZE, Layer } from '@/static/constants/Index'
 import { ChartType, LegendPlace, TextAlignment } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import ChartItem from '@/types/ChartItem'
@@ -32,7 +32,25 @@ const ITEM_GAP = 12
 
 const ITEM_EXTRA_WIDTH = 30
 
-const FONT_SIZE = 14
+const MAX_AREA_SHARE = .25
+
+const BUTTON_TEXT_PADDING = 12
+
+const ITEM_CORNER_RADIUS = 6
+
+const BUTTON_CORNER_RADIUS = 4
+
+const MARKER_CENTER_X = 11
+
+const MARKER_RADIUS = 3
+
+const TEXT_OFFSET_X = 22
+
+const STRIKE_OFFSET_Y = 1
+
+const DISABLED_TEXT_ALPHA = .5
+
+const CONTENT_LAYER = Layer.Legend + 2
 
 const RESET_KEY = 'reset'
 
@@ -93,7 +111,7 @@ class Legend extends Overlay {
     }
 
     getCurrentReserved(now: DOMHighResTimeStamp): Paddings {
-        return this.getReserved(this.area && this.getArea(this.getMoveProgress(now)))
+        return this.getReserved(this.area && this.getArea(this.area, this.getMoveProgress(now)))
     }
 
     get isMoving() {
@@ -136,7 +154,7 @@ class Legend extends Overlay {
     private get buttonWidth() {
         return this.settings.disableInteractions
                ? 0
-               : stringWidth(TextResources.reset) + 12
+               : stringWidth(TextResources.reset) + BUTTON_TEXT_PADDING
     }
 
     constructor(settings: ChartSettings) {
@@ -171,17 +189,20 @@ class Legend extends Overlay {
         this.units = Units.fromSize(width, height)
         this.top = top
 
-        if (this.isVertical)
-            this.calculateVertical(width, height)
-        else
-            this.calculateHorizontal(width, height)
+        const area = this.isVertical
+                     ? this.calculateVertical(width, height)
+                     : this.calculateHorizontal(width, height)
+
+        this.area = area
 
         this.button = this.settings.disableInteractions
                       ? undefined
-                      : new DOMRect(this.area!.x + this.area!.width - PADDING_X - this.buttonWidth,
-                          this.area!.y + PADDING_Y,
+                      : new DOMRect(
+                          area.x + area.width - PADDING_X - this.buttonWidth,
+                          area.y + PADDING_Y,
                           this.buttonWidth,
-                          ITEM_HEIGHT)
+                          ITEM_HEIGHT
+                      )
 
         this.isDirty = true
     }
@@ -215,7 +236,7 @@ class Legend extends Overlay {
         this.clear(queue)
 
         const builder = new QueueItemsBuilder()
-        const area = this.getArea(progress)
+        const area = this.getArea(this.area, progress)
 
         builder.rect()
                .box(this.units, area)
@@ -228,7 +249,7 @@ class Legend extends Overlay {
                })
 
         const resetBackground = this.button && this.buildButton(builder, this.button, this.hover.value(RESET_KEY))
-        const added = builder.dispose()
+        const added = builder.build()
 
         if (resetBackground)
             this.backgrounds.set(RESET_KEY, resetBackground)
@@ -280,15 +301,18 @@ class Legend extends Overlay {
         this.isDirty = true
     }
 
-    private getArea(progress: number) {
-        const area = this.area!
+    private getArea(area: DOMRect, progress: number) {
         const from = this.fromArea
 
         if (!from)
             return area
 
-        return new DOMRect(lerp(from.x, area.x, progress), lerp(from.y, area.y, progress),
-            lerp(from.width, area.width, progress), lerp(from.height, area.height, progress))
+        return new DOMRect(
+            lerp(from.x, area.x, progress),
+            lerp(from.y, area.y, progress),
+            lerp(from.width, area.width, progress),
+            lerp(from.height, area.height, progress)
+        )
     }
 
     private getCurrent(entry: LegendEntry, progress: number): LegendEntry {
@@ -311,7 +335,7 @@ class Legend extends Overlay {
     private createEntry(entry: LegendEntry, hover: number, alpha: number) {
         const builder = new QueueItemsBuilder()
         const background = this.buildEntry(builder, entry, hover)
-        const items = builder.dispose()
+        const items = builder.build()
 
         for (const item of items)
             item.animation.alpha = alpha
@@ -336,58 +360,63 @@ class Legend extends Overlay {
     private buildEntry(items: QueueItemsBuilder, entry: LegendEntry, hover: number) {
         const { value, label, x, y, width } = entry
         const centerY = y + ITEM_HEIGHT / 2
-        const textX = x + 22
+        const textX = x + TEXT_OFFSET_X
         const isDisabled = value.disabled || value.isBlank
-        const textColor = isDisabled ? withAlpha(Theme.text, .5) : Theme.text
+        const textColor = isDisabled ? withAlpha(Theme.text, DISABLED_TEXT_ALPHA) : Theme.text
 
-        const background = this.buttonRect(
-            items,
-            this.units,
-            { x, y, width, height: ITEM_HEIGHT },
-            6,
+        const background = this.buttonRect(items, this.units, {
+            rect: { x, y, width, height: ITEM_HEIGHT },
+            radius: ITEM_CORNER_RADIUS,
             hover,
-            () => this.toggle(value)
-        )
+            onClick: () => this.toggle(value)
+        })
 
         items.arc()
-             .position(this.units.x(x + 11), this.units.y(centerY))
-             .radius(this.units.x(3))
+             .position(this.units.x(x + MARKER_CENTER_X), this.units.y(centerY))
+             .radius(this.units.x(MARKER_RADIUS))
              .fill()
              .color(isDisabled ? grayScale(value.color) : value.color)
-             .layer(Layer.Legend + 2)
+             .layer(CONTENT_LAYER)
              .fixed()
 
         items.text(label)
              .position(this.units.x(textX), this.units.y(centerY))
-             .size(FONT_SIZE)
+             .size(DEFAULT_FONT_SIZE)
              .align(TextAlignment.Left)
              .color(textColor)
-             .layer(Layer.Legend + 2)
+             .layer(CONTENT_LAYER)
              .fixed()
 
         if (isDisabled)
             items.line()
-                 .stop(this.units.x(textX), this.units.y(centerY + 1))
-                 .stop(this.units.x(textX + stringWidth(label)), this.units.y(centerY + 1))
+                 .stop(this.units.x(textX), this.units.y(centerY + STRIKE_OFFSET_Y))
+                 .stop(this.units.x(textX + stringWidth(label)), this.units.y(centerY + STRIKE_OFFSET_Y))
                  .color(textColor)
-                 .layer(Layer.Legend + 2)
+                 .layer(CONTENT_LAYER)
                  .fixed()
 
-        return background.dispose()
+        return background.build()
     }
 
     private buildButton(items: QueueItemsBuilder, button: DOMRect, hover: number) {
-        const background = this.buttonRect(items, this.units, button, 4, hover, () => this.reset())
+        const background = this.buttonRect(items, this.units, {
+            rect: button,
+            radius: BUTTON_CORNER_RADIUS,
+            hover,
+            onClick: () => this.reset()
+        })
 
-        this.buttonText(items, this.units, button, TextResources.reset, FONT_SIZE)
+        this.buttonText(items, this.units, button, TextResources.reset, DEFAULT_FONT_SIZE)
 
-        return background.dispose()
+        return background.build()
     }
 
-    private calculateHorizontal(width: number, height: number) {
+    private calculateHorizontal(width: number, height: number): DOMRect {
         const buttonSpace = this.buttonWidth > 0 ? this.buttonWidth + ITEM_GAP : 0
         const available = Math.max(width - (PADDING_X + buttonSpace) * 2, 0)
-        const maxRows = Math.max(Math.floor((height / 4 - PADDING_Y * 2 + ROW_GAP) / (ITEM_HEIGHT + ROW_GAP)), 1)
+        const maxHeight = height * MAX_AREA_SHARE
+        const rowsHeight = maxHeight - PADDING_Y * 2
+        const maxRows = Math.max(Math.floor((rowsHeight + ROW_GAP) / (ITEM_HEIGHT + ROW_GAP)), 1)
 
         const rows: LegendEntry[][] = []
         let row: LegendEntry[] = []
@@ -419,8 +448,6 @@ class Legend extends Overlay {
         const areaHeight = PADDING_Y * 2 + rowsCount * ITEM_HEIGHT + (rowsCount - 1) * ROW_GAP
         const areaY = this.settings.legendPlace == LegendPlace.Top ? this.top : height - areaHeight
 
-        this.area = new DOMRect(0, areaY, width, areaHeight)
-
         this.entries = []
 
         rows.forEach((items, index) => {
@@ -437,18 +464,19 @@ class Legend extends Overlay {
                 this.entries.push(item)
             }
         })
+
+        return new DOMRect(0, areaY, width, areaHeight)
     }
 
-    private calculateVertical(width: number, height: number) {
+    private calculateVertical(width: number, height: number): DOMRect {
         const values = this.visibleValues()
         const widest = maxOf(values, value => stringWidth(Legend.getLabel(value))) + ITEM_EXTRA_WIDTH
         const minWidth = this.buttonWidth + PADDING_X * 2
         const preferredWidth = Math.max(widest, this.buttonWidth) + PADDING_X * 2
-        const areaWidth = Math.max(Math.min(preferredWidth, width / 4), minWidth)
+        const maxWidth = width * MAX_AREA_SHARE
+        const areaWidth = Math.max(Math.min(preferredWidth, maxWidth), minWidth)
         const available = areaWidth - PADDING_X * 2
         const areaX = this.settings.legendPlace == LegendPlace.Left ? 0 : width - areaWidth
-
-        this.area = new DOMRect(areaX, this.top, areaWidth, height - this.top)
 
         const buttonSpace = this.buttonWidth > 0 ? ITEM_HEIGHT + ROW_GAP : 0
         const availableHeight = height - this.top - PADDING_Y * 2 - buttonSpace
@@ -472,6 +500,8 @@ class Legend extends Overlay {
 
         for (const entry of this.entries)
             entry.x = areaX + (areaWidth - blockWidth) / 2
+
+        return new DOMRect(areaX, this.top, areaWidth, height - this.top)
     }
 
     private visibleValues(): Value[] {

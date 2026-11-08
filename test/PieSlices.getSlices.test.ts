@@ -5,7 +5,7 @@ describe('Getting slices', () => {
     it('Should place slices one after another by value', () => {
         const sectors = [new Sector({ value: 1 }), new Sector({ value: 3 })]
 
-        const slices = getSlices(toKeyedSectors(sectors), Math.PI / 2)
+        const slices = getSlices(toKeyedSectors(sectors), Math.PI / 2, 0)
 
         expect(slices.map(slice => [slice.startAngle, slice.angle]))
             .toEqual([
@@ -21,7 +21,7 @@ describe('Getting slices', () => {
             new Sector({ value: 0 })
         ]
 
-        const slices = getSlices(toKeyedSectors(sectors), 1)
+        const slices = getSlices(toKeyedSectors(sectors), 1, 0)
 
         expect(slices.map(slice => [slice.startAngle, slice.angle]))
             .toEqual([[0, 1], [1, 0], [1, 0]])
@@ -31,7 +31,7 @@ describe('Getting slices', () => {
         const grouped = [new Sector({ value: 1 })]
         const keyedSector = { sector: new Sector({ value: 1 }), key: 'other', groupedSectors: grouped }
 
-        const [slice] = getSlices([keyedSector], 1)
+        const [slice] = getSlices([keyedSector], 1, 0)
 
         expect(slice.key)
             .toBe('other')

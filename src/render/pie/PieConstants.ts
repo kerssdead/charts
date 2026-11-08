@@ -4,7 +4,7 @@ export const LEADER_LENGTH = 60
 
 export const PINNED_SECTOR_OFFSET = 12
 
-export const START_ANGLE = 0
+export const TOP_ANGLE = -Math.PI / 2
 
 
 export const ELONGATED_ASPECT_RATIO = 2.5

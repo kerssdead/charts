@@ -36,6 +36,10 @@ export default class HoverMap<K> {
         return this.items.keys()
     }
 
+    entries() {
+        return this.items.entries()
+    }
+
     value(key: K) {
         return this.items.get(key)?.value ?? 0
     }

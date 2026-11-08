@@ -69,9 +69,7 @@ export default class Queue {
 
         hoveredGroups.clear()
 
-        const top = this.findTop(item => {
-            return item.hoverGroup != null && item.isInteractive && !item.isInitializing && item.in(point)
-        })
+        const top = this.findTop(item => item.canHoverGroupAt(point))
 
         if (top?.hoverGroup)
             hoveredGroups.add(top.hoverGroup)

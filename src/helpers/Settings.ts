@@ -1,5 +1,5 @@
 import ChartSettings from '@/types/ChartSettings'
-import { ChartType, PlotType } from '@/static/Enums'
+import { ChartType, PlotAxisType, PlotType } from '@/static/Enums'
 import { normalizeColor, paletteColor, spreadColor } from '@/helpers/Color'
 import { deepClone, groupBy } from '@/helpers/Collections'
 import { parseNumber } from '@/helpers/Numbers'
@@ -15,6 +15,8 @@ import SegmentedBarData from '@/types/data/SegmentedBarData'
 import { mergeSameLabelValues } from '@/helpers/ValueMerging'
 import TreeBarRow from '@/types/TreeBarRow'
 import TreeBarData, { colorTreeBarRows, keepTreeBarState } from '@/types/data/TreeBarData'
+import PlotData from '@/types/data/PlotData'
+import Formatter from '@/helpers/Formatter'
 
 const BASE_COLOR_RANGE = 67
 
@@ -31,6 +33,7 @@ export function normalize(source: ChartSettings, scope?: Element): ChartSettings
         prepareValues(chart, settings.numberLocale)
         normalizeValues(chart.data?.values, settings.numberLocale, scope)
         normalizeValues(getStops(chart), settings.numberLocale, scope)
+        normalizeDates(chart)
         mergeSameLabelValues(chart)
     }
 
@@ -145,7 +148,7 @@ function normalizeValues(values: Value[] | undefined, numberLocale: string | und
         if (typeof value != 'string' && typeof value != 'number')
             return value
 
-        const number = value === '' ? NaN : parseNumber(value, numberLocale)
+        const number = String(value) == '' ? NaN : parseNumber(value, numberLocale)
 
         return Number.isFinite(number) ? number : null
     }
@@ -162,13 +165,30 @@ function normalizeValues(values: Value[] | undefined, numberLocale: string | und
         for (const point of (value as PlotSeries).values ?? []) {
             point.y = toNumber(point.y) ?? null
 
-            if (point.x === '')
+            if (String(point.x) == '')
                 point.x = TextResources.noLabel
         }
 
         normalizeValues((value as TreeValue).sectors, numberLocale, scope)
         normalizeValues((value as TreeBarRow).parts, numberLocale, scope)
         normalizeValues((value as TreeBarRow).children, numberLocale, scope)
+    }
+}
+
+function normalizeDates(chart: ChartItem) {
+    const data = chart.data as PlotData | undefined
+
+    if (chart.type != ChartType.Plot || data?.xType != PlotAxisType.Date)
+        return
+
+    // todo: unit-test: a Date and an ISO string for the same moment, or dates differing only in milliseconds
+    for (const series of data.values ?? []) {
+        for (const point of series.values ?? []) {
+            const date = Formatter.toDate(point.x)
+
+            if (!isNaN(date.getTime()))
+                point.x = date.toISOString()
+        }
     }
 }
 
@@ -180,10 +200,12 @@ export function applyDefaultColors(settings: ChartSettings, scope?: Element) {
     for (const chart of settings.charts.filter(isTreeBar))
         colorTreeBarRows((chart.data as TreeBarData | undefined)?.values, base ?? paletteColor(0))
 
-    const groups = groupBy(
-        settings.charts.filter(chart => !isTreeBar(chart)).flatMap(chart => chart.data?.values ?? []),
-        (value): string | Value => isShared ? Legend.getGroupKey(value, true) : value
-    )
+    const chartValues = settings.charts
+                                .filter(chart => !isTreeBar(chart))
+                                .flatMap(chart => chart.data?.values ?? [])
+    const getGroupKey = (value: Value): string | Value => isShared ? Legend.getGroupKey(value, true) : value
+
+    const groups = groupBy(chartValues, getGroupKey)
 
     for (const values of groups.values()) {
         const color = values.find(value => value.color)?.color

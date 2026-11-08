@@ -3,8 +3,7 @@ import { TextAlignment, TextBaseline } from '@/static/Enums'
 import RenderItemText, { Orbit } from '@/types/RenderItemText'
 import RenderItemArc from '@/types/RenderItemArc'
 
-export default class QueueTextItemBuilder
-    extends QueueItemBaseBuilder<RenderItemText> {
+export default class QueueTextItemBuilder extends QueueItemBaseBuilder<RenderItemText> {
     constructor(text: string) {
         super(new RenderItemText())
 

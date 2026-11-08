@@ -107,12 +107,12 @@ export default class Renderer {
         if (this.isApplied)
             this.rebuildAnimated()
         else
-            this.rebuild(false)
+            this.rebuild({ isInitialized: false })
 
         this.isApplied = true
     }
 
-    private rebuild(isInitialized: boolean) {
+    private rebuild({ isInitialized }: { isInitialized: boolean }) {
         Theme.update(this.settings.isDarkThemeFunction)
 
         this.queue.clear()
@@ -134,12 +134,12 @@ export default class Renderer {
 
     private rebuildAnimated() {
         if (this.settings.staticMode)
-            return this.rebuild(true)
+            return this.rebuild({ isInitialized: true })
 
         const previous = Transition.snapshot(this.queue)
         const previousPanels = this.panels
 
-        this.rebuild(true)
+        this.rebuild({ isInitialized: true })
 
         Transition.apply(this.queue, previous, previousPanels, this.panels, AnimationTiming.rebuild)
     }
@@ -156,7 +156,7 @@ export default class Renderer {
         const isResized = this.updateLayout()
 
         if (isResized && this.layout.hasArea)
-            this.rebuild(this.isLaidOut && !this.queue.items.some(item => item.isInitializing))
+            this.rebuild({ isInitialized: this.isLaidOut && !this.queue.items.some(item => item.isInitializing) })
         else
             this.render()
 
@@ -271,15 +271,15 @@ export default class Renderer {
 
         let isAnimating = this.queue.animate(hoverPosition, timestamp)
 
-        const isLegendMoving = this.legend?.isMoving
+        const movingLegend = this.legend?.isMoving ? this.legend : undefined
 
         const frame = { queue: this.queue, window, screen, mouse: position, context, now: timestamp }
 
         for (const overlay of this.overlays)
             isAnimating = overlay.update(frame) || isAnimating
 
-        if (isLegendMoving)
-            this.layout.fit(this.legend!.getCurrentReserved(timestamp))
+        if (movingLegend)
+            this.layout.fit(movingLegend.getCurrentReserved(timestamp))
 
         for (const panel of this.panels) {
             isAnimating = panel.animateScroll(timestamp) || isAnimating
@@ -338,8 +338,11 @@ export default class Renderer {
             const isEmpty = !!process?.isEmpty()
 
             const fixedData = isEmpty ? [] : process?.getFixedData() ?? []
-            const fixed = add([...fixedData, this.layout.getPanelTitle(chart.title, pixel)])
-            const content = add(isEmpty ? [this.layout.getEmpty()] : process?.getData() ?? [])
+            const contentData = isEmpty ? [this.layout.getEmpty()] : process?.getData() ?? []
+            const title = this.layout.getPanelTitle(chart.title, pixel)
+
+            const fixed = add([...fixedData, title])
+            const content = add(contentData)
 
             for (const item of content)
                 item.isScrollable = panel.scroll != null
@@ -410,6 +413,11 @@ export default class Renderer {
     private updateLayout() {
         const reserveMenuRow = this.settings.charts.some(chart => ProcessFactory.hasFixedHeader(chart.type))
 
-        return this.layout.update(this.settings.title, this.legend, this.menu.button, reserveMenuRow)
+        return this.layout.update({
+            title: this.settings.title,
+            legend: this.legend,
+            menu: this.menu.button,
+            reserveMenuRow
+        })
     }
 }

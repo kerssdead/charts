@@ -45,7 +45,7 @@ export default abstract class ChartProcess<
     }
 
     protected formatValue(value: number | Date | string) {
-        return Formatter.value(value, this.settings.valuePostfix)
+        return Formatter.value(value, this.settings.valuePostfix, this.settings.decimals)
     }
 
     protected tooltip(...rows: (string | undefined)[]) {

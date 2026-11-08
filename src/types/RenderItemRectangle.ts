@@ -38,8 +38,7 @@ type CanvasBox = {
     height: number
 }
 
-export default class RenderItemRectangle
-    extends RenderItemBase {
+export default class RenderItemRectangle extends RenderItemBase {
     isFill: boolean = false
 
     isGradient: boolean = false
@@ -212,7 +211,9 @@ export default class RenderItemRectangle
 
         ctx.roundRect(left, top, width, height, this.canvas.radii)
 
-        if (this.isGradient) {
+        const gradientFill = this.isGradient ? item.fill : undefined
+
+        if (gradientFill) {
             const scale = Math.abs(height)
 
             ctx.save()
@@ -221,7 +222,7 @@ export default class RenderItemRectangle
             ctx.scale(scale, scale)
 
             ctx.lineWidth /= scale
-            ctx.fillStyle = ctx.strokeStyle = unitVerticalGradient(ctx, item.fill!)
+            ctx.fillStyle = ctx.strokeStyle = unitVerticalGradient(ctx, gradientFill)
         }
 
         if (this.isFill) {
@@ -230,7 +231,7 @@ export default class RenderItemRectangle
 
         ctx.stroke()
 
-        if (this.isGradient)
+        if (gradientFill)
             ctx.restore()
 
         if (this.clip)

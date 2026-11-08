@@ -28,8 +28,7 @@ type TextCanvas = Point & {
     orbitHalfWidth: number
 }
 
-export default class RenderItemText
-    extends RenderItemBase {
+export default class RenderItemText extends RenderItemBase {
     value: string
 
     absolute: Point = { x: 0, y: 0 }

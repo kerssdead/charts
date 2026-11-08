@@ -101,13 +101,14 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
             return scan
 
         const target = queue.findTop(item => item.hasTooltipAt(point))
+        const templateHtml = this.template && target?.data ? this.template(target.data) : undefined
 
         this.scan = {
             point,
             version: queue.version,
             window: copyRect(window),
             template: target?.tooltipAt(point) ?? null,
-            html: (this.template && target?.data ? this.template(target.data) : target?.tooltipHtml) ?? null
+            html: templateHtml ?? target?.tooltipHtml ?? null
         }
 
         return this.scan
@@ -129,8 +130,13 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
         const width = maxOf(rows, row => stringWidth(row, Tooltip.fontSize)) + Tooltip.padding * 2
         const height = rows.length * Tooltip.rowHeight + Tooltip.padding * 2
 
-        const { x: left, y: top } = placeNear(point, width, height, Tooltip.offset,
-            { x: 0, y: 0, width: canvasWidth, height: canvasHeight })
+        const { x: left, y: top } = placeNear(
+            point,
+            width,
+            height,
+            Tooltip.offset,
+            { x: 0, y: 0, width: canvasWidth, height: canvasHeight }
+        )
 
         const units = Units.fromWindow(window)
 

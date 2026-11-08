@@ -67,7 +67,9 @@ export default class LinePathTracer {
         for (let i = 1; i < drawnStopCount; i++)
             traceCurveSegment(ctx, this.curveSegments[i - 1])
 
-        if (hasPartialStop)
-            traceCurveSegment(ctx, this.partialCurveSegment!)
+        const partialSegment = this.partialCurveSegment
+
+        if (hasPartialStop && partialSegment)
+            traceCurveSegment(ctx, partialSegment)
     }
 }
