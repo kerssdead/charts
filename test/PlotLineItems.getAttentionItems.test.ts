@@ -27,7 +27,7 @@ describe('Getting plot attention line items', () => {
         expect((items[0].shape as RenderItemLine).absolute)
             .toEqual([{ x: layout.margin.left, y }, { x: 5000 - layout.margin.right, y }])
         expect(items[0].key)
-            .toBe('1-attention')
+            .toBe('series-1-attention')
     })
 
     it('Should not cap line by y max', () => {

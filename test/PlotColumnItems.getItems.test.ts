@@ -93,7 +93,7 @@ describe('Getting plot column items', () => {
         const { x, width } = rects[1].absolute
 
         expect(marks.map(mark => mark.key))
-            .toEqual(['0-break-1'])
+            .toEqual(['series-2-break-C1-0'])
         expect((marks[0].shape as RenderItemLine).absolute)
             .toEqual([
                 { x: x - width / 2, y: valueScale.getCoordinate(100) + 11 },

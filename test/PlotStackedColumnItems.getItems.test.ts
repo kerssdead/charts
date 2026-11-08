@@ -112,9 +112,9 @@ describe('Getting plot stacked column items', () => {
     it('Should mark only stack part cut by y max', () => {
         const { layout, rects, marks } = getStacks(
             [
-                createSeries(PlotType.StackingColumn, [60]),
-                createSeries(PlotType.StackingColumn, [60]),
-                createSeries(PlotType.StackingColumn, [60])
+                createSeries(PlotType.StackingColumn, [60], { id: 'a' }),
+                createSeries(PlotType.StackingColumn, [60], { id: 'b' }),
+                createSeries(PlotType.StackingColumn, [60], { id: 'c' })
             ],
             { yMax: 100 }
         )
@@ -122,7 +122,7 @@ describe('Getting plot stacked column items', () => {
         const { x, width } = rects[1][0].absolute
 
         expect(marks.map(seriesMarks => seriesMarks.map(mark => mark.key)))
-            .toEqual([[], ['1-break-0'], []])
+            .toEqual([[], ['b-break-C0-0'], []])
         expect((marks[1][0].shape as RenderItemLine).absolute)
             .toEqual([{ x, y: top + 11 }, { x: x + width, y: top + 5 }])
     })

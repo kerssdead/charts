@@ -12,6 +12,7 @@ export const UNITS = new Units({ x: 1, y: 1 })
 export function createSeries(type: PlotType, ys: (number | null)[], extra: Partial<PlotSeries> = {}) {
     return {
         type,
+        id: `series-${ type }`,
         label: `Series ${ type }`,
         color: '#ff0000',
         width: 2,

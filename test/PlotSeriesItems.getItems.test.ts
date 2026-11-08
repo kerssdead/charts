@@ -25,7 +25,7 @@ describe('Getting plot series items', () => {
             const values = [{ x: 'A', y: 1 }, { x: 'A', y: 2 }, { x: 'B', y: 3 }]
 
             expect(getKeys([createSeries(type, [], { values })]))
-                .toEqual(['0-rect-0', '0-rect-1', '0-rect-2'])
+                .toEqual([`series-${ type }-rect-A-0`, `series-${ type }-rect-A-1`, `series-${ type }-rect-B-0`])
         }
     )
 
@@ -37,7 +37,13 @@ describe('Getting plot series items', () => {
             createSeries(PlotType.Bar, [1]),
             createSeries(PlotType.AttentionLine, [1])
         ]))
-            .toEqual(['0-line-0', '1-rect-0', '2-rect-0', '3-rect-0', '4-attention'])
+            .toEqual([
+                'series-0-line-0',
+                'series-2-rect-C0-0',
+                'series-4-rect-C0-0',
+                'series-3-rect-C0-0',
+                'series-1-attention'
+            ])
     })
 
     it('Should skip disabled lines and attention lines', () => {
@@ -46,7 +52,7 @@ describe('Getting plot series items', () => {
             createSeries(PlotType.AttentionLine, [1], { disabled: true }),
             createSeries(PlotType.Column, [1])
         ]))
-            .toEqual(['2-rect-0'])
+            .toEqual(['series-2-rect-C0-0'])
     })
 
     it('Should keep disabled columns, stacks and bars as ghosts', () => {
@@ -58,7 +64,7 @@ describe('Getting plot series items', () => {
         ]).getItems())
 
         expect(items.filter(item => item.isGhost).map(item => item.key))
-            .toEqual(['0-rect-0', '1-rect-0', '2-rect-0'])
+            .toEqual(['series-2-rect-C0-0', 'series-4-rect-C0-0', 'series-3-rect-C0-0'])
     })
 
     it('Should restart stacks on every call', () => {
@@ -73,7 +79,7 @@ describe('Getting plot series items', () => {
         const items = buildItems(create([createSeries(PlotType.Area, [1])]).getItems())
 
         expect([items.map(item => item.key), (items[0].shape as RenderItemLine).areaBaseline])
-            .toEqual([['0-line-0'], expect.any(Number)])
+            .toEqual([['series-5-line-0'], expect.any(Number)])
     })
 
     it('Should skip disabled areas', () => {
@@ -81,6 +87,6 @@ describe('Getting plot series items', () => {
             createSeries(PlotType.Area, [1], { disabled: true }),
             createSeries(PlotType.Column, [1])
         ]))
-            .toEqual(['1-rect-0'])
+            .toEqual(['series-2-rect-C0-0'])
     })
 })

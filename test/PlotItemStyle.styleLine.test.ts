@@ -17,11 +17,11 @@ const styleLine = (all: PlotSeries[], series: PlotSeries, suffix: string) => {
 }
 
 describe('Styling plot line', () => {
-    it('Should key line by series index and suffix', () => {
-        const series = createSeries(PlotType.Line, [1])
+    it('Should key line by series id and suffix', () => {
+        const series = createSeries(PlotType.Line, [1], { id: 'sales' })
 
         expect(styleLine([createSeries(PlotType.Column, [1]), series], series, 'line').key)
-            .toBe('1-line')
+            .toBe('sales-line')
     })
 
     it('Should draw interactive line above data with series width and color', () => {
@@ -41,10 +41,10 @@ describe('Styling plot line', () => {
     })
 
     it('Should group hover only with several enabled series', () => {
-        const series = createSeries(PlotType.Line, [1])
+        const series = createSeries(PlotType.Line, [1], { id: 'sales' })
 
-        expect(styleLine([series, createSeries(PlotType.Line, [1])], series, 'line').hoverGroup)
-            .toBe('0')
+        expect(styleLine([series, createSeries(PlotType.Line, [1], { id: 'costs' })], series, 'line').hoverGroup)
+            .toBe('sales')
         expect(styleLine([series], series, 'line').hoverGroup)
             .toBeNull()
     })

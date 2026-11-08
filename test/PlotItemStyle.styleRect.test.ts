@@ -18,11 +18,26 @@ const styleRect = (all: PlotSeries[], series: PlotSeries, slot: number, valueInd
 }
 
 describe('Styling plot rectangle', () => {
-    it('Should key rectangle by series index and value index', () => {
-        const series = createSeries(PlotType.Column, [1, 2, 3])
+    it('Should key rectangle by series id and point x', () => {
+        const series = createSeries(PlotType.Column, [1, 2, 3], { id: 'sales' })
 
         expect(styleRect([createSeries(PlotType.Line, [1]), series], series, 0, 2).key)
-            .toBe('1-rect-2')
+            .toBe('sales-rect-C2-0')
+    })
+
+    it('Should keep key when series is inserted before', () => {
+        const series = createSeries(PlotType.Column, [1], { id: 'sales' })
+
+        expect(styleRect([createSeries(PlotType.Column, [1], { id: 'costs' }), series], series, 0).key)
+            .toBe(styleRect([series], series, 0).key)
+    })
+
+    it('Should keep key when point is inserted before', () => {
+        const series = createSeries(PlotType.Column, [], { id: 'sales', values: [{ x: 'B', y: 2 }] })
+        const inserted = { ...series, values: [{ x: 'A', y: 1 }, ...series.values] } as PlotSeries
+
+        expect(styleRect([inserted], inserted, 1).key)
+            .toBe(styleRect([series], series, 0).key)
     })
 
     it('Should make interactive data rectangle with value tooltip', () => {
@@ -66,11 +81,11 @@ describe('Styling plot rectangle', () => {
     })
 
     it('Should group hover only with several enabled series', () => {
-        const series = createSeries(PlotType.Column, [1])
-        const other = createSeries(PlotType.Column, [1])
+        const series = createSeries(PlotType.Column, [1], { id: 'sales' })
+        const other = createSeries(PlotType.Column, [1], { id: 'costs' })
 
         expect(styleRect([series, other], series, 0).hoverGroup)
-            .toBe('0')
+            .toBe('sales')
         expect(styleRect([series, { ...other, disabled: true } as PlotSeries], series, 0).hoverGroup)
             .toBeNull()
     })

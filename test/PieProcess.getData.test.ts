@@ -20,7 +20,7 @@ const SMALL_PIXEL = { x: 5000 / 200, y: 5000 / 200 }
 const SETTINGS: PieProcessSettings = { valuePostfix: undefined, enableOther: false }
 
 const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
-    return new Sector({ label, value, color: '#ff0000', ...extra })
+    return new Sector({ id: label, label, value, color: '#ff0000', ...extra })
 }
 
 function create(data: Partial<PieData>, settings: Partial<PieProcessSettings> = {}, pixel = PIXEL) {
@@ -39,34 +39,34 @@ describe('Getting pie data', () => {
     it('Should draw sectors proportionally to values', () => {
         const items = getItems(create({ values: [sector('A', 1), sector('B', 3)] }))
 
-        expect([getArc(items, 'sector-0').startAngle, getArc(items, 'sector-0').endAngle])
+        expect([getArc(items, 'sector-A').startAngle, getArc(items, 'sector-A').endAngle])
             .toEqual([-Math.PI / 2, 0])
-        expect([getArc(items, 'sector-1').startAngle, getArc(items, 'sector-1').endAngle])
+        expect([getArc(items, 'sector-B').startAngle, getArc(items, 'sector-B').endAngle])
             .toEqual([0, Math.PI * 3 / 2])
     })
 
     it('Should show label and tooltip text', () => {
         const items = getItems(create({ values: [sector('A', 1), sector('B', 3)] }))
 
-        expect(getText(items, 'sector-label-0').value)
+        expect(getText(items, 'sector-label-A').value)
             .toBe('A')
-        expect(items.get('sector-0')!.tooltipTemplate)
+        expect(items.get('sector-A')!.tooltipTemplate)
             .toBe('A\n1.00 (25%)')
     })
 
     it('Should add percent to label in label percent mode', () => {
         const items = getItems(create({ values: [sector('A', 1), sector('B', 3)], labelPercent: true }))
 
-        expect(getText(items, 'sector-label-0').value)
+        expect(getText(items, 'sector-label-A').value)
             .toBe('A 25%')
     })
 
     it('Should add value and percent to pinned sector label', () => {
         const items = getItems(create({ values: [sector('A', 1, { pinned: true }), sector('B', 3)] }))
 
-        expect(getText(items, 'sector-label-0').value)
+        expect(getText(items, 'sector-label-A').value)
             .toBe('A: 1.00 (25%)')
-        expect(getArc(items, 'sector-0').pull)
+        expect(getArc(items, 'sector-A').pull)
             .toBeGreaterThan(0)
     })
 
@@ -75,11 +75,11 @@ describe('Getting pie data', () => {
 
         const items = getItems(create({ values }))
 
-        expect(items.has('sector-label-1'))
+        expect(items.has('sector-label-B'))
             .toBe(false)
-        expect(items.get('sector-2')!.isGhost)
+        expect(items.get('sector-C')!.isGhost)
             .toBe(true)
-        expect(items.get('sector-label-2')!.isGhost)
+        expect(items.get('sector-label-C')!.isGhost)
             .toBe(true)
     })
 
@@ -89,7 +89,7 @@ describe('Getting pie data', () => {
         const onChange = jest.fn()
 
         process.onChange = onChange
-        getItems(process).get('sector-0')!.onClick!()
+        getItems(process).get('sector-A')!.onClick!()
 
         expect(values[0].pinned)
             .toBe(true)
@@ -103,7 +103,7 @@ describe('Getting pie data', () => {
         const items = getItems(create({ values }, { enableOther: true }))
 
         expect([...items.keys()].filter(key => key.startsWith('sector-') && !key.includes('label')))
-            .toEqual(['sector-0', 'sector-other'])
+            .toEqual(['sector-A', 'sector-other'])
         expect(items.get('sector-other')!.tooltipTemplate)
             .toBe('Other\n1.00 (1%)\nB: 0.50 (0.5%)\nC: 0.50 (0.5%)')
         expect(items.get('sector-other')!.onClick)
@@ -115,16 +115,16 @@ describe('Getting pie data', () => {
 
         expect(items.has('sector-other'))
             .toBe(false)
-        expect(items.has('sector-2'))
+        expect(items.has('sector-C'))
             .toBe(true)
     })
 
     it('Should hide labels on small canvas', () => {
         const items = getItems(create({ values: [sector('A', 1), sector('B', 3)] }, {}, SMALL_PIXEL))
 
-        expect(items.has('sector-label-0'))
+        expect(items.has('sector-label-A'))
             .toBe(false)
-        expect(items.has('sector-0'))
+        expect(items.has('sector-A'))
             .toBe(true)
     })
 

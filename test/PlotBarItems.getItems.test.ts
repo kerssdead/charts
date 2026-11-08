@@ -106,7 +106,7 @@ describe('Getting plot bar items', () => {
         const { y, height } = rects[1].absolute
 
         expect(marks.map(mark => mark.key))
-            .toEqual(['0-break-1'])
+            .toEqual(['series-3-break-C1-0'])
         expect((marks[0].shape as RenderItemLine).absolute)
             .toEqual([{ x: end - 11, y }, { x: end - 5, y: y - height }])
     })

@@ -201,7 +201,7 @@ describe('Getting plot line items', () => {
         const series = createSeries(PlotType.Line, [10, null, 20])
 
         expect(getLines([series], series).items.map(item => item.key))
-            .toEqual(['0-line-0', '0-line-1'])
+            .toEqual(['series-0-line-0', 'series-0-line-1'])
     })
 
     it('Should break area at missing values', () => {

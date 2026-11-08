@@ -33,7 +33,7 @@ export function getMiddleAngle(slice: PieSlice) {
 }
 
 export function toKeyedSectors(sectors: Sector[]): KeyedSector[] {
-    return sectors.map((sector, index) => ({ sector, key: index.toString() }))
+    return sectors.map(sector => ({ sector, key: sector.id }))
 }
 
 export function getSectorsWithSmallGroupedIntoOther(

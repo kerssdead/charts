@@ -1,5 +1,5 @@
 import PlotSeries from '@/types/PlotSeries'
-import PlotPoint from '@/types/PlotPoint'
+import PlotPoint, { getPointKeys } from '@/types/PlotPoint'
 import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
 import QueueLineItemBuilder from '@/builders/QueueLineItemBuilder'
@@ -21,6 +21,8 @@ export default class PlotItemStyle {
 
     private readonly seriesGroups: PlotSeriesGroups
 
+    private readonly pointKeys = new Map<PlotSeries, string[]>()
+
     constructor(layout: PlotLayout, seriesGroups: PlotSeriesGroups, getValueTooltip: ValueTooltip) {
         this.layout = layout
         this.seriesGroups = seriesGroups
@@ -38,7 +40,7 @@ export default class PlotItemStyle {
                          .gradient()
                          .color(series.color)
                          .layer(Layer.Data)
-                         .key(this.getKey(series, 'rect', valueIndex))
+                         .key(this.getKey(series, 'rect', this.getPointKey(series, valueIndex)))
                          .interact()
                          .init(AnimationTiming.plotInit, slot * this.initStagger)
                          .tooltip(this.getValueTooltip(series, value))
@@ -68,7 +70,7 @@ export default class PlotItemStyle {
         line.width(BREAK_MARK_WIDTH)
             .stroke(Theme.canvasBackground)
             .layer(BREAK_MARK_LAYER)
-            .key(this.getKey(series, 'break', valueIndex))
+            .key(this.getKey(series, 'break', this.getPointKey(series, valueIndex)))
             .init(AnimationTiming.plotBreakInit, AnimationTiming.plotInit + slot * this.initStagger, true)
     }
 
@@ -84,7 +86,15 @@ export default class PlotItemStyle {
             item.hoverGroup(this.getKey(series))
     }
 
+    private getPointKey(series: PlotSeries, valueIndex: number) {
+        const keys = this.pointKeys.get(series) ?? getPointKeys(series.values)
+
+        this.pointKeys.set(series, keys)
+
+        return keys[valueIndex]
+    }
+
     private getKey(series: PlotSeries, ...parts: (string | number)[]) {
-        return [this.seriesGroups.indexOf(series), ...parts].join('-')
+        return [series.id, ...parts].join('-')
     }
 }

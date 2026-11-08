@@ -19,11 +19,11 @@ const styleBreakMark = (all: PlotSeries[], series: PlotSeries, slot: number, val
 }
 
 describe('Styling plot break mark', () => {
-    it('Should key mark by series index and value index', () => {
-        const series = createSeries(PlotType.Column, [1, 2])
+    it('Should key mark by series id and point x', () => {
+        const series = createSeries(PlotType.Column, [1, 2], { id: 'sales' })
 
         expect(styleBreakMark([createSeries(PlotType.Line, [1]), series], series, 1, 1).key)
-            .toBe('1-break-1')
+            .toBe('sales-break-C1-0')
     })
 
     it('Should draw background colored mark above lines', () => {

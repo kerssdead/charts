@@ -49,8 +49,18 @@ describe('Getting plot data', () => {
             yMax: 250,
             xType: PlotAxisType.Text,
             values: [
-                { type: PlotType.StackingColumn, label: 'Apples', values: values.map((y, i) => ({ x: `Day ${ i }`, y: y.toString() })) },
-                { type: PlotType.StackingColumn, label: 'Pears', values: values.map((_, i) => ({ x: `Day ${ i }`, y: i < 2 ? '15' : '0' })) }
+                {
+                    type: PlotType.StackingColumn,
+                    id: 'apples',
+                    label: 'Apples',
+                    values: values.map((y, i) => ({ x: `Day ${ i }`, y: y.toString() }))
+                },
+                {
+                    type: PlotType.StackingColumn,
+                    id: 'pears',
+                    label: 'Pears',
+                    values: values.map((_, i) => ({ x: `Day ${ i }`, y: i < 2 ? '15' : '0' }))
+                }
             ]
         } as PlotData, PIXEL, SETTINGS)
 
@@ -59,7 +69,7 @@ describe('Getting plot data', () => {
                                                .map(item => [item.key!, item.shape as RenderItemRectangle]))
 
         values.forEach((y, i) => {
-            expect(rects.get(`0-rect-${ i }`)!.absolute.height)
+            expect(rects.get(`apples-rect-Day ${ i }-0`)!.absolute.height)
                 .toBeCloseTo(process.getAxisY(0) - process.getAxisY(Math.min(y, 250)))
         })
     })

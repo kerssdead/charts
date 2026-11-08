@@ -20,7 +20,7 @@ const TINY_PIXEL = { x: 5000 / 100, y: 5000 / 50 }
 const SETTINGS: ProcessSettings = { valuePostfix: undefined }
 
 const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
-    return new Sector({ label, value, color: '#ff0000', ...extra })
+    return new Sector({ id: label, label, value, color: '#ff0000', ...extra })
 }
 
 function getItems(data: Partial<GaugeData>, pixel = PIXEL) {
@@ -37,20 +37,27 @@ describe('Getting gauge data', () => {
     it('Should draw value ring proportionally to range', () => {
         const items = getItems({ values: [sector('Speed', 42)] })
 
-        expect(getArc(items, 'gauge-value-0').startAngle)
+        expect(getArc(items, 'gauge-value-Speed').startAngle)
             .toBe(Math.PI)
-        expect(getArc(items, 'gauge-value-0').endAngle)
+        expect(getArc(items, 'gauge-value-Speed').endAngle)
             .toBeCloseTo(Math.PI * 1.42)
-        expect(items.get('gauge-value-0')!.tooltipTemplate)
+        expect(items.get('gauge-value-Speed')!.tooltipTemplate)
             .toBe('Speed\n42.00 (42%)')
+    })
+
+    it('Should keep value ring key of following sector when first sector is removed', () => {
+        const items = getItems({ values: [sector('B', 20)] })
+
+        expect(getArc(items, 'gauge-value-B').endAngle)
+            .toBe(getArc(getItems({ values: [sector('A', 10), sector('B', 20)] }), 'gauge-value-B').endAngle)
     })
 
     it('Should clamp value and treat not finite value as min', () => {
         const items = getItems({ values: [sector('A', 150), sector('B', NaN)] })
 
-        expect(getArc(items, 'gauge-value-0').endAngle)
+        expect(getArc(items, 'gauge-value-A').endAngle)
             .toBeCloseTo(Math.PI * 2)
-        expect(getArc(items, 'gauge-value-1').endAngle)
+        expect(getArc(items, 'gauge-value-B').endAngle)
             .toBe(Math.PI)
     })
 
@@ -58,9 +65,9 @@ describe('Getting gauge data', () => {
         const items = getItems({ values: [sector('A', 130), sector('B', -20), sector('C', 60)] })
         const offset = getItems({ values: [sector('D', 60)], min: 20, max: 50 })
 
-        expect([items.get('gauge-value-0')!.tooltipTemplate, items.get('gauge-value-1')!.tooltipTemplate])
+        expect([items.get('gauge-value-A')!.tooltipTemplate, items.get('gauge-value-B')!.tooltipTemplate])
             .toEqual(['A\n130.00 (130%)', 'B\n-20.00 (-20%)'])
-        expect(offset.get('gauge-value-0')!.tooltipTemplate)
+        expect(offset.get('gauge-value-D')!.tooltipTemplate)
             .toBe('D\n60.00 (133.3%)')
     })
 
@@ -90,7 +97,7 @@ describe('Getting gauge data', () => {
     it('Should treat value as min when min equals max', () => {
         const items = getItems({ values: [sector('A', 5)], min: 5, max: 5 })
 
-        expect(getArc(items, 'gauge-value-0').endAngle)
+        expect(getArc(items, 'gauge-value-A').endAngle)
             .toBe(Math.PI)
     })
 
@@ -131,7 +138,7 @@ describe('Getting gauge data', () => {
     it('Should draw legend for several values and skip disabled', () => {
         const items = getItems({ values: [sector('A', 1), sector('B', 2, { disabled: true }), sector('C', 3)] })
 
-        expect(items.has('gauge-value-1') && !items.has('gauge-value-2'))
+        expect(items.has('gauge-value-C') && !items.has('gauge-value-B'))
             .toBe(true)
         expect(getText(items, 'gauge-label-1').value)
             .toBe('C: 3.00')
