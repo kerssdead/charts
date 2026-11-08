@@ -59,6 +59,44 @@ describe('Getting tree cells', () => {
             .toBe(0)
     })
 
+    it('Should put similar values in one row', () => {
+        expect(getBoxes([1, 1, 1, 1]))
+            .toEqual([
+                { x: 0, y: 0, width: 50, height: 50 },
+                { x: 0, y: 50, width: 50, height: 50 },
+                { x: 50, y: 0, width: 50, height: 50 },
+                { x: 50, y: 50, width: 50, height: 50 }
+            ])
+    })
+
+    it('Should start new row when it makes cells less square', () => {
+        expect(getBoxes([1, 1]))
+            .toEqual([
+                { x: 0, y: 0, width: 50, height: 100 },
+                { x: 50, y: 0, width: 50, height: 100 }
+            ])
+    })
+
+    it('Should compare squareness in pixels', () => {
+        expect(getBoxes([1, 1, 1, 1], BOX, 0, new Units({ x: 4, y: 1 })))
+            .toEqual([
+                { x: 0, y: 0, width: 100, height: 25 },
+                { x: 0, y: 25, width: 100, height: 25 },
+                { x: 0, y: 50, width: 100, height: 25 },
+                { x: 0, y: 75, width: 100, height: 25 }
+            ])
+    })
+
+    it('Should subtract gap between cells inside row', () => {
+        expect(getBoxes([1, 1, 1, 1], BOX, 10))
+            .toEqual([
+                { x: 0, y: 0, width: 40, height: 40 },
+                { x: 0, y: 50, width: 40, height: 50 },
+                { x: 50, y: 0, width: 50, height: 40 },
+                { x: 50, y: 50, width: 50, height: 50 }
+            ])
+    })
+
     it('Should return no cells for no values', () => {
         expect(getBoxes([]))
             .toEqual([])
