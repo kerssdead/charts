@@ -43,7 +43,10 @@ export default class Export {
                 ctx.fillRect(exclude.x, exclude.y, exclude.width, exclude.height)
             }
 
-            const imageData = new Uint32Array(ctx.getImageData(0, 0, width, height).data.buffer)
+            const imageData = Export.readPixels(ctx, width, height)
+
+            if (!imageData)
+                return
 
             const isEmptyColumn = (x: number) => {
                 for (let y = 0; y < height; y++)
@@ -90,6 +93,19 @@ export default class Export {
                     )
             }, 'image/png')
         })
+    }
+
+    private static readPixels(ctx: CanvasRenderingContext2D, width: number, height: number) {
+        try {
+            return new Uint32Array(ctx.getImageData(0, 0, width, height).data.buffer)
+        } catch (error) {
+            if (!(error instanceof DOMException && error.name == 'SecurityError'))
+                throw error
+
+            console.warn('OCharts: PNG export is unavailable because an image was loaded without CORS')
+
+            return null
+        }
     }
 
     static asCsv(charts: ChartItem[], title: string) {

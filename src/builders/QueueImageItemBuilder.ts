@@ -1,5 +1,6 @@
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
 import RenderItemImage from '@/types/RenderItemImage'
+import { ImageCrossOrigin } from '@/static/Enums'
 
 export default class QueueImageItemBuilder extends QueueItemBaseBuilder<RenderItemImage> {
     constructor(url: string) {
@@ -16,6 +17,12 @@ export default class QueueImageItemBuilder extends QueueItemBaseBuilder<RenderIt
 
     size(value: number) {
         this.shape.size = value
+
+        return this
+    }
+
+    crossOrigin(mode: ImageCrossOrigin | undefined) {
+        this.shape.crossOrigin = mode
 
         return this
     }

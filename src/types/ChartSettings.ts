@@ -1,6 +1,6 @@
 import Data from '@/types/interfaces/Data'
 import DropdownItem from '@/types/DropdownItem'
-import { ChartType, LegendPlace } from '@/static/Enums'
+import { ChartType, ImageCrossOrigin, LegendPlace } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 
 export default interface ChartSettings {
@@ -47,6 +47,8 @@ export default interface ChartSettings {
     height?: string
 
     contextMenu?: DropdownItem[]
+
+    imageCrossOrigin?: ImageCrossOrigin
 
     isDarkThemeFunction: (() => boolean) | undefined
 }

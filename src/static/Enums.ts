@@ -255,3 +255,13 @@ export const enum VerticalAlignment {
 
     Bottom = 'bottom'
 }
+
+export const enum ImageCrossOrigin {
+    Auto = 'auto',
+
+    Anonymous = 'anonymous',
+
+    UseCredentials = 'use-credentials',
+
+    None = 'none'
+}

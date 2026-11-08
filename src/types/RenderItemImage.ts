@@ -4,6 +4,7 @@ import RenderItem from '@/types/RenderItem'
 import Point from '@/types/Point'
 import { COORDS_MAX_X, FULL_ANGLE } from '@/static/constants/Index'
 import { getImage } from '@/helpers/Images'
+import { ImageCrossOrigin } from '@/static/Enums'
 import { lerp } from '@/helpers/Geometry'
 
 type ImageCanvas = Point & {
@@ -12,6 +13,8 @@ type ImageCanvas = Point & {
 
 export default class RenderItemImage extends RenderItemBase {
     url: string
+
+    crossOrigin: ImageCrossOrigin | undefined
 
     absolute: Point = { x: 0, y: 0 }
 
@@ -53,7 +56,7 @@ export default class RenderItemImage extends RenderItemBase {
 
         ctx.arc(x, y, size / 2, 0, FULL_ANGLE)
 
-        const image = getImage(this.url)
+        const image = getImage(this.url, this.crossOrigin)
 
         if (!image) {
             ctx.fill()

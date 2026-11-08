@@ -7,6 +7,8 @@ import TreeBarData from '@/types/data/TreeBarData'
 import TreeBarRow from '@/types/TreeBarRow'
 import Sector from '@/types/Sector'
 import ProcessSettings from '@/types/ProcessSettings'
+import RenderItemImage from '@/types/RenderItemImage'
+import { ImageCrossOrigin } from '@/static/Enums'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000', lineAxis: '#e0e0e0' }))
 
@@ -165,5 +167,16 @@ describe('Getting tree bar data', () => {
             .toEqual([true, false])
         expect(keys(process.getData()).includes('tree-bar-row-a-part-0'))
             .toBe(true)
+    })
+
+    it('Should load row images with the chart cross-origin mode', () => {
+        const process = new TreeBarProcess(
+            { values: [row('a', [1], { image: 'a.png' })] } as TreeBarData,
+            PIXEL,
+            { ...SETTINGS, imageCrossOrigin: ImageCrossOrigin.None }
+        )
+
+        expect((getItems(process).get('tree-bar-row-a-image')!.shape as RenderItemImage).crossOrigin)
+            .toBe(ImageCrossOrigin.None)
     })
 })

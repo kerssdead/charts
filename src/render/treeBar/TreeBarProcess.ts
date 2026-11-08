@@ -214,6 +214,7 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
             items.image(node.image)
                  .position(this.x(left + TOGGLE_WIDTH + IMAGE_SIZE / 2), this.y(center))
                  .size(this.x(IMAGE_SIZE))
+                 .crossOrigin(this.settings.imageCrossOrigin)
                  .color(withAlpha(Theme.text, IMAGE_PLACEHOLDER_ALPHA))
                  .appearDelay(ROW_APPEAR_DELAY)
                  .key(`${ key }-image`)
