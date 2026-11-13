@@ -58,6 +58,15 @@ export class FakeElement {
         return this.textContent + this.children.map(child => typeof child == 'string' ? child : child.text).join('')
     }
 
+    get isConnected() {
+        return this.parent !== undefined
+    }
+
+    remove() {
+        this.parent?.children.splice(this.parent.children.indexOf(this), 1)
+        this.parent = undefined
+    }
+
     setAttribute(name: string, value: string) {
         this.attributes.set(name, value)
     }

@@ -51,4 +51,6 @@ export default interface ChartSettings {
     imageCrossOrigin?: ImageCrossOrigin
 
     isDarkThemeFunction: (() => boolean) | undefined
+
+    onError?: (error: unknown) => boolean | void
 }

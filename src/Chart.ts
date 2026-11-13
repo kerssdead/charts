@@ -5,9 +5,8 @@ import { Events } from '@/static/Enums'
 import Renderer from '@/renderer/Renderer'
 import Debug from '@/helpers/Debug'
 import { keepState, normalize } from '@/helpers/Settings'
-import Styles from '@/static/constants/Styles'
-import { createErrorMessage } from '@/ui/ErrorMessage'
-import Size from '@/types/Size'
+import ChartFailure from '@/ui/ChartFailure'
+import { applyFallbackHostSize, applyHostSize, getPixelSize } from '@/helpers/HostSize'
 
 // todo: add public api
 
@@ -24,15 +23,15 @@ export default class Chart {
 
     private readonly element: HTMLElement
 
-    private readonly canvas: HTMLCanvasElement
+    private readonly failure: ChartFailure
 
-    private readonly renderer: Renderer
+    private canvas: HTMLCanvasElement
 
-    private readonly observer: ResizeObserver
+    private renderer: Renderer
 
-    private errorMessage: HTMLElement | undefined
+    private observer: ResizeObserver
 
-    private readonly ratioWatcher = new AbortController()
+    private ratioWatcher: AbortController
 
     private width: number = 0
 
@@ -44,60 +43,65 @@ export default class Chart {
 
     constructor(element: HTMLElement, settings: ChartSettings) {
         this.element = element
-        this.source = settings
+        this.failure = new ChartFailure(element)
 
-        try {
-            this.settings = normalize(settings, this.element)
-
-            this.bindMenuActions()
-            this.applySize()
-
-            if (!this.settings.width && element.clientWidth === 0)
-                element.style.width = Styles.Size.Full
-
-            if (!this.settings.height && element.clientHeight === 0)
-                element.style.height = Styles.Size.Full
-
-            if (!this.settings.height && element.isConnected && element.clientHeight === 0)
-                element.style.height = Styles.Size.FallbackHeight
-
-            this.canvas = createCanvas()
-            element.appendChild(this.canvas)
-
-            Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
-
-            this.renderer = new Renderer(this.canvas, error => this.showError(error))
-            this.renderer.apply(this.settings)
-
-            Debug.log(settings, this.settings, this.canvas)
-
-            this.observer = this.createObserver(element)
-            this.watchRatio()
-
-            if (!this.canvas.isConnected)
-                this.suspend()
-        } catch (error) {
-            this.showError(error)
-        }
+        this.start(settings)
     }
 
     render() {
-        if (this.isDestroyed)
+        if (this.isDestroyed || this.failure.isActive)
             return
 
         this.renderer.render()
     }
 
     destroy() {
-        this.errorMessage?.remove()
+        this.failure.clear()
 
         if (this.isDestroyed)
             return
 
         this.isDestroyed = true
 
+        this.stop()
+    }
+
+    private start(settings: ChartSettings) {
+        const element = this.element
+
+        this.source = settings
+
+        try {
+            this.settings = normalize(settings, element)
+
+            this.bindMenuActions()
+            applyHostSize(element, this.settings)
+            applyFallbackHostSize(element, this.settings)
+
+            this.canvas = createCanvas()
+            element.appendChild(this.canvas)
+
+            Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
+
+            this.renderer = new Renderer(this.canvas, error => this.handleError(error))
+            this.renderer.apply(this.settings)
+
+            Debug.log(settings, this.settings, this.canvas)
+
+            this.observer = this.createObserver(element)
+            this.ratioWatcher = new AbortController()
+            this.watchRatio()
+
+            if (!this.canvas.isConnected)
+                this.suspend()
+        } catch (error) {
+            this.handleError(error)
+        }
+    }
+
+    private stop() {
         this.observer?.disconnect()
-        this.ratioWatcher.abort()
+        this.ratioWatcher?.abort()
 
         Theme.detach(this.onThemeChange)
         this.canvas?.remove()
@@ -106,40 +110,53 @@ export default class Chart {
     }
 
     private guard(action: () => void) {
-        if (this.isDestroyed)
+        if (this.isDestroyed || this.failure.isActive)
             return
 
         try {
             action()
         } catch (error) {
-            this.showError(error)
+            this.handleError(error)
         }
     }
 
-    private showError(error: unknown) {
-        if (this.isDestroyed)
+    private handleError(error: unknown) {
+        if (this.isDestroyed || this.failure.isActive)
             return
 
-        console.error('OCharts failed:', error, {
+        try {
+            this.stop()
+        } catch (stopError) {
+            console.error(stopError)
+        }
+
+        this.failure.report(error, {
             element: this.element,
             size: { width: this.width, height: this.height },
             theme: ColorTheme[Theme.currentTheme],
             input: this.source,
             settings: this.settings
-        })
+        }, this.source.onError)
+    }
 
-        try {
-            this.destroy()
-        } catch (destroyError) {
-            console.error(destroyError)
-        }
+    private recover(settings: ChartSettings) {
+        this.failure.clear()
 
-        this.errorMessage = createErrorMessage()
-        this.element.appendChild(this.errorMessage)
+        this.isSuspended = false
+        this.width = 0
+        this.height = 0
+
+        this.start(settings)
     }
 
     applySettings(settings: ChartSettings) {
-        this.guard(() => this.update(settings))
+        if (this.isDestroyed)
+            return
+
+        if (this.failure.isActive)
+            this.recover(settings)
+        else
+            this.guard(() => this.update(settings))
     }
 
     private update(settings: ChartSettings) {
@@ -151,7 +168,7 @@ export default class Chart {
         keepState(previous, this.settings)
 
         this.bindMenuActions()
-        this.applySize()
+        applyHostSize(this.element, this.settings)
 
         this.renderer.apply(this.settings)
 
@@ -171,20 +188,6 @@ export default class Chart {
         }
     }
 
-    private applySize() {
-        const { width, height } = this.settings
-
-        if (width)
-            this.element.style.width = Chart.toCssSize(width)
-
-        if (height)
-            this.element.style.height = Chart.toCssSize(height)
-    }
-
-    private static toCssSize(value: string) {
-        return Number.isFinite(+value) ? `${ +value }px` : value
-    }
-
     private resize(width: number, height: number, device?: ResizeObserverSize) {
         this.guard(() => this.resizeCanvas(width, height, device))
     }
@@ -200,7 +203,7 @@ export default class Chart {
         if (width === 0 || height === 0)
             return
 
-        const { width: pixelWidth, height: pixelHeight } = Chart.getPixelSize(
+        const { width: pixelWidth, height: pixelHeight } = getPixelSize(
             { width, height },
             window.devicePixelRatio || 1,
             device
@@ -220,16 +223,6 @@ export default class Chart {
 
         this.renderer.resize(width, height, pixelWidth / width)
         this.renderer.render()
-    }
-
-    private static getPixelSize({ width, height }: Size, ratio: number, device?: ResizeObserverSize): Size {
-        const isExact = device !== undefined
-                        && Math.abs(device.inlineSize - width * ratio) < 1
-                        && Math.abs(device.blockSize - height * ratio) < 1
-
-        return isExact
-               ? { width: device.inlineSize, height: device.blockSize }
-               : { width: Math.round(width * ratio), height: Math.round(height * ratio) }
     }
 
     private watchRatio() {
