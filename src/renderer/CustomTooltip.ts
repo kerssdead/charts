@@ -1,10 +1,8 @@
 import Point from '@/types/Point'
-import Styles from '@/static/constants/Styles'
-import { Tag } from '@/static/Enums'
 import { DEFAULT_LINE_WIDTH, FONT_FAMILY, Tooltip } from '@/static/constants/Index'
 import Theme from '@/Theme'
 import { escapeHtml } from '@/helpers/Text'
-import { placeNear } from '@/helpers/Geometry'
+import FloatingElement from '@/renderer/FloatingElement'
 import ItemData from '@/types/ItemData'
 
 const PLACEHOLDER = /\$\{\s*([^}\s]+)\s*}/g
@@ -12,11 +10,9 @@ const PLACEHOLDER = /\$\{\s*([^}\s]+)\s*}/g
 export default class CustomTooltip {
     private readonly canvas: HTMLCanvasElement
 
-    private element: HTMLElement | null = null
+    private floating: FloatingElement | null = null
 
     private html: string | null = null
-
-    private size = { width: 0, height: 0 }
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
@@ -48,63 +44,35 @@ export default class CustomTooltip {
                        background: ${ Theme.background };
                        color: ${ Theme.text };
                        font: ${ Tooltip.fontSize }px/${ Tooltip.rowHeight }px ${ FONT_FAMILY };
-                       white-space: pre`
+                       box-sizing: border-box;
+                       white-space: pre-wrap;
+                       overflow-wrap: anywhere`
 
         return `<div style="${ style }">${ escapeHtml(text) }</div>`
     }
 
     show(html: string, point: Point) {
-        if (html !== this.html || !this.element) {
+        if (html !== this.html || !this.floating) {
             this.hide()
 
-            this.element = this.build(html)
+            this.floating = new FloatingElement(this.canvas, Tooltip.offset)
+            this.floating.element.setAttribute('role', 'tooltip')
+            this.floating.element.style.pointerEvents = 'none'
+            this.floating.element.innerHTML = html
             this.html = html
         }
 
-        this.place(this.element, point)
+        this.floating.show(point)
+    }
+
+    setOpacity(alpha: number) {
+        if (this.floating)
+            this.floating.element.style.opacity = String(alpha)
     }
 
     hide() {
-        this.element?.remove()
-
-        this.element = null
+        this.floating?.remove()
+        this.floating = null
         this.html = null
-    }
-
-    private build(html: string) {
-        const element = document.createElement(Tag.Div)
-
-        element.innerHTML = html
-
-        element.style.position = Styles.Position.Fixed
-        element.style.left = '0'
-        element.style.top = '0'
-        element.style.pointerEvents = Styles.PointerEvents.None
-        element.style.zIndex = Styles.ZIndex.Tooltip
-
-        const host = this.canvas.closest(Tag.Dialog) ?? document.fullscreenElement ?? document.body
-
-        host.appendChild(element)
-
-        const { width, height } = element.getBoundingClientRect()
-
-        this.size = { width, height }
-
-        return element
-    }
-
-    private place(element: HTMLElement, point: Point) {
-        const canvas = this.canvas.getBoundingClientRect()
-        const { clientWidth, clientHeight } = document.documentElement
-
-        const { x, y } = placeNear(
-            { x: canvas.left + point.x, y: canvas.top + point.y },
-            this.size,
-            Tooltip.offset,
-            { x: 0, y: 0, width: clientWidth, height: clientHeight }
-        )
-
-        element.style.left = `${ x }px`
-        element.style.top = `${ y }px`
     }
 }

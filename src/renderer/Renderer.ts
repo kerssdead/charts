@@ -27,7 +27,7 @@ export default class Renderer {
 
     private readonly tooltip: TooltipOverlay
 
-    private readonly contextMenu = new ContextMenuOverlay()
+    private readonly contextMenu: ContextMenuOverlay
 
     private readonly layout = new Layout()
 
@@ -60,6 +60,12 @@ export default class Renderer {
         this.tooltip = new TooltipOverlay(canvas)
         this.menu = new ChartMenu(canvas, this.queue, point => this.pointer.openMenu(point), () => {
             this.drawClean()
+        })
+        this.contextMenu = new ContextMenuOverlay(canvas, () => this.pointer.closeContext(), action => {
+            this.guard(() => {
+                Theme.update(this.settings.isDarkThemeFunction)
+                action()
+            })
         })
         this.contextMenu.fixedButtons = () => this.menu.getButtons()
         this.detachImages = onImageLoad(() => this.render())
@@ -176,9 +182,8 @@ export default class Renderer {
         this.isSuspended = true
 
         this.pointer.detach()
-
-        this.tooltip.custom.hide()
-
+        this.tooltip.clear(this.queue)
+        this.contextMenu.clear(this.queue)
         this.frame.cancel()
     }
 
@@ -234,7 +239,7 @@ export default class Renderer {
         const movingLegend = this.legend?.isMoving ? this.legend : undefined
         const frame = { queue: this.queue, window, screen, mouse: position, context, now: timestamp }
 
-        let isAnimating = this.queue.animate(this.getHoverPosition(position), timestamp)
+        let isAnimating = this.queue.animate(position, timestamp)
 
         isAnimating = this.updateOverlays(frame) || isAnimating
 
@@ -255,10 +260,6 @@ export default class Renderer {
             isAnimating = overlay.update(frame) || isAnimating
 
         return isAnimating
-    }
-
-    private getHoverPosition(position: Point | null) {
-        return position && !this.contextMenu.isOver(position) ? position : null
     }
 
     private guard(action: () => void) {

@@ -1,7 +1,5 @@
 import Queue from '@/render/Queue'
-import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
-import FadingOverlay from '@/renderer/FadingOverlay'
-import Units from '@/helpers/Units'
+import Overlay from '@/renderer/Overlay'
 import CanvasWindow from '@/types/CanvasWindow'
 import Frame from '@/types/Frame'
 import Point from '@/types/Point'
@@ -9,17 +7,10 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import ItemData from '@/types/ItemData'
 import ChartSettings from '@/types/ChartSettings'
 import RenderItem from '@/types/RenderItem'
+import HoverProgress from '@/types/HoverProgress'
 import CustomTooltip from '@/renderer/CustomTooltip'
-import Theme from '@/Theme'
-import { Layer, Tooltip } from '@/static/constants/Index'
-import { TextAlignment } from '@/static/Enums'
-import { copyRect, placeNear, sameRect, samePoint } from '@/helpers/Geometry'
-import { maxOf } from '@/helpers/Collections'
-import { stringWidth } from '@/helpers/Text'
-
-type TooltipState = { point: Point, template: string }
-
-type TooltipBuilt = TooltipState & { window: RectangleDimensions }
+import { Tooltip } from '@/static/constants/Index'
+import { copyRect, sameRect, samePoint } from '@/helpers/Geometry'
 
 type TooltipTarget = {
     template: string | null
@@ -34,27 +25,30 @@ type TooltipScan = TooltipTarget & {
 
 const NO_TARGET: TooltipTarget = { template: null, html: null }
 
-export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipBuilt> {
+export default class TooltipOverlay extends Overlay {
     isEnabled: boolean = false
 
     template: ((data: ItemData) => string) | null = null
 
     readonly custom: CustomTooltip
 
-    private readonly canvas: HTMLCanvasElement
-
     private scan: TooltipScan | null = null
+
+    private state: { point: Point, html: string } | null = null
+
+    private fade = new HoverProgress()
 
     constructor(canvas: HTMLCanvasElement) {
         super()
 
-        this.canvas = canvas
         this.custom = new CustomTooltip(canvas)
     }
 
     apply(settings: ChartSettings) {
         this.custom.hide()
-
+        this.scan = null
+        this.state = null
+        this.fade = new HoverProgress()
         this.isEnabled = settings.enableTooltip
         this.template = settings.enableTooltip && settings.templateId
                         ? CustomTooltip.fromTemplate(settings.templateId)
@@ -62,60 +56,57 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
     }
 
     reset(queue: Queue) {
-        this.custom.hide()
         this.template = null
-
         this.clear(queue)
     }
 
+    clear(_queue: Queue) {
+        this.custom.hide()
+        this.scan = null
+        this.state = null
+        this.fade = new HoverProgress()
+    }
+
     update({ queue, window, mouse, context, now }: Frame): boolean {
-        const point = this.isEnabled ? mouse : null
-        const target = point && !context ? this.getTarget(queue, window, point) : NO_TARGET
-        const isVisible = this.updateState(point, target)
-
-        this.fade.step(isVisible, now, Tooltip.fadeDuration)
-
-        const alpha = this.fade.value
-
-        if (!isVisible && alpha === 0) {
-            this.state = null
-        }
-
-        if (!this.state || alpha === 0) {
-            this.remove(queue)
+        if (context || !this.isEnabled) {
+            this.clear(queue)
 
             return false
         }
 
-        const state = this.state
+        const target = mouse ? this.getTarget(queue, window, mouse) : NO_TARGET
 
-        if (!this.isBuilt(state.point, state.template, window)) {
-            this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => {
-                this.build(builder, window, state.point, state.template)
-            }))
+        if (mouse && target.html) {
+            this.state = null
+            this.fade = new HoverProgress()
+            this.custom.show(target.html, mouse)
+            this.custom.setOpacity(1)
 
-            this.built = { point: state.point, template: state.template, window: copyRect(window) }
+            return false
         }
 
-        this.setAlpha(alpha)
-
-        return this.fade.isAnimating
+        return this.updateText(mouse, target.template, now)
     }
 
-    private updateState(point: Point | null, { template, html }: TooltipTarget) {
-        if (point && html)
-            this.custom.show(html, point)
-        else
-            this.custom.hide()
-
-        const isVisible = !html && point != null && template != null
+    private updateText(mouse: Point | null, template: string | null, now: DOMHighResTimeStamp) {
+        const isVisible = mouse != null && template != null
 
         if (isVisible)
-            this.state = { point, template }
-        else if (this.state && point)
-            this.state.point = point
+            this.state = { point: mouse, html: CustomTooltip.fromText(template) }
 
-        return isVisible
+        this.fade.step(isVisible, now, Tooltip.fadeDuration)
+
+        if (!this.state || !isVisible && this.fade.isIdle) {
+            this.custom.hide()
+            this.state = null
+
+            return false
+        }
+
+        this.custom.show(this.state.html, this.state.point)
+        this.custom.setOpacity(this.fade.value)
+
+        return this.fade.isAnimating
     }
 
     private getTarget(queue: Queue, window: CanvasWindow, point: Point): TooltipTarget {
@@ -148,51 +139,5 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
         const templateHtml = this.template && target.data ? this.template(target.data) : undefined
 
         return templateHtml ?? target.tooltipHtml ?? null
-    }
-
-    private isBuilt(point: Point, template: string, window: CanvasWindow) {
-        const built = this.built
-
-        return built != null
-               && samePoint(built.point, point) && built.template === template
-               && sameRect(built.window, window)
-    }
-
-    private build(items: QueueItemsBuilder, window: CanvasWindow, point: Point, template: string) {
-        const { clientWidth: canvasWidth, clientHeight: canvasHeight } = this.canvas
-
-        const rows = template.split('\n')
-
-        const width = maxOf(rows, row => stringWidth(row, Tooltip.fontSize)) + Tooltip.padding * 2
-        const height = rows.length * Tooltip.rowHeight + Tooltip.padding * 2
-
-        const { x: left, y: top } = placeNear(
-            point,
-            { width, height },
-            Tooltip.offset,
-            { x: 0, y: 0, width: canvasWidth, height: canvasHeight }
-        )
-
-        const units = Units.fromWindow(window)
-
-        items.rect()
-             .box(units, { x: left, y: top, width, height })
-             .fill()
-             .round(units.x(Tooltip.radius))
-             .color(Theme.background)
-             .stroke(Theme.dropdownBorder)
-             .layer(Layer.Tooltip)
-
-        rows.forEach((row, index) => {
-            items.text(row)
-                 .position(
-                     units.positionX(left + Tooltip.padding),
-                     units.positionY(top + Tooltip.padding + (index + .5) * Tooltip.rowHeight)
-                 )
-                 .size(Tooltip.fontSize)
-                 .align(TextAlignment.Left)
-                 .color(Theme.text)
-                 .layer(Layer.Tooltip)
-        })
     }
 }

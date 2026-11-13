@@ -31,11 +31,21 @@ export const enum Events {
 
     ContextMenu = 'contextmenu',
 
+    Focus = 'focus',
+
+    KeyDown = 'keydown',
+
     PointerDown = 'pointerdown',
+
+    PointerEnter = 'pointerenter',
 
     PointerMove = 'pointermove',
 
     PointerLeave = 'pointerleave',
+
+    Resize = 'resize',
+
+    Scroll = 'scroll',
 
     Input = 'input',
 
