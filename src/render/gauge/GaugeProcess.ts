@@ -50,7 +50,6 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     constructor(data: GaugeData, pixel: Point, settings: ProcessSettings) {
         super(data, pixel, settings)
 
-        // todo: unit-test: gauge with min greater than max fails
         if (this.min > this.max)
             fail(ErrorType.InvalidGaugeRange)
 

@@ -60,7 +60,6 @@ export default class TableView {
         for (const [index, rowElement] of this.rowElements.entries())
             rowElement.hidden = !matching.has(this.data.values[index])
 
-        // todo: unit-test: footer totals include only the rows matching the filter
         this.showTotals(this.data.values.filter(value => matching.has(value)))
     }
 

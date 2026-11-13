@@ -1,5 +1,5 @@
 import { normalize } from '@/helpers/Settings'
-import { ChartType } from '@/static/Enums'
+import { ChartType, PlotAxisType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import PlotSeries from '@/types/PlotSeries'
 import Sector from '@/types/Sector'
@@ -136,5 +136,27 @@ describe('Normalizing settings', () => {
 
         expect([settings.enableTooltip, settings.enableLegend])
             .toEqual([false, false])
+    })
+
+    it('Should convert dates to the same ISO string for the same moment and keep milliseconds', () => {
+        const settings = normalize({
+            type: ChartType.Plot,
+            data: {
+                xType: PlotAxisType.Date,
+                values: [
+                    {
+                        label: 'A',
+                        values: [
+                            { x: new Date('2024-01-02T03:04:05.000Z'), y: 1 },
+                            { x: '2024-01-02T03:04:05.000Z', y: 2 },
+                            { x: '2024-01-02T03:04:05.001Z', y: 3 }
+                        ]
+                    }
+                ]
+            }
+        } as unknown as ChartSettings)
+
+        expect((settings.charts[0].data.values[0] as PlotSeries).values.map(point => point.x))
+            .toEqual(['2024-01-02T03:04:05.000Z', '2024-01-02T03:04:05.000Z', '2024-01-02T03:04:05.001Z'])
     })
 })

@@ -183,7 +183,6 @@ function normalizeDates(chart: ChartItem) {
     if (chart.type !== ChartType.Plot || data?.xType !== PlotAxisType.Date)
         return
 
-    // todo: unit-test: a Date and an ISO string for the same moment, or dates differing only in milliseconds
     for (const series of data.values ?? []) {
         for (const point of series.values ?? []) {
             const date = Formatter.toDate(point.x)

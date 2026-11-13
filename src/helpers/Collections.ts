@@ -2,7 +2,6 @@ export function sum<T>(values: T[], selector: (value: T) => number) {
     return values.reduce((acc, value) => acc + selector(value), 0)
 }
 
-// todo: unit-test: maxOf of an empty or all-negative array
 export function maxOf<T>(values: T[], selector: (value: T) => number) {
     return values.reduce((acc, value) => Math.max(acc, selector(value)), -Infinity)
 }
