@@ -96,7 +96,10 @@ export class FakeElement {
     }
 
     findByClass(name: string): FakeElement[] {
-        return this.elements.flatMap(child => [...(child.classes.has(name) ? [child] : []), ...child.findByClass(name)])
+        return this.elements.flatMap(child => [
+            ...(child.classes.has(name) ? [child] : []),
+            ...child.findByClass(name)
+        ])
     }
 }
 

@@ -49,21 +49,25 @@ describe('Scrolling panel', () => {
 
         panel.update(window)
 
-        const top = panel.thumb!
+        const top = panel.thumb
 
         panel.scrollTo(panel.maxOffset)
         panel.update(window)
 
-        const bottom = panel.thumb!
+        const bottom = panel.thumb
 
-        expect([top.y, bottom.y + bottom.height, top.height])
+        expect([top?.y, bottom && bottom.y + bottom.height, top?.height])
             .toEqual([20, 100, 80 * 80 / 180])
     })
 
     it('Should detect scrollbar area', () => {
         const panel = create(300)
 
-        expect([panel.isOnScrollbar({ x: 195, y: 50 }), panel.isOnScrollbar({ x: 150, y: 50 }), panel.isOnScrollbar({ x: 195, y: 10 })])
+        expect([
+            panel.isOnScrollbar({ x: 195, y: 50 }),
+            panel.isOnScrollbar({ x: 150, y: 50 }),
+            panel.isOnScrollbar({ x: 195, y: 10 })
+        ])
             .toEqual([true, false, false])
     })
 })

@@ -57,7 +57,7 @@ function load(key: string, url: string, crossOrigin: ImageCrossOrigin) {
 
     const onCorsError = () => request(url, ImageCrossOrigin.None, onLoad, onError)
 
-    if (crossOrigin == ImageCrossOrigin.Auto)
+    if (crossOrigin === ImageCrossOrigin.Auto)
         request(url, ImageCrossOrigin.Anonymous, onLoad, onCorsError)
     else
         request(url, crossOrigin, onLoad, onError)
@@ -71,7 +71,7 @@ function request(
 ) {
     const image = new Image()
 
-    if (crossOrigin != ImageCrossOrigin.None)
+    if (crossOrigin !== ImageCrossOrigin.None)
         image.crossOrigin = crossOrigin
 
     image.onload = () => onLoad(image)
@@ -85,7 +85,7 @@ function warnOnce(key: string, url: string, crossOrigin: ImageCrossOrigin) {
 
     warnedKeys.add(key)
 
-    if (crossOrigin == ImageCrossOrigin.Auto || crossOrigin == ImageCrossOrigin.None)
+    if (crossOrigin === ImageCrossOrigin.Auto || crossOrigin === ImageCrossOrigin.None)
         console.warn('OCharts: image failed to load:', url)
     else
         console.warn(

@@ -21,7 +21,7 @@ const getStacks = (all: PlotSeries[], data: Partial<PlotData> = {}) => {
         getColumnGroups(plot.seriesGroups.enabledSeries)
     )
     const stacks = new Map<string, number>()
-    const items = all.filter(series => series.type == PlotType.StackingColumn)
+    const items = all.filter(series => series.type === PlotType.StackingColumn)
                      .map(series => buildItems(stackedColumns.getItems(series, stacks)))
     const rects = items.map(seriesItems => {
         return seriesItems.filter(item => item.shape instanceof RenderItemRectangle)
@@ -34,7 +34,10 @@ const getStacks = (all: PlotSeries[], data: Partial<PlotData> = {}) => {
 
 describe('Getting plot stacked column items', () => {
     it('Should stack next series on top of previous ones', () => {
-        const { layout, rects } = getStacks([createSeries(PlotType.StackingColumn, [10]), createSeries(PlotType.StackingColumn, [30])])
+        const { layout, rects } = getStacks([
+            createSeries(PlotType.StackingColumn, [10]),
+            createSeries(PlotType.StackingColumn, [30])
+        ])
         const { baseline, valueScale } = layout.vertical
         const [bottom, top] = rects.map(series => series[0].absolute)
 
@@ -63,7 +66,10 @@ describe('Getting plot stacked column items', () => {
     })
 
     it('Should round only top of stack', () => {
-        const { rects } = getStacks([createSeries(PlotType.StackingColumn, [10]), createSeries(PlotType.StackingColumn, [30])])
+        const { rects } = getStacks([
+            createSeries(PlotType.StackingColumn, [10]),
+            createSeries(PlotType.StackingColumn, [30])
+        ])
 
         expect(rects[0][0].radii)
             .toEqual([0, 0, 0, 0])
@@ -138,11 +144,17 @@ describe('Getting plot stacked column items', () => {
     })
 
     it('Should place stack after regular columns in slot', () => {
-        const { layout, rects } = getStacks([createSeries(PlotType.Column, [10]), createSeries(PlotType.StackingColumn, [10])])
+        const { layout, rects } = getStacks([
+            createSeries(PlotType.Column, [10]),
+            createSeries(PlotType.StackingColumn, [10])
+        ])
         const { categoryScale } = layout.vertical
 
         expect(rects[0][0].absolute)
-            .toMatchObject({ x: categoryScale.getSlotStart(0) + categoryScale.step / 2, width: categoryScale.step / 2 })
+            .toMatchObject({
+                x: categoryScale.getSlotStart(0) + categoryScale.step / 2,
+                width: categoryScale.step / 2
+            })
     })
 
     it('Should collapse disabled stack part', () => {

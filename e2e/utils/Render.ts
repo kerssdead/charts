@@ -11,6 +11,13 @@ const ARIAL_CHAR_WIDTHS = [
     556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584
 ]
 
+type ScreenshotArea = {
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
 export default class Render {
     static intercept(page: Page) {
         return page.addInitScript(interceptDrawCalls, ARIAL_CHAR_WIDTHS)
@@ -21,41 +28,57 @@ export default class Render {
 
         await canvas.scrollIntoViewIfNeeded()
 
-        let drawCalls: string | null = null
+        let previous: string | null = null
+        let drawCalls = ''
 
         await expect.poll(async () => {
-            const previous = drawCalls
-
             drawCalls = await canvas.evaluate(drawCallsInClip, clip)
 
-            return drawCalls == previous
+            const isStable = drawCalls === previous
+
+            previous = drawCalls
+
+            return isStable
         }, { intervals: [100] }).toBe(true)
 
-        return drawCalls!
+        return drawCalls
     }
 
     static hash(drawCalls: string) {
         return createHash('sha1').update(drawCalls).digest('hex').slice(0, 8)
     }
 
-    static async image(page: Page, clip?: Clip) {
-        const chart = (await page.locator('.chart-container').boundingBox())!
+    static async image(
+        page: Page,
+        clip?: Clip
+    ) {
+        const chart = await page.locator('.chart-container').boundingBox()
 
-        return page.screenshot({
-            fullPage: true,
-            clip: {
-                x: chart.x + (clip?.x ?? 0),
-                y: chart.y + 12 + (clip?.y ?? 0),
-                width: clip?.width || chart.width - (clip?.x ?? 0),
-                height: clip?.height || chart.height - (clip?.y ?? 0)
-            }
-        })
+        if (!chart) {
+            throw new Error('Chart container is not visible')
+        }
+
+        return page.screenshot({ fullPage: true, clip: Render.screenshotArea(chart, clip ?? {}) })
+    }
+
+    private static screenshotArea(chart: ScreenshotArea, { x = 0, y = 0, width, height }: Partial<Clip>) {
+        return {
+            x: chart.x + x,
+            y: chart.y + 12 + y,
+            width: width || chart.width - x,
+            height: height || chart.height - y
+        }
     }
 }
 
 type Point = [number, number]
 
 type PointsOf = (ctx: any, args: any[]) => Point[]
+
+type RecordedPath = {
+    path: any[]
+    points: Point[]
+}
 
 function interceptDrawCalls(arialCharWidths: number[]) {
     const context = CanvasRenderingContext2D.prototype as any
@@ -147,7 +170,7 @@ function interceptDrawCalls(arialCharWidths: number[]) {
         transform: normalize([...ctx.getTransform().toFloat64Array()])
     })
 
-    const record = (ctx: any, name: string, args: any[], path: any[], points: Point[]) => {
+    const record = (ctx: any, name: string, args: any[], { path, points }: RecordedPath) => {
         ctx.canvas.drawCalls ??= []
         ctx.canvas.drawCalls.push({
             name,
@@ -182,10 +205,12 @@ function interceptDrawCalls(arialCharWidths: number[]) {
         })
 
     for (const name of PATH_DRAWS)
-        patch(context, name, (ctx, args) => record(ctx, name, args, path.slice(), pathPoints))
+        patch(context, name, (ctx, args) => record(ctx, name, args, { path: path.slice(), points: pathPoints }))
 
     for (const [name, pointsOf] of SHAPE_DRAWS)
-        patch(context, name, (ctx, args) => record(ctx, name, args, [], toCanvas(ctx, pointsOf(ctx, args))))
+        patch(context, name, (ctx, args) => {
+            record(ctx, name, args, { path: [], points: toCanvas(ctx, pointsOf(ctx, args)) })
+        })
 }
 
 function drawCallsInClip(canvas: any, clip?: Clip) {

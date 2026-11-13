@@ -15,7 +15,10 @@ describe('Getting tree bar rows for decomposition', () => {
             columns: [{ key: 'amount', title: 'Amount' }, { key: 'code', title: 'Code' }]
         } as TreeBarData)
 
-        expect([table.headers.map(header => header.display), table.values.map(value => [value.name, [...value.values.values()]])])
+        expect([
+            table.headers.map(header => header.display),
+            table.values.map(value => [value.name, [...value.values.values()]])
+        ])
             .toEqual([['Amount', 'Code'], [['Lorem Ipsum', [1500, 0]]]])
     })
 

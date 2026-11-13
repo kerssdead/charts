@@ -7,7 +7,7 @@ import Alignment, { DEFAULT_ALIGNMENT } from '@/types/Alignment'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { unitVerticalGradient } from '@/helpers/Canvas'
-import { clamp, lerp } from '@/helpers/Geometry'
+import { containsRounded, lerp, lerpRect } from '@/helpers/Geometry'
 
 const ALPHA_DELTA = 0.5
 
@@ -114,10 +114,7 @@ export default class RenderItemRectangle extends RenderItemBase {
             return this.clip
 
         return {
-            x: lerp(this.fromClip.x, this.clip.x, morph),
-            y: lerp(this.fromClip.y, this.clip.y, morph),
-            width: lerp(this.fromClip.width, this.clip.width, morph),
-            height: lerp(this.fromClip.height, this.clip.height, morph),
+            ...lerpRect(this.fromClip, this.clip, morph),
             radius: lerp(this.fromClip.radius, this.clip.radius, morph)
         }
     }
@@ -187,7 +184,7 @@ export default class RenderItemRectangle extends RenderItemBase {
             this.canvasClip.radius = clip.radius / COORDS_MAX_X * window.width
         }
 
-        this.canvasGrowOrigin = this.growAxis == 'x'
+        this.canvasGrowOrigin = this.growAxis === 'x'
                                 ? RenderItem.adjustX(window, this.growOrigin)
                                 : RenderItem.adjustY(window, this.growOrigin)
     }
@@ -195,7 +192,7 @@ export default class RenderItemRectangle extends RenderItemBase {
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
         const { left, top, width, height } = this.grow(item.animation.init)
 
-        if (width == 0 || height == 0)
+        if (width === 0 || height === 0)
             return
 
         if (this.clip) {
@@ -254,17 +251,7 @@ export default class RenderItemRectangle extends RenderItemBase {
 
         return left <= point.x && point.x <= right
                && top <= point.y && point.y <= bottom
-               && (!this.clip || this.isInClip(point))
-    }
-
-    private isInClip(point: Point) {
-        const { x, y, width, height } = this.canvasClip
-        const radius = Math.min(this.canvasClip.radius, width / 2, height / 2)
-
-        const dx = point.x - clamp(point.x, x + radius, x + width - radius)
-        const dy = point.y - clamp(point.y, y + radius, y + height - radius)
-
-        return dx * dx + dy * dy <= radius * radius
+               && (!this.clip || containsRounded(this.canvasClip, this.canvasClip.radius, point))
     }
 
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp) {
@@ -285,7 +272,7 @@ export default class RenderItemRectangle extends RenderItemBase {
         const area = this.bounds(1, this.area)
         const grown = this.grownArea
         const origin = this.canvasGrowOrigin
-        const isX = this.growAxis == 'x'
+        const isX = this.growAxis === 'x'
 
         grown.left = isX ? lerp(origin, area.left, progress) : area.left
         grown.top = isX ? area.top : lerp(origin, area.top, progress)

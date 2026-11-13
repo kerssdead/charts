@@ -40,7 +40,7 @@ export default class ChartMenu {
         this.buttons = undefined
 
         if (settings.disableInteractions || settings.disableMenu
-            || settings.charts.every(chart => chart.type == ChartType.SegmentedBar)) {
+            || settings.charts.every(chart => chart.type === ChartType.SegmentedBar)) {
             this.remove()
         } else if (!this.button) {
             this.button = new MenuButton()
@@ -88,7 +88,7 @@ export default class ChartMenu {
                         this.settings.decimals
                     ),
                     title || TextResources.dataAsTable,
-                    Theme.currentTheme == ColorTheme.dark
+                    Theme.currentTheme === ColorTheme.dark
                 ).open()
             }
         ]

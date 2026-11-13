@@ -13,7 +13,7 @@ const styleRect = (all: PlotSeries[], series: PlotSeries, slot: number, valueInd
     const { style } = createPlot(all)
 
     return buildItems((items: QueueItemsBuilder) => {
-        return style.styleRect(items.rect(), series, series.values[valueIndex], slot, valueIndex)
+        return style.styleRect(items.rect(), series, slot, valueIndex)
     })[0]
 }
 

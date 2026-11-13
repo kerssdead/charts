@@ -74,14 +74,14 @@ describe('Showing custom tooltip', () => {
     })
 
     it('Should fill template once per data', () => {
-        const fill = CustomTooltip.fromTemplate('template')!
+        const fill = CustomTooltip.fromTemplate('template')
         const data = { Name: 'First' }
 
-        fill(data)
-        fill(data)
+        fill?.(data)
+        fill?.(data)
 
         expect(template.reads).toBe(1)
-        expect(fill({ Name: 'Second' })).toBe('<b>Second</b>')
+        expect(fill?.({ Name: 'Second' })).toBe('<b>Second</b>')
         expect(template.reads).toBe(2)
     })
 })

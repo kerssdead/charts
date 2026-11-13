@@ -214,6 +214,6 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
     }
 
     private getValueWithPercentText(value: number, visibleTotal: number) {
-        return this.share(value, visibleTotal == 0 ? 0 : value / visibleTotal)
+        return this.share(value, visibleTotal === 0 ? 0 : value / visibleTotal)
     }
 }

@@ -22,13 +22,13 @@ export function getLinearTicks(min: number, max: number, targetTicks: number) {
 export function getLogAxisValues(all: number[], max?: number) {
     const positive = all.filter(value => value > 0 && Number.isFinite(value))
 
-    if (positive.length == 0)
+    if (positive.length === 0)
         return []
 
     const largest = positive.reduce((acc, value) => Math.max(acc, value))
     const smallest = positive.reduce((acc, value) => Math.min(acc, value))
 
-    const top = max != undefined && max > 0
+    const top = max !== undefined && max > 0
                 ? max
                 : powerOfTen(Math.ceil(Math.log10(largest)))
 

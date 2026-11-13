@@ -8,7 +8,7 @@ const getBounds = (stops: { x: number, y: number }[], areaBaseline: number | nul
 
     shape.absolute = stops
     shape.width = 2
-    shape.areaBaseline = areaBaseline
+    shape.area.baseline = areaBaseline
     shape.adjust(WINDOW)
 
     return shape.getBounds()

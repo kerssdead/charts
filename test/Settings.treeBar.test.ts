@@ -18,11 +18,11 @@ describe('Normalizing tree bar settings', () => {
         })
 
         const [root] = rows(result)
-        const child = root.children![0]
+        const child = root.children?.[0]
 
         expect([root instanceof TreeBarRow, child instanceof TreeBarRow, root.parts[0] instanceof Sector])
             .toEqual([true, true, true])
-        expect([root.parts[0].value, root.parts[0].label, child.id])
+        expect([root.parts[0].value, root.parts[0].label, child?.id])
             .toEqual([5, undefined, 'Ipsum-0'])
     })
 
@@ -42,9 +42,9 @@ describe('Normalizing tree bar settings', () => {
             }]
         }, '#336699'))
 
-        const child = root.children![0]
+        const child = root.children?.[0]
 
-        expect([root.parts[0].color, child.parts[0].color, child.parts[1].color])
+        expect([root.parts[0].color, child?.parts[0].color, child?.parts[1].color])
             .toEqual(['#336699', '#ff0000', '#00ff00'])
     })
 

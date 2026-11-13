@@ -9,6 +9,17 @@ export type Band = {
     bottom: number
 }
 
+export type PlotSectionOptions = {
+    orientation: PlotOrientation
+    slots: Slots
+    axisValues: number[]
+    band: Band
+    left: number
+    width: number
+    continuousAxis?: PlotContinuousAxis | null
+    valueScaleType?: PlotScaleType
+}
+
 export default class PlotSection {
     readonly band: Band
 
@@ -18,21 +29,21 @@ export default class PlotSection {
 
     readonly baseline: number
 
-    constructor(
-        orientation: PlotOrientation,
-        slots: Slots,
-        axisValues: number[],
-        band: Band,
-        left: number,
-        width: number,
-        continuousAxis: PlotContinuousAxis | null = null,
+    constructor({
+        orientation,
+        slots,
+        axisValues,
+        band,
+        left,
+        width,
+        continuousAxis = null,
         valueScaleType = PlotScaleType.Linear
-    ) {
+    }: PlotSectionOptions) {
         const height = band.bottom - band.top
 
         this.band = band
 
-        if (orientation == PlotOrientation.Vertical) {
+        if (orientation === PlotOrientation.Vertical) {
             this.categoryScale = PlotCategoryScale.fromLeft(slots, left, width, continuousAxis)
             this.valueScale = PlotValueScale.fromBottom(axisValues, band.bottom, height, valueScaleType)
         } else {

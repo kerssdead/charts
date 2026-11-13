@@ -19,9 +19,9 @@ export function getSlots(series: PlotSeries[], xType: PlotAxisType): Slots {
 
     const values = Array.from(unique.values())
 
-    const order = (x: PlotPoint['x']) => xType == PlotAxisType.Date ? Formatter.toDate(x).getTime() : Number(x)
+    const order = (x: PlotPoint['x']) => xType === PlotAxisType.Date ? Formatter.toDate(x).getTime() : Number(x)
 
-    if (xType != PlotAxisType.Text && values.every(x => !isNaN(order(x))))
+    if (xType !== PlotAxisType.Text && values.every(x => !isNaN(order(x))))
         values.sort((a, b) => order(a) - order(b))
 
     return { values, index: new Map(values.map((x, i) => [x.toString(), i])) }

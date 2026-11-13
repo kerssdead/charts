@@ -15,20 +15,19 @@ import {
     X_LABEL_HEIGHT
 } from '@/render/plot/PlotConstants'
 
-export function getMargin(
-    units: Units,
-    isSimple: boolean,
-    leftTitle: string,
-    bottomTitle: string,
-    leftLabels: string[]
-): Paddings {
+export type AxisTitles = {
+    left: string
+    bottom: string
+}
+
+export function getMargin(units: Units, isSimple: boolean, titles: AxisTitles, leftLabels: string[]): Paddings {
     return isSimple
            ? { top: SIMPLE_MARGIN, right: SIMPLE_MARGIN, bottom: SIMPLE_MARGIN, left: SIMPLE_MARGIN }
            : {
                top: TOP_MARGIN,
                right: RIGHT_MARGIN,
-               bottom: getBottomMargin(units, bottomTitle),
-               left: getLeftMargin(units, leftTitle, leftLabels)
+               bottom: getBottomMargin(units, titles.bottom),
+               left: getLeftMargin(units, titles.left, leftLabels)
            }
 }
 

@@ -25,14 +25,14 @@ export function stringWidth(text: string | undefined, font: number = DEFAULT_FON
 
     let width = textWidths.get(text)
 
-    if (width == undefined) {
+    if (width === undefined) {
         if (textWidths.size >= MEASURE_CACHE_LIMIT) {
             let count = MEASURE_CACHE_LIMIT / 2
 
             for (const key of textWidths.keys()) {
                 textWidths.delete(key)
 
-                if (--count == 0)
+                if (--count === 0)
                     break
             }
         }
@@ -89,5 +89,5 @@ export function short(value: number, isShort: boolean) {
 export function scientific(value: number) {
     scientificFormat ??= new Intl.NumberFormat(undefined, { notation: 'scientific', maximumFractionDigits: 1 })
 
-    return value == 0 ? '0' : scientificFormat.format(value)
+    return value === 0 ? '0' : scientificFormat.format(value)
 }

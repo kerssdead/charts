@@ -28,7 +28,13 @@ describe('Creating plot series groups', () => {
         const column = series(PlotType.Column)
         const stack = series(PlotType.StackingColumn)
         const line = series(PlotType.Line)
-        const groups = new PlotSeriesGroups([column, series(PlotType.Bar), stack, series(PlotType.AttentionLine), line])
+        const groups = new PlotSeriesGroups([
+            column,
+            series(PlotType.Bar),
+            stack,
+            series(PlotType.AttentionLine),
+            line
+        ])
 
         expect(groups.verticalSeries)
             .toEqual([column, stack, line])
@@ -56,12 +62,18 @@ describe('Creating plot series groups', () => {
     })
 
     it('Should not be horizontal when bars are hidden and other series are shown', () => {
-        expect(new PlotSeriesGroups([series(PlotType.Bar, true, point), series(PlotType.Line, false, point)]).isHorizontal)
+        expect(new PlotSeriesGroups([
+            series(PlotType.Bar, true, point),
+            series(PlotType.Line, false, point)
+        ]).isHorizontal)
             .toBe(false)
     })
 
     it('Should stay mixed when nothing has values to show', () => {
-        expect(new PlotSeriesGroups([series(PlotType.Bar, true, point), series(PlotType.Line, true, point)]).isHorizontal)
+        expect(new PlotSeriesGroups([
+            series(PlotType.Bar, true, point),
+            series(PlotType.Line, true, point)
+        ]).isHorizontal)
             .toBe(false)
     })
 

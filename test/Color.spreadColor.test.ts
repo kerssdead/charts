@@ -1,6 +1,8 @@
 import { spreadColor } from '@/helpers/Color'
 
-const spread = (base: string, count: number) => Array.from({ length: count }, (_, index) => spreadColor(base, index, count, 67))
+const spread = (base: string, count: number) => {
+    return Array.from({ length: count }, (_, index) => spreadColor(base, index, count, 67))
+}
 
 describe('Spreading color', () => {
     it('Should keep base for single value', () => {

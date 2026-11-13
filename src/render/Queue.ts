@@ -95,7 +95,7 @@ export default class Queue {
     }
 
     add(items: RenderItem[]) {
-        if (items.length == 0)
+        if (items.length === 0)
             return
 
         for (const item of items)
@@ -106,7 +106,7 @@ export default class Queue {
     }
 
     remove(items: ReadonlySet<RenderItem>) {
-        if (items.size == 0)
+        if (items.size === 0)
             return
 
         this.removeWhere(item => items.has(item))
@@ -125,7 +125,7 @@ export default class Queue {
             if (!predicate(item))
                 this.queue[count++] = item
 
-        if (count != this.queue.length)
+        if (count !== this.queue.length)
             this.version++
 
         this.queue.length = count

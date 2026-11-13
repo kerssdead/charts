@@ -15,7 +15,7 @@ export default class HoverProgress {
     }
 
     get isIdle() {
-        return this.progress == 0
+        return this.progress === 0
     }
 
     get isAnimating() {
@@ -28,16 +28,21 @@ export default class HoverProgress {
         this.time = now
         this.isOver = isOver
 
-        const progress = HoverProgress.isInstant
-                         ? isOver ? 1 : 0
-                         : clamp(this.progress + (isOver ? delta : -delta) / duration, 0, 1)
-        const isChanged = progress != this.progress
+        const progress = this.getNextProgress(isOver, delta, duration)
+        const isChanged = progress !== this.progress
 
         this.progress = progress
 
-        if (isOver ? progress == 1 : this.isIdle)
+        if (isOver ? progress === 1 : this.isIdle)
             this.time = null
 
         return isChanged
+    }
+
+    private getNextProgress(isOver: boolean, delta: number, duration: number) {
+        if (HoverProgress.isInstant)
+            return isOver ? 1 : 0
+
+        return clamp(this.progress + (isOver ? delta : -delta) / duration, 0, 1)
     }
 }

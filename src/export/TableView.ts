@@ -70,7 +70,7 @@ export default class TableView {
 
         table.style.setProperty('--o-value-columns', `${ Math.max(this.data.headers.length, 1) }`)
 
-        if (this.data.headers.length == 0 || this.data.values.length == 0) {
+        if (this.data.headers.length === 0 || this.data.values.length === 0) {
             table.append(headerRow, this.buildEmptyBody())
 
             return table
@@ -108,7 +108,7 @@ export default class TableView {
         const valueCell = (header: TableHeaderValue) => {
             const value = row.values.get(header.value)
 
-            return asNumberCell(cell(value == undefined ? '' : formatValue(value, header, this.decimals)))
+            return asNumberCell(cell(value === undefined ? '' : formatValue(value, header, this.decimals)))
         }
 
         const element = div(TableClasses.Row, [nameCell(row), ...this.data.headers.map(valueCell)], AriaRole.Row)

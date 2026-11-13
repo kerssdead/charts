@@ -15,7 +15,7 @@ describe('Morphing rectangle clip', () => {
 
         shape.morphFrom(rect(100), 1)
 
-        expect([shape.current(.5).y, shape.currentClip(.5)!.y, shape.currentClip(1)!.y])
+        expect([shape.current(.5).y, shape.currentClip(.5)?.y, shape.currentClip(1)?.y])
             .toEqual([150, 150, 200])
     })
 
@@ -27,7 +27,7 @@ describe('Morphing rectangle clip', () => {
 
         shape.morphFrom(previous, 1)
 
-        expect(shape.currentClip(.5)!.y)
+        expect(shape.currentClip(.5)?.y)
             .toBe(200)
     })
 })

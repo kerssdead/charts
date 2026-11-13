@@ -48,8 +48,10 @@ function attach() {
 
     TableColumnHighlight.attach(table as unknown as HTMLElement)
 
-    const hover = (cell: FakeCell | null) => listeners.get(Events.PointerMove)!({ target: { closest: () => cell } })
-    const leave = () => listeners.get(Events.PointerLeave)!()
+    const hover = (cell: FakeCell | null) => {
+        return listeners.get(Events.PointerMove)?.({ target: { closest: () => cell } })
+    }
+    const leave = () => listeners.get(Events.PointerLeave)?.()
 
     return { highlight: children[0], children, hover, leave }
 }

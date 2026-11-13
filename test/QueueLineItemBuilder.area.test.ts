@@ -7,12 +7,12 @@ const buildLine = (action: (items: QueueItemsBuilder) => void) => {
 
 describe('Building line area', () => {
     it('Should set area baseline', () => {
-        expect(buildLine(items => items.line().area(400)).areaBaseline)
+        expect(buildLine(items => items.line().area(400)).area.baseline)
             .toBe(400)
     })
 
     it('Should keep line without area by default', () => {
-        expect(buildLine(items => items.line()).areaBaseline)
+        expect(buildLine(items => items.line()).area.baseline)
             .toBeNull()
     })
 })

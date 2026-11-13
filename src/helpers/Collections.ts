@@ -27,7 +27,7 @@ export function firstMappedValue<K, V>(keys: K[], map: Map<K, V>): V | undefined
     for (const key of keys) {
         const value = map.get(key)
 
-        if (value != undefined)
+        if (value !== undefined)
             return value
     }
 

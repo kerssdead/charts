@@ -6,7 +6,7 @@ const row = (id: string, amount: number, extra: Partial<TreeBarRow> = {}) => {
 }
 
 const entries = (rows: TreeBarRow[], sortColumn?: string) => {
-    return getVisibleEntries(rows, sortColumn, false).map(({ node, level }) => [node.id, level])
+    return getVisibleEntries(rows, { sortColumn }).map(({ node, level }) => [node.id, level])
 }
 
 describe('Getting visible tree bar entries', () => {
@@ -36,7 +36,7 @@ describe('Getting visible tree bar entries', () => {
         const child = (id: string, amount: string) => new TreeBarRow({ id, label: id, cells: { amount } })
         const rows = [row('a', 1, { expanded: true, children: [child('a1', '1.500'), child('a2', '20')] })]
 
-        expect(getVisibleEntries(rows, 'amount', false, 'de-DE').map(({ node }) => node.id))
+        expect(getVisibleEntries(rows, { sortColumn: 'amount', sortDescending: false, numberLocale: 'de-DE' }).map(({ node }) => node.id))
             .toEqual(['a', 'a2', 'a1'])
     })
 })

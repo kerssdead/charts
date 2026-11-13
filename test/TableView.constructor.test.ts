@@ -44,14 +44,21 @@ describe('Building table view', () => {
         const [header] = build(data).elements
         const [name, amount] = header.elements
 
-        expect([amount.title, amount.classList.contains(TableClasses.Number), name.classList.contains(TableClasses.Number)])
+        expect([
+            amount.title,
+            amount.classList.contains(TableClasses.Number),
+            name.classList.contains(TableClasses.Number)
+        ])
             .toEqual(['Amount', true, false])
     })
 
     it('Should set accessibility roles on rows and cells', () => {
         const [header, body, footer] = build(data).elements
         const roles = (row: FakeElement) => {
-            return [row.getAttribute(Attribute.Role), ...row.elements.map(cell => cell.getAttribute(Attribute.Role))]
+            return [
+                row.getAttribute(Attribute.Role),
+                ...row.elements.map(cell => cell.getAttribute(Attribute.Role))
+            ]
         }
 
         expect([roles(header), body.getAttribute(Attribute.Role), roles(body.elements[0]), roles(footer)])

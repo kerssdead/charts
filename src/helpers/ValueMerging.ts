@@ -14,23 +14,23 @@ export function mergeSameLabelValues(chart: ChartItem) {
     if (!chart.data?.values)
         return
 
-    if (chart.type == ChartType.Pie || chart.type == ChartType.Gauge)
+    if (chart.type === ChartType.Pie || chart.type === ChartType.Gauge)
         mergeSectors(chart.data as PieData | GaugeData)
-    else if (chart.type == ChartType.TreeMap)
+    else if (chart.type === ChartType.TreeMap)
         mergeTreeValues(chart.data as TreeData)
-    else if (chart.type == ChartType.Plot)
+    else if (chart.type === ChartType.Plot)
         mergeSeries(chart.data as PlotData)
 }
 
 function mergeSectors(data: PieData | GaugeData) {
-    if (data.enableMerging == false)
+    if (data.enableMerging === false)
         return
 
     data.values = mergeByLabel(data.values, addValue)
 }
 
 function mergeTreeValues(data: TreeData) {
-    if (data.enableMerging == false)
+    if (data.enableMerging === false)
         return
 
     data.values = mergeByLabel(data.values, addTreeValue)

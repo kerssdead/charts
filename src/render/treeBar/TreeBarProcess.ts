@@ -1,8 +1,6 @@
-import TreeBarData, { flattenTreeBarRows, getTreeBarTotal, TreeBarEntry } from '@/types/data/TreeBarData'
-import TreeBarRow from '@/types/TreeBarRow'
+import TreeBarData, { flattenTreeBarRows, getTreeBarTotal } from '@/types/data/TreeBarData'
 import Point from '@/types/Point'
 import ProcessSettings from '@/types/ProcessSettings'
-import RectangleDimensions from '@/types/RectangleDimensions'
 import type { PanelScroll } from '@/types/Panel'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import { COORDS_MAX_X, COORDS_MAX_Y, Layer } from '@/static/constants/Index'
@@ -10,88 +8,66 @@ import { TextAlignment } from '@/static/Enums'
 import { getRoundedValues } from '@/helpers/Numbers'
 import { maxOf } from '@/helpers/Collections'
 import { short, stringWidth } from '@/helpers/Text'
-import { withAlpha } from '@/helpers/Color'
 import ChartProcess from '@/render/ChartProcess'
 import Theme from '@/Theme'
 import * as TreeBarLayout from '@/render/treeBar/TreeBarLayout'
 import * as TreeBarRowText from '@/render/treeBar/TreeBarRowText'
 import * as TreeBarSorting from '@/render/treeBar/TreeBarSorting'
-import { BarArea, Column } from '@/render/treeBar/TreeBarLayout'
+import TreeBarRowItems, { TreeBarGeometry, TreeBarRowEntry } from '@/render/treeBar/TreeBarRowItems'
+import { addClickArea, getMutedTextColor } from '@/render/treeBar/TreeBarItems'
 import {
-    BAR_HEIGHT,
     BAR_LABEL_FONT_SIZE,
     BAR_LABEL_GAP,
-    BAR_RADIUS,
-    CELL_FONT_SIZE,
-    GRID_WIDTH,
     HEADER_FONT_SIZE,
     HEADER_HEIGHT,
-    IMAGE_PLACEHOLDER_ALPHA,
-    IMAGE_SIZE,
-    INDENT,
-    LINE_HEIGHT,
-    MUTED_ALPHA,
     PADDING,
-    ROW_APPEAR_DELAY,
     SCROLLBAR_SPACE,
-    TICKS,
-    TOGGLE_LINE_WIDTH,
-    TOGGLE_SIZE,
-    TOGGLE_WIDTH,
-    TRANSPARENT
+    TICKS
 } from '@/render/treeBar/TreeBarConstants'
 
-type Row = TreeBarEntry & {
-    y: number
-    height: number
-}
-
 export default class TreeBarProcess extends ChartProcess<TreeBarData> {
-    private readonly width: number
-
-    private readonly rows: Row[] = []
+    private readonly rows: TreeBarRowEntry[] = []
 
     private readonly height: number
 
-    private readonly nameWidth: number
-
-    private readonly columns: Column[]
-
-    private readonly barArea: BarArea
-
-    private readonly barLabelWidth: number
+    private readonly geometry: TreeBarGeometry
 
     private readonly ticks: number[]
 
-    private readonly maxTickValue: number
+    private readonly rowItems: TreeBarRowItems
 
     constructor(data: TreeBarData, pixel: Point, settings: ProcessSettings) {
         super(data, pixel, settings)
 
         const allEntries = flattenTreeBarRows(data.values)
 
-        this.width = this.units.toPxX(COORDS_MAX_X)
+        const width = this.units.toPxX(COORDS_MAX_X)
+        const contentRight = width - PADDING - SCROLLBAR_SPACE
 
-        const contentRight = this.width - PADDING - SCROLLBAR_SPACE
-
-        this.nameWidth = TreeBarLayout.getNameWidth(allEntries, this.width)
-        this.columns = TreeBarLayout.getColumns(data.columns ?? [], allEntries, contentRight, this.width)
-        this.barLabelWidth = Math.max(maxOf(allEntries, ({ node }) => {
+        const nameWidth = TreeBarLayout.getNameWidth(allEntries, width)
+        const columns = TreeBarLayout.getColumns(data.columns ?? [], allEntries, contentRight, width)
+        const barLabelWidth = Math.max(maxOf(allEntries, ({ node }) => {
             return node.barLabel ? stringWidth(node.barLabel, BAR_LABEL_FONT_SIZE) + BAR_LABEL_GAP : 0
         }), 0)
-        this.barArea = TreeBarLayout.getBarArea(this.nameWidth, this.columns, contentRight, this.barLabelWidth)
 
         this.ticks = getRoundedValues(allEntries.map(({ node }) => getTreeBarTotal(node)), TICKS)
-        this.maxTickValue = this.ticks[this.ticks.length - 1] || 1
+        this.geometry = {
+            width,
+            nameWidth,
+            columns,
+            barArea: TreeBarLayout.getBarArea(nameWidth, columns, contentRight, barLabelWidth),
+            barLabelWidth,
+            maxTickValue: this.ticks[this.ticks.length - 1] || 1
+        }
+        this.rowItems = new TreeBarRowItems(this.units, this.geometry, settings.imageCrossOrigin, {
+            getPartTooltip: (part, label) => this.valueTooltip(part, label, this.formatValue(part.value)),
+            getPartData: part => TreeBarProcess.getItemData(part),
+            onToggle: () => this.onChange?.()
+        })
 
         let y = HEADER_HEIGHT
 
-        for (const entry of TreeBarSorting.getVisibleEntries(
-            data.values,
-            data.sortColumn,
-            data.sortDescending,
-            data.numberLocale
-        )) {
+        for (const entry of TreeBarSorting.getVisibleEntries(data.values, data)) {
             const height = TreeBarRowText.getRowHeight(entry.node)
 
             this.rows.push({ ...entry, y, height })
@@ -103,7 +79,7 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
     }
 
     isEmpty() {
-        return this.data.values.length == 0
+        return this.data.values.length === 0
     }
 
     getScroll(): PanelScroll {
@@ -115,11 +91,7 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
     }
 
     getData(): QueueAction[] {
-        return this.rows.map(row => (items: QueueItemsBuilder) => this.addRow(items, row))
-    }
-
-    private static get mutedText() {
-        return withAlpha(Theme.text, MUTED_ALPHA)
+        return this.rows.map(row => (items: QueueItemsBuilder) => this.rowItems.add(items, row))
     }
 
     private x(px: number) {
@@ -131,15 +103,16 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
     }
 
     private addHeader(items: QueueItemsBuilder) {
+        const { barArea, maxTickValue, columns, width } = this.geometry
         const bodyBottom = this.y(Math.min(this.height, this.units.toPxY(COORDS_MAX_Y)))
 
         for (const tick of this.ticks) {
-            const x = this.x(this.barArea.x + tick / this.maxTickValue * this.barArea.width)
+            const x = this.x(barArea.x + tick / maxTickValue * barArea.width)
 
             items.text(short(tick, false))
                  .position(x, this.y(HEADER_HEIGHT / 2))
                  .size(HEADER_FONT_SIZE)
-                 .color(TreeBarProcess.mutedText)
+                 .color(getMutedTextColor())
                  .key(`tree-bar-tick-${ tick }`)
 
             items.line()
@@ -150,7 +123,7 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
                  .key(`tree-bar-tick-line-${ tick }`)
         }
 
-        for (const column of this.columns) {
+        for (const column of columns) {
             const sortIndicator = TreeBarSorting.getSortIndicator(
                 column.key,
                 this.data.sortColumn,
@@ -164,185 +137,24 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
                  .clip(this.x(column.width))
                  .key(`tree-bar-column-${ column.key }`)
 
-            this.addClickArea(items, `tree-bar-column-${ column.key }-area`, {
+            addClickArea(items, this.units, {
                 x: column.left,
                 y: 0,
                 width: column.width,
                 height: HEADER_HEIGHT
-            }, () => this.sortBy(column.key))
+            }, () => this.sortBy(column.key)).key(`tree-bar-column-${ column.key }-area`)
         }
 
         items.line()
              .stop(this.x(PADDING), this.y(HEADER_HEIGHT))
-             .stop(this.x(this.width - PADDING), this.y(HEADER_HEIGHT))
+             .stop(this.x(width - PADDING), this.y(HEADER_HEIGHT))
              .color(Theme.lineAxis)
              .layer(Layer.Base)
              .key('tree-bar-header-line')
     }
 
-    private addRow(items: QueueItemsBuilder, { node, level, y, height }: Row) {
-        const key = `tree-bar-row-${ node.id }`
-        const center = y + height / 2
-        const left = PADDING + level * INDENT
-
-        const gridLine = {
-            x: PADDING,
-            y: y + height - GRID_WIDTH,
-            width: this.width - PADDING * 2,
-            height: GRID_WIDTH
-        }
-
-        items.rect()
-             .box(this.units, gridLine)
-             .collapse(false, false)
-             .fill()
-             .color(Theme.lineAxis)
-             .stroke(TRANSPARENT)
-             .layer(Layer.Base)
-             .appearDelay(ROW_APPEAR_DELAY)
-             .key(`${ key }-line`)
-
-        if (node.hasChildren)
-            this.addToggle(items, key, node, left + TOGGLE_WIDTH / 2, center, {
-                x: PADDING,
-                y,
-                width: this.nameWidth,
-                height
-            })
-
-        if (node.image)
-            items.image(node.image)
-                 .position(this.x(left + TOGGLE_WIDTH + IMAGE_SIZE / 2), this.y(center))
-                 .size(this.x(IMAGE_SIZE))
-                 .crossOrigin(this.settings.imageCrossOrigin)
-                 .color(withAlpha(Theme.text, IMAGE_PLACEHOLDER_ALPHA))
-                 .appearDelay(ROW_APPEAR_DELAY)
-                 .key(`${ key }-image`)
-
-        this.addLabels(items, key, node, left + TreeBarRowText.getTextOffset(node), center)
-        this.addBarParts(items, key, node, center)
-
-        for (const column of this.columns)
-            items.text(TreeBarRowText.formatCell(node.cells?.[column.key]))
-                 .position(this.x(column.right), this.y(center))
-                 .size(CELL_FONT_SIZE)
-                 .align(TextAlignment.Right)
-                 .clip(this.x(column.width))
-                 .appearDelay(ROW_APPEAR_DELAY)
-                 .key(`${ key }-cell-${ column.key }`)
-    }
-
-    private addToggle(
-        items: QueueItemsBuilder,
-        key: string,
-        node: TreeBarRow,
-        x: number,
-        y: number,
-        area: RectangleDimensions
-    ) {
-        const size = TOGGLE_SIZE
-
-        const points = node.expanded
-                       ? [[x - size, y - size / 2], [x, y + size / 2], [x + size, y - size / 2]]
-                       : [[x - size / 2, y - size], [x + size / 2, y], [x - size / 2, y + size]]
-
-        const line = items.line()
-
-        for (const [px, py] of points)
-            line.stop(this.x(px), this.y(py))
-
-        line.width(TOGGLE_LINE_WIDTH)
-            .color(TreeBarProcess.mutedText)
-            .layer(Layer.Data)
-            .appearDelay(ROW_APPEAR_DELAY)
-            .key(`${ key }-toggle`)
-
-        this.addClickArea(items, `${ key }-toggle-area`, area, () => {
-            node.expanded = !node.expanded
-
-            this.onChange?.()
-        })
-    }
-
-    private addLabels(items: QueueItemsBuilder, key: string, node: TreeBarRow, x: number, center: number) {
-        const lines = TreeBarRowText.getLines(node)
-        const width = PADDING + this.nameWidth - x
-
-        lines.forEach((line, index) => {
-            const text = items.text(line.text)
-                              .position(this.x(x), this.y(center + (index - (lines.length - 1) / 2) * LINE_HEIGHT))
-                              .size(TreeBarRowText.getLineFontSize(line))
-                              .align(TextAlignment.Left)
-                              .clip(this.x(width))
-                              .appearDelay(ROW_APPEAR_DELAY)
-                              .key(`${ key }-label-${ index }`)
-
-            if (line.isSubLabel)
-                text.color(TreeBarProcess.mutedText)
-        })
-    }
-
-    private addBarParts(items: QueueItemsBuilder, key: string, node: TreeBarRow, center: number) {
-        const parts = node.parts.filter(part => part.value > 0)
-        const total = getTreeBarTotal(node)
-        const widthPerValue = this.barArea.width / this.maxTickValue
-        const top = center - BAR_HEIGHT / 2
-
-        const barBox = {
-            x: this.x(this.barArea.x),
-            y: this.y(top),
-            width: this.x(total * widthPerValue),
-            height: this.y(BAR_HEIGHT)
-        }
-
-        let x = this.barArea.x
-
-        parts.forEach((part, index) => {
-            const partKey = `${ key }-part-${ index }`
-            const width = part.value * widthPerValue
-            const label = part.label || node.label.replace(/\n/g, ' ')
-
-            items.rect()
-                 .box(this.units, { x, y: top, width, height: BAR_HEIGHT })
-                 .clip(barBox, this.x(BAR_RADIUS))
-                 .collapse(false, false)
-                 .fill()
-                 .color(part.color)
-                 .layer(Layer.Data)
-                 .appearDelay(ROW_APPEAR_DELAY)
-                 .key(partKey)
-                 .hoverGroup(partKey)
-                 .monochrome()
-                 .interact()
-                 .contextMenu()
-                 .tooltipHtml(this.valueTooltip(part, label, this.formatValue(part.value)))
-                 .data(TreeBarProcess.getItemData(part))
-
-            x += width
-        })
-
-        if (node.barLabel)
-            items.text(node.barLabel)
-                 .position(this.x(this.barArea.x + total * widthPerValue + BAR_LABEL_GAP), this.y(center))
-                 .size(BAR_LABEL_FONT_SIZE)
-                 .align(TextAlignment.Left)
-                 .clip(this.x(this.barLabelWidth))
-                 .appearDelay(ROW_APPEAR_DELAY)
-                 .key(`${ key }-bar-label`)
-    }
-
-    private addClickArea(items: QueueItemsBuilder, key: string, area: RectangleDimensions, action: () => void) {
-        items.rect()
-             .box(this.units, area)
-             .fill()
-             .color(TRANSPARENT)
-             .layer(Layer.Base)
-             .key(key)
-             .onClick(action)
-    }
-
     private sortBy(columnKey: string) {
-        if (this.data.sortColumn == columnKey) {
+        if (this.data.sortColumn === columnKey) {
             this.data.sortDescending = !this.data.sortDescending
         } else {
             this.data.sortColumn = columnKey

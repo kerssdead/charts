@@ -11,32 +11,32 @@ const create = (xs: (number | string)[], xType: PlotAxisType, xScale: PlotScaleT
 
 describe('Creating plot continuous axis', () => {
     it('Should take slot values and ticks for linear numbers', () => {
-        const axis = create([40, 0, 10], PlotAxisType.Number, PlotScaleType.Linear)!
+        const axis = create([40, 0, 10], PlotAxisType.Number, PlotScaleType.Linear)
 
-        expect(axis.slotValues)
+        expect(axis?.slotValues)
             .toEqual([0, 10, 40])
-        expect(axis.ticks)
+        expect(axis?.ticks)
             .toEqual([0, 5, 10, 15, 20, 25, 30, 35, 40])
     })
 
     it('Should take powers of ten as log ticks', () => {
-        expect(create([2, 50000], PlotAxisType.Number, PlotScaleType.Log)!.ticks)
+        expect(create([2, 50000], PlotAxisType.Number, PlotScaleType.Log)?.ticks)
             .toEqual([10, 100, 1000, 10000])
     })
 
     it('Should use timestamps and calendar ticks for dates', () => {
-        const axis = create(['2025-01-15', '2025-12-20'], PlotAxisType.Date, PlotScaleType.Linear)!
+        const axis = create(['2025-01-15', '2025-12-20'], PlotAxisType.Date, PlotScaleType.Linear)
 
-        expect(axis.slotValues)
+        expect(axis?.slotValues)
             .toEqual([new Date(2025, 0, 15).getTime(), new Date(2025, 11, 20).getTime()])
-        expect(axis.ticks)
+        expect(axis?.ticks)
             .toEqual([2, 4, 6, 8, 10].map(month => new Date(2025, month, 1).getTime()))
     })
 
     it('Should use linear scale for dates on log scale', () => {
-        const axis = create(['2025-01-01', '2025-01-03', '2025-01-05'], PlotAxisType.Date, PlotScaleType.Log)!
+        const axis = create(['2025-01-01', '2025-01-03', '2025-01-05'], PlotAxisType.Date, PlotScaleType.Log)
 
-        expect(axis.getRatio(new Date(2025, 0, 3).getTime()))
+        expect(axis?.getRatio(new Date(2025, 0, 3).getTime()))
             .toBe(0.5)
     })
 

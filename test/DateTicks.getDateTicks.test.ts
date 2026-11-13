@@ -1,8 +1,6 @@
 import { getDateTicks } from '@/helpers/DateTicks'
 
-const time = (year: number, month: number, day: number, hours = 0, minutes = 0, seconds = 0) => {
-    return new Date(year, month, day, hours, minutes, seconds).getTime()
-}
+const time = (...parts: [number, number, number, number?, number?, number?]) => new Date(...parts).getTime()
 
 describe('Getting date ticks', () => {
     it('Should step by seconds for 1 minute range', () => {
@@ -18,7 +16,9 @@ describe('Getting date ticks', () => {
 
     it('Should step by minutes aligned to step for 1 hour range', () => {
         expect(getDateTicks(time(2025, 0, 5, 9, 17), time(2025, 0, 5, 10, 17), 10))
-            .toEqual([[9, 30], [9, 45], [10, 0], [10, 15]].map(([hours, minutes]) => time(2025, 0, 5, hours, minutes)))
+            .toEqual(
+                [[9, 30], [9, 45], [10, 0], [10, 15]].map(([hours, minutes]) => time(2025, 0, 5, hours, minutes))
+            )
     })
 
     it('Should step by hours for 6 hours range', () => {

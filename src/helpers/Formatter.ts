@@ -9,7 +9,7 @@ const dateFormats = new Map<string, Intl.DateTimeFormat>()
 export default abstract class Formatter {
     static number(value: number | undefined, decimals: number = DEFAULT_DECIMALS) {
         if (typeof value != 'number')
-            return value == undefined ? '' : String(value)
+            return value === undefined ? '' : String(value)
 
         let numberFormat = numberFormats.get(decimals)
 
@@ -31,11 +31,11 @@ export default abstract class Formatter {
     }
 
     static axis(value: number | Date | string, type: PlotAxisType) {
-        return type == PlotAxisType.Date ? Formatter.formatDateTime(Formatter.toDate(value)) : value.toString()
+        return type === PlotAxisType.Date ? Formatter.formatDateTime(Formatter.toDate(value)) : value.toString()
     }
 
     static axisTicks(values: (number | Date | string)[], type: PlotAxisType) {
-        if (type != PlotAxisType.Date)
+        if (type !== PlotAxisType.Date)
             return values.map(value => value.toString())
 
         const dates = values.map(value => Formatter.toDate(value))
@@ -53,9 +53,9 @@ export default abstract class Formatter {
     ) {
         let result = String(value ?? '')
 
-        if (type == PlotAxisType.Number && !isNaN(Number(value)))
+        if (type === PlotAxisType.Number && !isNaN(Number(value)))
             result = Formatter.number(Number(value), decimals)
-        else if (type == PlotAxisType.Date)
+        else if (type === PlotAxisType.Date)
             result = Formatter.toDate(value ?? '').toLocaleDateString()
 
         return result + (postfix ?? '')

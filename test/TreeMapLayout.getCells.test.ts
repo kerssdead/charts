@@ -6,7 +6,7 @@ const UNITS = new Units({ x: 1, y: 1 })
 const BOX = { x: 0, y: 0, width: 100, height: 100 }
 
 const getBoxes = (values: number[], box = BOX, gap = 0, units = UNITS) => {
-    return getCells(values, box, value => value, units, gap).map(cell => cell.box)
+    return getCells(values, value => value, { box, units, gap }).map(cell => cell.box)
 }
 
 describe('Getting tree cells', () => {
@@ -19,7 +19,7 @@ describe('Getting tree cells', () => {
     })
 
     it('Should keep values in cells', () => {
-        expect(getCells([3, 1], BOX, value => value, UNITS, 0).map(cell => cell.value))
+        expect(getCells([3, 1], value => value, { box: BOX, units: UNITS, gap: 0 }).map(cell => cell.value))
             .toEqual([3, 1])
     })
 

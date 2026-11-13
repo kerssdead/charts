@@ -69,11 +69,11 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
     }
 
     private get hasTrack() {
-        return this.parts.length == 0 || (this.isPercentageMode && this.total < PERCENT_SCALE)
+        return this.parts.length === 0 || (this.isPercentageMode && this.total < PERCENT_SCALE)
     }
 
     isEmpty() {
-        return this.parts.length == 0 && this.data.stops.length == 0
+        return this.parts.length === 0 && this.data.stops.length === 0
     }
 
     getData() {
@@ -88,16 +88,8 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
                 for (const stop of this.data.stops)
                     this.addStop(items, stop)
 
-                const padding = this.units.x(PADDING_X)
-
-                this.addLabel(items, 'segmented-bar-left-label', this.data.leftLabel, padding, TextAlignment.Left)
-                this.addLabel(
-                    items,
-                    'segmented-bar-right-label',
-                    this.data.rightLabel,
-                    COORDS_MAX_X - padding,
-                    TextAlignment.Right
-                )
+                this.addLabel(items, 'segmented-bar-left-label', this.data.leftLabel, TextAlignment.Left)
+                this.addLabel(items, 'segmented-bar-right-label', this.data.rightLabel, TextAlignment.Right)
             }
         ]
     }
@@ -186,15 +178,12 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
              .data(SegmentedBarProcess.getItemData(stop))
     }
 
-    private addLabel(
-        items: QueueItemsBuilder,
-        key: string,
-        text: string | undefined,
-        x: number,
-        alignment: TextAlignment
-    ) {
+    private addLabel(items: QueueItemsBuilder, key: string, text: string | undefined, alignment: TextAlignment) {
         if (!text)
             return
+
+        const padding = this.units.x(PADDING_X)
+        const x = alignment === TextAlignment.Left ? padding : COORDS_MAX_X - padding
 
         items.text(text)
              .position(x, COORDS_MAX_Y / 2)

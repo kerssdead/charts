@@ -4,10 +4,9 @@ import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
 import Point from '@/types/Point'
 import AnimationData from '@/animation/AnimationData'
 import ItemData from '@/types/ItemData'
-import ease from '@/animation/Animations'
 import HoverProgress from '@/types/HoverProgress'
 import Panel from '@/types/Panel'
-import { clamp, contains } from '@/helpers/Geometry'
+import { contains } from '@/helpers/Geometry'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { grayScale } from '@/helpers/Color'
 import { LineJoin } from '@/static/Enums'
@@ -78,43 +77,48 @@ export default class RenderItem {
     }
 
     render(ctx: CanvasRenderingContext2D, window: CanvasWindow, screen: CanvasWindow, now: DOMHighResTimeStamp) {
-        this.updateInit(now)
-        this.updateMorph(now)
-
-        if (this.isGhost && !this.animation.isMorphing) {
+        if (!this.animateFrame(now))
             return
-        }
 
-        this.updateVisibility()
+        const clip = this.scrollPanel?.clip
+        const bounds = this.adjustShape(window)
 
-        if (this.animation.init <= 0) {
+        if (bounds && !RenderItem.overlaps(bounds, clip ?? RenderItem.getScreenArea(screen)))
             return
-        }
 
-        const scroll = this.scrollPanel
+        const isClipped = clip !== undefined && !(bounds && RenderItem.isInside(bounds, clip))
 
-        this.shape.adjust(scroll?.body ?? this.panel?.window ?? window, this.animation.morph)
+        if (isClipped)
+            RenderItem.clipTo(ctx, clip)
 
-        const bounds = this.shape.getBounds()
-        const clip = scroll?.clip
+        this.draw(ctx)
 
-        SCREEN_AREA.width = screen.width
-        SCREEN_AREA.height = screen.height
+        if (isClipped)
+            ctx.restore()
+    }
 
-        if (bounds && !RenderItem.overlaps(bounds, clip ?? SCREEN_AREA)) {
-            return
-        }
+    private animateFrame(now: DOMHighResTimeStamp) {
+        const hasLeft = this.animation.stepInit(now)
+        const isRemoved = this.animation.stepMorph(now)
 
-        const isClipped = clip != undefined && !(bounds && RenderItem.isInside(bounds, clip))
+        if (hasLeft || isRemoved)
+            this.isTemp = true
 
-        if (isClipped) {
-            ctx.save()
+        if (this.isGhost && !this.animation.isMorphing)
+            return false
 
-            ctx.beginPath()
-            ctx.rect(clip.x, clip.y, clip.width, clip.height)
-            ctx.clip()
-        }
+        this.animation.updateVisibility(this.isFading)
 
+        return this.animation.init > 0
+    }
+
+    private adjustShape(window: CanvasWindow) {
+        this.shape.adjust(this.scrollPanel?.body ?? this.panel?.window ?? window, this.animation.morph)
+
+        return this.shape.getBounds()
+    }
+
+    private draw(ctx: CanvasRenderingContext2D) {
         ctx.beginPath()
 
         ctx.globalAlpha *= this.animation.visibility
@@ -133,9 +137,21 @@ export default class RenderItem {
             ctx.strokeStyle = stroke
 
         this.shape.render(ctx, this)
+    }
 
-        if (isClipped)
-            ctx.restore()
+    private static clipTo(ctx: CanvasRenderingContext2D, clip: RectangleDimensions) {
+        ctx.save()
+
+        ctx.beginPath()
+        ctx.rect(clip.x, clip.y, clip.width, clip.height)
+        ctx.clip()
+    }
+
+    private static getScreenArea(screen: CanvasWindow) {
+        SCREEN_AREA.width = screen.width
+        SCREEN_AREA.height = screen.height
+
+        return SCREEN_AREA
     }
 
     animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>): boolean {
@@ -172,6 +188,10 @@ export default class RenderItem {
         return this.shape.tooltipAt(point) ?? this.tooltipTemplate
     }
 
+    isClickableAt(point: Point, isContextOpen: boolean) {
+        return !!this.onClick && !this.isInitializing && (!isContextOpen || this.isMenuButton) && this.in(point)
+    }
+
     hasContextMenuAt(point: Point) {
         return this.hasContextMenu && !this.isInitializing && this.in(point)
     }
@@ -192,7 +212,7 @@ export default class RenderItem {
 
         Object.assign(this.hover, previous.hover)
 
-        this.startMorph(this.getMorphFade(previous), duration)
+        this.animation.startMorph(this.getMorphFade(previous), duration)
     }
 
     private getMorphFade(previous: RenderItem) {
@@ -205,70 +225,48 @@ export default class RenderItem {
         return null
     }
 
-    private startInit(duration: number, isLeaving: boolean) {
-        if (!isLeaving)
-            this.animation.init = 0
-
-        this.animation.isLeaving = isLeaving
-        this.animation.initFade = true
-        this.animation.initDuration = duration
-        this.animation.initDelay = isLeaving ? 0 : this.animation.appearDelay
-        this.animation.initStart = null
-    }
-
     appear(duration: number, mapY?: (y: number) => number) {
         if (!this.shape.appear(mapY))
-            return this.startInit(duration, false)
+            return this.animation.startInit(duration, false)
 
         this.morphIn(duration, this.animation.appearDelay)
     }
 
     disappear(duration: number, mapY?: (y: number) => number) {
         if (!this.shape.disappear(this.animation.morph, mapY))
-            return this.startInit(duration, true)
+            return this.animation.startInit(duration, true)
 
         this.morphOut(duration)
     }
 
     enterFromAxis(y: number, duration: number) {
         if (!this.shape.enterFromAxis(y))
-            return this.startInit(duration, false)
+            return this.animation.startInit(duration, false)
 
         this.morphIn(duration)
     }
 
     leaveToAxis(y: number, duration: number) {
         if (!this.shape.leaveToAxis(y, this.animation.morph))
-            return this.startInit(duration, true)
+            return this.animation.startInit(duration, true)
 
         this.morphOut(duration)
     }
 
     morphIn(duration: number, delay: number = 0) {
-        this.startMorph('in', duration, delay)
+        this.animation.startMorph('in', duration, delay)
     }
 
     morphOut(duration: number) {
         this.animation.removeAfterMorph = true
 
-        this.startMorph('out', duration)
+        this.animation.startMorph('out', duration)
     }
 
     hoverFactor(isBackward: boolean, now: DOMHighResTimeStamp, duration: number) {
         this.hover.step(!isBackward, now, duration)
 
         return this.hover.value
-    }
-
-    private startMorph(fade: 'in' | 'out' | null, duration: number, delay: number = 0) {
-        this.animation.morphFade = fade
-        this.animation.morph = 0
-        this.animation.morphDuration = duration
-        this.animation.morphDelay = delay
-        this.animation.morphStart = null
-
-        if (fade == 'in')
-            this.animation.visibility = 0
     }
 
     private static overlaps(bounds: Bounds, area: RectangleDimensions): boolean {
@@ -283,84 +281,6 @@ export default class RenderItem {
 
         return bounds.left >= area.x + margin && bounds.right <= area.x + area.width - margin
                && bounds.top >= area.y + margin && bounds.bottom <= area.y + area.height - margin
-    }
-
-    private static progress(
-        now: DOMHighResTimeStamp,
-        start: DOMHighResTimeStamp,
-        delay: number,
-        duration: number
-    ) {
-        return clamp((now - start - delay) / duration, 0, 1)
-    }
-
-    private updateInit(now: DOMHighResTimeStamp) {
-        const animation = this.animation
-
-        if (!animation.isInitializing) {
-            return
-        }
-
-        animation.initStart ??= now
-
-        const progress = RenderItem.progress(now, animation.initStart, animation.initDelay, animation.initDuration)
-
-        const transition = ease(progress)
-
-        animation.init = animation.isLeaving ? 1 - transition : transition
-
-        if (progress == 1) {
-            animation.init = animation.isLeaving ? 0 : 1
-            animation.initDuration = 0
-            animation.initFade = animation.isLeaving
-
-            if (animation.isLeaving)
-                this.isTemp = true
-        }
-    }
-
-    private updateMorph(now: DOMHighResTimeStamp) {
-        const animation = this.animation
-
-        if (!animation.isMorphing) {
-            return
-        }
-
-        animation.morphStart ??= now
-
-        const progress = RenderItem.progress(
-            now,
-            animation.morphStart,
-            animation.morphDelay,
-            animation.morphDuration
-        )
-
-        animation.morph = ease(progress)
-
-        if (progress == 1) {
-            animation.morph = 1
-            animation.morphDuration = 0
-
-            if (animation.removeAfterMorph)
-                this.isTemp = true
-            else
-                animation.morphFade = null
-        }
-    }
-
-    private updateVisibility() {
-        const animation = this.animation
-
-        if (!this.isFading)
-            animation.visibility = 1
-        else if (animation.initFade)
-            animation.visibility = animation.init
-        else if (animation.morphFade == 'in')
-            animation.visibility = animation.morph
-        else if (animation.morphFade == 'out')
-            animation.visibility = 1 - animation.morph
-        else
-            animation.visibility = 1
     }
 
     static adjustX(window: CanvasWindow, x: number) {

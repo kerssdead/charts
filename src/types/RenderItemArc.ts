@@ -7,15 +7,11 @@ import Theme from '@/Theme'
 import { GradientCache } from '@/helpers/Canvas'
 import { clamp, lerp } from '@/helpers/Geometry'
 import type RenderItemText from '@/types/RenderItemText'
-import { ArcEdge } from '@/static/Enums'
-
-const FULL_CIRCLE_EPSILON = 1e-6
+import { ArcShape, isFullCircle, isInsideSector, traceSector } from '@/render/ArcSector'
 
 export const HOVER_OFFSET = 8
 
 const ALPHA_DELTA = 0.5
-
-const isFullCircle = (sweep: number) => sweep >= FULL_ANGLE - FULL_CIRCLE_EPSILON
 
 type ArcGeometry = {
     x: number
@@ -34,20 +30,6 @@ type ArcCanvas = ArcGeometry & {
     cornerRadius: number
     leaderGap: number
     leaderLength: number
-}
-
-type Shape = {
-    x: number
-    y: number
-    start: number
-    end: number
-    middle: number
-}
-
-type Ring = {
-    radius: number
-    cornerRadius: number
-    isOuter: boolean
 }
 
 export default class RenderItemArc extends RenderItemBase {
@@ -186,7 +168,7 @@ export default class RenderItemArc extends RenderItemBase {
 
         if (isFullCircle(shape.end - shape.start))
             this.circle(ctx, shape)
-        else if (!this.sector(ctx, shape))
+        else if (!traceSector(ctx, shape, this.canvas))
             return
 
         if (this.isFill) {
@@ -198,7 +180,7 @@ export default class RenderItemArc extends RenderItemBase {
         this.leader(ctx, shape)
     }
 
-    private shape(progress: number): Shape {
+    private shape(progress: number): ArcShape {
         let start = this.canvas.startAngle
         let end = this.canvas.endAngle
 
@@ -216,7 +198,7 @@ export default class RenderItemArc extends RenderItemBase {
         return { x: this.canvas.x + this.pop.x, y: this.canvas.y + this.pop.y, start, end, middle }
     }
 
-    private leader(ctx: CanvasRenderingContext2D, shape: Shape) {
+    private leader(ctx: CanvasRenderingContext2D, shape: ArcShape) {
         const label = this.leaderLabel
         const visibility = label?.animation.visibility ?? 0
 
@@ -258,88 +240,12 @@ export default class RenderItemArc extends RenderItemBase {
         ctx.stroke()
     }
 
-    private circle(ctx: CanvasRenderingContext2D, shape: Shape) {
+    private circle(ctx: CanvasRenderingContext2D, shape: ArcShape) {
         ctx.arc(shape.x, shape.y, this.canvas.radius, 0, FULL_ANGLE)
 
         if (this.canvas.innerRadius > 0) {
             ctx.moveTo(shape.x + this.canvas.innerRadius, shape.y)
             ctx.arc(shape.x, shape.y, this.canvas.innerRadius, FULL_ANGLE, 0, true)
-        }
-    }
-
-    private sector(ctx: CanvasRenderingContext2D, shape: Shape): boolean {
-        const angle = shape.end - shape.start
-
-        if (angle <= 0)
-            return false
-
-        const sin = Math.sin(Math.min(angle, Math.PI) / 2)
-        const outer = this.canvas.radius
-        const halfGap = Math.min(this.canvas.gap / 2, outer * sin / 2)
-
-        const isApex = this.canvas.innerRadius * sin <= halfGap
-        const apexRadius = Math.max(Math.min(halfGap / sin, this.canvas.gap), this.canvas.innerRadius)
-        const inner = isApex ? apexRadius : this.canvas.innerRadius
-
-        const radialLimit = (outer - inner) / 2
-        const outerArcLimit = angle < Math.PI ? (outer * sin - halfGap) / (1 + sin) : Infinity
-        const innerArcLimit = sin < 1 ? (inner * sin - halfGap) / (1 - sin) : Infinity
-
-        const outerCorner = Math.max(Math.min(this.canvas.cornerRadius, radialLimit, outerArcLimit), 0)
-        const innerCorner = isApex ? 0 : Math.max(Math.min(this.canvas.cornerRadius, radialLimit, innerArcLimit), 0)
-
-        const outerRing = { radius: outer, cornerRadius: outerCorner, isOuter: true }
-        const outerStart = this.corner(shape, ArcEdge.Start, outerRing, halfGap)
-        const outerEnd = this.corner(shape, ArcEdge.End, outerRing, halfGap)
-
-        this.cornerArc(ctx, outerStart, outerCorner, outerStart.edge, outerStart.circle)
-        ctx.arc(shape.x, shape.y, outer, outerStart.angle, outerEnd.angle)
-        this.cornerArc(ctx, outerEnd, outerCorner, outerEnd.circle, outerEnd.edge)
-
-        if (isApex) {
-            ctx.lineTo(shape.x + inner * Math.cos(shape.middle), shape.y + inner * Math.sin(shape.middle))
-        } else {
-            const innerRing = { radius: inner, cornerRadius: innerCorner, isOuter: false }
-            const innerEnd = this.corner(shape, ArcEdge.End, innerRing, halfGap)
-            const innerStart = this.corner(shape, ArcEdge.Start, innerRing, halfGap)
-
-            this.cornerArc(ctx, innerEnd, innerCorner, innerEnd.edge, innerEnd.circle)
-            ctx.arc(shape.x, shape.y, inner, innerEnd.angle, innerStart.angle, true)
-            this.cornerArc(ctx, innerStart, innerCorner, innerStart.circle, innerStart.edge)
-        }
-
-        ctx.closePath()
-
-        return true
-    }
-
-    private cornerArc(ctx: CanvasRenderingContext2D, center: Point, radius: number, from: number, to: number) {
-        const turn = Math.atan2(Math.sin(to - from), Math.cos(to - from))
-
-        ctx.arc(center.x, center.y, radius, from, from + turn, turn < 0)
-    }
-
-    private corner(shape: Shape, edge: ArcEdge, { radius, cornerRadius, isOuter }: Ring, halfGap: number) {
-        const edgeAngle = edge == ArcEdge.Start ? shape.start : shape.end
-        const side = edge == ArcEdge.Start ? 1 : -1
-        const offset = halfGap + cornerRadius
-        const distance = isOuter ? radius - cornerRadius : radius + cornerRadius
-        const along = Math.sqrt(Math.max(distance * distance - offset * offset, 0))
-
-        const angle = edgeAngle + Math.atan2(side * offset, along)
-
-        const x = shape.x + distance * Math.cos(angle)
-        const y = shape.y + distance * Math.sin(angle)
-
-        const edgeX = shape.x + along * Math.cos(edgeAngle) - side * halfGap * Math.sin(edgeAngle)
-        const edgeY = shape.y + along * Math.sin(edgeAngle) + side * halfGap * Math.cos(edgeAngle)
-
-        return {
-            x,
-            y,
-            angle,
-            edge: Math.atan2(edgeY - y, edgeX - x),
-            circle: isOuter ? angle : angle + Math.PI
         }
     }
 
@@ -364,39 +270,6 @@ export default class RenderItemArc extends RenderItemBase {
     }
 
     isMouseOver(point: Point): boolean {
-        const sweep = this.canvas.endAngle - this.canvas.startAngle
-        const pull = isFullCircle(sweep) ? 0 : this.canvas.pull
-        const middle = this.canvas.startAngle + sweep / 2
-
-        const dx = point.x - this.canvas.x - pull * Math.cos(middle)
-        const dy = point.y - this.canvas.y - pull * Math.sin(middle)
-
-        const distance = dx * dx + dy * dy
-
-        if (distance > this.canvas.radius * this.canvas.radius
-            || distance < this.canvas.innerRadius * this.canvas.innerRadius)
-            return false
-
-        if (isFullCircle(sweep))
-            return true
-
-        const angle = ((Math.atan2(dy, dx) - this.canvas.startAngle) % FULL_ANGLE + FULL_ANGLE) % FULL_ANGLE
-
-        if (angle > sweep)
-            return false
-
-        const half = Math.min(this.canvas.gap / 2, this.canvas.radius * Math.sin(Math.min(sweep, Math.PI) / 2) / 2)
-
-        return RenderItemArc.rayDistance(dx, dy, this.canvas.startAngle) >= half
-               && RenderItemArc.rayDistance(dx, dy, this.canvas.endAngle) >= half
-    }
-
-    private static rayDistance(dx: number, dy: number, angle: number) {
-        const cos = Math.cos(angle)
-        const sin = Math.sin(angle)
-
-        return dx * cos + dy * sin <= 0
-               ? Math.hypot(dx, dy)
-               : Math.abs(dy * cos - dx * sin)
+        return isInsideSector(point, this.canvas)
     }
 }

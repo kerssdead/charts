@@ -32,7 +32,11 @@ describe('Getting plot attention line items', () => {
 
     it('Should not cap line by y max', () => {
         const attention = createSeries(PlotType.AttentionLine, [300])
-        const { layout, items } = getAttention([createSeries(PlotType.Line, [10, 50]), attention], attention, { yMax: 100 })
+        const { layout, items } = getAttention(
+            [createSeries(PlotType.Line, [10, 50]), attention],
+            attention,
+            { yMax: 100 }
+        )
         const { valueScale } = layout.vertical
 
         expect((items[0].shape as RenderItemLine).absolute[0].y)

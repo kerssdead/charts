@@ -15,7 +15,9 @@ jest.mock('@/helpers/Text', () => ({
 const styleBreakMark = (all: PlotSeries[], series: PlotSeries, slot: number, valueIndex: number) => {
     const { style } = createPlot(all)
 
-    return buildItems((items: QueueItemsBuilder) => style.styleBreakMark(items.line(), series, slot, valueIndex))[0]
+    return buildItems((items: QueueItemsBuilder) => {
+        return style.styleBreakMark(items.line(), series, slot, valueIndex)
+    })[0]
 }
 
 describe('Styling plot break mark', () => {
@@ -39,6 +41,10 @@ describe('Styling plot break mark', () => {
         const { animation } = styleBreakMark([series], series, 1, 1)
 
         expect([animation.initDuration, animation.initDelay, animation.initFade])
-            .toEqual([AnimationTiming.plotBreakInit, AnimationTiming.plotInit + AnimationTiming.plotInitStagger, true])
+            .toEqual([
+                AnimationTiming.plotBreakInit,
+                AnimationTiming.plotInit + AnimationTiming.plotInitStagger,
+                true
+            ])
     })
 })

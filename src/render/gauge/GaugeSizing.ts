@@ -11,6 +11,13 @@ import {
     RANGE_FONT_SIZE
 } from '@/render/gauge/GaugeConstants'
 
+export type GaugeSizingOptions = {
+    innerRadiusPercent: number
+    steps: GaugeStep[]
+    labelRowCount: number
+    ringCount: number
+}
+
 export default class GaugeSizing {
     readonly radius: number
 
@@ -30,13 +37,7 @@ export default class GaugeSizing {
 
     private readonly rangeLabelAreaHeight: number
 
-    constructor(
-        units: Units,
-        innerRadiusPercent: number,
-        steps: GaugeStep[],
-        labelRowCount: number,
-        ringCount: number
-    ) {
+    constructor(units: Units, { innerRadiusPercent, steps, labelRowCount, ringCount }: GaugeSizingOptions) {
         this.width = units.toPxX(COORDS_MAX_X)
         this.height = units.toPxY(COORDS_MAX_Y)
         this.rangeLabelAreaHeight = LABEL_GAP + RANGE_FONT_SIZE
@@ -45,7 +46,7 @@ export default class GaugeSizing {
         this.innerRadiusRatio = getInnerRadiusRatio(innerRadiusPercent, DEFAULT_INNER_RADIUS)
         this.radius = this.getFittedRadius(units, steps)
         this.ringMiddleRadius = this.radius * (1 + this.innerRadiusRatio) / 2
-        this.ringThickness = ringCount == 0 ? 0 : this.radius * (1 - this.innerRadiusRatio) / ringCount
+        this.ringThickness = ringCount === 0 ? 0 : this.radius * (1 - this.innerRadiusRatio) / ringCount
         const centerYInPx = (this.height - this.radius - this.labelAreaHeight + this.rangeLabelAreaHeight) / 2
                             + this.radius
 

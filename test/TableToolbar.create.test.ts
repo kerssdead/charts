@@ -34,7 +34,9 @@ describe('Creating table toolbar', () => {
     it('Should show filter, copy and save controls', () => {
         const { toolbar } = create()
 
-        expect(toolbar.elements.map(element => element.tagName == Tag.Input ? element.placeholder : element.textContent))
+        expect(toolbar.elements.map(element => {
+            return element.tagName === Tag.Input ? element.placeholder : element.textContent
+        }))
             .toEqual([TextResources.filter, TextResources.copy, TextResources.saveCsv])
     })
 
@@ -46,13 +48,14 @@ describe('Creating table toolbar', () => {
     })
 
     it('Should pass the typed query to the filter callback', () => {
-        const { toolbar, callbacks } = create()
+        const onFilter = jest.fn()
+        const { toolbar } = create({ onFilter })
         const [filter] = toolbar.elements
 
         filter.value = 'lem'
         filter.dispatch(Events.Input)
 
-        expect([filter.type, callbacks.onFilter.mock.calls])
+        expect([filter.type, onFilter.mock.calls])
             .toEqual(['search', [['lem']]])
     })
 

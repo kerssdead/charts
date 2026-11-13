@@ -43,7 +43,7 @@ export default class PlotLineItems {
                     .drawMode(series.drawMode)
                     .gradient()
 
-                if (series.type == PlotType.Area)
+                if (series.type === PlotType.Area)
                     line.area(baseline)
 
                 this.style.styleLine(line, series, `line-${ runIndex }`)

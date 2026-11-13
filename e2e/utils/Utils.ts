@@ -33,7 +33,7 @@ class Utils {
         const drawCalls = await Render.drawCalls(Utils.page, clip)
         const hash = Render.hash(drawCalls)
 
-        if (hash != expected) {
+        if (hash !== expected) {
             console.log(`Draw calls (${ hash }):\n${ drawCalls }`)
 
             await test.info().attach('clip', { body: await Render.image(Utils.page, clip), contentType: 'image/png' })

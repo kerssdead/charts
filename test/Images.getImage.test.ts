@@ -49,14 +49,14 @@ afterEach(() => {
     jest.useRealTimers()
 })
 
-const fail = () => FakeImage.last().onerror!()
+const fail = () => FakeImage.last().onerror?.()
 
 describe('Getting an image', () => {
     it('Should return null while loading and the image once loaded', () => {
         expect(Images.getImage(IMAGE_URL))
             .toBeNull()
 
-        FakeImage.last().onload!()
+        FakeImage.last().onload?.()
 
         expect(Images.getImage(IMAGE_URL))
             .toBe(FakeImage.last())
@@ -75,7 +75,7 @@ describe('Getting an image', () => {
 
         Images.onImageLoad(listener)
         Images.getImage(IMAGE_URL)
-        FakeImage.last().onload!()
+        FakeImage.last().onload?.()
 
         expect(listener)
             .toHaveBeenCalledTimes(1)
@@ -84,7 +84,7 @@ describe('Getting an image', () => {
     it('Should load without CORS by default when the CORS request fails', () => {
         Images.getImage(IMAGE_URL)
         fail()
-        FakeImage.last().onload!()
+        FakeImage.last().onload?.()
 
         expect(FakeImage.created.map(image => image.crossOrigin))
             .toEqual([ImageCrossOrigin.Anonymous, null])
@@ -136,7 +136,7 @@ describe('Getting an image', () => {
         fail()
         jest.setSystemTime(RETRY_DELAY)
         Images.getImage(IMAGE_URL, ImageCrossOrigin.None)
-        FakeImage.last().onload!()
+        FakeImage.last().onload?.()
 
         expect(Images.getImage(IMAGE_URL, ImageCrossOrigin.None))
             .toBe(FakeImage.last())
@@ -159,7 +159,7 @@ describe('Getting an image', () => {
 
     it('Should cache each mode separately', () => {
         Images.getImage(IMAGE_URL, ImageCrossOrigin.None)
-        FakeImage.last().onload!()
+        FakeImage.last().onload?.()
         Images.getImage(IMAGE_URL, ImageCrossOrigin.Anonymous)
 
         expect(FakeImage.created.map(image => image.crossOrigin))

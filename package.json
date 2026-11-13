@@ -1,6 +1,6 @@
 {
   "name": "charts",
-  "version": "2.1.139",
+  "version": "2.1.140",
   "description": "Typescript Canvas Charts",
   "jsdelivr": "./dist/ocharts.js",
   "repository": "https://github.com/kerssdead/charts",
@@ -19,6 +19,7 @@
     "build": "webpack && npm run sass",
     "watch": "webpack --watch",
     "test": "jest",
+    "lint": "eslint src test e2e",
     "e2e": "npx playwright test",
     "e2e-ui": "npx playwright test --ui",
     "test-all": "jest",
@@ -27,9 +28,11 @@
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@playwright/test": "^1.56.0",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^24.7.0",
     "@types/wicg-file-system-access": "^2023.10.6",
+    "eslint": "^10.14.0",
     "jest": "^29.7.0",
     "sass": "^1.93.2",
     "terser-webpack-plugin": "^5.3.14",
@@ -37,6 +40,7 @@
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.2",
     "webpack-cli": "^6.0.1"
   }
 }

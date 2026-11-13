@@ -25,6 +25,15 @@ jobs:
     - name: Install
       run: npm ci
 
+    - name: Type check
+      run: npx tsc --noEmit -p .
+
+    - name: Type check tests
+      run: npx tsc --noEmit -p test
+
+    - name: Lint
+      run: npm run lint
+
     - name: Test
       run: |
         npm run test

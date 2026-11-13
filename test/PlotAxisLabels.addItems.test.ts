@@ -16,11 +16,11 @@ const getLabels = (all: PlotSeries[], data: Partial<PlotData> = {}) => {
     const labels = new PlotAxisLabels(plot.data, UNITS, plot.layout, plot.seriesGroups)
     const items = buildItems((builder: QueueItemsBuilder) => labels.addItems(builder))
 
-    return { ...plot, items, texts: new Map(items.map(item => [item.key!, item.shape as RenderItemText])) }
+    return { ...plot, items, texts: new Map(items.map(item => [item.key ?? '', item.shape as RenderItemText])) }
 }
 
 const keysOf = (items: { key: string | null }[], prefix: string) => {
-    return items.map(item => item.key!).filter(key => key.startsWith(prefix))
+    return items.map(item => item.key ?? '').filter(key => key.startsWith(prefix))
 }
 
 describe('Adding plot axis labels', () => {
@@ -29,15 +29,15 @@ describe('Adding plot axis labels', () => {
         const { valueScale } = layout.vertical
 
         for (const value of valueScale.values) {
-            const label = texts.get(`y-label-${ value }`)!
+            const label = texts.get(`y-label-${ value }`)
 
-            expect(label.absolute)
+            expect(label?.absolute)
                 .toEqual({ x: layout.margin.left - 8, y: valueScale.getCoordinate(value) })
-            expect(label.alignment)
+            expect(label?.alignment)
                 .toBe(TextAlignment.Right)
         }
 
-        expect(items.filter(item => item.key!.startsWith('y-label')).map(item => item.axisValue))
+        expect(items.filter(item => item.key?.startsWith('y-label')).map(item => item.axisValue))
             .toEqual(valueScale.values)
     })
 
@@ -45,9 +45,9 @@ describe('Adding plot axis labels', () => {
         const { layout, texts } = getLabels([createSeries(PlotType.Column, [10, 40, 20])])
         const { band, categoryScale } = layout.vertical
 
-        expect(texts.get('x-category-1')!.absolute)
+        expect(texts.get('x-category-1')?.absolute)
             .toEqual({ x: categoryScale.getSlotCenter(1), y: band.bottom + 4 })
-        expect(texts.get('x-category-1')!.value)
+        expect(texts.get('x-category-1')?.value)
             .toBe('C1')
     })
 
@@ -67,9 +67,9 @@ describe('Adding plot axis labels', () => {
 
         expect(keysOf(items, 'x-label-').length)
             .toBeGreaterThan(0)
-        expect(texts.get(`x-label-${ valueScale.values[1] }`)!.absolute.y)
+        expect(texts.get(`x-label-${ valueScale.values[1] }`)?.absolute.y)
             .toBe(band.bottom + 4)
-        expect(texts.get('y-category-1')!.absolute)
+        expect(texts.get('y-category-1')?.absolute)
             .toEqual({ x: layout.margin.left - 8, y: categoryScale.getSlotCenter(1) })
     })
 
@@ -121,9 +121,9 @@ describe('Adding plot axis labels', () => {
         )
         const { categoryScale } = layout.vertical
 
-        expect(texts.get('x-category-2')!.value)
+        expect(texts.get('x-category-2')?.value)
             .toBe('10')
-        expect(texts.get('x-category-2')!.absolute.x)
+        expect(texts.get('x-category-2')?.absolute.x)
             .toBe(categoryScale.getSlotCenter(1))
     })
 
@@ -134,7 +134,7 @@ describe('Adding plot axis labels', () => {
             { xType: PlotAxisType.Number, xScale: PlotScaleType.Linear }
         )
 
-        expect(texts.get('y-category-2')!.absolute.y)
+        expect(texts.get('y-category-2')?.absolute.y)
             .toBe(layout.horizontal.categoryScale.getSlotCenter(1))
     })
 
@@ -155,7 +155,7 @@ describe('Adding plot axis labels', () => {
         for (const key of keys) {
             const index = Number(key.replace('x-category-', ''))
 
-            expect(texts.get(key)!.absolute.x)
+            expect(texts.get(key)?.absolute.x)
                 .toBe(categoryScale.getLabelCoordinate(index))
         }
     })

@@ -32,11 +32,11 @@ export default class PlotContinuousAxis {
     }
 
     static create(slots: Slots, xType: PlotAxisType, xScale: PlotScaleType) {
-        if (xScale == PlotScaleType.Category || xType == PlotAxisType.Text)
+        if (xScale === PlotScaleType.Category || xType === PlotAxisType.Text)
             return null
 
-        const isDate = xType == PlotAxisType.Date
-        const isLog = xScale == PlotScaleType.Log && !isDate
+        const isDate = xType === PlotAxisType.Date
+        const isLog = xScale === PlotScaleType.Log && !isDate
         const values = slots.values.map(x => isDate ? Formatter.toDate(x).getTime() : Number(x))
 
         if (values.some(value => !Number.isFinite(value) || isLog && value <= 0))
@@ -45,7 +45,7 @@ export default class PlotContinuousAxis {
         const min = values[0]
         const max = values[values.length - 1]
 
-        if (values.length < 2 || min == max)
+        if (values.length < 2 || min === max)
             return null
 
         return new PlotContinuousAxis(values, PlotContinuousAxis.getTicks(min, max, isLog, isDate), isLog)

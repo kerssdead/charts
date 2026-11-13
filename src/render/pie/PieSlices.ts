@@ -25,7 +25,7 @@ export function getVisibleTotal(sectors: Sector[]) {
 }
 
 export function getRadiansPerUnit(visibleTotal: number) {
-    return visibleTotal == 0 ? 0 : FULL_ANGLE / visibleTotal
+    return visibleTotal === 0 ? 0 : FULL_ANGLE / visibleTotal
 }
 
 export function getMiddleAngle(slice: PieSlice) {

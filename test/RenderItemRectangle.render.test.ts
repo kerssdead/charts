@@ -125,7 +125,11 @@ describe('Rendering rectangle', () => {
         shape.adjust(WINDOW)
         shape.render(ctx as unknown as CanvasRenderingContext2D, new RenderItem(shape))
 
-        expect([ctx.createLinearGradient.mock.calls.length, ctx.save.mock.calls.length, ctx.restore.mock.calls.length])
+        expect([
+            ctx.createLinearGradient.mock.calls.length,
+            ctx.save.mock.calls.length,
+            ctx.restore.mock.calls.length
+        ])
             .toEqual([0, 0, 0])
     })
 

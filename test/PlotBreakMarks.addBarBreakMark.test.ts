@@ -5,7 +5,7 @@ import { addBarBreakMark } from '@/render/plot/PlotBreakMarks'
 
 const getStops = (units: Units, top: number, bottom: number, end: number) => {
     const items = QueueItemsBuilder.build((builder: QueueItemsBuilder) => {
-        addBarBreakMark(builder, units, top, bottom, end)
+        addBarBreakMark(builder, units, { start: top, end: bottom }, end)
     })
 
     return (items[0].shape as RenderItemLine).absolute

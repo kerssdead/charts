@@ -45,7 +45,7 @@ export function keepTreeBarState(previous: TreeBarData, next: TreeBarData) {
     for (const { node } of flattenTreeBarRows(next.values))
         node.expanded ??= expanded.get(node.id)
 
-    if (next.sortColumn == undefined) {
+    if (next.sortColumn === undefined) {
         next.sortColumn = previous.sortColumn
         next.sortDescending = previous.sortDescending
     }

@@ -4,6 +4,7 @@ import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
 import Frame from '@/types/Frame'
 import Point from '@/types/Point'
+import PointerContext from '@/types/PointerContext'
 import ButtonOptions, { fromDropdownItems } from '@/types/ButtonOptions'
 import DropdownItem from '@/types/DropdownItem'
 import HoverProgress from '@/types/HoverProgress'
@@ -52,27 +53,13 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
     private buttonRects: (RenderItem | null)[] = []
 
     update({ queue, window, screen, mouse, context, now }: Frame): boolean {
-        const point = context?.point ?? null
-        const fixedButtons = context?.isMenu ? this.fixedButtons?.() : undefined
-        const target = point && !fixedButtons ? queue.findTop(item => item.hasContextMenuAt(point)) : undefined
-
-        const previous = this.state
-        const isSame = previous != null && samePoint(previous.point, point)
-
-        const targetButtons = this.getTargetButtons(isSame, fixedButtons, target)
-
-        const isVisible = point != null && targetButtons.length > 0
-
-        if (isVisible && !isSame) {
-            this.hover.clear()
-            this.state = { point, buttons: targetButtons }
-        }
+        const isVisible = this.updateState(queue, context)
 
         this.fade.step(isVisible, now, ContextMenu.fadeDuration)
 
         const alpha = this.fade.value
 
-        if (!isVisible && alpha == 0) {
+        if (!isVisible && alpha === 0) {
             this.state = null
             this.hover.clear()
         }
@@ -89,25 +76,14 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
 
         this.bounds = isVisible ? bounds : null
 
-        if (alpha == 0) {
+        if (alpha === 0) {
             this.remove(queue)
 
             return this.fade.isAnimating
         }
 
-        if (!this.isBuilt(window, isVisible)) {
-            this.remove(queue)
-
-            this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => {
-                this.build(builder, window, { bounds, buttons, isInteractive: isVisible })
-            }))
-
-            this.built = {
-                state: this.state,
-                window: copyRect(window),
-                isInteractive: isVisible
-            }
-        }
+        if (!this.isBuilt(window, isVisible))
+            this.rebuild(queue, window, this.state, { bounds, buttons, isInteractive: isVisible })
 
         this.setAlpha(alpha)
 
@@ -133,12 +109,40 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         this.buttonRects = []
     }
 
+    private updateState(queue: Queue, context: PointerContext | null) {
+        const point = context?.point ?? null
+        const isSame = this.state != null && samePoint(this.state.point, point)
+        const targetButtons = this.findButtons(queue, context, isSame)
+        const isVisible = point != null && targetButtons.length > 0
+
+        if (isVisible && !isSame) {
+            this.hover.clear()
+            this.state = { point, buttons: targetButtons }
+        }
+
+        return isVisible
+    }
+
+    private rebuild(queue: Queue, window: CanvasWindow, state: MenuState, content: MenuContent) {
+        this.remove(queue)
+
+        this.show(queue, QueueItemsBuilder.build((builder: QueueItemsBuilder) => {
+            this.build(builder, window, content)
+        }))
+
+        this.built = {
+            state,
+            window: copyRect(window),
+            isInteractive: content.isInteractive
+        }
+    }
+
     private isBuilt(window: CanvasWindow, isInteractive: boolean) {
         const built = this.built
 
         return built != null
-               && built.state == this.state
-               && built.isInteractive == isInteractive
+               && built.state === this.state
+               && built.isInteractive === isInteractive
                && sameRect(built.window, window)
     }
 
@@ -170,7 +174,7 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
         )
         const height = sum(buttons, ContextMenuOverlay.getButtonHeight) + ContextMenu.padding * 2
 
-        const { x, y } = placeNear(point, width, height, ContextMenu.offset, screen)
+        const { x, y } = placeNear(point, { width, height }, ContextMenu.offset, screen)
 
         return { x, y, width, height }
     }
@@ -229,6 +233,14 @@ export default class ContextMenuOverlay extends FadingOverlay<MenuState, BuildKe
                  .color(Theme.text)
                  .layer(Layer.ContextMenu)
         })
+    }
+
+    private findButtons(queue: Queue, context: PointerContext | null, isSame: boolean) {
+        const point = context?.point
+        const fixedButtons = context?.isMenu ? this.fixedButtons?.() : undefined
+        const target = point && !fixedButtons ? queue.findTop(item => item.hasContextMenuAt(point)) : undefined
+
+        return this.getTargetButtons(isSame, fixedButtons, target)
     }
 
     private getTargetButtons(isSame: boolean, fixedButtons?: ButtonOptions[], target?: RenderItem) {

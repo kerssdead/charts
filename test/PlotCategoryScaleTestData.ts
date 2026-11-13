@@ -13,4 +13,8 @@ export const CONTINUOUS_SLOTS = getSlots(
     PlotAxisType.Number
 )
 
-export const CONTINUOUS_AXIS = PlotContinuousAxis.create(CONTINUOUS_SLOTS, PlotAxisType.Number, PlotScaleType.Linear)
+export const CONTINUOUS_AXIS = PlotContinuousAxis.create(
+    CONTINUOUS_SLOTS,
+    PlotAxisType.Number,
+    PlotScaleType.Linear
+)

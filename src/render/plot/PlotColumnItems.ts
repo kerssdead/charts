@@ -61,10 +61,10 @@ export default class PlotColumnItems {
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                      .grow('y', baseline)
 
-                this.style.styleRect(column, series, value, slot, valueIndex)
+                this.style.styleRect(column, series, slot, valueIndex)
 
                 if (!series.disabled && layout.isAboveYMax(y)) {
-                    const mark = addColumnBreakMark(items, layout.units, left, left + width, top)
+                    const mark = addColumnBreakMark(items, layout.units, { start: left, end: left + width }, top)
 
                     this.style.styleBreakMark(mark, series, slot, valueIndex)
                 }

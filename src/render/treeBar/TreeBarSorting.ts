@@ -1,9 +1,9 @@
 import TreeBarRow from '@/types/TreeBarRow'
-import { getCellNumber, TreeBarEntry } from '@/types/data/TreeBarData'
+import TreeBarData, { getCellNumber, TreeBarEntry } from '@/types/data/TreeBarData'
 import { SORT_ASCENDING, SORT_DESCENDING } from '@/render/treeBar/TreeBarConstants'
 
 function isMissing(value: string | number | undefined) {
-    return String(value ?? '') == ''
+    return String(value ?? '') === ''
 }
 
 export function sortRows(
@@ -12,7 +12,7 @@ export function sortRows(
     isDescending: boolean | undefined,
     numberLocale?: string
 ) {
-    if (sortColumn == undefined)
+    if (sortColumn === undefined)
         return rows
 
     const compare = (a: TreeBarRow, b: TreeBarRow) => {
@@ -35,18 +35,12 @@ export function sortRows(
     return [...rows].sort(compare)
 }
 
-export function getVisibleEntries(
-    rows: TreeBarRow[],
-    sortColumn: string | undefined,
-    isDescending: boolean | undefined,
-    numberLocale?: string,
-    level: number = 0
-): TreeBarEntry[] {
-    return sortRows(rows, sortColumn, isDescending, numberLocale).flatMap(node => [
+export type TreeBarSort = Pick<TreeBarData, 'sortColumn' | 'sortDescending' | 'numberLocale'>
+
+export function getVisibleEntries(rows: TreeBarRow[], sort: TreeBarSort, level: number = 0): TreeBarEntry[] {
+    return sortRows(rows, sort.sortColumn, sort.sortDescending, sort.numberLocale).flatMap(node => [
         { node, level },
-        ...(node.expanded && node.children
-            ? getVisibleEntries(node.children, sortColumn, isDescending, numberLocale, level + 1)
-            : [])
+        ...(node.expanded && node.children ? getVisibleEntries(node.children, sort, level + 1) : [])
     ])
 }
 
@@ -55,7 +49,7 @@ export function getSortIndicator(
     sortColumn: string | undefined,
     isDescending: boolean | undefined
 ) {
-    if (sortColumn != columnKey)
+    if (sortColumn !== columnKey)
         return ''
 
     return isDescending ? SORT_DESCENDING : SORT_ASCENDING

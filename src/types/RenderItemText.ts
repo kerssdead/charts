@@ -72,7 +72,7 @@ export default class RenderItemText extends RenderItemBase {
     }
 
     private get baselineShift(): number {
-        return this.orbit || this.baseline != TextBaseline.Alphabetic ? 0 : this.fontSize * 0.3
+        return this.orbit || this.baseline !== TextBaseline.Alphabetic ? 0 : this.fontSize * 0.3
     }
 
     private get textHalfWidth(): number {
@@ -145,7 +145,7 @@ export default class RenderItemText extends RenderItemBase {
         this.canvasClipWidth = (this.clipWidth ?? 0) / COORDS_MAX_X * window.width
 
         this.canvas.x = RenderItem.adjustX(window, position.x)
-        this.canvas.y = RenderItem.adjustY(window, position.y) + (this.rotate == 0 ? this.baselineShift : 0)
+        this.canvas.y = RenderItem.adjustY(window, position.y) + (this.rotate === 0 ? this.baselineShift : 0)
 
         if (this.orbit)
             this.canvas.orbitHalfWidth = this.currentOrbitHalfWidth(morph)
@@ -184,7 +184,7 @@ export default class RenderItemText extends RenderItemBase {
         ctx.textAlign = this.alignment
         ctx.textBaseline = this.baseline
 
-        if (this.rotate != 0) {
+        if (this.rotate !== 0) {
             ctx.save()
 
             ctx.translate(this.canvas.x, this.canvas.y)

@@ -13,7 +13,7 @@ function getSecantSlopes(stops: Point[]) {
     for (let i = 1; i < stops.length; i++) {
         const width = stops[i].x - stops[i - 1].x
 
-        slopes.push(width == 0 ? 0 : (stops[i].y - stops[i - 1].y) / width)
+        slopes.push(width === 0 ? 0 : (stops[i].y - stops[i - 1].y) / width)
     }
 
     return slopes
@@ -38,10 +38,10 @@ function getTangents(stops: Point[]) {
     const slopes = getSecantSlopes(stops)
     const last = stops.length - 1
 
-    if (last == 1)
+    if (last === 1)
         return [slopes[0], slopes[0]]
 
-    const tangents = stops.map((_, i) => i == 0 || i == last ? 0 : getInnerTangent(stops, slopes, i))
+    const tangents = stops.map((_, i) => i === 0 || i === last ? 0 : getInnerTangent(stops, slopes, i))
 
     tangents[0] = (3 * slopes[0] - tangents[1]) / 2
     tangents[last] = (3 * slopes[last - 1] - tangents[last - 1]) / 2

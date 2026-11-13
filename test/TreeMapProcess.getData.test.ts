@@ -22,11 +22,11 @@ const value = (id: string, amount: number, extra: Partial<TreeValue> = {}) => {
 function getItems(data: Partial<TreeData>) {
     const process = new TreeMapProcess({ values: [], ...data } as TreeData, PIXEL, { valuePostfix: undefined })
 
-    return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key!, item]))
+    return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))
 }
 
 const getBox = (items: ReturnType<typeof getItems>, key: string) => {
-    return (items.get(key)!.shape as RenderItemRectangle).absolute
+    return (items.get(key)?.shape as RenderItemRectangle).absolute
 }
 
 describe('Getting tree data', () => {
@@ -44,9 +44,9 @@ describe('Getting tree data', () => {
     it('Should stagger appearance by order', () => {
         const items = getItems({ values: [value('a', 3), value('b', 1)] })
 
-        expect(items.get('tree-a')!.animation.appearDelay)
+        expect(items.get('tree-a')?.animation.appearDelay)
             .toBe(0)
-        expect(items.get('tree-b')!.animation.appearDelay)
+        expect(items.get('tree-b')?.animation.appearDelay)
             .toBe(40)
     })
 
@@ -80,11 +80,11 @@ describe('Getting tree data', () => {
             .toEqual(['tree-g-1', 'tree-g-1-label', 'tree-g-0', 'tree-g-0-label'])
         expect(getBox(items, 'tree-g-1'))
             .toEqual({ x: 1865, y: 2500, width: 3730, height: 5000 })
-        expect(items.get('tree-g-1')!.color)
+        expect(items.get('tree-g-1')?.color)
             .toBe(spreadColor('#808080', 0, 2, 40))
-        expect(items.get('tree-g-0')!.color)
+        expect(items.get('tree-g-0')?.color)
             .toBe(spreadColor('#808080', 1, 2, 40))
-        expect(items.get('tree-g-1')!.tooltipTemplate)
+        expect(items.get('tree-g-1')?.tooltipTemplate)
             .toBe('G\nS1\n3.00')
     })
 
@@ -95,7 +95,7 @@ describe('Getting tree data', () => {
 
         expect([...items.keys()].filter(key => !key.endsWith('-label')))
             .toEqual(['tree-g-0', 'tree-g-1', 'tree-a'])
-        expect(items.get('tree-g-0')!.color)
+        expect(items.get('tree-g-0')?.color)
             .toBe('#00ff00')
         expect(getBox(items, 'tree-g-0'))
             .toEqual({ x: 1240, y: 1240, width: 2480, height: 2480 })
@@ -104,16 +104,16 @@ describe('Getting tree data', () => {
     })
 
     it('Should show tooltip with formatted sum', () => {
-        expect(getItems({ values: [value('a', 3)] }).get('tree-a')!.tooltipTemplate)
+        expect(getItems({ values: [value('a', 3)] }).get('tree-a')?.tooltipTemplate)
             .toBe('A\n3.00')
     })
 
     it('Should show label with contrast color only when it fits', () => {
         const items = getItems({ values: [value('a', 999), value('b', 1)] })
 
-        expect((items.get('tree-a-label')!.shape as RenderItemText).value)
+        expect((items.get('tree-a-label')?.shape as RenderItemText).value)
             .toBe('A')
-        expect(items.get('tree-a-label')!.color)
+        expect(items.get('tree-a-label')?.color)
             .toBe('#000000')
         expect(items.has('tree-b-label'))
             .toBe(false)

@@ -4,7 +4,11 @@ const context = () => {
     const addColorStop = jest.fn()
     const createLinearGradient = jest.fn(() => ({ addColorStop }))
 
-    return { ctx: { createLinearGradient } as unknown as CanvasRenderingContext2D, createLinearGradient, addColorStop }
+    return {
+        ctx: { createLinearGradient } as unknown as CanvasRenderingContext2D,
+        createLinearGradient,
+        addColorStop
+    }
 }
 
 const gradientFactory = () => jest.fn(() => ({}) as CanvasGradient)

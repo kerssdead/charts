@@ -45,7 +45,7 @@ export default class TreeMapProcess extends ChartProcess<TreeData> {
             getTreeSum
         )
 
-        const singleGroup = groups.length == 1 && groups[0].sectors?.length ? groups[0] : undefined
+        const singleGroup = groups.length === 1 && groups[0].sectors?.length ? groups[0] : undefined
 
         const blocks = singleGroup
                        ? this.getSectorBlocks(singleGroup, box)
@@ -69,7 +69,7 @@ export default class TreeMapProcess extends ChartProcess<TreeData> {
     }
 
     private getCells<T>(values: T[], box: RectangleDimensions, getValue: (value: T) => number) {
-        return TreeMapLayout.getCells(values, box, getValue, this.units, this.gap)
+        return TreeMapLayout.getCells(values, getValue, { box, units: this.units, gap: this.gap })
     }
 
     private getBlock({ color, value, key, box, group }: Block, order: number) {

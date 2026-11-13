@@ -1,5 +1,6 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import Legend from '@/Legend'
+import { truncate } from '@/helpers/TextFit'
 import MenuButton from '@/renderer/MenuButton'
 import Paddings, { NO_PADDINGS } from '@/types/Paddings'
 import Panel from '@/types/Panel'
@@ -111,7 +112,7 @@ export default class Layout {
         const font = clamp(width / stringWidth(title, 1), TITLE_MIN_FONT, TITLE_FONT)
 
         return (items: QueueItemsBuilder) => {
-            items.text(Legend.truncate(title, width, font))
+            items.text(truncate(title, width, font))
                  .position(CANVAS_CENTER.x, this.titleHeight / 2 * COORDS_MAX_Y / height)
                  .size(font)
                  .align(TextAlignment.Center)
@@ -129,7 +130,7 @@ export default class Layout {
         const font = clamp(width / stringWidth(title, 1), PANEL_TITLE_MIN_FONT, PANEL_TITLE_FONT)
 
         return (items: QueueItemsBuilder) => {
-            items.text(Legend.truncate(title, width, font))
+            items.text(truncate(title, width, font))
                  .position(CANVAS_CENTER.x, -PANEL_TITLE_HEIGHT / 2 * pixel.y)
                  .size(font)
                  .align(TextAlignment.Center)

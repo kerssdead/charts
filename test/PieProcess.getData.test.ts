@@ -28,12 +28,12 @@ function create(data: Partial<PieData>, settings: Partial<PieProcessSettings> = 
 }
 
 function getItems(process: PieProcess) {
-    return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key!, item]))
+    return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))
 }
 
-const getArc = (items: ReturnType<typeof getItems>, key: string) => items.get(key)!.shape as RenderItemArc
+const getArc = (items: ReturnType<typeof getItems>, key: string) => items.get(key)?.shape as RenderItemArc
 
-const getText = (items: ReturnType<typeof getItems>, key: string) => items.get(key)!.shape as RenderItemText
+const getText = (items: ReturnType<typeof getItems>, key: string) => items.get(key)?.shape as RenderItemText
 
 describe('Getting pie data', () => {
     it('Should draw sectors proportionally to values', () => {
@@ -50,7 +50,7 @@ describe('Getting pie data', () => {
 
         expect(getText(items, 'sector-label-A').value)
             .toBe('A')
-        expect(items.get('sector-A')!.tooltipTemplate)
+        expect(items.get('sector-A')?.tooltipTemplate)
             .toBe('A\n1.00 (25%)')
     })
 
@@ -77,9 +77,9 @@ describe('Getting pie data', () => {
 
         expect(items.has('sector-label-B'))
             .toBe(false)
-        expect(items.get('sector-C')!.isGhost)
+        expect(items.get('sector-C')?.isGhost)
             .toBe(true)
-        expect(items.get('sector-label-C')!.isGhost)
+        expect(items.get('sector-label-C')?.isGhost)
             .toBe(true)
     })
 
@@ -89,7 +89,7 @@ describe('Getting pie data', () => {
         const onChange = jest.fn()
 
         process.onChange = onChange
-        getItems(process).get('sector-A')!.onClick!()
+        getItems(process).get('sector-A')?.onClick?.()
 
         expect(values[0].pinned)
             .toBe(true)
@@ -104,9 +104,9 @@ describe('Getting pie data', () => {
 
         expect([...items.keys()].filter(key => key.startsWith('sector-') && !key.includes('label')))
             .toEqual(['sector-A', 'sector-other'])
-        expect(items.get('sector-other')!.tooltipTemplate)
+        expect(items.get('sector-other')?.tooltipTemplate)
             .toBe('Other\n1.00 (1%)\nB: 0.50 (0.5%)\nC: 0.50 (0.5%)')
-        expect(items.get('sector-other')!.onClick)
+        expect(items.get('sector-other')?.onClick)
             .toBeUndefined()
     })
 

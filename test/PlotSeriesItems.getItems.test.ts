@@ -68,8 +68,13 @@ describe('Getting plot series items', () => {
     })
 
     it('Should restart stacks on every call', () => {
-        const seriesItems = create([createSeries(PlotType.StackingColumn, [10]), createSeries(PlotType.StackingColumn, [20])])
-        const getTops = () => buildItems(seriesItems.getItems()).map(item => (item.shape as RenderItemRectangle).absolute.y)
+        const seriesItems = create([
+            createSeries(PlotType.StackingColumn, [10]),
+            createSeries(PlotType.StackingColumn, [20])
+        ])
+        const getTops = () => {
+            return buildItems(seriesItems.getItems()).map(item => (item.shape as RenderItemRectangle).absolute.y)
+        }
 
         expect(getTops())
             .toEqual(getTops())
@@ -78,7 +83,7 @@ describe('Getting plot series items', () => {
     it('Should draw area series as line with area', () => {
         const items = buildItems(create([createSeries(PlotType.Area, [1])]).getItems())
 
-        expect([items.map(item => item.key), (items[0].shape as RenderItemLine).areaBaseline])
+        expect([items.map(item => item.key), (items[0].shape as RenderItemLine).area.baseline])
             .toEqual([['series-5-line-0'], expect.any(Number)])
     })
 

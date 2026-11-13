@@ -1,31 +1,26 @@
 import { getContext } from '@/helpers/Canvas'
 import ChartSettings from '@/types/ChartSettings'
 import Legend from '@/Legend'
-import Panel from '@/types/Panel'
 import Point from '@/types/Point'
-import Pointer, { ScrollDrag } from '@/renderer/Pointer'
-import ProcessFactory from '@/render/ProcessFactory'
-import PlotProcess from '@/render/plot/PlotProcess'
+import Pointer from '@/renderer/Pointer'
 import Queue from '@/render/Queue'
 import RenderItem from '@/types/RenderItem'
+import ProcessFactory from '@/render/ProcessFactory'
 import Transition from '@/renderer/Transition'
-import CustomTooltip from '@/renderer/CustomTooltip'
+import AnimationFrame from '@/renderer/AnimationFrame'
+import ChartPanels from '@/renderer/ChartPanels'
 import Overlay from '@/renderer/Overlay'
-import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import TooltipOverlay from '@/renderer/TooltipOverlay'
 import ContextMenuOverlay from '@/renderer/ContextMenuOverlay'
 import Layout from '@/renderer/Layout'
 import ChartMenu from '@/renderer/ChartMenu'
-import { AnimationTiming, Layer } from '@/static/constants/Index'
+import { AnimationTiming } from '@/static/constants/Index'
 import Theme from '@/Theme'
 import HoverProgress from '@/types/HoverProgress'
-import RenderItemScrollbar from '@/types/RenderItemScrollbar'
-import { contains } from '@/helpers/Geometry'
+import Frame from '@/types/Frame'
 import { onImageLoad } from '@/helpers/Images'
 
 export default class Renderer {
-    private readonly canvas: HTMLCanvasElement
-
     private readonly pointer: Pointer
 
     private readonly queue: Queue
@@ -38,11 +33,7 @@ export default class Renderer {
 
     private readonly menu: ChartMenu
 
-    private readonly tick = (timestamp: DOMHighResTimeStamp) => {
-        this.guard(() => this.draw(timestamp))
-    }
-
-    private frame: number | null = null
+    private readonly frame = new AnimationFrame(timestamp => this.guard(() => this.draw(timestamp)))
 
     private isApplied: boolean = false
 
@@ -54,7 +45,7 @@ export default class Renderer {
 
     private legend: Legend | undefined
 
-    private panels: Panel[] = []
+    private readonly panels: ChartPanels
 
     private settings: ChartSettings
 
@@ -63,27 +54,24 @@ export default class Renderer {
     private readonly onError: (error: unknown) => void
 
     constructor(canvas: HTMLCanvasElement, onError: (error: unknown) => void) {
-        this.canvas = canvas
         this.onError = onError
-        this.queue = new Queue(getContext(this.canvas))
-        this.tooltip = new TooltipOverlay(this.canvas)
-        this.menu = new ChartMenu(
-            this.canvas,
-            this.queue,
-            point => this.pointer.openMenu(point),
-            () => this.drawClean()
-        )
+        this.queue = new Queue(getContext(canvas))
+        this.panels = new ChartPanels(this.queue, this.layout)
+        this.tooltip = new TooltipOverlay(canvas)
+        this.menu = new ChartMenu(canvas, this.queue, point => this.pointer.openMenu(point), () => {
+            this.drawClean()
+        })
         this.contextMenu.fixedButtons = () => this.menu.getButtons()
         this.detachImages = onImageLoad(() => this.render())
 
-        this.pointer = new Pointer(this.canvas, () => this.layout.window, {
+        this.pointer = new Pointer(canvas, () => this.layout.window, {
             onClick: (point: Point) => this.guard(() => this.onClick(point)),
             onChange: () => this.render(),
             canDrag: (point: Point) => !this.pointer.context && !this.getClickableItemAt(point),
             hasContextMenuAt: (point: Point) => !!this.settings.contextMenu?.length
                                                 && this.queue.items.some(item => item.hasContextMenuAt(point)),
-            scrollBy: (point: Point, delta: number) => this.scrollBy(point, delta),
-            getScrollDrag: (point: Point) => this.getScrollDrag(point)
+            scrollBy: (point: Point, delta: number) => this.panels.scrollBy(point, delta),
+            getScrollDrag: (point: Point) => this.panels.getScrollDrag(point)
         })
     }
 
@@ -95,11 +83,7 @@ export default class Renderer {
 
         this.contextMenu.menu = settings.contextMenu
 
-        this.tooltip.custom.hide()
-        this.tooltip.isEnabled = settings.enableTooltip
-        this.tooltip.template = settings.enableTooltip && settings.templateId
-                                ? CustomTooltip.fromTemplate(settings.templateId)
-                                : null
+        this.tooltip.apply(settings)
 
         if (!this.isSuspended)
             this.pointer.attach(this.settings.enableMove)
@@ -117,17 +101,17 @@ export default class Renderer {
 
         this.queue.clear()
 
-        this.tooltip.clear(this.queue)
-        this.contextMenu.clear(this.queue)
-        this.legend?.clear(this.queue)
-        this.menu.button?.clear(this.queue)
+        for (const overlay of this.overlays)
+            overlay.clear(this.queue)
 
         this.pointer.closeContext()
 
-        if (this.layout.hasArea)
-            this.buildChart(isInitialized)
-        else
-            this.panels = []
+        if (this.layout.hasArea) {
+            this.panels.build(this.settings, isInitialized, () => this.rebuildAnimated())
+            this.pointer.setScrollable(this.panels.canScroll)
+        } else {
+            this.panels.clear()
+        }
 
         this.render()
     }
@@ -137,11 +121,11 @@ export default class Renderer {
             return this.rebuild({ isInitialized: true })
 
         const previous = Transition.snapshot(this.queue)
-        const previousPanels = this.panels
+        const previousPanels = this.panels.list
 
         this.rebuild({ isInitialized: true })
 
-        Transition.apply(this.queue, previous, previousPanels, this.panels, AnimationTiming.rebuild)
+        new Transition(this.queue, previousPanels, this.panels.list, AnimationTiming.rebuild).apply(previous)
     }
 
     resize(width: number, height: number, ratio: number) {
@@ -165,7 +149,7 @@ export default class Renderer {
         if (this.isSuspended)
             return
 
-        this.cancelFrame()
+        this.frame.cancel()
         this.draw(performance.now())
     }
 
@@ -176,16 +160,13 @@ export default class Renderer {
         this.removeLegend()
         this.menu.remove()
 
-        this.tooltip.custom.hide()
-        this.tooltip.template = null
-
-        this.tooltip.clear(this.queue)
+        this.tooltip.reset(this.queue)
         this.contextMenu.clear(this.queue)
         this.queue.clear()
 
-        this.cancelFrame()
+        this.frame.cancel()
 
-        this.panels = []
+        this.panels.clear()
         this.layout.reset()
         this.isApplied = false
         this.isLaidOut = false
@@ -198,7 +179,7 @@ export default class Renderer {
 
         this.tooltip.custom.hide()
 
-        this.cancelFrame()
+        this.frame.cancel()
     }
 
     resume() {
@@ -210,24 +191,18 @@ export default class Renderer {
     }
 
     private syncLegend() {
-        if (!this.settings.enableLegend) {
+        if (!this.settings.enableLegend)
             this.removeLegend()
-        } else if (this.legend) {
+        else if (this.legend)
             this.legend.applySettings(this.settings)
-        } else {
-            this.legend = new Legend(this.settings)
-            this.legend.onChange = () => this.rebuildAnimated()
-        }
+        else
+            this.legend = new Legend(this.settings, () => this.rebuildAnimated())
 
         this.updateLayout()
     }
 
     private removeLegend() {
-        if (!this.legend)
-            return
-
-        this.legend.clear(this.queue)
-        this.legend.destroy()
+        this.legend?.destroy(this.queue)
         this.legend = undefined
     }
 
@@ -235,21 +210,13 @@ export default class Renderer {
         if (this.isSuspended)
             return
 
-        this.frame ??= requestAnimationFrame(this.tick)
-    }
-
-    private cancelFrame() {
-        if (this.frame == null)
-            return
-
-        cancelAnimationFrame(this.frame)
-        this.frame = null
+        this.frame.request()
     }
 
     private drawClean() {
         this.isClean = true
 
-        this.cancelFrame()
+        this.frame.cancel()
         this.draw(performance.now())
 
         this.isClean = false
@@ -258,39 +225,40 @@ export default class Renderer {
     }
 
     private draw(timestamp: DOMHighResTimeStamp) {
-        this.frame = null
-
         Theme.update(this.settings.isDarkThemeFunction)
         HoverProgress.isInstant = this.settings.staticMode || this.isClean
 
         const { window, screen } = this.layout
         const { context } = this.pointer
         const position = this.isClean ? null : this.pointer.position
-
-        const hoverPosition = position && !this.contextMenu.isOver(position) ? position : null
-
-        let isAnimating = this.queue.animate(hoverPosition, timestamp)
-
         const movingLegend = this.legend?.isMoving ? this.legend : undefined
-
         const frame = { queue: this.queue, window, screen, mouse: position, context, now: timestamp }
 
-        for (const overlay of this.overlays)
-            isAnimating = overlay.update(frame) || isAnimating
+        let isAnimating = this.queue.animate(this.getHoverPosition(position), timestamp)
+
+        isAnimating = this.updateOverlays(frame) || isAnimating
 
         if (movingLegend)
             this.layout.fit(movingLegend.getCurrentReserved(timestamp))
 
-        for (const panel of this.panels) {
-            isAnimating = panel.animateScroll(timestamp) || isAnimating
-
-            panel.update(window)
-        }
-
+        isAnimating = this.panels.animate(timestamp, window) || isAnimating
         isAnimating = this.queue.render(timestamp, window, screen) || isAnimating
 
         if (isAnimating)
             this.render()
+    }
+
+    private updateOverlays(frame: Frame) {
+        let isAnimating = false
+
+        for (const overlay of this.overlays)
+            isAnimating = overlay.update(frame) || isAnimating
+
+        return isAnimating
+    }
+
+    private getHoverPosition(position: Point | null) {
+        return position && !this.contextMenu.isOver(position) ? position : null
     }
 
     private guard(action: () => void) {
@@ -303,105 +271,13 @@ export default class Renderer {
 
     private get overlays(): Overlay[] {
         return [this.tooltip, this.contextMenu, this.legend, this.menu.button]
-            .filter(overlay => overlay != undefined)
-    }
-
-    private buildChart(isInitialized: boolean) {
-        const add = (actions: QueueAction[]) => {
-            const items = QueueItemsBuilder.build(actions, isInitialized || this.settings.staticMode)
-
-            this.queue.add(items)
-
-            return items
-        }
-
-        const { charts, columns } = this.settings
-        const isMultiple = charts.length > 1
-        const previousPanels = this.panels
-
-        this.panels = this.layout.getPanels(charts, columns)
-
-        this.panels.forEach((panel, index) => {
-            const chart = charts[index]
-            const pixel = panel.pixel(this.layout.window)
-
-            const process = ProcessFactory.create(chart, pixel, this.settings)
-
-            panel.plot = process instanceof PlotProcess ? process : null
-
-            if (process)
-                process.onChange = () => this.rebuildAnimated()
-
-            panel.scroll = process?.getScroll() ?? null
-            panel.keepScroll(previousPanels[index])
-
-            const isEmpty = !!process?.isEmpty()
-
-            const fixedData = isEmpty ? [] : process?.getFixedData() ?? []
-            const contentData = isEmpty ? [this.layout.getEmpty()] : process?.getData() ?? []
-            const title = this.layout.getPanelTitle(chart.title, pixel)
-
-            const fixed = add([...fixedData, title])
-            const content = add(contentData)
-
-            for (const item of content)
-                item.isScrollable = panel.scroll != null
-
-            for (const item of [...fixed, ...content]) {
-                if (!item.isFixed)
-                    item.panel = panel
-
-                if (isMultiple) {
-                    item.key &&= `${ index }-${ item.key }`
-                    item.hoverGroup &&= `${ index }-${ item.hoverGroup }`
-                }
-            }
-
-            if (panel.scroll)
-                this.queue.add([Renderer.getScrollbar(panel)])
-        })
-
-        add([this.layout.getTitle()])
-
-        this.pointer.setScrollable(this.panels.some(panel => panel.canScroll))
-    }
-
-    private static getScrollbar(panel: Panel) {
-        const item = new RenderItem(new RenderItemScrollbar(panel))
-
-        item.isFixed = true
-        item.layer = Layer.Scrollbar
-
-        return item
-    }
-
-    private getScrollablePanel(point: Point) {
-        return this.panels.find(panel => panel.canScroll && contains(panel.window, point))
-    }
-
-    private scrollBy(point: Point, delta: number): boolean | null {
-        const panel = this.getScrollablePanel(point)
-
-        return panel ? panel.glideBy(delta) : null
-    }
-
-    private getScrollDrag(point: Point): ScrollDrag | null {
-        return this.getScrollablePanel(point)?.getDrag(point) ?? null
+            .filter(overlay => overlay !== undefined)
     }
 
     private getClickableItemAt(point: Point): RenderItem | undefined {
         const isContextOpen = this.pointer.context != null
-        const items = this.queue.items
 
-        for (let i = items.length - 1; i >= 0; i--) {
-            const item = items[i]
-
-            if (item.onClick && !item.isInitializing && (!isContextOpen || item.isMenuButton) && item.in(point)) {
-                return item
-            }
-        }
-
-        return undefined
+        return this.queue.findTop(item => item.isClickableAt(point, isContextOpen))
     }
 
     private onClick(point: Point) {

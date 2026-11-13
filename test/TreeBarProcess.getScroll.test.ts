@@ -12,7 +12,8 @@ jest.mock('@/helpers/Text', () => ({
 const row = (id: string, extra: Partial<TreeBarRow> = {}) => new TreeBarRow({ id, label: id, parts: [], ...extra })
 
 const getScroll = (values: TreeBarRow[]) => {
-    return new TreeBarProcess({ values } as TreeBarData, { x: 5, y: 12.5 }, { valuePostfix: undefined }).getScroll()
+    return new TreeBarProcess({ values } as TreeBarData, { x: 5, y: 12.5 }, { valuePostfix: undefined })
+        .getScroll()
 }
 
 describe('Getting tree bar scroll', () => {

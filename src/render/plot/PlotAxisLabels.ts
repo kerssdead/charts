@@ -1,4 +1,5 @@
 import PlotData from '@/types/data/PlotData'
+import Point from '@/types/Point'
 import Units from '@/helpers/Units'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { maxOf } from '@/helpers/Collections'
@@ -54,14 +55,14 @@ export default class PlotAxisLabels {
 
         this.labelSpacing.getValueLabels(xValues, positions, this.data.shortLabels).forEach((label, i) => {
             if (label)
-                this.bottomLabel(items, label, positions[i], band.bottom, `x-label-${ xValues[i] }`)
+                this.bottomLabel(items, label, { x: positions[i], y: band.bottom }, `x-label-${ xValues[i] }`)
         })
 
         const labelDistance = this.units.toPxY(categoryScale.minLabelDistance)
         const every = Math.max(1, Math.ceil(Y_LABEL_HEIGHT / labelDistance))
 
         layout.getCategoryLabels(section).forEach((category, i) => {
-            if (i % every == 0)
+            if (i % every === 0)
                 this.leftLabel(items, category, categoryScale.getLabelCoordinate(i), `y-category-${ i }`)
         })
     }
@@ -93,8 +94,8 @@ export default class PlotAxisLabels {
         )
 
         categories.forEach(({ label, index, position }, i) => {
-            if (i % every == 0)
-                this.bottomLabel(items, label, position, band.bottom, `x-category-${ index }`)
+            if (i % every === 0)
+                this.bottomLabel(items, label, { x: position, y: band.bottom }, `x-category-${ index }`)
         })
     }
 
@@ -119,7 +120,7 @@ export default class PlotAxisLabels {
                     .key(key)
     }
 
-    private bottomLabel(items: QueueItemsBuilder, text: string, x: number, y: number, key: string) {
+    private bottomLabel(items: QueueItemsBuilder, text: string, { x, y }: Point, key: string) {
         return items.text(text)
                     .position(this.labelSpacing.clampLabel(text, x), y + this.units.y(TOP_BASELINE_GAP))
                     .align(TextAlignment.Center)

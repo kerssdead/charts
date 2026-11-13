@@ -60,7 +60,10 @@ describe('Applying default colors', () => {
 
         applyDefaultColors(settings)
 
-        const data = settings.charts[0].data as unknown as { values: { color: string }[], stops: { color: string }[] }
+        const data = settings.charts[0].data as unknown as {
+            values: { color: string }[],
+            stops: { color: string }[]
+        }
 
         expect([data.values[0].color, data.stops[0].color])
             .toEqual([Palette[0], Palette[1]])

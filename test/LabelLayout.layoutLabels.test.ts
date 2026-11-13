@@ -16,7 +16,7 @@ describe('Laying out labels', () => {
     it('Should show lone small label when labels fit max visible count', () => {
         const placements = layoutLabels(crowdWithLoneSmallLabel(MAX_VISIBLE_COUNT - 1), DISTANCE, BOUNDS)
 
-        expect(placements.at(-1)!.isVisible)
+        expect(placements.at(-1)?.isVisible)
             .toBe(true)
     })
 

@@ -119,7 +119,7 @@ export default class Panel {
 
     scrollTo(offset: number): boolean {
         const next = this.clampOffset(offset)
-        const isChanged = next != this.offset
+        const isChanged = next !== this.offset
 
         this.offset = this.target = next
 
@@ -128,7 +128,7 @@ export default class Panel {
 
     glideTo(target: number): boolean {
         const next = this.clampOffset(target)
-        const isChanged = next != this.target
+        const isChanged = next !== this.target
 
         this.target = next
 
@@ -154,7 +154,7 @@ export default class Panel {
     }
 
     animateScroll(now: DOMHighResTimeStamp): boolean {
-        if (this.offset == this.target) {
+        if (this.offset === this.target) {
             this.scrollTime = null
 
             return false
@@ -199,7 +199,7 @@ export default class Panel {
     }
 
     static grid(titles: number[], width: number, height: number, columns?: number): Panel[] {
-        if (titles.length == 1 && titles[0] == 0)
+        if (titles.length === 1 && titles[0] === 0)
             return [new Panel(0, { x: 0, y: 0, width: 1, height: 1 })]
 
         const cols = clamp(columns ?? Panel.getColumns(titles.length, width, height), 1, titles.length)
@@ -211,7 +211,7 @@ export default class Panel {
 
         return titles.map((title, index) => {
             const row = Math.floor(index / cols)
-            const x = (index % cols) * (cellWidth + GAP) + (row == rows - 1 ? lastOffset : 0)
+            const x = (index % cols) * (cellWidth + GAP) + (row === rows - 1 ? lastOffset : 0)
             const y = row * (cellHeight + GAP) + title
 
             return new Panel(index, {

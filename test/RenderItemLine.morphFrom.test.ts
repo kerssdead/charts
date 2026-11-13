@@ -11,7 +11,7 @@ const createLine = (areaBaseline: number | null) => {
     const shape = new RenderItemLine()
 
     shape.absolute = STOPS
-    shape.areaBaseline = areaBaseline
+    shape.area.baseline = areaBaseline
 
     return shape
 }
@@ -20,7 +20,7 @@ const getBottomAt = (previous: RenderItemLine, next: RenderItemLine, morph: numb
     next.morphFrom(previous, 1)
     next.adjust(WINDOW, morph)
 
-    return next.getBounds()!.bottom
+    return next.getBounds()?.bottom
 }
 
 const CLIP = { x: 100, y: 200, width: 1000, height: 2000 }

@@ -21,7 +21,11 @@ describe('Getting plot value at y coordinate', () => {
     })
 
     it('Should return zero without values', () => {
-        const process = new PlotProcess({ values: [] } as unknown as PlotData, { x: 1, y: 1 }, { valuePostfix: undefined })
+        const process = new PlotProcess(
+            { values: [] } as unknown as PlotData,
+            { x: 1, y: 1 },
+            { valuePostfix: undefined }
+        )
 
         expect(process.getAxisValue(1000))
             .toBe(0)

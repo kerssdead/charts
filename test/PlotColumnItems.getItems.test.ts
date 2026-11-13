@@ -25,7 +25,9 @@ const getColumns = (all: PlotSeries[], series: PlotSeries, data: Partial<PlotDat
 
     return {
         ...plot,
-        rects: items.filter(item => item.shape instanceof RenderItemRectangle).map(item => item.shape as RenderItemRectangle),
+        rects: items
+            .filter(item => item.shape instanceof RenderItemRectangle)
+            .map(item => item.shape as RenderItemRectangle),
         marks: items.filter(item => item.shape instanceof RenderItemLine)
     }
 }

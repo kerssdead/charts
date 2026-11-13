@@ -81,7 +81,7 @@ describe('Getting monotone curve segments', () => {
         const stops = [{ x: 0, y: 0 }, { x: 2, y: 1 }, { x: 3, y: 50 }, { x: 30, y: 51 }, { x: 31, y: 90 }]
         const samples = sampleCurveY(stops).flat()
 
-        expect(samples.every((y, i) => i == 0 || y >= samples[i - 1] - 1e-9))
+        expect(samples.every((y, i) => i === 0 || y >= samples[i - 1] - 1e-9))
             .toBe(true)
     })
 

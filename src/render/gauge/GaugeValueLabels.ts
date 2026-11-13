@@ -20,7 +20,7 @@ export function getLabelsInRows(
     let rowIndex = 0
 
     for (const label of labels) {
-        if (rowIndex == 0 && stringWidth(label.text, LABEL_FONT_SIZE) > firstRowWidth)
+        if (rowIndex === 0 && stringWidth(label.text, LABEL_FONT_SIZE) > firstRowWidth)
             rowIndex++
 
         if (rowIndex >= rowCount)

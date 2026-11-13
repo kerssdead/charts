@@ -26,7 +26,7 @@ export default class PlotLabelSpacing {
                        ?? variants[variants.length - 1]
         const every = this.getLabelStep(labels, positions, 1)
 
-        return labels.map((label, i) => i % every == 0 ? label : '')
+        return labels.map((label, i) => i % every === 0 ? label : '')
     }
 
     getLabelStep(labels: string[], positions: number[], from: number) {
@@ -54,7 +54,7 @@ export default class PlotLabelSpacing {
         let right = -Infinity
 
         return labels.some((label, i) => {
-            if (i % every != 0)
+            if (i % every !== 0)
                 return false
 
             const half = this.units.x(stringWidth(label, X_LABEL_FONT) / 2)

@@ -29,13 +29,8 @@ export default class PlotItemStyle {
         this.getValueTooltip = getValueTooltip
     }
 
-    styleRect(
-        rect: QueueRectangleItemBuilder,
-        series: PlotSeries,
-        value: PlotPoint,
-        slot: number,
-        valueIndex: number
-    ) {
+    styleRect(rect: QueueRectangleItemBuilder, series: PlotSeries, slot: number, valueIndex: number) {
+        const value = series.values[valueIndex]
         const item = rect.fill()
                          .gradient()
                          .color(series.color)
@@ -58,7 +53,7 @@ export default class PlotItemStyle {
     styleLine(line: QueueLineItemBuilder, series: PlotSeries, suffix: string) {
         line.width(series.width)
             .color(series.color)
-            .layer(series.type == PlotType.Area ? AREA_LAYER : LINE_LAYER)
+            .layer(series.type === PlotType.Area ? AREA_LAYER : LINE_LAYER)
             .key(this.getKey(series, suffix))
             .interact()
             .init(AnimationTiming.plotLineInit)

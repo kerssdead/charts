@@ -4,7 +4,7 @@ class Sector extends Value {
     pinned: boolean
 
     get isBlank() {
-        return this.value == 0
+        return this.value === 0
     }
 
     canToggle(): boolean {

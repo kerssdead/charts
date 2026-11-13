@@ -17,6 +17,7 @@ import { GaugeStep } from '@/render/gauge/GaugeSteps'
 import * as GaugeLegend from '@/render/gauge/GaugeLegend'
 import { LegendItem } from '@/render/gauge/GaugeLegend'
 import * as GaugeValueLabels from '@/render/gauge/GaugeValueLabels'
+import { ValueLabel } from '@/render/gauge/GaugeValueLabels'
 import {
     ABOVE_MAX_MARK,
     BELOW_MIN_MARK,
@@ -62,13 +63,12 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
             legendAvailableWidth
         )
         this.steps = this.data.disableStepLabels ? [] : GaugeSteps.getSteps(this.min, this.max, formatValue)
-        this.sizing = new GaugeSizing(
-            this.units,
-            this.data.innerRadius,
-            this.steps,
-            this.labelRowCount,
-            this.enabledSectors.length
-        )
+        this.sizing = new GaugeSizing(this.units, {
+            innerRadiusPercent: this.data.innerRadius,
+            steps: this.steps,
+            labelRowCount: this.labelRowCount,
+            ringCount: this.enabledSectors.length
+        })
     }
 
     private get min() {
@@ -80,7 +80,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     }
 
     private get hasSingleValue() {
-        return this.enabledSectors.length == 1
+        return this.enabledSectors.length === 1
     }
 
     private get labelRowCount() {
@@ -110,7 +110,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     private getUnclampedRatio(value: number) {
         const range = this.max - this.min
 
-        return range == 0 || !Number.isFinite(value) ? 0 : (value - this.min) / range
+        return range === 0 || !Number.isFinite(value) ? 0 : (value - this.min) / range
     }
 
     private getValueRatio(value: number) {
@@ -190,8 +190,11 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         const { x } = this.sizing.centerInCoords
         const ringMiddleRadius = this.units.x(this.sizing.ringMiddleRadius)
 
-        this.addText(items, 'gauge-min', this.formatValue(this.min), x - ringMiddleRadius, y, RANGE_FONT_SIZE)
-        this.addText(items, 'gauge-max', this.formatValue(this.max), x + ringMiddleRadius, y, RANGE_FONT_SIZE)
+        const minLabel = { key: 'gauge-min', text: this.formatValue(this.min) }
+        const maxLabel = { key: 'gauge-max', text: this.formatValue(this.max) }
+
+        this.addText(items, minLabel, { x: x - ringMiddleRadius, y }, RANGE_FONT_SIZE)
+        this.addText(items, maxLabel, { x: x + ringMiddleRadius, y }, RANGE_FONT_SIZE)
     }
 
     private addStepLabels(items: QueueItemsBuilder) {
@@ -216,16 +219,10 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
             for (const legendItem of legendLine) {
                 const textCenterX = itemLeft + MARKER_RADIUS + MARKER_TEXT_GAP
                                     + (legendItem.width - MARKER_RADIUS - MARKER_TEXT_GAP) / 2
+                const textCenter = { x: this.units.x(textCenterX), y: lineYs[lineIndex] }
 
                 this.addMarker(items, legendItem, this.units.x(itemLeft + MARKER_RADIUS), lineYs[lineIndex])
-                this.addText(
-                    items,
-                    legendItem.key,
-                    legendItem.text,
-                    this.units.x(textCenterX),
-                    lineYs[lineIndex],
-                    LABEL_FONT_SIZE
-                )
+                this.addText(items, legendItem, textCenter, LABEL_FONT_SIZE)
 
                 itemLeft += legendItem.width + LEGEND_ITEM_SPACING
             }
@@ -251,10 +248,8 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         if (isValueInside)
             this.addText(
                 items,
-                'gauge-value-label',
-                valueText,
-                x,
-                y - this.units.y(valueFontSize / 2),
+                { key: 'gauge-value-label', text: valueText },
+                { x, y: y - this.units.y(valueFontSize / 2) },
                 valueFontSize
             )
 
@@ -270,7 +265,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         )
 
         for (const label of labelsInRows)
-            this.addText(items, label.key, label.text, x, labelRowYs[label.rowIndex], LABEL_FONT_SIZE)
+            this.addText(items, label, { x, y: labelRowYs[label.rowIndex] }, LABEL_FONT_SIZE)
     }
 
     private addMarker(items: QueueItemsBuilder, legendItem: LegendItem, x: number, y: number) {
@@ -283,14 +278,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
              .init(AnimationTiming.gaugeLabelInit, AnimationTiming.gaugeInit, true)
     }
 
-    private addText(
-        items: QueueItemsBuilder,
-        key: string,
-        text: string,
-        x: number,
-        y: number,
-        fontSize: number
-    ) {
+    private addText(items: QueueItemsBuilder, { key, text }: ValueLabel, { x, y }: Point, fontSize: number) {
         items.text(text)
              .position(x, y)
              .size(fontSize)

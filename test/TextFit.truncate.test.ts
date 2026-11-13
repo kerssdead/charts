@@ -1,20 +1,20 @@
-import Legend from '@/Legend'
+import { truncate } from '@/helpers/TextFit'
 
 jest.mock('@/helpers/Text', () => ({ stringWidth: (text: string) => text.length * 10 }))
 
-describe('Truncating legend labels', () => {
+describe('Truncating text', () => {
     it('Should keep label that fits', () => {
-        expect(Legend.truncate('Hello', 50))
+        expect(truncate('Hello', 50))
             .toBe('Hello')
     })
 
     it('Should cut label to fit with ellipsis', () => {
-        expect(Legend.truncate('Hello world', 60))
+        expect(truncate('Hello world', 60))
             .toBe('Hello…')
     })
 
     it('Should leave only ellipsis when nothing fits', () => {
-        expect(Legend.truncate('Hello', 5))
+        expect(truncate('Hello', 5))
             .toBe('…')
     })
 })

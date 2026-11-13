@@ -16,9 +16,13 @@ const SETTINGS: ProcessSettings = { valuePostfix: undefined }
 const BAR = { x: 7 * PIXEL.x, width: COORDS_MAX_X - 14 * PIXEL.x }
 
 function getItems(data: Partial<SegmentedBarData>) {
-    const process = new SegmentedBarProcess({ values: [], stops: [], ...data } as SegmentedBarData, PIXEL, SETTINGS)
+    const process = new SegmentedBarProcess(
+        { values: [], stops: [], ...data } as SegmentedBarData,
+        PIXEL,
+        SETTINGS
+    )
 
-    return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key!, item]))
+    return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))
 }
 
 function getRects(data: Partial<SegmentedBarData>) {
@@ -34,14 +38,14 @@ describe('Getting segmented bar data', () => {
         const rects = getRects({ values: [part('a', 1), part('b', 0), part('c', 3)] })
 
         expect(rects.has('segmented-bar-part-b')).toBe(false)
-        expect(rects.get('segmented-bar-part-a')!.absolute.width).toBeCloseTo(BAR.width / 4)
-        expect(rects.get('segmented-bar-part-c')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
+        expect(rects.get('segmented-bar-part-a')?.absolute.width).toBeCloseTo(BAR.width / 4)
+        expect(rects.get('segmented-bar-part-c')?.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
     })
 
     it('Should apply minimal part width', () => {
         const rects = getRects({ values: [part('a', 1), part('b', 10000)] })
 
-        expect(rects.get('segmented-bar-part-a')!.absolute.width).toBeCloseTo(4 * PIXEL.x)
+        expect(rects.get('segmented-bar-part-a')?.absolute.width).toBeCloseTo(4 * PIXEL.x)
     })
 
     it('Should place stops by value, by percent and clamp them', () => {
@@ -50,16 +54,16 @@ describe('Getting segmented bar data', () => {
             stops: [stop('value', 1), stop('percent', ' 50% '), stop('outside', 100)]
         })
 
-        expect(rects.get('segmented-bar-stop-value')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
-        expect(rects.get('segmented-bar-stop-percent')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
-        expect(rects.get('segmented-bar-stop-outside')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
+        expect(rects.get('segmented-bar-stop-value')?.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
+        expect(rects.get('segmented-bar-stop-percent')?.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
+        expect(rects.get('segmented-bar-stop-outside')?.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
     })
 
     it('Should keep stop outline inside the bar', () => {
         const rects = getRects({ values: [part('a', 1)], stops: [stop('start', 0), stop('end', 1)] })
 
-        expect(rects.get('segmented-bar-stop-start')!.absolute.x).toBeCloseTo(BAR.x + 5 * PIXEL.x)
-        expect(rects.get('segmented-bar-stop-end')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
+        expect(rects.get('segmented-bar-stop-start')?.absolute.x).toBeCloseTo(BAR.x + 5 * PIXEL.x)
+        expect(rects.get('segmented-bar-stop-end')?.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
     })
 
     it('Should hide label of part narrower than its padding', () => {
@@ -82,24 +86,24 @@ describe('Getting segmented bar data', () => {
             ]
         })
 
-        expect(items.get('segmented-bar-part-mid-label')!.color).toBe('#000000')
-        expect(items.get('segmented-bar-part-dark-label')!.color).toBe('#ffffff')
+        expect(items.get('segmented-bar-part-mid-label')?.color).toBe('#000000')
+        expect(items.get('segmented-bar-part-dark-label')?.color).toBe('#ffffff')
     })
 
     it('Should scale parts to 100% in percentage mode and show empty track', () => {
         const rects = getRects({ percentageMode: true, values: [part('a', 20), part('b', 30)], stops: [stop('value', 60)] })
 
-        expect(rects.get('segmented-bar-part-a')!.absolute.width).toBeCloseTo(BAR.width * .2)
-        expect(rects.get('segmented-bar-part-b')!.absolute.x).toBeCloseTo(BAR.x + BAR.width * .2)
-        expect(rects.get('segmented-bar-part-b')!.absolute.width).toBeCloseTo(BAR.width * .3)
-        expect(rects.get('segmented-bar-track')!.absolute.width).toBeCloseTo(BAR.width)
-        expect(rects.get('segmented-bar-stop-value')!.absolute.x).toBeCloseTo(BAR.x + BAR.width * .6)
+        expect(rects.get('segmented-bar-part-a')?.absolute.width).toBeCloseTo(BAR.width * .2)
+        expect(rects.get('segmented-bar-part-b')?.absolute.x).toBeCloseTo(BAR.x + BAR.width * .2)
+        expect(rects.get('segmented-bar-part-b')?.absolute.width).toBeCloseTo(BAR.width * .3)
+        expect(rects.get('segmented-bar-track')?.absolute.width).toBeCloseTo(BAR.width)
+        expect(rects.get('segmented-bar-stop-value')?.absolute.x).toBeCloseTo(BAR.x + BAR.width * .6)
     })
 
     it('Should cut parts over 100% at the bar end in percentage mode', () => {
         const rects = getRects({ percentageMode: true, values: [part('a', 70), part('b', 40), part('c', 10)] })
 
-        expect(rects.get('segmented-bar-part-b')!.absolute.width).toBeCloseTo(BAR.width * .3)
+        expect(rects.get('segmented-bar-part-b')?.absolute.width).toBeCloseTo(BAR.width * .3)
         expect(rects.has('segmented-bar-part-c')).toBe(false)
         expect(rects.has('segmented-bar-track')).toBe(false)
     })
@@ -107,17 +111,17 @@ describe('Getting segmented bar data', () => {
     it('Should use sum of parts without percentage mode', () => {
         const rects = getRects({ values: [part('a', 20), part('b', 60)] })
 
-        expect(rects.get('segmented-bar-part-a')!.absolute.width).toBeCloseTo(BAR.width / 4)
+        expect(rects.get('segmented-bar-part-a')?.absolute.width).toBeCloseTo(BAR.width / 4)
         expect(rects.has('segmented-bar-track')).toBe(false)
     })
 
     it('Should show track and scale stops to the largest one when there are no parts', () => {
         const rects = getRects({ values: [part('a', 0)], stops: [stop('small', 1), stop('large', 4), stop('percent', '50%')] })
 
-        expect(rects.get('segmented-bar-track')!.absolute.width).toBeCloseTo(BAR.width)
-        expect(rects.get('segmented-bar-stop-small')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
-        expect(rects.get('segmented-bar-stop-large')!.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
-        expect(rects.get('segmented-bar-stop-percent')!.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
+        expect(rects.get('segmented-bar-track')?.absolute.width).toBeCloseTo(BAR.width)
+        expect(rects.get('segmented-bar-stop-small')?.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
+        expect(rects.get('segmented-bar-stop-large')?.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
+        expect(rects.get('segmented-bar-stop-percent')?.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
     })
 
     it('Should show percent values in tooltips in percentage mode', () => {
@@ -127,8 +131,8 @@ describe('Getting segmented bar data', () => {
             stops: [new SegmentedBarStop({ id: 'b', label: 'Ipsum', value: 40, color: '#0000ff' })]
         })
 
-        expect(items.get('segmented-bar-part-a')!.tooltipHtml).toContain('>Lorem\n15%</div>')
-        expect(items.get('segmented-bar-stop-b')!.tooltipHtml).toContain('>Ipsum\n40%</div>')
+        expect(items.get('segmented-bar-part-a')?.tooltipHtml).toContain('>Lorem\n15%</div>')
+        expect(items.get('segmented-bar-stop-b')?.tooltipHtml).toContain('>Ipsum\n40%</div>')
     })
 
     it('Should show string data in tooltip and pass object data to item', () => {
@@ -139,12 +143,12 @@ describe('Getting segmented bar data', () => {
             ]
         })
 
-        const text = items.get('segmented-bar-part-text')!
-        const object = items.get('segmented-bar-part-object')!
+        const text = items.get('segmented-bar-part-text')
+        const object = items.get('segmented-bar-part-object')
 
-        expect(text.tooltipHtml).toContain('>Lorem\nIpsum: 7\nDolor: &lt;b&gt;9&lt;/b&gt;\n1.00 (50%)</div>')
-        expect(text.data).toBeNull()
-        expect(object.tooltipHtml).toContain('>Amet\n1.00 (50%)</div>')
-        expect(object.data).toEqual({ Sit: '9' })
+        expect(text?.tooltipHtml).toContain('>Lorem\nIpsum: 7\nDolor: &lt;b&gt;9&lt;/b&gt;\n1.00 (50%)</div>')
+        expect(text?.data).toBeNull()
+        expect(object?.tooltipHtml).toContain('>Amet\n1.00 (50%)</div>')
+        expect(object?.data).toEqual({ Sit: '9' })
     })
 })

@@ -7,6 +7,7 @@ import Debug from '@/helpers/Debug'
 import { keepState, normalize } from '@/helpers/Settings'
 import Styles from '@/static/constants/Styles'
 import { createErrorMessage } from '@/ui/ErrorMessage'
+import Size from '@/types/Size'
 
 // todo: add public api
 
@@ -51,13 +52,13 @@ export default class Chart {
             this.bindMenuActions()
             this.applySize()
 
-            if (!this.settings.width && element.clientWidth == 0)
+            if (!this.settings.width && element.clientWidth === 0)
                 element.style.width = Styles.Size.Full
 
-            if (!this.settings.height && element.clientHeight == 0)
+            if (!this.settings.height && element.clientHeight === 0)
                 element.style.height = Styles.Size.Full
 
-            if (!this.settings.height && element.isConnected && element.clientHeight == 0)
+            if (!this.settings.height && element.isConnected && element.clientHeight === 0)
                 element.style.height = Styles.Size.FallbackHeight
 
             this.canvas = createCanvas()
@@ -161,7 +162,7 @@ export default class Chart {
         for (const item of this.settings.contextMenu ?? []) {
             const id = item.id
 
-            if (id == undefined)
+            if (id === undefined)
                 continue
 
             item.action ??= data => {
@@ -188,23 +189,25 @@ export default class Chart {
         this.guard(() => this.resizeCanvas(width, height, device))
     }
 
-    private resizeCanvas(width: number, height: number, device?: ResizeObserverSize) {
+    private resizeCanvas(
+        width: number,
+        height: number,
+        device?: ResizeObserverSize
+    ) {
         width = Math.floor(width)
         height = Math.floor(height)
 
-        if (width == 0 || height == 0)
+        if (width === 0 || height === 0)
             return
 
-        const ratio = window.devicePixelRatio || 1
-        const isExact = device != undefined
-                        && Math.abs(device.inlineSize - width * ratio) < 1
-                        && Math.abs(device.blockSize - height * ratio) < 1
+        const { width: pixelWidth, height: pixelHeight } = Chart.getPixelSize(
+            { width, height },
+            window.devicePixelRatio || 1,
+            device
+        )
 
-        const pixelWidth = isExact ? device.inlineSize : Math.round(width * ratio)
-        const pixelHeight = isExact ? device.blockSize : Math.round(height * ratio)
-
-        if (this.width == width && this.height == height
-            && this.canvas.width == pixelWidth && this.canvas.height == pixelHeight)
+        if (this.width === width && this.height === height
+            && this.canvas.width === pixelWidth && this.canvas.height === pixelHeight)
             return
 
         this.width = width
@@ -217,6 +220,16 @@ export default class Chart {
 
         this.renderer.resize(width, height, pixelWidth / width)
         this.renderer.render()
+    }
+
+    private static getPixelSize({ width, height }: Size, ratio: number, device?: ResizeObserverSize): Size {
+        const isExact = device !== undefined
+                        && Math.abs(device.inlineSize - width * ratio) < 1
+                        && Math.abs(device.blockSize - height * ratio) < 1
+
+        return isExact
+               ? { width: device.inlineSize, height: device.blockSize }
+               : { width: Math.round(width * ratio), height: Math.round(height * ratio) }
     }
 
     private watchRatio() {
@@ -237,7 +250,7 @@ export default class Chart {
             this.resume()
 
             for (const entry of entries) {
-                if (entry.target == this.canvas)
+                if (entry.target === this.canvas)
                     this.resize(this.width, this.height, entry.devicePixelContentBoxSize?.[0])
                 else
                     this.resize(entry.contentRect.width, entry.contentRect.height)
@@ -277,7 +290,7 @@ export default class Chart {
         Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
         this.renderer.resume()
 
-        if (Theme.currentTheme != this.suspendedTheme)
+        if (Theme.currentTheme !== this.suspendedTheme)
             this.onThemeChange()
     }
 }

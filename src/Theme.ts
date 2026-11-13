@@ -50,14 +50,14 @@ class Theme {
     }
 
     static setTheme(index: ColorTheme) {
-        if (Theme.text != undefined && index == Theme.currentTheme)
+        if (Theme.text !== undefined && index === Theme.currentTheme)
             return
 
         Theme.currentTheme = index
 
         Object.assign(Theme, ThemeOptions.palettes[index])
 
-        Theme.dropdownItemHoverColor = adjustColor(Theme.background, index == ColorTheme.light ? -50 : 50)
+        Theme.dropdownItemHoverColor = adjustColor(Theme.background, index === ColorTheme.light ? -50 : 50)
 
         const { r, g, b } = hexToRgb(Theme.canvasBackground) ?? fail(ErrorType.InvalidHexColor)
         Theme.canvasBackgroundInt = new Uint32Array(new Uint8ClampedArray([r, g, b, 255]).buffer)[0]
@@ -67,7 +67,7 @@ class Theme {
     }
 
     static hoverBackground(hover: number) {
-        const fullAdjustment = Theme.currentTheme == ColorTheme.dark ? 25 : -25
+        const fullAdjustment = Theme.currentTheme === ColorTheme.dark ? 25 : -25
 
         return adjustColor(Theme.canvasBackground, Math.round(fullAdjustment * hover))
     }

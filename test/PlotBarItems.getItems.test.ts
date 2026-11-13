@@ -19,7 +19,9 @@ const getBars = (all: PlotSeries[], series: PlotSeries, data: Partial<PlotData> 
 
     return {
         ...plot,
-        rects: items.filter(item => item.shape instanceof RenderItemRectangle).map(item => item.shape as RenderItemRectangle),
+        rects: items
+            .filter(item => item.shape instanceof RenderItemRectangle)
+            .map(item => item.shape as RenderItemRectangle),
         marks: items.filter(item => item.shape instanceof RenderItemLine)
     }
 }
@@ -73,7 +75,11 @@ describe('Getting plot bar items', () => {
 
     it('Should not cap bars by y max after disabling all other series', () => {
         const bar = createSeries(PlotType.Bar, [10, 400])
-        const { layout, rects } = getBars([bar, createSeries(PlotType.Line, [1], { disabled: true })], bar, { yMax: 100 })
+        const { layout, rects } = getBars(
+            [bar, createSeries(PlotType.Line, [1], { disabled: true })],
+            bar,
+            { yMax: 100 }
+        )
 
         expect(rects[1].absolute.width)
             .toBe(layout.horizontal.valueScale.getCoordinate(400) - layout.horizontal.baseline)
@@ -85,7 +91,9 @@ describe('Getting plot bar items', () => {
         const mixed = getBars([bar, createSeries(PlotType.Line, [1])], bar, { yMax: 100 })
 
         expect(horizontal.rects[1].absolute.width)
-            .toBe(horizontal.layout.horizontal.valueScale.getCoordinate(100) - horizontal.layout.horizontal.baseline)
+            .toBe(
+                horizontal.layout.horizontal.valueScale.getCoordinate(100) - horizontal.layout.horizontal.baseline
+            )
         expect(mixed.rects[1].absolute.width)
             .toBe(mixed.layout.horizontal.valueScale.getCoordinate(400) - mixed.layout.horizontal.baseline)
     })

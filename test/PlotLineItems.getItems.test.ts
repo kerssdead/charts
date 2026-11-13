@@ -102,14 +102,14 @@ describe('Getting plot line items', () => {
         const series = createSeries(PlotType.Area, [10, 40])
         const { layout, line } = getLine([series], series)
 
-        expect(line.areaBaseline)
+        expect(line.area.baseline)
             .toBe(layout.vertical.baseline)
     })
 
     it('Should not give line series an area', () => {
         const series = createSeries(PlotType.Line, [10, 40])
 
-        expect(getLine([series], series).line.areaBaseline)
+        expect(getLine([series], series).line.area.baseline)
             .toBeNull()
     })
 
@@ -132,7 +132,7 @@ describe('Getting plot line items', () => {
         const { layout, line } = getLine([createSeries(PlotType.Bar, [5, 20]), series], series)
         const { top, bottom } = layout.vertical.band
 
-        expect([line.clip!.y, line.clip!.height, top > layout.margin.top])
+        expect([line.clip?.y, line.clip?.height, top > layout.margin.top])
             .toEqual([top, bottom - top, true])
     })
 
@@ -161,7 +161,9 @@ describe('Getting plot line items', () => {
     })
 
     it('Should break line at missing values after ordering by slot', () => {
-        const series = createSeries(PlotType.Line, [], { values: [{ x: 3, y: 30 }, { x: 2, y: null }, { x: 1, y: 10 }] })
+        const series = createSeries(PlotType.Line, [], {
+            values: [{ x: 3, y: 30 }, { x: 2, y: null }, { x: 1, y: 10 }]
+        })
         const { items } = getLines([series], series, { xType: PlotAxisType.Number })
 
         expect(items.map(item => (item.shape as RenderItemLine).tooltips))
@@ -208,7 +210,7 @@ describe('Getting plot line items', () => {
         const series = createSeries(PlotType.Area, [10, null, 20])
         const { layout, items } = getLines([series], series)
 
-        expect(items.map(item => (item.shape as RenderItemLine).areaBaseline))
+        expect(items.map(item => (item.shape as RenderItemLine).area.baseline))
             .toEqual([layout.vertical.baseline, layout.vertical.baseline])
     })
 })

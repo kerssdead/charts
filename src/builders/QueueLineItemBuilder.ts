@@ -12,7 +12,7 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
     stop(x: number, y: number, tooltip?: string) {
         this.shape.absolute.push({ x, y })
 
-        if (tooltip != undefined)
+        if (tooltip !== undefined)
             this.shape.tooltips.push(tooltip)
 
         return this
@@ -37,7 +37,7 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
     }
 
     area(baseline: number) {
-        this.shape.areaBaseline = baseline
+        this.shape.area.baseline = baseline
 
         return this
     }

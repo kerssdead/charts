@@ -1,5 +1,6 @@
 import { PlotScaleType } from '@/static/Enums'
 import { fromScaleUnits, toScaleUnits } from '@/render/plot/PlotScaleUnits'
+import { PlotExtent } from '@/render/plot/PlotExtent'
 
 type Range = {
     min: number
@@ -21,18 +22,12 @@ export default class PlotValueScale {
 
     private readonly range: Range | null
 
-    private constructor(
-        values: number[],
-        start: number,
-        length: number,
-        direction: number,
-        scaleType: PlotScaleType
-    ) {
+    private constructor(values: number[], { start, length, direction }: PlotExtent, scaleType: PlotScaleType) {
         this.values = values
         this.start = start
         this.length = length
         this.direction = direction
-        this.isLog = scaleType == PlotScaleType.Log
+        this.isLog = scaleType === PlotScaleType.Log
         this.range = values.length < 2
                      ? null
                      : {
@@ -44,11 +39,11 @@ export default class PlotValueScale {
     }
 
     static fromBottom(values: number[], bottom: number, height: number, scaleType = PlotScaleType.Linear) {
-        return new PlotValueScale(values, bottom, height, -1, scaleType)
+        return new PlotValueScale(values, { start: bottom, length: height, direction: -1 }, scaleType)
     }
 
     static fromLeft(values: number[], left: number, width: number, scaleType = PlotScaleType.Linear) {
-        return new PlotValueScale(values, left, width, 1, scaleType)
+        return new PlotValueScale(values, { start: left, length: width, direction: 1 }, scaleType)
     }
 
     canShow(value: number | null): value is number {
@@ -58,7 +53,7 @@ export default class PlotValueScale {
     getCoordinate(value: number) {
         const range = this.range
 
-        if (!range || range.max == range.min)
+        if (!range || range.max === range.min)
             return this.start
 
         const units = toScaleUnits(value, this.isLog)
@@ -69,7 +64,7 @@ export default class PlotValueScale {
     getValue(coordinate: number) {
         const range = this.range
 
-        if (!range || this.length == 0)
+        if (!range || this.length === 0)
             return 0
 
         const ratio = this.direction * (coordinate - this.start) / this.length

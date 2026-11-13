@@ -26,12 +26,12 @@ const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
 function getItems(data: Partial<GaugeData>, pixel = PIXEL) {
     const process = new GaugeProcess({ values: [], ...data } as GaugeData, pixel, SETTINGS)
 
-    return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key!, item]))
+    return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))
 }
 
-const getArc = (items: ReturnType<typeof getItems>, key: string) => items.get(key)!.shape as RenderItemArc
+const getArc = (items: ReturnType<typeof getItems>, key: string) => items.get(key)?.shape as RenderItemArc
 
-const getText = (items: ReturnType<typeof getItems>, key: string) => items.get(key)!.shape as RenderItemText
+const getText = (items: ReturnType<typeof getItems>, key: string) => items.get(key)?.shape as RenderItemText
 
 describe('Getting gauge data', () => {
     it('Should draw value ring proportionally to range', () => {
@@ -41,7 +41,7 @@ describe('Getting gauge data', () => {
             .toBe(Math.PI)
         expect(getArc(items, 'gauge-value-Speed').endAngle)
             .toBeCloseTo(Math.PI * 1.42)
-        expect(items.get('gauge-value-Speed')!.tooltipTemplate)
+        expect(items.get('gauge-value-Speed')?.tooltipTemplate)
             .toBe('Speed\n42.00 (42%)')
     })
 
@@ -65,9 +65,9 @@ describe('Getting gauge data', () => {
         const items = getItems({ values: [sector('A', 130), sector('B', -20), sector('C', 60)] })
         const offset = getItems({ values: [sector('D', 60)], min: 20, max: 50 })
 
-        expect([items.get('gauge-value-A')!.tooltipTemplate, items.get('gauge-value-B')!.tooltipTemplate])
+        expect([items.get('gauge-value-A')?.tooltipTemplate, items.get('gauge-value-B')?.tooltipTemplate])
             .toEqual(['A\n130.00 (130%)', 'B\n-20.00 (-20%)'])
-        expect(offset.get('gauge-value-D')!.tooltipTemplate)
+        expect(offset.get('gauge-value-D')?.tooltipTemplate)
             .toBe('D\n60.00 (133.3%)')
     })
 

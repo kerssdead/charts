@@ -7,6 +7,10 @@ function traceCurveSegment(ctx: CanvasRenderingContext2D, { firstControl, second
     ctx.bezierCurveTo(firstControl.x, firstControl.y, secondControl.x, secondControl.y, end.x, end.y)
 }
 
+function segmentLength(stops: Point[], index: number) {
+    return Math.hypot(stops[index].x - stops[index - 1].x, stops[index].y - stops[index - 1].y)
+}
+
 export default class LinePathTracer {
     readonly partialStop: Point = { x: 0, y: 0 }
 
@@ -17,12 +21,37 @@ export default class LinePathTracer {
     private partialCurveSegment: CurveSegment | null = null
 
     constructor(drawMode: LineDrawMode = LineDrawMode.Straight) {
-        this.isSmooth = drawMode == LineDrawMode.Smooth
+        this.isSmooth = drawMode === LineDrawMode.Smooth
     }
 
     updateCurve(stops: Point[]) {
         if (this.isSmooth)
             this.curveSegments = getMonotoneSegments(stops)
+    }
+
+    placeProgress(stops: Point[], progress: number): number {
+        let total = 0
+
+        for (let i = 1; i < stops.length; i++)
+            total += segmentLength(stops, i)
+
+        let left = total * progress
+
+        for (let i = 1; i < stops.length; i++) {
+            const length = segmentLength(stops, i)
+
+            if (left >= length) {
+                left -= length
+
+                continue
+            }
+
+            this.placePartialStop(stops, i, length === 0 ? 0 : left / length)
+
+            return i
+        }
+
+        return stops.length
     }
 
     placePartialStop(stops: Point[], endIndex: number, segmentProgress: number) {

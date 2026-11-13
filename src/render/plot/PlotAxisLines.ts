@@ -71,7 +71,7 @@ export default class PlotAxisLines {
                               .layer(Layer.Base)
                               .key(`grid-${ axis }-${ value }`)
 
-            if (axis == 'y')
+            if (axis === 'y')
                 grid.axisValue(value)
         }
     }

@@ -10,7 +10,9 @@ function getTitle(title: string, width: number, menuLeft?: number) {
     layout.width = width
     layout.height = 300
 
-    const menu = menuLeft == undefined ? undefined : { resize: () => {}, bounds: { left: menuLeft } } as unknown as MenuButton
+    const menu = menuLeft === undefined
+        ? undefined
+        : { resize: () => {}, bounds: { left: menuLeft } } as unknown as MenuButton
 
     layout.update({ title, menu })
 
@@ -18,10 +20,10 @@ function getTitle(title: string, width: number, menuLeft?: number) {
 
     const items = new Proxy({}, {
         get: (_, name) => (value: string | number) => {
-            if (name == 'text')
+            if (name === 'text')
                 result.text = value as string
 
-            if (name == 'size')
+            if (name === 'size')
                 result.font = value as number
 
             return items

@@ -24,7 +24,7 @@ export class GradientCache {
     get(ctx: CanvasRenderingContext2D, color: string, y1: number, y2: number) {
         const key = `${ color }|${ y1 }|${ y2 }`
 
-        if (key != this.key || !this.gradient) {
+        if (key !== this.key || !this.gradient) {
             this.key = key
             this.gradient = this.createGradient(ctx, color, y1, y2)
         }
@@ -92,10 +92,10 @@ export function offscreenLayer(ctx: CanvasRenderingContext2D) {
 
     const { width, height } = ctx.canvas
 
-    if (layer.canvas.width != width)
+    if (layer.canvas.width !== width)
         layer.canvas.width = width
 
-    if (layer.canvas.height != height)
+    if (layer.canvas.height !== height)
         layer.canvas.height = height
 
     return layer
@@ -135,7 +135,7 @@ export function getContext(
 }
 
 export function isPixelBusy(pixel: number) {
-    return pixel != undefined && pixel != Theme.canvasBackgroundInt
+    return pixel !== undefined && pixel !== Theme.canvasBackgroundInt
 }
 
 export function createCanvas() {

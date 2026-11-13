@@ -54,10 +54,10 @@ export default class PlotBarItems {
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', baseline)
 
-                this.style.styleRect(bar, series, value, slot, valueIndex)
+                this.style.styleRect(bar, series, slot, valueIndex)
 
                 if (!series.disabled && seriesGroups.hasOnlyBarSeries && layout.isAboveYMax(y)) {
-                    const mark = addBarBreakMark(items, layout.units, bottom - height, bottom, end)
+                    const mark = addBarBreakMark(items, layout.units, { start: bottom - height, end: bottom }, end)
 
                     this.style.styleBreakMark(mark, series, slot, valueIndex)
                 }

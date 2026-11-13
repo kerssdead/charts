@@ -99,7 +99,7 @@ export default class Export {
         try {
             return new Uint32Array(ctx.getImageData(0, 0, width, height).data.buffer)
         } catch (error) {
-            if (!(error instanceof DOMException && error.name == 'SecurityError'))
+            if (!(error instanceof DOMException && error.name === 'SecurityError'))
                 throw error
 
             console.warn('OCharts: PNG export is unavailable because an image was loaded without CORS')
@@ -141,7 +141,7 @@ export default class Export {
     }
 
     static async saveAs(name: string, blob: Blob, type: FilePickerAcceptType) {
-        if (window.showSaveFilePicker != undefined) {
+        if (window.showSaveFilePicker !== undefined) {
             try {
                 const fileHandle = await window.showSaveFilePicker({
                     suggestedName: name,
@@ -154,7 +154,7 @@ export default class Export {
                 await writableStream.write(blob)
                 await writableStream.close()
             } catch (error) {
-                if (!(error instanceof DOMException && error.name == 'AbortError'))
+                if (!(error instanceof DOMException && error.name === 'AbortError'))
                     console.error(error)
             }
 

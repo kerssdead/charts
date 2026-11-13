@@ -5,7 +5,7 @@ import { addColumnBreakMark } from '@/render/plot/PlotBreakMarks'
 
 const getStops = (units: Units, left: number, right: number, top: number) => {
     const items = QueueItemsBuilder.build((builder: QueueItemsBuilder) => {
-        addColumnBreakMark(builder, units, left, right, top)
+        addColumnBreakMark(builder, units, { start: left, end: right }, top)
     })
 
     return (items[0].shape as RenderItemLine).absolute

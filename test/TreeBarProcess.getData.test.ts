@@ -34,14 +34,14 @@ function create(data: Partial<TreeBarData>) {
 }
 
 function getItems(process: TreeBarProcess) {
-    return new Map<string, RenderItem>(QueueItemsBuilder.build([...process.getFixedData(), ...process.getData()]).map(item => [item.key!, item]))
+    return new Map<string, RenderItem>(QueueItemsBuilder.build([...process.getFixedData(), ...process.getData()]).map(item => [item.key ?? '', item]))
 }
 
-const rect = (items: Map<string, RenderItem>, key: string) => items.get(key)!.shape as RenderItemRectangle
+const rect = (items: Map<string, RenderItem>, key: string) => items.get(key)?.shape as RenderItemRectangle
 
 const texts = (items: Map<string, RenderItem>, suffix: string) => {
     return [...items.values()]
-        .filter(item => item.key!.endsWith(suffix))
+        .filter(item => item.key?.endsWith(suffix))
         .sort((a, b) => (a.shape as RenderItemText).absolute.y - (b.shape as RenderItemText).absolute.y)
         .map(item => (item.shape as RenderItemText).value)
 }
@@ -62,7 +62,7 @@ describe('Getting tree bar data', () => {
 
         expect(texts(items, '-label-0'))
             .toEqual(['a', 'b'])
-        expect((items.get('tree-bar-row-b-label-0')!.shape as RenderItemText).absolute.x - (items.get('tree-bar-row-a-label-0')!.shape as RenderItemText).absolute.x)
+        expect((items.get('tree-bar-row-b-label-0')?.shape as RenderItemText).absolute.x - (items.get('tree-bar-row-a-label-0')?.shape as RenderItemText).absolute.x)
             .toBeCloseTo(16 * PIXEL.x)
     })
 
@@ -96,7 +96,9 @@ describe('Getting tree bar data', () => {
     })
 
     it('Should sort siblings by column and keep missing values last', () => {
-        const cells = (value?: number | string): Partial<TreeBarRow> => ({ cells: value == undefined ? {} : { amount: value } })
+        const cells = (value?: number | string): Partial<TreeBarRow> => {
+            return { cells: value === undefined ? {} : { amount: value } }
+        }
 
         const values = [
             row('a', [1], { ...cells(5), expanded: true, children: [row('a1', [1], cells(2)), row('a2', [1], cells(1))] }),
@@ -119,12 +121,12 @@ describe('Getting tree bar data', () => {
 
         process.onChange = onChange
 
-        getItems(process).get('tree-bar-column-amount-area')!.onClick!()
+        getItems(process).get('tree-bar-column-amount-area')?.onClick?.()
 
         expect([data.sortColumn, data.sortDescending, onChange.mock.calls.length])
             .toEqual(['amount', false, 1])
 
-        getItems(process).get('tree-bar-column-amount-area')!.onClick!()
+        getItems(process).get('tree-bar-column-amount-area')?.onClick?.()
 
         expect(data.sortDescending)
             .toBe(true)
@@ -139,7 +141,7 @@ describe('Getting tree bar data', () => {
 
         const items = getItems(process)
 
-        items.get('tree-bar-row-a-toggle-area')!.onClick!()
+        items.get('tree-bar-row-a-toggle-area')?.onClick?.()
 
         expect([parent.expanded, onChange.mock.calls.length, items.has('tree-bar-row-c-toggle-area')])
             .toEqual([true, 1, false])
@@ -152,9 +154,9 @@ describe('Getting tree bar data', () => {
         }))
 
         expect([
-            (items.get('tree-bar-row-a-cell-amount')!.shape as RenderItemText).value,
-            (items.get('tree-bar-row-a-cell-code')!.shape as RenderItemText).value,
-            (items.get('tree-bar-row-a-bar-label')!.shape as RenderItemText).value
+            (items.get('tree-bar-row-a-cell-amount')?.shape as RenderItemText).value,
+            (items.get('tree-bar-row-a-cell-code')?.shape as RenderItemText).value,
+            (items.get('tree-bar-row-a-bar-label')?.shape as RenderItemText).value
         ]).toEqual([(1234.5).toLocaleString(undefined, { maximumFractionDigits: 2 }), 'XY', '1.2K'])
     })
 
@@ -176,7 +178,7 @@ describe('Getting tree bar data', () => {
             { ...SETTINGS, imageCrossOrigin: ImageCrossOrigin.None }
         )
 
-        expect((getItems(process).get('tree-bar-row-a-image')!.shape as RenderItemImage).crossOrigin)
+        expect((getItems(process).get('tree-bar-row-a-image')?.shape as RenderItemImage).crossOrigin)
             .toBe(ImageCrossOrigin.None)
     })
 })

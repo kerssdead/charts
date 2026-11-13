@@ -79,7 +79,7 @@ class Modal {
 
         container.classList.add(ModalClasses.Content)
 
-        if (content != undefined)
+        if (content !== undefined)
             container.appendChild(content)
 
         this.modal.appendChild(container)

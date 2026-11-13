@@ -19,7 +19,7 @@ function getTexts(data: Partial<PlotData>) {
     const process = new PlotProcess({ values: [], ...data } as PlotData, PIXEL, SETTINGS)
     const items = QueueItemsBuilder.build(process.getData())
 
-    return new Map(items.filter(item => item.key).map(item => [item.key!, item.shape as RenderItemText]))
+    return new Map(items.filter(item => item.key).map(item => [item.key ?? '', item.shape as RenderItemText]))
 }
 
 function leftEdge(text: RenderItemText) {
@@ -33,14 +33,18 @@ describe('Getting plot data', () => {
             values: [{
                 type: PlotType.Line,
                 label: 'Orders',
-                values: Array.from({ length: 60 }, (_, i) => ({ x: new Date(Date.UTC(2025, 0, 1 + i)).toISOString(), y: i * 10 }))
+                values: Array.from({ length: 60 }, (_, i) => ({
+                    x: new Date(Date.UTC(2025, 0, 1 + i)).toISOString(),
+                    y: i * 10
+                }))
             }] as PlotData['values']
         })
 
-        const yLabel = texts.get('y-label-0')!
+        const yLabel = texts.get('y-label-0')
+        const xLabel = texts.get('x-category-0')
 
-        expect(leftEdge(texts.get('x-category-0')!))
-            .toBeGreaterThan(yLabel.absolute.x)
+        expect(xLabel && yLabel && leftEdge(xLabel) > yLabel.absolute.x)
+            .toBe(true)
     })
 
     it('Should scale stacking columns to y-axis when yMax is less than stack total', () => {
@@ -66,10 +70,10 @@ describe('Getting plot data', () => {
 
         const rects = new Map(QueueItemsBuilder.build(process.getData())
                                                .filter(item => item.shape instanceof RenderItemRectangle)
-                                               .map(item => [item.key!, item.shape as RenderItemRectangle]))
+                                               .map(item => [item.key ?? '', item.shape as RenderItemRectangle]))
 
         values.forEach((y, i) => {
-            expect(rects.get(`apples-rect-Day ${ i }-0`)!.absolute.height)
+            expect(rects.get(`apples-rect-Day ${ i }-0`)?.absolute.height)
                 .toBeCloseTo(process.getAxisY(0) - process.getAxisY(Math.min(y, 250)))
         })
     })

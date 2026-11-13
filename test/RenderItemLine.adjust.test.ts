@@ -42,7 +42,7 @@ describe('Adjusting line to window', () => {
 
         shape.adjust(WINDOW, 1)
 
-        expect([middle[0].y == curveEnds(shape)[0].y, curveEnds(shape)])
+        expect([middle[0].y === curveEnds(shape)[0].y, curveEnds(shape)])
             .toEqual([false, shape.canvas.slice(1)])
     })
 })

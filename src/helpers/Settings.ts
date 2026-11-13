@@ -3,7 +3,7 @@ import { ChartType, PlotAxisType, PlotType } from '@/static/Enums'
 import { normalizeColor, paletteColor, spreadColor } from '@/helpers/Color'
 import { deepClone, groupBy } from '@/helpers/Collections'
 import { parseNumber } from '@/helpers/Numbers'
-import Legend from '@/Legend'
+import LegendValues from '@/legend/LegendValues'
 import Value from '@/types/base/Value'
 import PlotSeries from '@/types/PlotSeries'
 import { TreeValue } from '@/types/data/TreeData'
@@ -42,7 +42,7 @@ export function normalize(source: ChartSettings, scope?: Element): ChartSettings
     return {
         ...settings,
         enableTooltip: !settings.disableInteractions && settings.enableTooltip,
-        enableLegend: charts.some(Legend.isSupported) && settings.enableLegend
+        enableLegend: charts.some(LegendValues.isSupported) && settings.enableLegend
     }
 }
 
@@ -54,7 +54,7 @@ function prepareValues(chart: ChartItem, numberLocale: string | undefined) {
 
     const prepare = <T extends Value>(
         value: T,
-        hasDefaultLabel: boolean = chart.type != ChartType.SegmentedBar
+        hasDefaultLabel: boolean = chart.type !== ChartType.SegmentedBar
     ) => {
         if (value instanceof PlotSeries)
             value.type ??= PlotType.Line
@@ -73,7 +73,7 @@ function prepareValues(chart: ChartItem, numberLocale: string | undefined) {
         return value
     }
 
-    if (chart.type == ChartType.TreeBar) {
+    if (chart.type === ChartType.TreeBar) {
         const prepareRow = (value: TreeBarRow): TreeBarRow => {
             const row = prepare(value instanceof TreeBarRow ? value : new TreeBarRow(value))
 
@@ -95,14 +95,14 @@ function prepareValues(chart: ChartItem, numberLocale: string | undefined) {
 
     chart.data.values = chart.data.values.map(value => {
         if (!(value instanceof Value))
-            value = chart.type == ChartType.Plot
+            value = chart.type === ChartType.Plot
                     ? new PlotSeries(value)
                     : new Sector(value)
 
         return prepare(value)
     })
 
-    if (chart.type == ChartType.SegmentedBar) {
+    if (chart.type === ChartType.SegmentedBar) {
         const data = chart.data as SegmentedBarData
 
         const toStop = (stop: SegmentedBarStop) => {
@@ -123,14 +123,16 @@ export function keepState(previous: ChartSettings, next: ChartSettings) {
     next.charts.forEach((chart, index) => {
         const old = previous.charts[index]
 
-        if (chart.type == ChartType.TreeBar && old?.type == ChartType.TreeBar)
+        if (chart.type === ChartType.TreeBar && old?.type === ChartType.TreeBar)
             keepTreeBarState(old.data as TreeBarData, chart.data as TreeBarData)
     })
 }
 
 export function keepDisabled(previous: ChartSettings, next: ChartSettings) {
     const getValues = (settings: ChartSettings) => settings.charts.flatMap(chart => chart.data?.values ?? [])
-    const getKey = (settings: ChartSettings, value: Value) => Legend.getGroupKey(value, settings.charts.length > 1)
+    const getKey = (settings: ChartSettings, value: Value) => {
+        return LegendValues.getGroupKey(value, settings.charts.length > 1)
+    }
 
     const disabled = new Map<string, boolean>()
 
@@ -139,7 +141,7 @@ export function keepDisabled(previous: ChartSettings, next: ChartSettings) {
             disabled.set(getKey(previous, value), true)
 
     for (const value of getValues(next))
-        if (value.disabled == undefined && disabled.has(getKey(next, value)))
+        if (value.disabled === undefined && disabled.has(getKey(next, value)))
             value.disabled = true
 }
 
@@ -148,7 +150,7 @@ function normalizeValues(values: Value[] | undefined, numberLocale: string | und
         if (typeof value != 'string' && typeof value != 'number')
             return value
 
-        const number = String(value) == '' ? NaN : parseNumber(value, numberLocale)
+        const number = String(value) === '' ? NaN : parseNumber(value, numberLocale)
 
         return Number.isFinite(number) ? number : null
     }
@@ -165,7 +167,7 @@ function normalizeValues(values: Value[] | undefined, numberLocale: string | und
         for (const point of (value as PlotSeries).values ?? []) {
             point.y = toNumber(point.y) ?? null
 
-            if (String(point.x) == '')
+            if (String(point.x) === '')
                 point.x = TextResources.noLabel
         }
 
@@ -178,7 +180,7 @@ function normalizeValues(values: Value[] | undefined, numberLocale: string | und
 function normalizeDates(chart: ChartItem) {
     const data = chart.data as PlotData | undefined
 
-    if (chart.type != ChartType.Plot || data?.xType != PlotAxisType.Date)
+    if (chart.type !== ChartType.Plot || data?.xType !== PlotAxisType.Date)
         return
 
     // todo: unit-test: a Date and an ISO string for the same moment, or dates differing only in milliseconds
@@ -192,9 +194,19 @@ function normalizeDates(chart: ChartItem) {
     }
 }
 
+function shareGroupColors(groups: Iterable<Value[]>) {
+    for (const values of groups) {
+        const color = values.find(value => value.color)?.color
+
+        if (color)
+            for (const value of values)
+                value.color ||= color
+    }
+}
+
 export function applyDefaultColors(settings: ChartSettings, scope?: Element) {
     const isShared = settings.charts.length > 1
-    const isTreeBar = (chart: ChartItem) => chart.type == ChartType.TreeBar
+    const isTreeBar = (chart: ChartItem) => chart.type === ChartType.TreeBar
     const base = settings.baseColor ? normalizeColor(settings.baseColor, scope) : undefined
 
     for (const chart of settings.charts.filter(isTreeBar))
@@ -203,23 +215,17 @@ export function applyDefaultColors(settings: ChartSettings, scope?: Element) {
     const chartValues = settings.charts
                                 .filter(chart => !isTreeBar(chart))
                                 .flatMap(chart => chart.data?.values ?? [])
-    const getGroupKey = (value: Value): string | Value => isShared ? Legend.getGroupKey(value, true) : value
+    const getGroupKey = (value: Value): string | Value => isShared ? LegendValues.getGroupKey(value, true) : value
 
     const groups = groupBy(chartValues, getGroupKey)
 
-    for (const values of groups.values()) {
-        const color = values.find(value => value.color)?.color
-
-        if (color)
-            for (const value of values)
-                value.color ||= color
-    }
+    shareGroupColors(groups.values())
 
     const stops = settings.charts.flatMap(chart => getStops(chart) ?? []).map(stop => [stop])
 
     const uncolored = [...groups.values(), ...stops].filter(values => !values[0].color)
 
-    if (uncolored.length == 0)
+    if (uncolored.length === 0)
         return
 
     uncolored.forEach((values, index) => {

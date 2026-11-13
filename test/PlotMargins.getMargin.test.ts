@@ -10,29 +10,29 @@ const UNITS = new Units({ x: 1, y: 1 })
 
 describe('Getting plot margin', () => {
     it('Should use fixed margin for simple chart', () => {
-        expect(getMargin(UNITS, true, 'Left', 'Bottom', ['100']))
+        expect(getMargin(UNITS, true, { left: 'Left', bottom: 'Bottom' }, ['100']))
             .toEqual({ top: 50, right: 50, bottom: 50, left: 50 })
     })
 
     it('Should fit widest left label and left title', () => {
-        expect(getMargin(UNITS, false, 'Left', '', ['5', '100']).left)
+        expect(getMargin(UNITS, false, { left: 'Left', bottom: '' }, ['5', '100']).left)
             .toBe(8 + 14 + 8 + 21 + 8)
     })
 
     it('Should skip left title space without left title', () => {
-        expect(getMargin(UNITS, false, '', '', ['100']).left)
+        expect(getMargin(UNITS, false, { left: '', bottom: '' }, ['100']).left)
             .toBe(8 + 21 + 8)
     })
 
     it('Should fit bottom labels and bottom title', () => {
-        expect(getMargin(UNITS, false, '', 'Bottom', []).bottom)
+        expect(getMargin(UNITS, false, { left: '', bottom: 'Bottom' }, []).bottom)
             .toBeCloseTo(15.6 + 6 + 14 + 6)
-        expect(getMargin(UNITS, false, '', '', []).bottom)
+        expect(getMargin(UNITS, false, { left: '', bottom: '' }, []).bottom)
             .toBeCloseTo(15.6 + 6)
     })
 
     it('Should keep fixed top and right margins', () => {
-        const margin = getMargin(UNITS, false, '', '', [])
+        const margin = getMargin(UNITS, false, { left: '', bottom: '' }, [])
 
         expect(margin.top)
             .toBe(200)
@@ -41,7 +41,7 @@ describe('Getting plot margin', () => {
     })
 
     it('Should convert pixels to units', () => {
-        const margin = getMargin(new Units({ x: 2, y: 3 }), false, '', '', ['100'])
+        const margin = getMargin(new Units({ x: 2, y: 3 }), false, { left: '', bottom: '' }, ['100'])
 
         expect(margin.left)
             .toBe((8 + 21 + 8) * 2)

@@ -26,7 +26,7 @@ function merge<T extends Value>(type: ChartType, values: T[], enableMerging?: bo
     return chart.data.values as T[]
 }
 
-const getLabelsAndValues = (values: Value[]) => values.map(value => [value.label, value.value])
+const getLabelsAndValues = (values?: Value[]) => values?.map(value => [value.label, value.value])
 
 describe('Merging same label values', () => {
     it.each([ChartType.Pie, ChartType.Gauge])('Should sum same label sectors by default in chart type %s', type => {
@@ -95,42 +95,42 @@ describe('Merging same label values', () => {
 
         expect(merged.map(value => value.label))
             .toEqual(['A', 'B'])
-        expect(getLabelsAndValues(merged[0].sectors!))
+        expect(getLabelsAndValues(merged[0].sectors))
             .toEqual([['X', 1], ['Z', 3]])
     })
 
     it('Should sum same label sectors inside tree group', () => {
         const merged = merge(ChartType.TreeMap, [group('A', [sector('X', 1), sector('X', 3)])])
 
-        expect(getLabelsAndValues(merged[0].sectors!))
+        expect(getLabelsAndValues(merged[0].sectors))
             .toEqual([['X', 4]])
     })
 
     it('Should sum same label sectors across merged tree groups', () => {
         const merged = merge(ChartType.TreeMap, [group('A', [sector('X', 1)]), group('A', [sector('X', 3)])])
 
-        expect(getLabelsAndValues(merged[0].sectors!))
+        expect(getLabelsAndValues(merged[0].sectors))
             .toEqual([['X', 4]])
     })
 
     it('Should keep tree value without sectors as sector of merged group', () => {
         const leaf = () => sector('A', 5, { color: '#00ff00', data: { key: 'leaf' } })
 
-        const [leafFirst] = merge(ChartType.TreeMap, [leaf(), group('A', [sector('X', 1)])])
-        const [groupFirst] = merge(ChartType.TreeMap, [group('A', [sector('X', 1)]), leaf()])
+        const [leafFirst] = merge<TreeValue>(ChartType.TreeMap, [leaf(), group('A', [sector('X', 1)])])
+        const [groupFirst] = merge<TreeValue>(ChartType.TreeMap, [group('A', [sector('X', 1)]), leaf()])
 
-        expect(getLabelsAndValues(leafFirst.sectors!))
+        expect(getLabelsAndValues(leafFirst.sectors))
             .toEqual([['A', 5], ['X', 1]])
-        expect(getLabelsAndValues(groupFirst.sectors!))
+        expect(getLabelsAndValues(groupFirst.sectors))
             .toEqual([['X', 1], ['A', 5]])
-        expect(leafFirst.sectors![0])
+        expect(leafFirst.sectors?.[0])
             .toMatchObject({ color: '#00ff00', data: { key: 'leaf' } })
     })
 
     it('Should keep unlabeled sectors inside tree group separate', () => {
         const merged = merge(ChartType.TreeMap, [group('A', [sector(undefined, 1), sector(undefined, 3)])])
 
-        expect(getLabelsAndValues(merged[0].sectors!))
+        expect(getLabelsAndValues(merged[0].sectors))
             .toEqual([[undefined, 1], [undefined, 3]])
     })
 

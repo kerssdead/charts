@@ -12,7 +12,7 @@ const SLOTS = getSlots(
 const BAND = { top: 100, bottom: 1100 }
 
 const create = (orientation: PlotOrientation, values = [0, 50, 100]) => {
-    return new PlotSection(orientation, SLOTS, values, BAND, 50, 1000)
+    return new PlotSection({ orientation, slots: SLOTS, axisValues: values, band: BAND, left: 50, width: 1000 })
 }
 
 describe('Creating plot section', () => {
@@ -49,16 +49,15 @@ describe('Creating plot section', () => {
     })
 
     it('Should put log baseline at band bottom', () => {
-        const section = new PlotSection(
-            PlotOrientation.Vertical,
-            SLOTS,
-            [1, 10, 100],
-            BAND,
-            50,
-            1000,
-            null,
-            PlotScaleType.Log
-        )
+        const section = new PlotSection({
+            orientation: PlotOrientation.Vertical,
+            slots: SLOTS,
+            axisValues: [1, 10, 100],
+            band: BAND,
+            left: 50,
+            width: 1000,
+            valueScaleType: PlotScaleType.Log
+        })
 
         expect(section.baseline)
             .toBe(1100)
@@ -67,15 +66,15 @@ describe('Creating plot section', () => {
     })
 
     it('Should place categories by continuous axis', () => {
-        const section = new PlotSection(
-            PlotOrientation.Vertical,
-            CONTINUOUS_SLOTS,
-            [0, 100],
-            BAND,
-            0,
-            1000,
-            CONTINUOUS_AXIS
-        )
+        const section = new PlotSection({
+            orientation: PlotOrientation.Vertical,
+            slots: CONTINUOUS_SLOTS,
+            axisValues: [0, 100],
+            band: BAND,
+            left: 0,
+            width: 1000,
+            continuousAxis: CONTINUOUS_AXIS
+        })
 
         expect(section.categoryScale.getSlotCenter(1))
             .toBe(300)

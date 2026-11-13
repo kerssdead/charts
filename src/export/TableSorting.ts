@@ -31,11 +31,11 @@ export default class TableSorting {
             cell.setAttribute(Attribute.AriaSort, SortDirection.None)
 
             cell.addEventListener(Events.Click, () => {
-                direction = cell == sortedCell ? getNextSortDirection(direction) : SortDirection.Ascending
+                direction = cell === sortedCell ? getNextSortDirection(direction) : SortDirection.Ascending
                 sortedCell = cell
 
                 for (const other of headerCells)
-                    other.setAttribute(Attribute.AriaSort, other == cell ? direction : SortDirection.None)
+                    other.setAttribute(Attribute.AriaSort, other === cell ? direction : SortDirection.None)
 
                 for (const value of sortTableValues(data.values, columns[index], direction)) {
                     const row = rowByValue.get(value)

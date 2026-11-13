@@ -24,9 +24,9 @@ describe('Building buttons from dropdown items', () => {
 
     it('Should skip items by condition', () => {
         const buttons = fromDropdownItems([
-            { text: 'A', action: () => { }, condition: data => data?.type == 'visible' },
+            { text: 'A', action: () => { }, condition: data => data?.type === 'visible' },
             divider,
-            { text: 'B', action: () => { }, condition: data => data?.type != 'visible' }
+            { text: 'B', action: () => { }, condition: data => data?.type !== 'visible' }
         ], { type: 'visible' })
 
         expect(buttons.map(button => button.text))

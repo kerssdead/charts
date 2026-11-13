@@ -50,26 +50,25 @@ export default class PlotStackedColumnItems {
             const key = getStackKey(value)
             const stack = stacks.get(key) ?? 0
             const top = series.disabled ? stack : stack + y
-            const bottomY = stack == 0 ? baseline : valueScale.getCoordinate(layout.capToYMax(stack))
+            const bottomY = stack === 0 ? baseline : valueScale.getCoordinate(layout.capToYMax(stack))
             const topY = series.disabled ? bottomY : valueScale.getCoordinate(layout.capToYMax(top))
 
             stacks.set(key, top)
 
             return [{
-                value,
                 valueIndex,
                 slot,
                 x: categoryScale.getSlotStart(slot) + offset,
                 y: bottomY,
                 width,
                 height: bottomY - topY,
-                isTop: this.stackTops.get(key) == series,
+                isTop: this.stackTops.get(key) === series,
                 hasBreakMark: !series.disabled && layout.isAboveYMax(top) && !layout.isAboveYMax(stack)
             }]
         })
 
         return (items: QueueItemsBuilder) => {
-            for (const { value, valueIndex, slot, x, y, width, height, isTop, hasBreakMark } of stacked) {
+            for (const { valueIndex, slot, x, y, width, height, isTop, hasBreakMark } of stacked) {
                 const column = items.rect()
                      .position(x, y)
                      .size(width, height)
@@ -78,11 +77,11 @@ export default class PlotStackedColumnItems {
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('y', baseline)
 
-                this.style.styleRect(column, series, value, slot, valueIndex)
+                this.style.styleRect(column, series, slot, valueIndex)
                     .fade(false)
 
                 if (hasBreakMark) {
-                    const mark = addColumnBreakMark(items, layout.units, x, x + width, y - height)
+                    const mark = addColumnBreakMark(items, layout.units, { start: x, end: x + width }, y - height)
 
                     this.style.styleBreakMark(mark, series, slot, valueIndex)
                 }

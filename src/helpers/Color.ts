@@ -31,7 +31,7 @@ export function adjustColor(color: string, amount: number) {
 export function spreadColor(base: string, index: number, count: number, range: number) {
     const rgb = hexToRgb(base)
 
-    if (count == 1 || !rgb)
+    if (count === 1 || !rgb)
         return base
 
     const min = Math.min(rgb.r, rgb.g, rgb.b)
@@ -66,7 +66,7 @@ export function normalizeColor(color: string, scope?: Element) {
     if (!rgba)
         return style.startsWith('#') ? style : readPixel(ctx)
 
-    const alpha = rgba[4] == undefined ? '' : toHex(+rgba[4] * 255)
+    const alpha = rgba[4] === undefined ? '' : toHex(+rgba[4] * 255)
 
     return '#' + toHex(+rgba[1]) + toHex(+rgba[2]) + toHex(+rgba[3]) + alpha
 }
@@ -89,7 +89,7 @@ function readPixel(ctx: CanvasRenderingContext2D) {
 
     const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data
 
-    return '#' + toHex(r) + toHex(g) + toHex(b) + (a == 255 ? '' : toHex(a))
+    return '#' + toHex(r) + toHex(g) + toHex(b) + (a === 255 ? '' : toHex(a))
 }
 
 export function grayScale(color: string, amount: number = 1) {

@@ -4,6 +4,7 @@ import PlotSlotLayout from '@/render/plot/PlotSlotLayout'
 import PlotEvenSlotLayout from '@/render/plot/PlotEvenSlotLayout'
 import PlotContinuousSlotLayout from '@/render/plot/PlotContinuousSlotLayout'
 import PlotContinuousAxis from '@/render/plot/PlotContinuousAxis'
+import { PlotExtent } from '@/render/plot/PlotExtent'
 import fail from '@/helpers/Errors'
 import { ErrorType } from '@/static/Enums'
 
@@ -16,9 +17,7 @@ export default class PlotCategoryScale {
 
     private constructor(
         slots: Slots,
-        start: number,
-        length: number,
-        direction: number,
+        { start, length, direction }: PlotExtent,
         continuousAxis: PlotContinuousAxis | null
     ) {
         this.slots = slots
@@ -34,11 +33,11 @@ export default class PlotCategoryScale {
         height: number,
         continuousAxis: PlotContinuousAxis | null = null
     ) {
-        return new PlotCategoryScale(slots, bottom, height, -1, continuousAxis)
+        return new PlotCategoryScale(slots, { start: bottom, length: height, direction: -1 }, continuousAxis)
     }
 
     static fromLeft(slots: Slots, left: number, width: number, continuousAxis: PlotContinuousAxis | null = null) {
-        return new PlotCategoryScale(slots, left, width, 1, continuousAxis)
+        return new PlotCategoryScale(slots, { start: left, length: width, direction: 1 }, continuousAxis)
     }
 
     get count() {

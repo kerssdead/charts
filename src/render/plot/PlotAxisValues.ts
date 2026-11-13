@@ -23,9 +23,9 @@ export function getAxisValues(
             if (y == null)
                 continue
 
-            if (item.type == PlotType.Bar) {
+            if (item.type === PlotType.Bar) {
                 xValues.push(y)
-            } else if (item.type == PlotType.StackingColumn) {
+            } else if (item.type === PlotType.StackingColumn) {
                 const key = getStackKey(value)
 
                 stacks.set(key, (stacks.get(key) ?? 0) + y)
@@ -36,7 +36,7 @@ export function getAxisValues(
     }
 
     const getValues = (values: number[], max: number | undefined) => {
-        if (yScale == PlotScaleType.Log)
+        if (yScale === PlotScaleType.Log)
             return getLogAxisValues(values, max)
 
         return getRoundedValues(values, AXIS_VALUE_COUNT, max)

@@ -7,6 +7,8 @@ import Frame from '@/types/Frame'
 import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import ItemData from '@/types/ItemData'
+import ChartSettings from '@/types/ChartSettings'
+import RenderItem from '@/types/RenderItem'
 import CustomTooltip from '@/renderer/CustomTooltip'
 import Theme from '@/Theme'
 import { Layer, Tooltip } from '@/static/constants/Index'
@@ -19,6 +21,19 @@ type TooltipState = { point: Point, template: string }
 
 type TooltipBuilt = TooltipState & { window: RectangleDimensions }
 
+type TooltipTarget = {
+    template: string | null
+    html: string | null
+}
+
+type TooltipScan = TooltipTarget & {
+    point: Point
+    version: number
+    window: RectangleDimensions
+}
+
+const NO_TARGET: TooltipTarget = { template: null, html: null }
+
 export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipBuilt> {
     isEnabled: boolean = false
 
@@ -28,13 +43,7 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
 
     private readonly canvas: HTMLCanvasElement
 
-    private scan: {
-        point: Point
-        version: number
-        window: RectangleDimensions
-        template: string | null
-        html: string | null
-    } | null = null
+    private scan: TooltipScan | null = null
 
     constructor(canvas: HTMLCanvasElement) {
         super()
@@ -43,36 +52,36 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
         this.custom = new CustomTooltip(canvas)
     }
 
+    apply(settings: ChartSettings) {
+        this.custom.hide()
+
+        this.isEnabled = settings.enableTooltip
+        this.template = settings.enableTooltip && settings.templateId
+                        ? CustomTooltip.fromTemplate(settings.templateId)
+                        : null
+    }
+
+    reset(queue: Queue) {
+        this.custom.hide()
+        this.template = null
+
+        this.clear(queue)
+    }
+
     update({ queue, window, mouse, context, now }: Frame): boolean {
-        const { custom } = this
         const point = this.isEnabled ? mouse : null
-
-        const { template, html } = point && !context
-                                   ? this.getTarget(queue, window, point)
-                                   : { template: null, html: null }
-
-        if (point && html)
-            custom.show(html, point)
-        else
-            custom.hide()
-
-        const isVisible = !html && point != null && template != null
-
-        if (isVisible) {
-            this.state = { point, template }
-        } else if (this.state && point) {
-            this.state.point = point
-        }
+        const target = point && !context ? this.getTarget(queue, window, point) : NO_TARGET
+        const isVisible = this.updateState(point, target)
 
         this.fade.step(isVisible, now, Tooltip.fadeDuration)
 
         const alpha = this.fade.value
 
-        if (!isVisible && alpha == 0) {
+        if (!isVisible && alpha === 0) {
             this.state = null
         }
 
-        if (!this.state || alpha == 0) {
+        if (!this.state || alpha === 0) {
             this.remove(queue)
 
             return false
@@ -93,32 +102,59 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
         return this.fade.isAnimating
     }
 
-    private getTarget(queue: Queue, window: CanvasWindow, point: Point) {
+    private updateState(point: Point | null, { template, html }: TooltipTarget) {
+        if (point && html)
+            this.custom.show(html, point)
+        else
+            this.custom.hide()
+
+        const isVisible = !html && point != null && template != null
+
+        if (isVisible)
+            this.state = { point, template }
+        else if (this.state && point)
+            this.state.point = point
+
+        return isVisible
+    }
+
+    private getTarget(queue: Queue, window: CanvasWindow, point: Point): TooltipTarget {
         const scan = this.scan
 
-        if (scan != null && !queue.isAnimating && scan.version == queue.version
-            && samePoint(scan.point, point) && sameRect(scan.window, window))
+        if (scan != null && TooltipOverlay.isScanCurrent(scan, queue, window, point))
             return scan
 
         const target = queue.findTop(item => item.hasTooltipAt(point))
-        const templateHtml = this.template && target?.data ? this.template(target.data) : undefined
 
         this.scan = {
             point,
             version: queue.version,
             window: copyRect(window),
             template: target?.tooltipAt(point) ?? null,
-            html: templateHtml ?? target?.tooltipHtml ?? null
+            html: target ? this.getHtml(target) : null
         }
 
         return this.scan
+    }
+
+    private static isScanCurrent(scan: TooltipScan, queue: Queue, window: CanvasWindow, point: Point) {
+        return !queue.isAnimating
+               && scan.version === queue.version
+               && samePoint(scan.point, point)
+               && sameRect(scan.window, window)
+    }
+
+    private getHtml(target: RenderItem) {
+        const templateHtml = this.template && target.data ? this.template(target.data) : undefined
+
+        return templateHtml ?? target.tooltipHtml ?? null
     }
 
     private isBuilt(point: Point, template: string, window: CanvasWindow) {
         const built = this.built
 
         return built != null
-               && samePoint(built.point, point) && built.template == template
+               && samePoint(built.point, point) && built.template === template
                && sameRect(built.window, window)
     }
 
@@ -132,8 +168,7 @@ export default class TooltipOverlay extends FadingOverlay<TooltipState, TooltipB
 
         const { x: left, y: top } = placeNear(
             point,
-            width,
-            height,
+            { width, height },
             Tooltip.offset,
             { x: 0, y: 0, width: canvasWidth, height: canvasHeight }
         )

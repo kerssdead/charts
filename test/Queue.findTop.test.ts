@@ -20,7 +20,7 @@ describe('Finding topmost queue item', () => {
         queue.add([item('stop', 2), item('part-a', 1), item('part-b', 1), item('label', 0)])
 
         expect(queue.findTop(() => true)?.key).toBe('stop')
-        expect(queue.findTop(item => item.layer == 1)?.key).toBe('part-b')
-        expect(queue.findTop(item => item.key == 'none')).toBeUndefined()
+        expect(queue.findTop(item => item.layer === 1)?.key).toBe('part-b')
+        expect(queue.findTop(item => item.key === 'none')).toBeUndefined()
     })
 })

@@ -1,8 +1,8 @@
 import RenderItemLine from '@/types/RenderItemLine'
 import RenderItem from '@/types/RenderItem'
-import CanvasWindow from '@/types/CanvasWindow'
 import { LineDrawMode, LineJoin } from '@/static/Enums'
 import LinePathTracer from '@/render/LinePathTracer'
+import { AREA_STOPS, CLIP, context, layerContext, STOPS, WINDOW } from './RenderItemLineTestData'
 
 const mockLayer: { current: unknown } = { current: null }
 
@@ -10,51 +10,6 @@ jest.mock('@/helpers/Canvas', () => ({
     ...jest.requireActual('@/helpers/Canvas'),
     offscreenLayer: () => mockLayer.current
 }))
-
-const WINDOW = new CanvasWindow(500, 500)
-
-const context = (ratio: number = 1) => ({
-    lineWidth: 1,
-    fillStyle: '',
-    strokeStyle: '',
-    setLineDash: jest.fn(),
-    moveTo: jest.fn(),
-    lineTo: jest.fn(),
-    bezierCurveTo: jest.fn(),
-    arc: jest.fn(),
-    fill: jest.fn(),
-    stroke: jest.fn(),
-    beginPath: jest.fn(),
-    getTransform: () => ({ a: ratio }),
-    drawImage: jest.fn(),
-    save: jest.fn(),
-    restore: jest.fn(),
-    rect: jest.fn(),
-    clip: jest.fn()
-})
-
-const layerContext = () => {
-    const layer = {
-        canvas: {},
-        fillStyle: null as unknown,
-        globalCompositeOperation: 'source-over',
-        maskOperations: [] as string[],
-        setTransform: jest.fn(),
-        clearRect: jest.fn(),
-        beginPath: jest.fn(),
-        moveTo: jest.fn(),
-        lineTo: jest.fn(),
-        bezierCurveTo: jest.fn(),
-        closePath: jest.fn(),
-        fill: jest.fn(),
-        fillRect: jest.fn(),
-        createLinearGradient: jest.fn(() => ({ addColorStop: jest.fn() }))
-    }
-
-    layer.fillRect.mockImplementation(() => layer.maskOperations.push(layer.globalCompositeOperation))
-
-    return layer
-}
 
 const render = (stops: { x: number, y: number }[], progress: number) => {
     const ctx = context()
@@ -69,17 +24,8 @@ const render = (stops: { x: number, y: number }[], progress: number) => {
     return ctx
 }
 
-const STOPS = [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 10 }, { x: 20, y: 10 }]
-
-const AREA_STOPS = [{ x: 100, y: 200 }, { x: 300, y: 100 }, { x: 500, y: 200 }]
-
-const renderArea = (
-    stops: { x: number, y: number }[],
-    areaBaseline: number | null,
-    progress: number = 1,
-    ratio: number = 1
-) => {
-    const ctx = context(ratio)
+const renderArea = (stops: { x: number, y: number }[], areaBaseline: number | null, progress: number = 1) => {
+    const ctx = context()
     const layer = layerContext()
     const shape = new RenderItemLine()
     const item = new RenderItem(shape)
@@ -87,7 +33,7 @@ const renderArea = (
     mockLayer.current = layer
 
     shape.absolute = stops
-    shape.areaBaseline = areaBaseline
+    shape.area.baseline = areaBaseline
     shape.adjust(WINDOW)
 
     item.color = '#ff0000'
@@ -108,7 +54,7 @@ const renderSmooth = (areaBaseline: number | null, progress: number) => {
 
     shape.pathTracer = new LinePathTracer(LineDrawMode.Smooth)
     shape.absolute = AREA_STOPS
-    shape.areaBaseline = areaBaseline
+    shape.area.baseline = areaBaseline
     shape.adjust(WINDOW)
 
     item.color = '#ff0000'
@@ -118,8 +64,6 @@ const renderSmooth = (areaBaseline: number | null, progress: number) => {
 
     return { ctx, layer, shape }
 }
-
-const CLIP = { x: 100, y: 200, width: 1000, height: 2000 }
 
 const renderClipped = (stops: { x: number, y: number }[], clip: typeof CLIP | null) => {
     const ctx = context()
@@ -149,7 +93,7 @@ describe('Rendering line', () => {
         const { ctx, shape } = renderSmooth(null, .75)
         const { partialStop } = shape.pathTracer
 
-        expect(ctx.bezierCurveTo.mock.calls.at(-1)!.slice(4))
+        expect(ctx.bezierCurveTo.mock.calls.at(-1)?.slice(4))
             .toEqual([partialStop.x, partialStop.y])
     })
 
@@ -157,7 +101,7 @@ describe('Rendering line', () => {
         const { layer, shape } = renderSmooth(200, .75)
         const { partialStop } = shape.pathTracer
 
-        expect([layer.bezierCurveTo.mock.calls.at(-1)!.slice(4), layer.lineTo.mock.calls[0][0]])
+        expect([layer.bezierCurveTo.mock.calls.at(-1)?.slice(4), layer.lineTo.mock.calls[0][0]])
             .toEqual([[partialStop.x, partialStop.y], partialStop.x])
     })
 
@@ -226,36 +170,6 @@ describe('Rendering line', () => {
             .toEqual([[20, 15], [20, 40], [10, 40]])
     })
 
-    it('Should fade area from half transparent color to transparent', () => {
-        const { layer } = renderArea(AREA_STOPS, 400)
-        const gradient = layer.createLinearGradient.mock.results[0].value
-
-        expect([layer.createLinearGradient.mock.calls[0], gradient.addColorStop.mock.calls])
-            .toEqual([[0, 9.5, 0, 40.5], [[0, '#ff000080'], [1, '#ff000000']]])
-    })
-
-    it('Should mask area edges with edge fade', () => {
-        const { layer } = renderArea(AREA_STOPS, 400)
-
-        expect([
-            layer.createLinearGradient.mock.calls[1],
-            layer.fillRect.mock.calls,
-            layer.maskOperations,
-            layer.globalCompositeOperation
-        ])
-            .toEqual([[10, 0, 50, 0], [[10, 9.5, 40, 31]], ['destination-in'], 'source-over'])
-    })
-
-    it('Should copy area at device pixel ratio', () => {
-        const { ctx, layer } = renderArea(AREA_STOPS, 400, 1, 2)
-
-        expect([layer.setTransform.mock.calls, ctx.drawImage.mock.calls])
-            .toEqual([
-                [[1, 0, 0, 1, 0, 0], [2, 0, 0, 2, -20, -19]],
-                [[layer.canvas, 0, 0, 80, 62, 10, 9.5, 40, 31]]
-            ])
-    })
-
     it('Should draw area before line', () => {
         const { ctx } = renderArea(AREA_STOPS, 400)
 
@@ -277,13 +191,6 @@ describe('Rendering line', () => {
 
         expect([ctx.drawImage.mock.calls.length, ctx.save.mock.calls.length, ctx.clip.mock.calls.length])
             .toEqual([0, 0, 0])
-    })
-
-    it('Should skip fill for area without width', () => {
-        const { ctx } = renderArea([{ x: 100, y: 200 }, { x: 100, y: 100 }], 400)
-
-        expect(ctx.drawImage)
-            .not.toHaveBeenCalled()
     })
 
     it('Should round joins so peaks do not overshoot stops', () => {
@@ -343,7 +250,7 @@ describe('Rendering line', () => {
         mockLayer.current = layer
 
         shape.absolute = AREA_STOPS
-        shape.areaBaseline = 400
+        shape.area.baseline = 400
         shape.adjust(WINDOW)
 
         shape.render(context() as unknown as CanvasRenderingContext2D, new RenderItem(shape))
@@ -351,5 +258,4 @@ describe('Rendering line', () => {
         expect(layer.fill)
             .not.toHaveBeenCalled()
     })
-
 })

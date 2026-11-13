@@ -29,7 +29,7 @@ export function getValueRows<T extends Value>(
 }
 
 function isTopLevel(value: TableValue) {
-    return (value.level ?? 0) == 0
+    return (value.level ?? 0) === 0
 }
 
 function getColumnTotal(table: TableData, column: string) {
@@ -45,10 +45,10 @@ export function sortTableValues(
     column: string | undefined,
     direction: SortDirection
 ): TableValue[] {
-    if (direction == SortDirection.None)
+    if (direction === SortDirection.None)
         return values
 
-    const sign = direction == SortDirection.Ascending ? 1 : -1
+    const sign = direction === SortDirection.Ascending ? 1 : -1
 
     const compareNames = (a: TableValue, b: TableValue) => {
         return sign * a.name.localeCompare(b.name, undefined, { numeric: true })
@@ -58,13 +58,13 @@ export function sortTableValues(
         const first = a.values.get(key)
         const second = b.values.get(key)
 
-        if (first == undefined || second == undefined)
-            return Number(first == undefined) - Number(second == undefined)
+        if (first === undefined || second === undefined)
+            return Number(first === undefined) - Number(second === undefined)
 
         return sign * (first - second)
     }
 
-    const compare = column == undefined ? compareNames : compareCells(column)
+    const compare = column === undefined ? compareNames : compareCells(column)
 
     const childrenByParent = new Map<TableValue | undefined, TableValue[]>()
     const path: TableValue[] = []

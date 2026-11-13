@@ -34,7 +34,7 @@ export default class PlotLayout {
         this.units = units
         this.seriesGroups = seriesGroups
 
-        this.yMax = data.yMax == 0 ? undefined : data.yMax
+        this.yMax = data.yMax === 0 ? undefined : data.yMax
 
         const verticalSlots = getSlots(seriesGroups.verticalSeries, data.xType)
         const horizontalSlots = getSlots(seriesGroups.barSeries, data.xType)
@@ -54,8 +54,7 @@ export default class PlotLayout {
         this.margin = getMargin(
             units,
             data.simple,
-            this.leftTitle,
-            this.bottomTitle,
+            { left: this.leftTitle, bottom: this.bottomTitle },
             this.getLeftLabels(horizontalAxis, horizontalSlots, yAxisValues)
         )
 
@@ -65,27 +64,27 @@ export default class PlotLayout {
         const bottom = COORDS_MAX_Y - this.margin.bottom
         const barBottom = this.isMixed ? top + (bottom - top - this.bandGap) * BAR_BAND_RATIO : bottom
 
-        this.horizontal = new PlotSection(
-            PlotOrientation.Horizontal,
-            horizontalSlots,
-            xAxisValues,
-            { top, bottom: barBottom },
+        this.horizontal = new PlotSection({
+            orientation: PlotOrientation.Horizontal,
+            slots: horizontalSlots,
+            axisValues: xAxisValues,
+            band: { top, bottom: barBottom },
             left,
             width,
-            horizontalAxis,
-            yScale
-        )
+            continuousAxis: horizontalAxis,
+            valueScaleType: yScale
+        })
 
-        this.vertical = new PlotSection(
-            PlotOrientation.Vertical,
-            verticalSlots,
-            yAxisValues,
-            { top: this.isMixed ? barBottom + this.bandGap : top, bottom },
+        this.vertical = new PlotSection({
+            orientation: PlotOrientation.Vertical,
+            slots: verticalSlots,
+            axisValues: yAxisValues,
+            band: { top: this.isMixed ? barBottom + this.bandGap : top, bottom },
             left,
             width,
-            verticalAxis,
-            yScale
-        )
+            continuousAxis: verticalAxis,
+            valueScaleType: yScale
+        })
     }
 
     get leftTitle() {
@@ -107,11 +106,11 @@ export default class PlotLayout {
     }
 
     capToYMax(y: number) {
-        return this.yMax == undefined ? y : Math.min(y, this.yMax)
+        return this.yMax === undefined ? y : Math.min(y, this.yMax)
     }
 
     isAboveYMax(y: number) {
-        return this.yMax != undefined && y > this.yMax
+        return this.yMax !== undefined && y > this.yMax
     }
 
     private get isMixed() {

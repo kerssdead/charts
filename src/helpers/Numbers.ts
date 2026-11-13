@@ -1,98 +1,124 @@
 const NEGLIGIBLE = 0.01
 
-export function getRoundedValues(
-    all: number[],
-    targetTicks: number = 5,
-    max?: number
-) {
-    if (!Array.isArray(all) || all.length == 0 || targetTicks < 2) {
+const NICE_STEPS = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]
+
+type ValueRange = {
+    min: number
+    max: number
+}
+
+type IntervalCounts = {
+    neg: number
+    pos: number
+}
+
+export function getRoundedValues(all: number[], targetTicks: number = 5, max?: number) {
+    if (!Array.isArray(all) || all.length === 0 || targetTicks < 2)
         return []
-    }
 
-    const lowest = all.reduce((acc, value) => Math.min(acc, value), 0)
-    const highest = all.reduce((acc, value) => Math.max(acc, value), 0)
+    const range = getValueRange(all)
 
-    if (!Number.isFinite(lowest) || !Number.isFinite(highest) || lowest == 0 && highest == 0) {
+    if (!range)
         return []
-    }
 
-    const minVal = -lowest < highest * NEGLIGIBLE ? 0 : lowest
-    const maxVal = highest < -lowest * NEGLIGIBLE ? 0 : highest
+    if (max !== undefined && max > 0)
+        return getFixedMaxTicks(range.min, max, targetTicks)
 
     const intervals = targetTicks - 1
 
-    const ticks = (start: number, step: number) => {
-        return Array.from({ length: targetTicks }, (_, i) => Number((start + i * step).toFixed(12)) || 0)
+    let step = getNiceStep(range, intervals)
+    let counts = getStepCounts(range, step)
+
+    while (counts.neg + counts.pos > intervals) {
+        step *= 1.25
+        counts = getStepCounts(range, step)
     }
 
-    if (max != undefined && max > 0) {
-        const lower = Math.abs(minVal)
+    const { neg } = distributeRemaining(range, step, counts, intervals - counts.neg - counts.pos)
 
-        let neg = 0
+    return getTicks(-neg * step, step, targetTicks)
+}
 
-        while (neg < intervals - 1 && neg * max / (intervals - neg) < lower)
-            neg++
+function getTicks(start: number, step: number, count: number) {
+    return Array.from({ length: count }, (_, i) => Number((start + i * step).toFixed(12)) || 0)
+}
 
-        const fixedStep = Math.max(max / (intervals - neg), neg == 0 ? 0 : lower / neg)
+function getValueRange(all: number[]): ValueRange | null {
+    const lowest = all.reduce((acc, value) => Math.min(acc, value), 0)
+    const highest = all.reduce((acc, value) => Math.max(acc, value), 0)
 
-        return ticks(-neg * fixedStep, fixedStep)
+    if (!Number.isFinite(lowest) || !Number.isFinite(highest) || lowest === 0 && highest === 0)
+        return null
+
+    return {
+        min: -lowest < highest * NEGLIGIBLE ? 0 : lowest,
+        max: highest < -lowest * NEGLIGIBLE ? 0 : highest
     }
+}
 
-    const rawStep = (maxVal - minVal) / intervals
+function getFixedMaxTicks(min: number, max: number, targetTicks: number) {
+    const intervals = targetTicks - 1
+    const lower = Math.abs(min)
 
+    let neg = 0
+
+    while (neg < intervals - 1 && neg * max / (intervals - neg) < lower)
+        neg++
+
+    const step = Math.max(max / (intervals - neg), neg === 0 ? 0 : lower / neg)
+
+    return getTicks(-neg * step, step, targetTicks)
+}
+
+function getIntervalCounts({ min, max }: ValueRange, step: number): IntervalCounts {
+    return {
+        neg: min < 0 ? Math.ceil(Math.abs(min) / step) : 0,
+        pos: max > 0 ? Math.ceil(max / step) : 0
+    }
+}
+
+function getNiceStep(range: ValueRange, intervals: number) {
+    const rawStep = (range.max - range.min) / intervals
     const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
     const normalizedStep = rawStep / magnitude
 
-    const niceSteps = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]
-
-    const intervalsFor = (step: number) => ({
-        neg: minVal < 0 ? Math.ceil(Math.abs(minVal) / step) : 0,
-        pos: maxVal > 0 ? Math.ceil(maxVal / step) : 0
-    })
-
     const isFit = (step: number) => {
-        const { neg, pos } = intervalsFor(step)
+        const { neg, pos } = getIntervalCounts(range, step)
 
         return neg + pos <= intervals
     }
 
-    const prettyNormalizedStep = niceSteps.find(nice => nice >= normalizedStep && isFit(nice * magnitude)) ?? 10
+    const niceStep = NICE_STEPS.find(nice => nice >= normalizedStep && isFit(nice * magnitude)) ?? 10
 
-    const countsFor = (step: number) => {
-        const { neg, pos } = intervalsFor(step)
+    return niceStep * magnitude
+}
 
-        return { neg, pos: maxVal > 0 ? Math.max(pos, 1) : pos }
+function getStepCounts(range: ValueRange, step: number): IntervalCounts {
+    const { neg, pos } = getIntervalCounts(range, step)
+
+    return { neg, pos: range.max > 0 ? Math.max(pos, 1) : pos }
+}
+
+function distributeRemaining(range: ValueRange, step: number, counts: IntervalCounts, remaining: number) {
+    if (range.min === 0)
+        return { ...counts, pos: counts.pos + remaining }
+
+    if (range.max === 0)
+        return { ...counts, neg: counts.neg + remaining }
+
+    let { neg, pos } = counts
+
+    for (let i = 0; i < remaining; i++) {
+        const negDeficit = neg * step - Math.abs(range.min)
+        const posDeficit = pos * step - range.max
+
+        if (negDeficit < posDeficit)
+            neg++
+        else
+            pos++
     }
 
-    let step = prettyNormalizedStep * magnitude
-    let counts = countsFor(step)
-
-    while (counts.neg + counts.pos > intervals) {
-        step *= 1.25
-        counts = countsFor(step)
-    }
-
-    let { neg: negIntervals, pos: posIntervals } = counts
-
-    const remaining = intervals - negIntervals - posIntervals
-
-    if (minVal == 0) {
-        posIntervals += remaining
-    } else if (maxVal == 0) {
-        negIntervals += remaining
-    } else {
-        for (let i = 0; i < remaining; i++) {
-            const negDeficit = negIntervals * step - Math.abs(minVal)
-            const posDeficit = posIntervals * step - maxVal
-
-            if (negDeficit < posDeficit)
-                negIntervals++
-            else
-                posIntervals++
-        }
-    }
-
-    return ticks(-negIntervals * step, step)
+    return { neg, pos }
 }
 
 const NUMBER_PATTERN = /^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i
@@ -116,8 +142,8 @@ function getSeparators(locale: string) {
         const parts = new Intl.NumberFormat(locale).formatToParts(1234567.5)
 
         separators = {
-            group: parts.find(part => part.type == 'group')?.value ?? '',
-            decimal: parts.find(part => part.type == 'decimal')?.value ?? '.'
+            group: parts.find(part => part.type === 'group')?.value ?? '',
+            decimal: parts.find(part => part.type === 'decimal')?.value ?? '.'
         }
 
         separatorsByLocale.set(locale, separators)
@@ -145,34 +171,36 @@ const REPLACE_PATTERNS: Record<string, RegExp> = {
 
 const DEFAULT_PATTERN = /[.,]/g
 
-function normalizeByDetection(text: string) {
+function detectDecimal(text: string) {
     const lastDot = text.lastIndexOf('.')
     const lastComma = text.lastIndexOf(',')
 
-    let decimal: string | null = null
+    if (lastDot >= 0 && lastComma >= 0)
+        return lastDot > lastComma ? '.' : ','
 
-    if (lastDot >= 0 && lastComma >= 0) {
-        decimal = lastDot > lastComma ? '.' : ','
-    } else if (lastDot >= 0 || lastComma >= 0) {
-        const separator = lastDot >= 0 ? '.' : ','
-        const isSingle = text.indexOf(separator) == text.lastIndexOf(separator)
+    if (lastDot < 0 && lastComma < 0)
+        return null
 
-        const isGrouping = separator == ',' && isThousandsComma(text)
+    const separator = lastDot >= 0 ? '.' : ','
+    const isSingle = text.indexOf(separator) === text.lastIndexOf(separator)
+    const isGrouping = separator === ',' && isThousandsComma(text)
 
-        decimal = isSingle && !isGrouping ? separator : null
-    }
+    return isSingle && !isGrouping ? separator : null
+}
 
+function normalizeByDetection(text: string) {
+    const decimal = detectDecimal(text)
     const pattern = REPLACE_PATTERNS[decimal ?? ''] || DEFAULT_PATTERN
     const normalized = text.replace(pattern, '')
 
-    return decimal == ',' ? normalized.replace(',', '.') : normalized
+    return decimal === ',' ? normalized.replace(',', '.') : normalized
 }
 
 export function parseNumber(value: string | number | null | undefined, locale?: string): number {
     if (typeof value == 'number')
         return value
 
-    if (value == null || value == '')
+    if (value == null || value === '')
         return 0
 
     let text = String(value).replace(GROUP_SPACES, '')

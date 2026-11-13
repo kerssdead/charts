@@ -38,7 +38,7 @@ export default class CanvasWindow {
     }
 
     fit(x: number, y: number, width: number, height: number): boolean {
-        const isResized = width != this.base.width || height != this.base.height
+        const isResized = width !== this.base.width || height !== this.base.height
         const offsetX = this.x - this.base.x
         const offsetY = this.y - this.base.y
 
@@ -54,7 +54,7 @@ export default class CanvasWindow {
     zoom(step: number, anchor: Point) {
         const scale = clamp(this.scale * (1 + step), ZOOM_MIN, ZOOM_MAX)
 
-        if (scale == this.scale)
+        if (scale === this.scale)
             return
 
         const ratio = scale / this.scale
