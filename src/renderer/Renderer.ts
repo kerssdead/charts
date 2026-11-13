@@ -47,7 +47,7 @@ export default class Renderer {
 
     private readonly panels: ChartPanels
 
-    private settings: ChartSettings
+    private settings!: ChartSettings
 
     private readonly detachImages: () => void
 

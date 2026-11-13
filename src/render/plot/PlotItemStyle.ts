@@ -3,7 +3,7 @@ import PlotPoint, { getPointKeys } from '@/types/PlotPoint'
 import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
 import QueueLineItemBuilder from '@/builders/QueueLineItemBuilder'
-import { AnimationTiming, Layer } from '@/static/constants/Index'
+import { AnimationTiming, DEFAULT_LINE_WIDTH, Layer } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { AREA_LAYER, BREAK_MARK_LAYER, LINE_LAYER } from '@/render/plot/PlotConstants'
@@ -51,7 +51,7 @@ export default class PlotItemStyle {
     }
 
     styleLine(line: QueueLineItemBuilder, series: PlotSeries, suffix: string) {
-        line.width(series.width)
+        line.width(series.width ?? DEFAULT_LINE_WIDTH)
             .color(series.color)
             .layer(series.type === PlotType.Area ? AREA_LAYER : LINE_LAYER)
             .key(this.getKey(series, suffix))

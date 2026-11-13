@@ -6,7 +6,9 @@ class TreeBarRow extends Value {
 
     image: string | undefined
 
-    parts: Sector[]
+    label!: string
+
+    parts!: Sector[]
 
     barLabel: string | undefined
 

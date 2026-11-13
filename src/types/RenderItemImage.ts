@@ -24,6 +24,12 @@ export default class RenderItemImage extends RenderItemBase {
 
     private canvas: ImageCanvas = { x: 0, y: 0, size: 0 }
 
+    constructor(url: string) {
+        super()
+
+        this.url = url
+    }
+
     current(morph: number = 1): Point {
         if (!this.from || morph >= 1)
             return { ...this.absolute }

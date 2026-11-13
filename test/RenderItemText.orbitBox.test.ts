@@ -22,9 +22,8 @@ const LEFT_SIDE_ANGLE = Math.PI - .5
 const WINDOW = new CanvasWindow(5000, 5000)
 
 const label = (value: string, angle: number, radius: number = RADIUS) => {
-    const result = new RenderItemText()
+    const result = new RenderItemText(value)
 
-    result.value = value
     result.angle = angle
     result.fontSize = 14
     result.orbit = { x: CENTER, y: CENTER, radiusX: radius, radiusY: radius }
@@ -145,9 +144,7 @@ describe('Getting orbit label box', () => {
     })
 
     it('Should use the text width when morphing from a label without an orbit', () => {
-        const previous = new RenderItemText()
-
-        previous.value = LONG_TEXT
+        const previous = new RenderItemText(LONG_TEXT)
 
         expect(morphedBox(previous, label(SHORT_TEXT, RIGHT_SIDE_ANGLE), 0).halfWidth).toBe(100)
         expect(morphedBox(previous, label(SHORT_TEXT, RIGHT_SIDE_ANGLE), 0))

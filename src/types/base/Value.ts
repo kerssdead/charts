@@ -1,21 +1,21 @@
 import ItemData from '@/types/ItemData'
 
 class Value {
-    id: string
+    id!: string
 
-    color: string
+    color!: string
 
-    label: string
+    label?: string
 
-    disabled: boolean
+    disabled?: boolean
 
-    hideInLegend: boolean
+    hideInLegend?: boolean
 
-    data: ItemData
+    data?: ItemData
 
-    value: number
+    value!: number
 
-    labelIndex: number
+    labelIndex!: number
 
     constructor(fields: object = {}) {
         for (const [key, value] of Object.entries(fields))

@@ -2,7 +2,7 @@ import { buildItems, createPlot, createSeries } from './PlotTestData'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import PlotSeries from '@/types/PlotSeries'
 import RenderItemLine from '@/types/RenderItemLine'
-import { AnimationTiming, Layer } from '@/static/constants/Index'
+import { AnimationTiming, DEFAULT_LINE_WIDTH, Layer } from '@/static/constants/Index'
 import { PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
@@ -38,6 +38,13 @@ describe('Styling plot line', () => {
             .toBe(true)
         expect(item.animation.initDuration)
             .toBe(AnimationTiming.plotLineInit)
+    })
+
+    it('Should draw series without width with default line width', () => {
+        const series = createSeries(PlotType.Line, [1], { width: undefined })
+
+        expect((styleLine([series], series, 'line').shape as RenderItemLine).width)
+            .toBe(DEFAULT_LINE_WIDTH)
     })
 
     it('Should group hover only with several enabled series', () => {

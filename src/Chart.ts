@@ -17,21 +17,21 @@ export default class Chart {
 
     private suspendedTheme: ColorTheme = ColorTheme.light
 
-    private source: ChartSettings
+    private source!: ChartSettings
 
-    private settings: ChartSettings
+    private settings!: ChartSettings
 
     private readonly element: HTMLElement
 
     private readonly failure: ChartFailure
 
-    private canvas: HTMLCanvasElement
+    private canvas!: HTMLCanvasElement
 
-    private renderer: Renderer
+    private renderer!: Renderer
 
-    private observer: ResizeObserver
+    private observer!: ResizeObserver
 
-    private ratioWatcher: AbortController
+    private ratioWatcher!: AbortController
 
     private width: number = 0
 

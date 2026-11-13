@@ -20,7 +20,7 @@ export function getValueRows<T extends Value>(
     return {
         headers: [{ value: key, display: key }],
         values: values.map(value => ({
-            name: value.label,
+            name: value.label ?? '',
             color: value.color,
             disabled: value.disabled,
             values: new Map([[key, getValue(value)]])

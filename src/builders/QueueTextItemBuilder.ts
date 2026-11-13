@@ -5,9 +5,7 @@ import RenderItemArc from '@/types/RenderItemArc'
 
 export default class QueueTextItemBuilder extends QueueItemBaseBuilder<RenderItemText> {
     constructor(text: string) {
-        super(new RenderItemText())
-
-        this.shape.value = text
+        super(new RenderItemText(text))
     }
 
     position(x: number, y: number) {

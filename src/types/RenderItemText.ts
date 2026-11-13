@@ -65,7 +65,13 @@ export default class RenderItemText extends RenderItemBase {
 
     private halfWidth: number | null = null
 
-    private window: CanvasWindow
+    private window!: CanvasWindow
+
+    constructor(value: string) {
+        super()
+
+        this.value = value
+    }
 
     get defaultColor(): string {
         return Theme.text

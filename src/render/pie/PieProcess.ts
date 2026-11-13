@@ -198,7 +198,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
 
         return this.data.labelPercent && PieSlices.hasVisibleValue(sector)
                ? `${ sector.label } ${ this.percent(sector.value / visibleTotal) }`
-               : sector.label
+               : sector.label ?? ''
     }
 
     private getTooltipText(sector: Sector, groupedSectors: Sector[] | undefined, visibleTotal: number) {

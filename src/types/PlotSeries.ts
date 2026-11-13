@@ -3,13 +3,15 @@ import PlotPoint from '@/types/PlotPoint'
 import { LineDrawMode, PlotType } from '@/static/Enums'
 
 export default class PlotSeries extends Value {
-    values: PlotPoint[]
+    label!: string
 
-    type: PlotType
+    values!: PlotPoint[]
 
-    width: number
+    type!: PlotType
 
-    dash: number[]
+    width?: number
+
+    dash?: number[]
 
     drawMode?: LineDrawMode
 

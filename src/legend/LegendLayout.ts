@@ -37,7 +37,7 @@ export type LegendPlacement = {
 }
 
 export function getLegendLabel(value: Value) {
-    return value.isBlank ? `${ value.label } ${ TextResources.noValue }` : value.label
+    return value.isBlank ? `${ value.label } ${ TextResources.noValue }` : value.label ?? ''
 }
 
 export function getHorizontalPlacement({ width, height }: Size, options: LegendLayoutOptions): LegendPlacement {

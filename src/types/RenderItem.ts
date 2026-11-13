@@ -50,13 +50,13 @@ export default class RenderItem {
         return color && grayScale(color, this.animation.mono)
     }
 
-    color: string
+    color?: string
 
     animation: AnimationData = new AnimationData()
 
-    stroke: string
+    stroke?: string
 
-    tooltipTemplate: string
+    tooltipTemplate?: string
 
     tooltipHtml: string | null = null
 

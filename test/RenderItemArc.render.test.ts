@@ -38,7 +38,7 @@ const context = () => ({
 
 const sector = (labelOffset: number) => {
     const arc = new RenderItemArc()
-    const text = new RenderItemText()
+    const text = new RenderItemText('label')
 
     arc.absolute = { x: CENTER, y: CENTER }
     arc.radius = 500
@@ -49,7 +49,6 @@ const sector = (labelOffset: number) => {
     arc.leaderOffset = labelOffset
     arc.leaderAnchor = labelOffset / 2
 
-    text.value = 'label'
     text.angle = SECTOR_MIDDLE + labelOffset
     text.fontSize = 14
     text.orbit = { x: CENTER, y: CENTER, radiusX: 600, radiusY: 600 }

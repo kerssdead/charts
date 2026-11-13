@@ -4,9 +4,7 @@ import { ImageCrossOrigin } from '@/static/Enums'
 
 export default class QueueImageItemBuilder extends QueueItemBaseBuilder<RenderItemImage> {
     constructor(url: string) {
-        super(new RenderItemImage())
-
-        this.shape.url = url
+        super(new RenderItemImage(url))
     }
 
     position(x: number, y: number) {

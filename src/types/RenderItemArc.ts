@@ -67,7 +67,7 @@ export default class RenderItemArc extends RenderItemBase {
 
     private readonly gradient = new GradientCache()
 
-    private window: CanvasWindow
+    private window!: CanvasWindow
 
     startAngle: number = 0
 

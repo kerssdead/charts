@@ -1,6 +1,7 @@
 import PieData from '@/types/data/PieData'
 import TreeData, { getTreeSum } from '@/types/data/TreeData'
 import { getValueRows } from '@/types/TableData'
+import Sector from '@/types/Sector'
 
 describe('Getting value rows for decomposition', () => {
     it('Should has 3 rows for circular chart', () => {
@@ -77,5 +78,12 @@ describe('Getting value rows for decomposition', () => {
 
         expect([row.color, row.disabled])
             .toEqual(['#ff0000', true])
+    })
+
+    it('Should name unlabeled values with empty text', () => {
+        const values = [new Sector({ value: 1 }), new Sector({ value: 2, label: 'Part' })]
+
+        expect(getValueRows(values).values.map(row => row.name))
+            .toEqual(['', 'Part'])
     })
 })

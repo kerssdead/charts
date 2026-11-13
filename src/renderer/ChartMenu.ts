@@ -16,7 +16,7 @@ export default class ChartMenu {
 
     button: MenuButton | undefined
 
-    private settings: ChartSettings
+    private settings!: ChartSettings
 
     private buttons: ButtonOptions[] | undefined
 

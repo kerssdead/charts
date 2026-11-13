@@ -255,7 +255,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
 
         const labelsBelow = [
             ...(isValueInside ? [] : [{ key: 'gauge-value-label', text: valueText }]),
-            { key: 'gauge-label', text: singleSector.label }
+            { key: 'gauge-label', text: singleSector.label ?? '' }
         ].filter(label => label.text)
 
         const labelsInRows = GaugeValueLabels.getLabelsInRows(
