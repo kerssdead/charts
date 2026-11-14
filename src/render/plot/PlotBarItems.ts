@@ -29,9 +29,11 @@ export default class PlotBarItems {
         return (items: QueueItemsBuilder) => {
             const step = categoryScale.step
 
-            const visibleBefore = barSeries.slice(0, barSeries.indexOf(series)).filter(bar => !bar.disabled).length
-            const heightInStep = step / Math.max(barSeries.filter(bar => !bar.disabled).length, 1)
-            const height = series.disabled ? 0 : heightInStep
+            const isDisabled = seriesGroups.isDisabled(series)
+            const isEnabled = (bar: PlotSeries) => !seriesGroups.isDisabled(bar)
+            const visibleBefore = barSeries.slice(0, barSeries.indexOf(series)).filter(isEnabled).length
+            const heightInStep = step / Math.max(barSeries.filter(isEnabled).length, 1)
+            const height = isDisabled ? 0 : heightInStep
 
             const offset = visibleBefore * heightInStep
 
@@ -49,14 +51,14 @@ export default class PlotBarItems {
 
                 const bar = items.rect()
                      .position(baseline, bottom)
-                     .size(series.disabled ? 0 : end - baseline, height)
+                     .size(isDisabled ? 0 : end - baseline, height)
                      .round([0, CORNER_RADIUS, CORNER_RADIUS, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                      .grow('x', baseline)
 
                 this.style.styleRect(bar, series, slot, valueIndex)
 
-                if (!series.disabled && seriesGroups.hasOnlyBarSeries && layout.isAboveYMax(y)) {
+                if (!isDisabled && seriesGroups.hasOnlyBarSeries && layout.isAboveYMax(y)) {
                     const mark = addBarBreakMark(items, layout.units, { start: bottom - height, end: bottom }, end)
 
                     this.style.styleBreakMark(mark, series, slot, valueIndex)

@@ -3,6 +3,9 @@ import ChartItem from '@/types/ChartItem'
 import TextResources from '@/static/TextResources'
 import { ChartType, Events, TableClasses } from '@/static/Enums'
 import { FakeElement, installFakeDocument } from './FakeDocument'
+import { isDisabledByFlag } from './ViewStateTestData'
+import { IsDisabled } from '@/types/ChartViewState'
+import Value from '@/types/base/Value'
 
 const pie = (count: number, title?: string) => {
     const values = Array.from({ length: count }, (_, index) => ({ label: `Item ${ index }`, value: index + 1 }))
@@ -10,11 +13,11 @@ const pie = (count: number, title?: string) => {
     return { type: ChartType.Pie, title, data: { values } } as unknown as ChartItem
 }
 
-function create(charts: ChartItem[]) {
+function create(charts: ChartItem[], isDisabled: IsDisabled = isDisabledByFlag) {
     installFakeDocument()
 
     const onSave = jest.fn()
-    const container = Decomposition.fromCharts(charts, onSave) as unknown as FakeElement
+    const container = Decomposition.fromCharts(charts, isDisabled, onSave) as unknown as FakeElement
     const [toolbar, list] = container.elements
 
     return { container, toolbar, list, onSave }
@@ -41,6 +44,13 @@ describe('Building decomposition from charts', () => {
 
         expect([group.elements[0].text, [...table.classes][0]])
             .toEqual(['First', TableClasses.Table])
+    })
+
+    it('Should mark rows disabled by the given check', () => {
+        const { list } = create([pie(3)], (value: Value) => value.label === 'Item 1')
+
+        expect(list.findByClass(TableClasses.Row).filter(row => row.classes.has(TableClasses.Disabled)).length)
+            .toBe(1)
     })
 
     it('Should show the filter only when a table has more than ten rows', () => {

@@ -34,10 +34,6 @@ class Value {
     canToggle(): boolean {
         return false
     }
-
-    reset() {
-        this.disabled = false
-    }
 }
 
 export default Value

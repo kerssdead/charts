@@ -10,12 +10,6 @@ class Sector extends Value {
     canToggle(): boolean {
         return !this.isBlank
     }
-
-    reset() {
-        super.reset()
-
-        this.pinned = false
-    }
 }
 
 export default Sector

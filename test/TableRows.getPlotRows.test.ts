@@ -1,5 +1,6 @@
 import PlotData from '@/types/data/PlotData'
 import { getPlotRows } from '@/export/TableRows'
+import { isDisabledByFlag } from './ViewStateTestData'
 
 describe('Getting plot rows for decomposition', () => {
     it('Should has 3 rows', () => {
@@ -59,7 +60,7 @@ describe('Getting plot rows for decomposition', () => {
             ]
         } as PlotData
 
-        expect(getPlotRows(data).values.length)
+        expect(getPlotRows(data, isDisabledByFlag).values.length)
             .toBe(3)
     })
 
@@ -103,7 +104,7 @@ describe('Getting plot rows for decomposition', () => {
             ]
         } as PlotData
 
-        expect(getPlotRows(data).headers.length)
+        expect(getPlotRows(data, isDisabledByFlag).headers.length)
             .toBe(6)
     })
 
@@ -154,7 +155,7 @@ describe('Getting plot rows for decomposition', () => {
             ]
         } as PlotData
 
-        expect(getPlotRows(data).headers.length)
+        expect(getPlotRows(data, isDisabledByFlag).headers.length)
             .toBe(6)
     })
 
@@ -175,7 +176,7 @@ describe('Getting plot rows for decomposition', () => {
             ]
         } as PlotData
 
-        const row = getPlotRows(data).values[0]
+        const row = getPlotRows(data, isDisabledByFlag).values[0]
 
         expect([row.color, row.disabled])
             .toEqual(['#00ff00', true])
@@ -186,7 +187,7 @@ describe('Getting plot rows for decomposition', () => {
             values: [{ label: 'Series 1', values: [{ x: 1, y: 1 }, { x: 2, y: null }] }]
         } as PlotData
 
-        const row = getPlotRows(data).values[0]
+        const row = getPlotRows(data, isDisabledByFlag).values[0]
 
         expect([...row.values])
             .toEqual([['1', 1]])

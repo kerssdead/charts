@@ -4,9 +4,15 @@ import Point from '@/types/Point'
 import Value from '@/types/base/Value'
 import Data from '@/types/interfaces/Data'
 import TableData from '@/types/TableData'
+import ChartViewState, { IsDisabled } from '@/types/ChartViewState'
 
 type ChartDefinition<TData extends Data> = {
-    createProcess: (data: TData, pixel: Point, settings: ChartSettings) => ChartProcess<TData>
+    createProcess: (
+        data: TData,
+        pixel: Point,
+        settings: ChartSettings,
+        state: ChartViewState
+    ) => ChartProcess<TData>
 
     prepareData: (data: TData, numberLocale: string | undefined) => void
 
@@ -14,7 +20,9 @@ type ChartDefinition<TData extends Data> = {
 
     mergeSameLabelValues?: (data: TData) => void
 
-    keepState?: (previous: TData, next: TData) => void
+    applyViewState?: (data: TData, state: ChartViewState) => void
+
+    getValuesWithChildren?: (data: TData) => Value[]
 
     getPaletteValues: (data: TData) => Value[]
 
@@ -22,7 +30,7 @@ type ChartDefinition<TData extends Data> = {
 
     applyOwnColors?: (data: TData, baseColor: string) => void
 
-    getTableRows: (data: TData) => TableData
+    getTableRows: (data: TData, isDisabled: IsDisabled) => TableData
 
     summarizeTable?: (table: TableData) => TableData
 

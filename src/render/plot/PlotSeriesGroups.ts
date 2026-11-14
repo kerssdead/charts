@@ -1,5 +1,6 @@
 import PlotSeries from '@/types/PlotSeries'
 import { PlotType } from '@/static/Enums'
+import { IsDisabled } from '@/types/ChartViewState'
 
 export default class PlotSeriesGroups {
     readonly enabledSeries: PlotSeries[]
@@ -14,10 +15,13 @@ export default class PlotSeriesGroups {
 
     readonly hasOnlyBarSeries: boolean
 
+    readonly isDisabled: IsDisabled
+
     private readonly indexes: Map<PlotSeries, number>
 
-    constructor(series: PlotSeries[]) {
-        this.enabledSeries = series.filter(item => !item.disabled)
+    constructor(series: PlotSeries[], isDisabled: IsDisabled) {
+        this.isDisabled = isDisabled
+        this.enabledSeries = series.filter(item => !isDisabled(item))
         this.barSeries = series.filter(item => item.type === PlotType.Bar)
         this.verticalSeries = series.filter(item => {
             return item.type !== PlotType.Bar && item.type !== PlotType.AttentionLine

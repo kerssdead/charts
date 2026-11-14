@@ -1,15 +1,16 @@
 import ChartDefinition from '@/charts/ChartDefinition'
 import TreeBarProcess from '@/render/treeBar/TreeBarProcess'
-import TreeBarData, { colorTreeBarRows, keepTreeBarState } from '@/types/data/TreeBarData'
+import TreeBarData, { applyTreeBarViewState, colorTreeBarRows, getAllTreeBarRows } from '@/types/data/TreeBarData'
 import { prepareTreeBarRows } from '@/helpers/ValuePreparation'
 import { normalizeTreeBarRows } from '@/helpers/ValueNormalization'
 import { getTreeBarRows } from '@/export/TableRows'
 
 const TreeBarDefinition: ChartDefinition<TreeBarData> = {
-    createProcess: (data, pixel, settings) => new TreeBarProcess(data, pixel, settings),
+    createProcess: (data, pixel, settings, state) => new TreeBarProcess(data, pixel, settings, state),
     prepareData: prepareTreeBarRows,
     normalizeData: (data, numberLocale, scope) => normalizeTreeBarRows(data.values, numberLocale, scope),
-    keepState: keepTreeBarState,
+    applyViewState: applyTreeBarViewState,
+    getValuesWithChildren: data => getAllTreeBarRows(data.values),
     getPaletteValues: () => [],
     applyOwnColors: (data, baseColor) => colorTreeBarRows(data.values, baseColor),
     getTableRows: getTreeBarRows,

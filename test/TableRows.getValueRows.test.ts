@@ -2,6 +2,7 @@ import PieData from '@/types/data/PieData'
 import TreeData, { getTreeSum } from '@/types/data/TreeData'
 import { getValueRows } from '@/export/TableRows'
 import Sector from '@/types/Sector'
+import { isDisabledByFlag } from './ViewStateTestData'
 
 describe('Getting value rows for decomposition', () => {
     it('Should has 3 rows for circular chart', () => {
@@ -22,7 +23,7 @@ describe('Getting value rows for decomposition', () => {
             ]
         } as PieData
 
-        expect(getValueRows(data.values).values.length)
+        expect(getValueRows(data.values, isDisabledByFlag).values.length)
             .toBe(3)
     })
 
@@ -44,7 +45,7 @@ describe('Getting value rows for decomposition', () => {
             ]
         } as TreeData
 
-        expect(getValueRows(data.values).values.length)
+        expect(getValueRows(data.values, isDisabledByFlag).values.length)
             .toBe(3)
     })
 
@@ -58,7 +59,7 @@ describe('Getting value rows for decomposition', () => {
             ]
         } as TreeData
 
-        expect(getValueRows(data.values, getTreeSum).values[0].values.get('Value'))
+        expect(getValueRows(data.values, isDisabledByFlag, getTreeSum).values[0].values.get('Value'))
             .toBe(5)
     })
 
@@ -74,7 +75,7 @@ describe('Getting value rows for decomposition', () => {
             ]
         } as PieData
 
-        const row = getValueRows(data.values).values[0]
+        const row = getValueRows(data.values, isDisabledByFlag).values[0]
 
         expect([row.color, row.disabled])
             .toEqual(['#ff0000', true])
@@ -83,7 +84,7 @@ describe('Getting value rows for decomposition', () => {
     it('Should name unlabeled values with empty text', () => {
         const values = [new Sector({ value: 1 }), new Sector({ value: 2, label: 'Part' })]
 
-        expect(getValueRows(values).values.map(row => row.name))
+        expect(getValueRows(values, isDisabledByFlag).values.map(row => row.name))
             .toEqual(['', 'Part'])
     })
 })

@@ -2,6 +2,7 @@ import PlotProcess from '@/render/plot/PlotProcess'
 import PlotData from '@/types/data/PlotData'
 import { createSeries } from './PlotTestData'
 import { PlotScaleType, PlotType } from '@/static/Enums'
+import { createState } from './ViewStateTestData'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -13,7 +14,8 @@ describe('Getting plot value at y coordinate', () => {
         const process = new PlotProcess(
             { values: [createSeries(PlotType.Line, [0, 100])] } as PlotData,
             { x: 1, y: 1 },
-            { valuePostfix: undefined }
+            { valuePostfix: undefined },
+            createState()
         )
 
         expect(process.getAxisValue(process.getAxisY(37)))
@@ -24,7 +26,8 @@ describe('Getting plot value at y coordinate', () => {
         const process = new PlotProcess(
             { values: [] } as unknown as PlotData,
             { x: 1, y: 1 },
-            { valuePostfix: undefined }
+            { valuePostfix: undefined },
+            createState()
         )
 
         expect(process.getAxisValue(1000))
@@ -35,7 +38,8 @@ describe('Getting plot value at y coordinate', () => {
         const process = new PlotProcess(
             { values: [createSeries(PlotType.Line, [3, 700])], yScale: PlotScaleType.Log } as PlotData,
             { x: 1, y: 1 },
-            { valuePostfix: undefined }
+            { valuePostfix: undefined },
+            createState()
         )
 
         expect(process.getAxisValue(process.getAxisY(37)))

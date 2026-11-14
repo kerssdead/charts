@@ -30,13 +30,8 @@ describe('Creating a value', () => {
     })
 
     it('Should keep methods when data has fields with their names', () => {
-        const sector = new Sector({ value: 1, reset: 'x', canToggle: false })
+        const sector = new Sector({ value: 1, canToggle: false })
 
-        sector.disabled = true
-        sector.reset()
-
-        expect(sector.disabled)
-            .toBe(false)
         expect(sector.canToggle())
             .toBe(true)
     })

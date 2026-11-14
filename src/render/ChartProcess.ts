@@ -9,6 +9,7 @@ import Value from '@/types/base/Value'
 import ItemData from '@/types/ItemData'
 import ValueAxis from '@/types/ValueAxis'
 import { stringWidth } from '@/helpers/Text'
+import ChartViewState from '@/types/ChartViewState'
 
 const LINE_BREAK = /<br\s*\/?>/gi
 
@@ -22,12 +23,15 @@ export default abstract class ChartProcess<
 
     protected readonly settings: TSettings
 
+    protected readonly state: ChartViewState
+
     onChange: (() => void) | undefined
 
-    constructor(data: TData, pixel: Point, settings: TSettings) {
+    constructor(data: TData, pixel: Point, settings: TSettings, state: ChartViewState) {
         this.data = data
         this.units = new Units(pixel)
         this.settings = settings
+        this.state = state
     }
 
     abstract getData(): QueueAction[]
@@ -45,7 +49,7 @@ export default abstract class ChartProcess<
     }
 
     isEmpty() {
-        return !this.data.values.some(value => !value.disabled && value.value > 0)
+        return !this.data.values.some(value => !this.state.isDisabled(value) && value.value > 0)
     }
 
     protected formatValue(value: number | Date | string) {

@@ -119,7 +119,7 @@ export default class Export {
         }
 
         const blocks = charts.map(chart => {
-            const table = getTableRows(chart)
+            const table = getTableRows(chart, () => false)
             const { headers, values } = table
 
             const headerRow = ['', ...headers.map(header => header.display)]

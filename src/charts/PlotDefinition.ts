@@ -8,7 +8,7 @@ import { getPlotRows } from '@/export/TableRows'
 import { withRowTotals } from '@/export/TableTotals'
 
 const PlotDefinition: ChartDefinition<PlotData> = {
-    createProcess: (data, pixel, settings) => new PlotProcess(data, pixel, settings),
+    createProcess: (data, pixel, settings, state) => new PlotProcess(data, pixel, settings, state),
     prepareData: prepareSeries,
     normalizeData: normalizeSeries,
     mergeSameLabelValues: mergeSeries,

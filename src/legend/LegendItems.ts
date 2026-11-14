@@ -25,17 +25,21 @@ export type LegendButtonState = {
     onClick: () => void
 }
 
+export type LegendEntryState = LegendButtonState & {
+    isDisabled: boolean
+}
+
 export function addLegendEntry(
     items: QueueItemsBuilder,
     units: Units,
     entry: LegendEntry,
-    { hover, onClick }: LegendButtonState
+    { hover, isDisabled, onClick }: LegendEntryState
 ) {
     const { value, label, x, y, width } = entry
     const centerY = y + ITEM_HEIGHT / 2
     const textX = x + TEXT_OFFSET_X
-    const isDisabled = value.disabled || value.isBlank
-    const textColor = isDisabled ? withAlpha(Theme.text, DISABLED_TEXT_ALPHA) : Theme.text
+    const isMuted = isDisabled || value.isBlank
+    const textColor = isMuted ? withAlpha(Theme.text, DISABLED_TEXT_ALPHA) : Theme.text
 
     const background = addButtonRect(items, units, {
         rect: { x, y, width, height: ITEM_HEIGHT },
@@ -48,7 +52,7 @@ export function addLegendEntry(
          .position(units.x(x + MARKER_CENTER_X), units.y(centerY))
          .radius(units.x(MARKER_RADIUS))
          .fill()
-         .color(isDisabled ? grayScale(value.color) : value.color)
+         .color(isMuted ? grayScale(value.color) : value.color)
          .layer(CONTENT_LAYER)
          .fixed()
 
@@ -60,7 +64,7 @@ export function addLegendEntry(
          .layer(CONTENT_LAYER)
          .fixed()
 
-    if (isDisabled)
+    if (isMuted)
         items.line()
              .stop(units.x(textX), units.y(centerY + STRIKE_OFFSET_Y))
              .stop(units.x(textX + stringWidth(label)), units.y(centerY + STRIKE_OFFSET_Y))

@@ -16,7 +16,6 @@ declare class Value {
 	private isGetterOrMethod;
 	get isBlank(): boolean;
 	canToggle(): boolean;
-	reset(): void;
 }
 interface Data {
 	values: Value[];
@@ -90,6 +89,7 @@ declare class Chart {
 	private readonly failure;
 	private host;
 	private renderer;
+	private viewState;
 	private readonly onThemeChange;
 	constructor(element: HTMLElement, settings: ChartSettings);
 	render(): void;

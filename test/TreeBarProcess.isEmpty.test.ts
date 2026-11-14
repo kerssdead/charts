@@ -1,6 +1,7 @@
 import TreeBarProcess from '@/render/treeBar/TreeBarProcess'
 import TreeBarData from '@/types/data/TreeBarData'
 import TreeBarRow from '@/types/TreeBarRow'
+import { createState } from './ViewStateTestData'
 
 jest.mock('@/Theme', () => ({ text: '#000000', lineAxis: '#e0e0e0' }))
 
@@ -10,7 +11,12 @@ jest.mock('@/helpers/Text', () => ({
 }))
 
 const create = (values: TreeBarRow[]) => {
-    return new TreeBarProcess({ values } as TreeBarData, { x: 5, y: 12.5 }, { valuePostfix: undefined })
+    return new TreeBarProcess(
+        { values } as TreeBarData,
+        { x: 5, y: 12.5 },
+        { valuePostfix: undefined },
+        createState({ values })
+    )
 }
 
 describe('Checking tree bar emptiness', () => {

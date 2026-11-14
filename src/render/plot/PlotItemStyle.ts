@@ -44,7 +44,7 @@ export default class PlotItemStyle {
 
         this.groupHover(item, series)
 
-        if (series.disabled)
+        if (this.seriesGroups.isDisabled(series))
             item.ghost()
 
         return item

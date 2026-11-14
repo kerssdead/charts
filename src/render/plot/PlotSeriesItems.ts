@@ -14,6 +14,8 @@ import { GHOST_TYPES } from '@/render/plot/PlotConstants'
 export default class PlotSeriesItems {
     private readonly allSeries: PlotSeries[]
 
+    private readonly seriesGroups: PlotSeriesGroups
+
     private readonly columns: PlotColumnItems
 
     private readonly stackedColumns: PlotStackedColumnItems
@@ -32,6 +34,7 @@ export default class PlotSeriesItems {
         const columnGroups = getColumnGroups(seriesGroups.enabledSeries)
 
         this.allSeries = allSeries
+        this.seriesGroups = seriesGroups
         this.columns = new PlotColumnItems(layout, style, seriesGroups, columnGroups)
         this.stackedColumns = new PlotStackedColumnItems(layout, style, seriesGroups, columnGroups)
         this.bars = new PlotBarItems(layout, style, seriesGroups)
@@ -42,7 +45,7 @@ export default class PlotSeriesItems {
         const stacks = new Map<string, number>()
 
         return this.allSeries.flatMap(series => {
-            if (series.disabled && !GHOST_TYPES.includes(series.type))
+            if (this.seriesGroups.isDisabled(series) && !GHOST_TYPES.includes(series.type))
                 return []
 
             return [this.getSeriesItems(series, stacks)]

@@ -1,6 +1,7 @@
 import { getTableRows, summarizeTable } from '@/charts/ChartDefinitions'
 import ChartItem from '@/types/ChartItem'
 import { ChartType, TableColumnKey } from '@/static/Enums'
+import { isDisabledByFlag } from './ViewStateTestData'
 
 const valueChart = (type: ChartType) => {
     return { type, data: { values: [{ label: 'a', value: 1 }, { label: 'b', value: 3 }] } } as unknown as ChartItem
@@ -13,7 +14,9 @@ const plotChart = (xs: number[]) => {
     } as unknown as ChartItem
 }
 
-const keys = (chart: ChartItem) => summarizeTable(chart, getTableRows(chart)).headers.map(header => header.value)
+const keys = (chart: ChartItem) => {
+    return summarizeTable(chart, getTableRows(chart, isDisabledByFlag)).headers.map(header => header.value)
+}
 
 describe('Summarizing chart tables', () => {
     it('Should add a row total column to plots with several x values', () => {

@@ -2,6 +2,7 @@ import TreeBarRow from '@/types/TreeBarRow'
 import Data from '@/types/interfaces/Data'
 import { sum } from '@/helpers/Collections'
 import { parseNumber } from '@/helpers/Numbers'
+import ChartViewState from '@/types/ChartViewState'
 
 export type TreeBarColumn = {
     key: string
@@ -38,16 +39,13 @@ export function flattenTreeBarRows(
     ])
 }
 
-export function keepTreeBarState(previous: TreeBarData, next: TreeBarData) {
-    const expanded = new Map(flattenTreeBarRows(previous.values).map(({ node }) => [node.id, node.expanded]))
+export function getAllTreeBarRows(rows: TreeBarRow[] | undefined) {
+    return flattenTreeBarRows(rows).map(({ node }) => node)
+}
 
-    for (const { node } of flattenTreeBarRows(next.values))
-        node.expanded ??= expanded.get(node.id)
-
-    if (next.sortColumn === undefined) {
-        next.sortColumn = previous.sortColumn
-        next.sortDescending = previous.sortDescending
-    }
+export function applyTreeBarViewState(data: TreeBarData, state: ChartViewState) {
+    state.applyExpanded(getAllTreeBarRows(data.values))
+    state.applySort(data.sortColumn, data.sortDescending)
 }
 
 export function colorTreeBarRows(rows: TreeBarRow[] | undefined, color: string) {

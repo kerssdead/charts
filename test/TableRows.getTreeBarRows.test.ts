@@ -2,6 +2,7 @@ import TreeBarData from '@/types/data/TreeBarData'
 import { getTreeBarRows } from '@/export/TableRows'
 import TreeBarRow from '@/types/TreeBarRow'
 import Sector from '@/types/Sector'
+import { isDisabledByFlag } from './ViewStateTestData'
 
 const part = (value: number) => new Sector({ value, color: '#ff0000' })
 
@@ -14,7 +15,7 @@ describe('Getting tree bar rows for decomposition', () => {
         const table = getTreeBarRows({
             values: [row('a', [1], { label: 'Lorem\nIpsum', cells: { amount: '1,500', code: 'XY' } })],
             columns: [{ key: 'amount', title: 'Amount' }, { key: 'code', title: 'Code' }]
-        } as TreeBarData)
+        } as TreeBarData, isDisabledByFlag)
 
         expect([
             table.headers.map(header => header.display),
@@ -24,7 +25,7 @@ describe('Getting tree bar rows for decomposition', () => {
     })
 
     it('Should export part totals without columns', () => {
-        const table = getTreeBarRows({ values: [row('a', [10, 20])] } as TreeBarData)
+        const table = getTreeBarRows({ values: [row('a', [10, 20])] } as TreeBarData, isDisabledByFlag)
 
         expect([...table.values[0].values.values()])
             .toEqual([30])
@@ -36,7 +37,7 @@ describe('Getting tree bar rows for decomposition', () => {
                 row('a', [1], { children: [row('a1', [1], { children: [row('a1x', [1])] })] }),
                 row('b', [1])
             ]
-        } as TreeBarData)
+        } as TreeBarData, isDisabledByFlag)
 
         expect(table.values.map(value => [value.name, value.level]))
             .toEqual([['a', 0], ['a1', 1], ['a1x', 2], ['b', 0]])
@@ -45,7 +46,7 @@ describe('Getting tree bar rows for decomposition', () => {
     it('Should export collapsed children', () => {
         const table = getTreeBarRows({
             values: [row('a', [1], { expanded: false, children: [row('a1', [1])] })]
-        } as TreeBarData)
+        } as TreeBarData, isDisabledByFlag)
 
         expect(table.values.map(value => value.name))
             .toEqual(['a', 'a1'])
@@ -55,7 +56,7 @@ describe('Getting tree bar rows for decomposition', () => {
         const table = getTreeBarRows({
             values: [row('a', [1], { color: '#0000ff', disabled: true, cells: { amount: 1 } })],
             columns: [{ key: 'amount', title: 'Amount' }]
-        } as TreeBarData)
+        } as TreeBarData, isDisabledByFlag)
 
         expect([table.values[0].color, table.values[0].disabled])
             .toEqual(['#0000ff', true])
@@ -66,7 +67,7 @@ describe('Getting tree bar rows for decomposition', () => {
             values: [row('a', [1], { cells: { amount: '1.500,5' } })],
             columns: [{ key: 'amount', title: 'Amount' }],
             numberLocale: 'de-DE'
-        } as TreeBarData)
+        } as TreeBarData, isDisabledByFlag)
 
         expect([...table.values[0].values.values()])
             .toEqual([1500.5])

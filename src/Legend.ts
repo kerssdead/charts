@@ -18,6 +18,7 @@ import ChartSettings from '@/types/ChartSettings'
 import HoverMap from '@/types/HoverMap'
 import LegendMotion from '@/legend/LegendMotion'
 import LegendValues from '@/legend/LegendValues'
+import ViewState from '@/charts/ViewState'
 import { addLegendEntry, addResetButton } from '@/legend/LegendItems'
 import { getHorizontalPlacement, getVerticalPlacement, LegendEntry } from '@/legend/LegendLayout'
 import { BUTTON_TEXT_PADDING, ITEM_HEIGHT, PADDING_X, PADDING_Y, RESET_KEY, SIDES } from '@/legend/LegendConstants'
@@ -49,12 +50,12 @@ class Legend extends Overlay {
 
     private readonly motion: LegendMotion
 
-    constructor(settings: ChartSettings, onChange?: () => void) {
+    constructor(settings: ChartSettings, viewState: ViewState, onChange?: () => void) {
         super()
 
         this.settings = settings
         this.onChange = onChange
-        this.values = new LegendValues(settings)
+        this.values = new LegendValues(settings, viewState)
         this.motion = new LegendMotion(value => this.values.getKey(value))
     }
 
@@ -238,6 +239,7 @@ class Legend extends Overlay {
         const builder = new QueueItemsBuilder()
         const background = addLegendEntry(builder, this.units, entry, {
             hover,
+            isDisabled: this.values.isDisabled(entry.value),
             onClick: () => this.toggle(entry.value)
         })
         const items = builder.build()

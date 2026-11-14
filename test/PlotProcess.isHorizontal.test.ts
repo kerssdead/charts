@@ -2,6 +2,7 @@ import PlotProcess from '@/render/plot/PlotProcess'
 import PlotData from '@/types/data/PlotData'
 import { createSeries } from './PlotTestData'
 import { PlotType } from '@/static/Enums'
+import { createState } from './ViewStateTestData'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -9,7 +10,12 @@ jest.mock('@/helpers/Text', () => ({
 }))
 
 const create = (values: PlotData['values']) => {
-    return new PlotProcess({ values } as PlotData, { x: 1, y: 1 }, { valuePostfix: undefined })
+    return new PlotProcess(
+        { values } as PlotData,
+        { x: 1, y: 1 },
+        { valuePostfix: undefined },
+        createState({ values })
+    )
 }
 
 describe('Checking plot orientation', () => {

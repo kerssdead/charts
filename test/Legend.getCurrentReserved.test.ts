@@ -2,6 +2,7 @@ import Legend from '@/Legend'
 import { normalize } from '@/charts/Settings'
 import { ChartType, LegendPlace } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
+import ViewState from '@/charts/ViewState'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -22,7 +23,11 @@ const legend = () => {
         data: { values: [1, 2, 3].map(index => ({ label: `Label ${ index }`, value: index })) }
     } as unknown as ChartSettings)
 
-    return new Legend(settings)
+    const viewState = new ViewState()
+
+    viewState.apply(settings)
+
+    return new Legend(settings, viewState)
 }
 
 describe('Getting current legend reserved size', () => {

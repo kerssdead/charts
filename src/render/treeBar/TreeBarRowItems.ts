@@ -49,7 +49,8 @@ export type TreeBarGeometry = {
 export type TreeBarRowActions = {
     getPartTooltip: (part: Sector, label: string) => string
     getPartData: (part: Sector) => ItemData | undefined
-    onToggle: () => void
+    isExpanded: (row: TreeBarRow) => boolean
+    onToggle: (row: TreeBarRow) => void
 }
 
 type RowContext = {
@@ -146,7 +147,7 @@ export default class TreeBarRowItems {
         const { key, node } = row
         const size = TOGGLE_SIZE
 
-        const points = node.expanded
+        const points = this.actions.isExpanded(node)
                        ? [[x - size, y - size / 2], [x, y + size / 2], [x + size, y - size / 2]]
                        : [[x - size / 2, y - size], [x + size / 2, y], [x - size / 2, y + size]]
 
@@ -162,9 +163,7 @@ export default class TreeBarRowItems {
             .key(`${ key }-toggle`)
 
         addClickArea(items, this.units, area, () => {
-            node.expanded = !node.expanded
-
-            this.actions.onToggle()
+            this.actions.onToggle(node)
         }).key(`${ key }-toggle-area`)
     }
 

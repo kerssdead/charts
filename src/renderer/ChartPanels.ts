@@ -13,9 +13,11 @@ import Queue from '@/render/Queue'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import { Layer } from '@/static/constants/Index'
 import { contains } from '@/helpers/Geometry'
+import ViewState from '@/charts/ViewState'
 
 type PanelBuild = {
     settings: ChartSettings
+    viewState: ViewState
     isInitialized: boolean
     previousPanels: Panel[]
     onChange: () => void
@@ -46,8 +48,8 @@ export default class ChartPanels {
         this.list = []
     }
 
-    build(settings: ChartSettings, isInitialized: boolean, onChange: () => void) {
-        const build = { settings, isInitialized, previousPanels: this.list, onChange }
+    build(settings: ChartSettings, viewState: ViewState, isInitialized: boolean, onChange: () => void) {
+        const build = { settings, viewState, isInitialized, previousPanels: this.list, onChange }
 
         this.list = this.layout.getPanels(settings.charts, settings.columns)
         this.list.forEach((panel, index) => this.buildPanel(panel, index, build))
@@ -84,7 +86,7 @@ export default class ChartPanels {
     private buildPanel(panel: Panel, index: number, build: PanelBuild) {
         const chart = build.settings.charts[index]
         const pixel = panel.pixel(this.layout.window)
-        const process = createProcess(chart, pixel, build.settings)
+        const process = createProcess(chart, pixel, build.settings, build.viewState.getChartState(index))
 
         panel.valueAxis = process?.getValueAxis() ?? null
 

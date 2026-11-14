@@ -16,6 +16,7 @@ import { onImageLoad } from '@/helpers/Images'
 import { guard } from '@/helpers/Errors'
 import InputRouter from '@/renderer/InputRouter'
 import Frames from '@/renderer/Frames'
+import ViewState from '@/charts/ViewState'
 
 export default class Renderer {
     private readonly input: InputRouter
@@ -44,7 +45,10 @@ export default class Renderer {
 
     private readonly detachImages: () => void
 
-    constructor(canvas: HTMLCanvasElement, onError: (error: unknown) => void) {
+    private readonly viewState: ViewState
+
+    constructor(canvas: HTMLCanvasElement, viewState: ViewState, onError: (error: unknown) => void) {
+        this.viewState = viewState
         this.queue = new Queue(getContext(canvas))
         this.panels = new ChartPanels(this.queue, this.layout)
         this.tooltip = new TooltipOverlay(canvas)
@@ -84,7 +88,7 @@ export default class Renderer {
     apply(settings: ChartSettings) {
         this.settings = settings
 
-        this.menu.apply(settings)
+        this.menu.apply(settings, value => this.viewState.isDisabled(value))
         this.syncLegend()
 
         this.contextMenu.menu = settings.contextMenu
@@ -113,7 +117,7 @@ export default class Renderer {
         this.input.closeContext()
 
         if (this.layout.hasArea) {
-            this.panels.build(this.settings, isInitialized, () => this.rebuildAnimated())
+            this.panels.build(this.settings, this.viewState, isInitialized, () => this.rebuildAnimated())
             this.input.setScrollable(this.panels.canScroll)
         } else {
             this.panels.clear()
@@ -194,7 +198,7 @@ export default class Renderer {
         else if (this.legend)
             this.legend.applySettings(this.settings)
         else
-            this.legend = new Legend(this.settings, () => this.rebuildAnimated())
+            this.legend = new Legend(this.settings, this.viewState, () => this.rebuildAnimated())
 
         this.updateLayout()
     }

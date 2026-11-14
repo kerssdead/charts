@@ -6,12 +6,12 @@ import { normalizeSegmentedBar } from '@/helpers/ValueNormalization'
 import { getValueRows } from '@/export/TableRows'
 
 const SegmentedBarDefinition: ChartDefinition<SegmentedBarData> = {
-    createProcess: (data, pixel, settings) => new SegmentedBarProcess(data, pixel, settings),
+    createProcess: (data, pixel, settings, state) => new SegmentedBarProcess(data, pixel, settings, state),
     prepareData: prepareSegmentedBar,
     normalizeData: normalizeSegmentedBar,
     getPaletteValues: data => data.values ?? [],
     getUngroupedPaletteValues: data => data.stops ?? [],
-    getTableRows: data => getValueRows(data.values),
+    getTableRows: (data, isDisabled) => getValueRows(data.values, isDisabled),
     hasLegend: () => false,
     hasMenu: false,
     hasFixedHeader: false

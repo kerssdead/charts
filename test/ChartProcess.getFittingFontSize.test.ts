@@ -1,5 +1,6 @@
 import ChartProcess from '@/render/ChartProcess'
 import Data from '@/types/interfaces/Data'
+import { createState } from './ViewStateTestData'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -16,7 +17,12 @@ class TestProcess extends ChartProcess<Data> {
     }
 }
 
-const process = new TestProcess({ values: [] } as unknown as Data, { x: 1, y: 1 }, { valuePostfix: undefined })
+const process = new TestProcess(
+    { values: [] } as unknown as Data,
+    { x: 1, y: 1 },
+    { valuePostfix: undefined },
+    createState()
+)
 
 describe('Getting fitting font size', () => {
     it('Should scale font to fill available width', () => {

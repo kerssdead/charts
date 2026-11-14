@@ -3,7 +3,7 @@ import Theme, { ColorTheme } from '@/Theme'
 import Renderer from '@/renderer/Renderer'
 import Debug from '@/helpers/Debug'
 import { normalize } from '@/charts/Settings'
-import { keepState } from '@/charts/SettingsState'
+import ViewState from '@/charts/ViewState'
 import ChartFailure from '@/ui/ChartFailure'
 import { applyFallbackHostSize, applyHostSize } from '@/helpers/HostSize'
 import CanvasHost from '@/renderer/CanvasHost'
@@ -28,6 +28,8 @@ export default class Chart {
     private host!: CanvasHost
 
     private renderer!: Renderer
+
+    private viewState!: ViewState
 
     private readonly onThemeChange = () => {
         this.applySettings(this.source)
@@ -65,6 +67,8 @@ export default class Chart {
 
         try {
             this.settings = normalize(settings, element)
+            this.viewState = new ViewState()
+            this.viewState.apply(this.settings)
 
             this.bindMenuActions()
             applyHostSize(element, this.settings)
@@ -78,7 +82,7 @@ export default class Chart {
 
             Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
 
-            this.renderer = new Renderer(this.host.canvas, error => this.handleError(error))
+            this.renderer = new Renderer(this.host.canvas, this.viewState, error => this.handleError(error))
             this.renderer.apply(this.settings)
 
             Debug.log(settings, this.settings, this.host.canvas)
@@ -147,12 +151,9 @@ export default class Chart {
     }
 
     private update(settings: ChartSettings) {
-        const previous = this.settings
-
         this.source = settings
         this.settings = normalize(settings, this.element)
-
-        keepState(previous, this.settings)
+        this.viewState.apply(this.settings)
 
         this.bindMenuActions()
         applyHostSize(this.element, this.settings)

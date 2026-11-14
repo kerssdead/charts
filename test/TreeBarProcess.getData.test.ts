@@ -9,6 +9,7 @@ import Sector from '@/types/Sector'
 import ProcessSettings from '@/types/ProcessSettings'
 import RenderItemImage from '@/types/RenderItemImage'
 import { ImageCrossOrigin } from '@/static/Enums'
+import { createState } from './ViewStateTestData'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000', lineAxis: '#e0e0e0' }))
 
@@ -29,8 +30,8 @@ const row = (id: string, values: number[], extra: Partial<TreeBarRow> = {}) => {
     return new TreeBarRow({ id, label: id, parts: values.map(part), ...extra })
 }
 
-function create(data: Partial<TreeBarData>) {
-    return new TreeBarProcess({ values: [], ...data } as TreeBarData, PIXEL, SETTINGS)
+function create(data: Partial<TreeBarData>, state = createState(data)) {
+    return new TreeBarProcess({ values: [], ...data } as TreeBarData, PIXEL, SETTINGS, state)
 }
 
 function getItems(process: TreeBarProcess) {
@@ -116,25 +117,28 @@ describe('Getting tree bar data', () => {
 
     it('Should toggle sort direction by header click', () => {
         const data = { values: [row('a', [1])], columns: [{ key: 'amount', title: 'Amount' }] } as TreeBarData
-        const process = new TreeBarProcess(data, PIXEL, SETTINGS)
+        const state = createState(data)
+        const process = create(data, state)
         const onChange = jest.fn()
 
         process.onChange = onChange
 
         getItems(process).get('tree-bar-column-amount-area')?.onClick?.()
 
-        expect([data.sortColumn, data.sortDescending, onChange.mock.calls.length])
-            .toEqual(['amount', false, 1])
+        expect([state.sortColumn, state.isSortDescending, onChange.mock.calls.length, data.sortColumn])
+            .toEqual(['amount', false, 1, undefined])
 
         getItems(process).get('tree-bar-column-amount-area')?.onClick?.()
 
-        expect(data.sortDescending)
+        expect(state.isSortDescending)
             .toBe(true)
     })
 
     it('Should toggle expanded state only for rows with children', () => {
         const parent = row('a', [1], { children: [row('b', [1])] })
-        const process = create({ values: [parent, row('c', [1])] })
+        const data = { values: [parent, row('c', [1])] }
+        const state = createState(data)
+        const process = create(data, state)
         const onChange = jest.fn()
 
         process.onChange = onChange
@@ -143,8 +147,8 @@ describe('Getting tree bar data', () => {
 
         items.get('tree-bar-row-a-toggle-area')?.onClick?.()
 
-        expect([parent.expanded, onChange.mock.calls.length, items.has('tree-bar-row-c-toggle-area')])
-            .toEqual([true, 1, false])
+        expect([state.isExpanded(parent), parent.expanded, onChange.mock.calls.length, items.has('tree-bar-row-c-toggle-area')])
+            .toEqual([true, undefined, 1, false])
     })
 
     it('Should format number cells and show bar label', () => {
@@ -182,7 +186,8 @@ describe('Getting tree bar data', () => {
         const process = new TreeBarProcess(
             { values: [row('a', [1], { image: 'a.png' })] } as TreeBarData,
             PIXEL,
-            { ...SETTINGS, imageCrossOrigin: ImageCrossOrigin.None }
+            { ...SETTINGS, imageCrossOrigin: ImageCrossOrigin.None },
+            createState()
         )
 
         expect((getItems(process).get('tree-bar-row-a-image')?.shape as RenderItemImage).crossOrigin)

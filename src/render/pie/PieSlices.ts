@@ -4,6 +4,7 @@ import Theme from '@/Theme'
 import { sum } from '@/helpers/Collections'
 import { FULL_ANGLE } from '@/static/constants/Index'
 import { OTHER_KEY } from '@/render/pie/PieConstants'
+import { IsDisabled } from '@/types/ChartViewState'
 
 export type KeyedSector = {
     sector: Sector
@@ -16,12 +17,12 @@ export type PieSlice = KeyedSector & {
     angle: number
 }
 
-export function hasVisibleValue(sector: Sector) {
-    return !sector.disabled && sector.value > 0
+export function hasVisibleValue(sector: Sector, isDisabled: IsDisabled) {
+    return !isDisabled(sector) && sector.value > 0
 }
 
-export function getVisibleTotal(sectors: Sector[]) {
-    return sum(sectors.filter(hasVisibleValue), sector => sector.value)
+export function getVisibleTotal(sectors: Sector[], isDisabled: IsDisabled) {
+    return sum(sectors.filter(sector => hasVisibleValue(sector, isDisabled)), sector => sector.value)
 }
 
 export function getRadiansPerUnit(visibleTotal: number) {
@@ -38,10 +39,11 @@ export function toKeyedSectors(sectors: Sector[]): KeyedSector[] {
 
 export function getSectorsWithSmallGroupedIntoOther(
     sectors: Sector[],
+    isDisabled: IsDisabled,
     isSmall: (sector: Sector) => boolean
 ): KeyedSector[] {
     const keyedSectors = toKeyedSectors(sectors)
-    const smallSectors = sectors.filter(sector => hasVisibleValue(sector) && isSmall(sector))
+    const smallSectors = sectors.filter(sector => hasVisibleValue(sector, isDisabled) && isSmall(sector))
 
     if (smallSectors.length < 2)
         return keyedSectors
@@ -60,11 +62,17 @@ export function getSectorsWithSmallGroupedIntoOther(
     ]
 }
 
-export function getSlices(keyedSectors: KeyedSector[], radiansPerUnit: number, firstAngle: number): PieSlice[] {
+export function getSlices(
+    keyedSectors: KeyedSector[],
+    isDisabled: IsDisabled,
+    radiansPerUnit: number,
+    firstAngle: number
+): PieSlice[] {
     let startAngle = firstAngle
 
     return keyedSectors.map(keyedSector => {
-        const angle = hasVisibleValue(keyedSector.sector) ? keyedSector.sector.value * radiansPerUnit : 0
+        const isVisible = hasVisibleValue(keyedSector.sector, isDisabled)
+        const angle = isVisible ? keyedSector.sector.value * radiansPerUnit : 0
         const slice = { ...keyedSector, startAngle, angle }
 
         startAngle += angle

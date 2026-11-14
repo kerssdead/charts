@@ -5,6 +5,7 @@ import RenderItemText from '@/types/RenderItemText'
 import TreeData, { TreeValue } from '@/types/data/TreeData'
 import Value from '@/types/base/Value'
 import { spreadColor } from '@/helpers/Color'
+import { createState } from './ViewStateTestData'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
 
@@ -20,7 +21,8 @@ const value = (id: string, amount: number, extra: Partial<TreeValue> = {}) => {
 }
 
 function getItems(data: Partial<TreeData>) {
-    const process = new TreeMapProcess({ values: [], ...data } as TreeData, PIXEL, { valuePostfix: undefined })
+    const treeData = { values: [], ...data } as TreeData
+    const process = new TreeMapProcess(treeData, PIXEL, { valuePostfix: undefined }, createState(treeData))
 
     return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))
 }

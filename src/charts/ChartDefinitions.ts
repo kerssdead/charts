@@ -17,6 +17,8 @@ import GaugeData from '@/types/data/GaugeData'
 import TreeData from '@/types/data/TreeData'
 import SegmentedBarData from '@/types/data/SegmentedBarData'
 import TreeBarData from '@/types/data/TreeBarData'
+import ChartViewState, { IsDisabled } from '@/types/ChartViewState'
+import Value from '@/types/base/Value'
 
 type ChartDataByType = {
     [ChartType.Plot]: PlotData
@@ -52,12 +54,19 @@ export function hasFixedHeader(chart: ChartItem) {
     return getChartDefinition(chart.type)?.hasFixedHeader ?? false
 }
 
-export function createProcess(chart: ChartItem, pixel: Point, settings: ChartSettings) {
-    return getChartDefinition(chart.type)?.createProcess(chart.data, pixel, settings)
+export function getValuesWithChildren(chart: ChartItem): Value[] {
+    if (!chart.data)
+        return []
+
+    return getChartDefinition(chart.type)?.getValuesWithChildren?.(chart.data) ?? chart.data.values ?? []
 }
 
-export function getTableRows(chart: ChartItem): TableData {
-    return getChartDefinition(chart.type)?.getTableRows(chart.data) ?? { headers: [], values: [] }
+export function createProcess(chart: ChartItem, pixel: Point, settings: ChartSettings, state: ChartViewState) {
+    return getChartDefinition(chart.type)?.createProcess(chart.data, pixel, settings, state)
+}
+
+export function getTableRows(chart: ChartItem, isDisabled: IsDisabled): TableData {
+    return getChartDefinition(chart.type)?.getTableRows(chart.data, isDisabled) ?? { headers: [], values: [] }
 }
 
 export function summarizeTable(chart: ChartItem, table: TableData): TableData {

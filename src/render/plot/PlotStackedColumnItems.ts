@@ -14,6 +14,8 @@ export default class PlotStackedColumnItems {
 
     private readonly style: PlotItemStyle
 
+    private readonly seriesGroups: PlotSeriesGroups
+
     private readonly columnGroups: Map<string, ColumnGroup>
 
     private readonly stackTops: Map<string, PlotSeries>
@@ -26,6 +28,7 @@ export default class PlotStackedColumnItems {
     ) {
         this.layout = layout
         this.style = style
+        this.seriesGroups = seriesGroups
         this.columnGroups = columnGroups
         this.stackTops = getStackTops(seriesGroups.enabledSeries, layout.yMax)
     }
@@ -34,6 +37,7 @@ export default class PlotStackedColumnItems {
         const { layout } = this
         const { categoryScale, valueScale, baseline } = layout.vertical
         const step = categoryScale.step
+        const isDisabled = this.seriesGroups.isDisabled(series)
 
         const stacked = series.values.flatMap((value, valueIndex) => {
             const y = getY(value)
@@ -49,9 +53,9 @@ export default class PlotStackedColumnItems {
 
             const key = getStackKey(value)
             const stack = stacks.get(key) ?? 0
-            const top = series.disabled ? stack : stack + y
+            const top = isDisabled ? stack : stack + y
             const bottomY = stack === 0 ? baseline : valueScale.getCoordinate(layout.capToYMax(stack))
-            const topY = series.disabled ? bottomY : valueScale.getCoordinate(layout.capToYMax(top))
+            const topY = isDisabled ? bottomY : valueScale.getCoordinate(layout.capToYMax(top))
 
             stacks.set(key, top)
 
@@ -63,7 +67,7 @@ export default class PlotStackedColumnItems {
                 width,
                 height: bottomY - topY,
                 isTop: this.stackTops.get(key) === series,
-                hasBreakMark: !series.disabled && layout.isAboveYMax(top) && !layout.isAboveYMax(stack)
+                hasBreakMark: !isDisabled && layout.isAboveYMax(top) && !layout.isAboveYMax(stack)
             }]
         })
 

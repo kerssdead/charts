@@ -5,6 +5,7 @@ import ChartSettings from '@/types/ChartSettings'
 import Sector from '@/types/Sector'
 import { ChartType, PlotType } from '@/static/Enums'
 import { createSeries } from './PlotTestData'
+import ViewState from '@/charts/ViewState'
 
 jest.mock('@/Theme', () => ({}))
 
@@ -22,7 +23,11 @@ function buildPanels(settings: Partial<ChartSettings>) {
 
     const panels = new ChartPanels(new Queue({} as CanvasRenderingContext2D), layout)
 
-    panels.build({ valuePostfix: undefined, ...settings } as ChartSettings, true, () => {})
+    const chartSettings = { valuePostfix: undefined, ...settings } as ChartSettings
+    const viewState = new ViewState()
+
+    viewState.apply(chartSettings)
+    panels.build(chartSettings, viewState, true, () => {})
 
     return panels.list
 }

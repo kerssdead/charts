@@ -1,9 +1,12 @@
 import { getSectorsWithSmallGroupedIntoOther } from '@/render/pie/PieSlices'
 import Sector from '@/types/Sector'
+import { isDisabledByFlag } from './ViewStateTestData'
 
 jest.mock('@/Theme', () => ({ other: '#888888' }))
 
 const isSmall = (sector: Sector) => sector.value < 10
+
+const group = (sectors: Sector[]) => getSectorsWithSmallGroupedIntoOther(sectors, isDisabledByFlag, isSmall)
 
 describe('Getting sectors with small grouped into other', () => {
     it('Should replace small sectors with other sector at the end', () => {
@@ -13,7 +16,7 @@ describe('Getting sectors with small grouped into other', () => {
             new Sector({ id: 'c', value: 2 })
         ]
 
-        const result = getSectorsWithSmallGroupedIntoOther(sectors, isSmall)
+        const result = group(sectors)
 
         expect(result.map(keyedSector => keyedSector.key))
             .toEqual(['b', 'other'])
@@ -30,7 +33,7 @@ describe('Getting sectors with small grouped into other', () => {
     it('Should not group single small sector', () => {
         const sectors = [new Sector({ id: 'a', value: 1 }), new Sector({ id: 'b', value: 100 })]
 
-        expect(getSectorsWithSmallGroupedIntoOther(sectors, isSmall).map(keyedSector => keyedSector.key))
+        expect(group(sectors).map(keyedSector => keyedSector.key))
             .toEqual(['a', 'b'])
     })
 
@@ -42,7 +45,7 @@ describe('Getting sectors with small grouped into other', () => {
             new Sector({ id: 'd', value: 100 })
         ]
 
-        expect(getSectorsWithSmallGroupedIntoOther(sectors, isSmall).map(keyedSector => keyedSector.key))
+        expect(group(sectors).map(keyedSector => keyedSector.key))
             .toEqual(['a', 'b', 'c', 'd'])
     })
 })

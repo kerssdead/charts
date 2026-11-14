@@ -1,5 +1,6 @@
 import ChartProcess from '@/render/ChartProcess'
 import Data from '@/types/interfaces/Data'
+import { createState } from './ViewStateTestData'
 
 class TestProcess extends ChartProcess<Data> {
     getData() {
@@ -12,7 +13,8 @@ describe('Getting chart value axis', () => {
         const process = new TestProcess(
             { values: [] } as unknown as Data,
             { x: 1, y: 1 },
-            { valuePostfix: undefined }
+            { valuePostfix: undefined },
+            createState()
         )
 
         expect(process.getValueAxis())

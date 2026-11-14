@@ -10,6 +10,7 @@ import PlotLayout from '@/render/plot/PlotLayout'
 import PlotTitles from '@/render/plot/PlotTitles'
 import PlotAxes from '@/render/plot/PlotAxes'
 import PlotSeriesItems from '@/render/plot/PlotSeriesItems'
+import ChartViewState from '@/types/ChartViewState'
 
 export default class PlotProcess extends ChartProcess<PlotData> {
     private readonly seriesGroups: PlotSeriesGroups
@@ -22,10 +23,10 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
     private readonly seriesItems: PlotSeriesItems
 
-    constructor(data: PlotData, pixel: Point, settings: ProcessSettings) {
-        super(data, pixel, settings)
+    constructor(data: PlotData, pixel: Point, settings: ProcessSettings, state: ChartViewState) {
+        super(data, pixel, settings, state)
 
-        this.seriesGroups = new PlotSeriesGroups(data.values)
+        this.seriesGroups = new PlotSeriesGroups(data.values, state.isDisabled)
         this.layout = new PlotLayout(data, this.units, this.seriesGroups)
         this.titles = new PlotTitles(data, this.units, this.layout)
         this.axes = new PlotAxes(data, this.units, this.layout, this.seriesGroups)

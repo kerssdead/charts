@@ -5,6 +5,7 @@ import RenderItemText from '@/types/RenderItemText'
 import GaugeData from '@/types/data/GaugeData'
 import Sector from '@/types/Sector'
 import ProcessSettings from '@/types/ProcessSettings'
+import { createState } from './ViewStateTestData'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
 
@@ -24,7 +25,8 @@ const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
 }
 
 function getItems(data: Partial<GaugeData>, pixel = PIXEL) {
-    const process = new GaugeProcess({ values: [], ...data } as GaugeData, pixel, SETTINGS)
+    const gaugeData = { values: [], ...data } as GaugeData
+    const process = new GaugeProcess(gaugeData, pixel, SETTINGS, createState(gaugeData))
 
     return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))
 }

@@ -3,17 +3,20 @@ import ChartSettings from '@/types/ChartSettings'
 import { groupBy } from '@/helpers/Collections'
 import { AnimationTiming } from '@/static/constants/Index'
 import { hasLegend } from '@/charts/ChartDefinitions'
-import { getGroupKey } from '@/helpers/ValueKeys'
+import ViewState from '@/charts/ViewState'
 
 export default class LegendValues {
     private settings: ChartSettings
 
     private values: Value[] = []
 
+    private readonly viewState: ViewState
+
     private readonly toggles: Map<string, DOMHighResTimeStamp | null> = new Map()
 
-    constructor(settings: ChartSettings) {
+    constructor(settings: ChartSettings, viewState: ViewState) {
         this.settings = settings
+        this.viewState = viewState
         this.values = LegendValues.getValues(settings)
     }
 
@@ -37,7 +40,11 @@ export default class LegendValues {
     }
 
     getKey(value: Value) {
-        return getGroupKey(value, this.settings.charts.length > 1)
+        return this.viewState.getKey(value)
+    }
+
+    isDisabled(value: Value) {
+        return this.viewState.isDisabled(value)
     }
 
     toggle(value: Value): boolean {
@@ -46,11 +53,7 @@ export default class LegendValues {
         if (this.toggles.has(key) || !value.canToggle())
             return false
 
-        const disabled = value.disabled
-
-        for (const item of this.values)
-            if (this.getKey(item) === key && item.disabled === disabled)
-                item.disabled = !disabled
+        this.viewState.toggleDisabled(value)
 
         if (!this.settings.staticMode)
             this.toggles.set(key, null)
@@ -60,9 +63,7 @@ export default class LegendValues {
 
     reset() {
         this.toggles.clear()
-
-        for (const value of this.values)
-            value.reset()
+        this.viewState.reset()
     }
 
     updateToggles(now: DOMHighResTimeStamp) {

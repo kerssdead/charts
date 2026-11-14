@@ -1,12 +1,15 @@
 import { getVisibleEntries } from '@/render/treeBar/TreeBarSorting'
 import TreeBarRow from '@/types/TreeBarRow'
+import { createState } from './ViewStateTestData'
 
 const row = (id: string, amount: number, extra: Partial<TreeBarRow> = {}) => {
     return new TreeBarRow({ id, label: id, cells: { amount }, ...extra })
 }
 
 const entries = (rows: TreeBarRow[], sortColumn?: string) => {
-    return getVisibleEntries(rows, { sortColumn }).map(({ node, level }) => [node.id, level])
+    const state = createState({ values: rows, sortColumn })
+
+    return getVisibleEntries(rows, state).map(({ node, level }) => [node.id, level])
 }
 
 describe('Getting visible tree bar entries', () => {
@@ -36,7 +39,9 @@ describe('Getting visible tree bar entries', () => {
         const child = (id: string, amount: string) => new TreeBarRow({ id, label: id, cells: { amount } })
         const rows = [row('a', 1, { expanded: true, children: [child('a1', '1.500'), child('a2', '20')] })]
 
-        expect(getVisibleEntries(rows, { sortColumn: 'amount', sortDescending: false, numberLocale: 'de-DE' }).map(({ node }) => node.id))
+        const state = createState({ values: rows, sortColumn: 'amount' })
+
+        expect(getVisibleEntries(rows, state, 'de-DE').map(({ node }) => node.id))
             .toEqual(['a', 'a2', 'a1'])
     })
 })

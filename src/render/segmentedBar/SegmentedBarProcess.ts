@@ -30,6 +30,7 @@ import {
     STOP_WIDTH,
     TRACK_ALPHA
 } from '@/render/segmentedBar/SegmentedBarConstants'
+import ChartViewState from '@/types/ChartViewState'
 
 export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> {
     private readonly total: number
@@ -40,8 +41,8 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
 
     private readonly partsLayout: PartsLayout
 
-    constructor(data: SegmentedBarData, pixel: Point, settings: ProcessSettings) {
-        super(data, pixel, settings)
+    constructor(data: SegmentedBarData, pixel: Point, settings: ProcessSettings, state: ChartViewState) {
+        super(data, pixel, settings, state)
 
         const positiveValues = data.values.filter(value => value.value > 0)
 

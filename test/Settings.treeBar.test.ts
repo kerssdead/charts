@@ -1,5 +1,4 @@
 import { normalize } from '@/charts/Settings'
-import { keepState } from '@/charts/SettingsState'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import TreeBarData from '@/types/data/TreeBarData'
@@ -47,30 +46,5 @@ describe('Normalizing tree bar settings', () => {
 
         expect([root.parts[0].color, child?.parts[0].color, child?.parts[1].color])
             .toEqual(['#336699', '#ff0000', '#00ff00'])
-    })
-
-    it('Should keep expanded and sort state between settings', () => {
-        const data = () => ({ values: [{ id: 'a', label: 'Lorem', children: [{ id: 'b', label: 'Ipsum' }] }] })
-
-        const previous = settings(data())
-        const next = settings(data())
-
-        rows(previous)[0].expanded = true;
-        (previous.charts[0].data as TreeBarData).sortColumn = 'amount'
-
-        keepState(previous, next)
-
-        expect([rows(next)[0].expanded, (next.charts[0].data as TreeBarData).sortColumn])
-            .toEqual([true, 'amount'])
-    })
-
-    it('Should prefer explicit expanded state from new settings', () => {
-        const previous = settings({ values: [{ id: 'a', label: 'Lorem', expanded: true }] })
-        const next = settings({ values: [{ id: 'a', label: 'Lorem', expanded: false }] })
-
-        keepState(previous, next)
-
-        expect(rows(next)[0].expanded)
-            .toBe(false)
     })
 })

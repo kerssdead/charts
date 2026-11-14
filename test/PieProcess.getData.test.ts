@@ -6,6 +6,7 @@ import RenderItemLeaderLine from '@/types/RenderItemLeaderLine'
 import PieData from '@/types/data/PieData'
 import Sector from '@/types/Sector'
 import PieProcessSettings from '@/render/pie/PieProcessSettings'
+import { createState } from './ViewStateTestData'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000', other: '#888888' }))
 
@@ -25,7 +26,9 @@ const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
 }
 
 function create(data: Partial<PieData>, settings: Partial<PieProcessSettings> = {}, pixel = PIXEL) {
-    return new PieProcess({ values: [], ...data } as PieData, pixel, { ...SETTINGS, ...settings })
+    const pieData = { values: [], ...data } as PieData
+
+    return new PieProcess(pieData, pixel, { ...SETTINGS, ...settings }, createState(pieData))
 }
 
 function getItems(process: PieProcess) {
@@ -125,14 +128,15 @@ describe('Getting pie data', () => {
 
     it('Should toggle pin on click and notify about change', () => {
         const values = [sector('A', 1), sector('B', 3)]
-        const process = create({ values })
+        const state = createState({ values })
+        const process = new PieProcess({ values } as PieData, PIXEL, SETTINGS, state)
         const onChange = jest.fn()
 
         process.onChange = onChange
         getItems(process).get('sector-A')?.onClick?.()
 
-        expect(values[0].pinned)
-            .toBe(true)
+        expect([state.isPinned(values[0]), values[0].pinned])
+            .toEqual([true, undefined])
         expect(onChange)
             .toHaveBeenCalledTimes(1)
     })

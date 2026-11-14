@@ -35,6 +35,7 @@ export default class PlotColumnItems {
         const { categoryScale, valueScale, baseline } = layout.vertical
         const step = categoryScale.step
         const index = this.seriesGroups.indexOf(series)
+        const isDisabled = this.seriesGroups.isDisabled(series)
 
         return (items: QueueItemsBuilder) => {
             series.values.forEach((value, valueIndex) => {
@@ -48,7 +49,7 @@ export default class PlotColumnItems {
                 const { columns, slots } = getColumnGroup(this.columnGroups, value)
                 const visibleBefore = columns.filter(column => this.seriesGroups.indexOf(column) < index).length
                 const widthInStep = step / slots
-                const width = series.disabled ? 0 : widthInStep
+                const width = isDisabled ? 0 : widthInStep
                 const offset = visibleBefore * widthInStep
 
                 const left = categoryScale.getSlotStart(slot) + offset
@@ -56,14 +57,14 @@ export default class PlotColumnItems {
 
                 const column = items.rect()
                      .position(left + width / 2, baseline)
-                     .size(width, series.disabled ? 0 : baseline - top)
+                     .size(width, isDisabled ? 0 : baseline - top)
                      .round([CORNER_RADIUS, CORNER_RADIUS, 0, 0])
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
                      .grow('y', baseline)
 
                 this.style.styleRect(column, series, slot, valueIndex)
 
-                if (!series.disabled && layout.isAboveYMax(y)) {
+                if (!isDisabled && layout.isAboveYMax(y)) {
                     const mark = addColumnBreakMark(items, layout.units, { start: left, end: left + width }, top)
 
                     this.style.styleBreakMark(mark, series, slot, valueIndex)

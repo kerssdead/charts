@@ -6,6 +6,7 @@ import Sector from '@/types/Sector'
 import SegmentedBarStop from '@/types/SegmentedBarStop'
 import { COORDS_MAX_X } from '@/static/constants/Index'
 import ProcessSettings from '@/types/ProcessSettings'
+import { createState } from './ViewStateTestData'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
 
@@ -19,7 +20,8 @@ function getItems(data: Partial<SegmentedBarData>) {
     const process = new SegmentedBarProcess(
         { values: [], stops: [], ...data } as SegmentedBarData,
         PIXEL,
-        SETTINGS
+        SETTINGS,
+        createState()
     )
 
     return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))

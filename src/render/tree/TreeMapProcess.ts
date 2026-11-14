@@ -27,7 +27,7 @@ export default class TreeMapProcess extends ChartProcess<TreeData> {
     private readonly gap = Number.isFinite(this.data.gap) ? this.data.gap : DEFAULT_GAP
 
     isEmpty() {
-        return !this.data.values.some(value => !value.disabled && getTreeSum(value) > 0)
+        return !this.data.values.some(value => !this.state.isDisabled(value) && getTreeSum(value) > 0)
     }
 
     getData() {
@@ -41,7 +41,7 @@ export default class TreeMapProcess extends ChartProcess<TreeData> {
         }
 
         const groups = TreeMapLayout.getPositiveSortedDescending(
-            this.data.values.filter(value => !value.disabled),
+            this.data.values.filter(value => !this.state.isDisabled(value)),
             getTreeSum
         )
 

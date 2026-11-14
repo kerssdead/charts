@@ -1,9 +1,15 @@
 import TreeMapProcess from '@/render/tree/TreeMapProcess'
 import TreeData, { TreeValue } from '@/types/data/TreeData'
 import Value from '@/types/base/Value'
+import { createState } from './ViewStateTestData'
 
 const create = (values: TreeValue[]) => {
-    return new TreeMapProcess({ values } as TreeData, { x: 5, y: 5 }, { valuePostfix: undefined })
+    return new TreeMapProcess(
+        { values } as TreeData,
+        { x: 5, y: 5 },
+        { valuePostfix: undefined },
+        createState({ values })
+    )
 }
 
 describe('Checking tree emptiness', () => {

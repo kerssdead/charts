@@ -10,6 +10,7 @@ import TextResources from '@/static/TextResources'
 import { ContextMenu } from '@/static/constants/Index'
 import { hasMenu } from '@/charts/ChartDefinitions'
 import Theme, { ColorTheme } from '@/Theme'
+import { IsDisabled } from '@/types/ChartViewState'
 
 export default class ChartMenu {
     ratio: number = 1
@@ -24,6 +25,8 @@ export default class ChartMenu {
 
     private readonly queue: Queue
 
+    private isDisabled!: IsDisabled
+
     private readonly onOpen: (point: Point) => void
 
     private readonly drawClean: () => void
@@ -35,8 +38,9 @@ export default class ChartMenu {
         this.drawClean = drawClean
     }
 
-    apply(settings: ChartSettings) {
+    apply(settings: ChartSettings, isDisabled: IsDisabled) {
         this.settings = settings
+        this.isDisabled = isDisabled
         this.buttons = undefined
 
         if (settings.disableInteractions || settings.disableMenu
@@ -84,6 +88,7 @@ export default class ChartMenu {
                 action: () => new Modal(
                     Decomposition.fromCharts(
                         charts,
+                        this.isDisabled,
                         () => Export.asCsv(charts, title),
                         this.settings.decimals
                     ),

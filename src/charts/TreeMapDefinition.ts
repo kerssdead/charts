@@ -9,12 +9,12 @@ import { withShares } from '@/export/TableTotals'
 import TextResources from '@/static/TextResources'
 
 const TreeMapDefinition: ChartDefinition<TreeData> = {
-    createProcess: (data, pixel, settings) => new TreeMapProcess(data, pixel, settings),
+    createProcess: (data, pixel, settings, state) => new TreeMapProcess(data, pixel, settings, state),
     prepareData: prepareSectors,
     normalizeData: normalizeTreeValues,
     mergeSameLabelValues: mergeTreeValues,
     getPaletteValues: data => data.values ?? [],
-    getTableRows: data => getValueRows(data.values, getTreeSum),
+    getTableRows: (data, isDisabled) => getValueRows(data.values, isDisabled, getTreeSum),
     summarizeTable: table => withShares(table, TextResources.value),
     hasLegend: data => (data?.values?.length ?? 0) > 1,
     hasMenu: true,

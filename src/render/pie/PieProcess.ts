@@ -26,24 +26,30 @@ import {
     SECTOR_GAP,
     TOP_ANGLE
 } from '@/render/pie/PieConstants'
+import ChartViewState from '@/types/ChartViewState'
 
 export default class PieProcess extends ChartProcess<PieData, PieProcessSettings> {
     private readonly sizing: PieSizing
 
     private readonly startAngle: number
 
-    constructor(data: PieData, pixel: Point, settings: PieProcessSettings) {
-        super(data, pixel, settings)
+    constructor(data: PieData, pixel: Point, settings: PieProcessSettings, state: ChartViewState) {
+        super(data, pixel, settings, state)
 
         this.sizing = new PieSizing(this.units, this.data.innerRadius)
         this.startAngle = TOP_ANGLE + toRadians(this.data.startAngle ?? 0)
     }
 
     getData() {
-        const visibleTotal = PieSlices.getVisibleTotal(this.data.values)
+        const visibleTotal = PieSlices.getVisibleTotal(this.data.values, this.state.isDisabled)
         const radiansPerUnit = PieSlices.getRadiansPerUnit(visibleTotal)
 
-        const slices = PieSlices.getSlices(this.getKeyedSectors(radiansPerUnit), radiansPerUnit, this.startAngle)
+        const slices = PieSlices.getSlices(
+            this.getKeyedSectors(radiansPerUnit),
+            this.state.isDisabled,
+            radiansPerUnit,
+            this.startAngle
+        )
         const labelPlacements = this.getLabelPlacements(slices, visibleTotal)
 
         return [
@@ -64,6 +70,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
 
         return PieSlices.getSectorsWithSmallGroupedIntoOther(
             this.data.values,
+            this.state.isDisabled,
             sector => sector.value * radiansPerUnit * this.sizing.radius < minArcLength
         )
     }
@@ -74,11 +81,11 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
 
         const placements: LabelPlacement[] = slices.map(slice => ({
             angle: PieSlices.getMiddleAngle(slice),
-            isVisible: slice.sector.disabled || PieSlices.hasVisibleValue(slice.sector)
+            isVisible: this.state.isDisabled(slice.sector) || this.hasVisibleValue(slice.sector)
         }))
 
         const visibleSliceIndexes = slices.flatMap(
-            (slice, sliceIndex) => PieSlices.hasVisibleValue(slice.sector) ? [sliceIndex] : []
+            (slice, sliceIndex) => this.hasVisibleValue(slice.sector) ? [sliceIndex] : []
         )
 
         const layoutPlacements = layoutLabels(
@@ -132,6 +139,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
         const endAngle = startAngle + angle
         const labelAngleOffset = normalizeAngle(labelPlacement.angle - PieSlices.getMiddleAngle(slice))
         const leaderAnchorRange = angle / 2 - Math.min(angle / 2, LEADER_ANCHOR_INSET_ANGLE)
+        const isDisabled = this.state.isDisabled(sector)
 
         const radius = this.units.x(this.sizing.radius)
         const innerRadius = radius * this.sizing.innerRadiusRatio
@@ -150,7 +158,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             .innerRadius(innerRadius)
             .gap(SECTOR_GAP)
             .cornerRadius(SECTOR_CORNER_RADIUS)
-            .pull(sector.pinned && !sector.disabled ? this.units.x(PINNED_SECTOR_OFFSET) : 0)
+            .pull(this.state.isPinned(sector) && !isDisabled ? this.units.x(PINNED_SECTOR_OFFSET) : 0)
             .grow(this.startAngle)
             .fill()
             .gradient()
@@ -162,11 +170,11 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             .data(sector.data)
             .contextMenu()
 
-        if (sector.disabled)
+        if (isDisabled)
             arc.ghost()
         else if (!groupedSectors)
             arc.onClick(() => {
-                sector.pinned = !sector.pinned
+                this.state.togglePinned(sector)
                 this.onChange?.()
             })
 
@@ -177,7 +185,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             .anchor(clamp(labelAngleOffset, -leaderAnchorRange, leaderAnchorRange))
             .key(`sector-leader-${ key }`)
 
-        if (sector.disabled)
+        if (isDisabled)
             leader.ghost()
 
         if (!labelPlacement.isVisible)
@@ -192,15 +200,15 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
 
         leader.target(text)
 
-        if (sector.disabled)
+        if (isDisabled)
             text.ghost()
     }
 
     private getLabelText(sector: Sector, visibleTotal: number) {
-        if (sector.pinned && PieSlices.hasVisibleValue(sector))
+        if (this.state.isPinned(sector) && this.hasVisibleValue(sector))
             return `${ sector.label }: ${ this.getValueWithPercentText(sector.value, visibleTotal) }`
 
-        return this.data.labelPercent && PieSlices.hasVisibleValue(sector)
+        return this.data.labelPercent && this.hasVisibleValue(sector)
                ? `${ sector.label } ${ this.percent(sector.value / visibleTotal) }`
                : sector.label ?? ''
     }
@@ -215,6 +223,10 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
         }
 
         return this.tooltip(...rows)
+    }
+
+    private hasVisibleValue(sector: Sector) {
+        return PieSlices.hasVisibleValue(sector, this.state.isDisabled)
     }
 
     private getValueWithPercentText(value: number, visibleTotal: number) {

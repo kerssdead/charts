@@ -37,6 +37,7 @@ import {
     VALUE_MIN_FONT_SIZE,
     VALUE_WIDTH_RATIO
 } from '@/render/gauge/GaugeConstants'
+import ChartViewState from '@/types/ChartViewState'
 
 export default class GaugeProcess extends ChartProcess<GaugeData> {
     private readonly enabledSectors: Sector[]
@@ -47,8 +48,8 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
 
     private readonly sizing: GaugeSizing
 
-    constructor(data: GaugeData, pixel: Point, settings: ProcessSettings) {
-        super(data, pixel, settings)
+    constructor(data: GaugeData, pixel: Point, settings: ProcessSettings, state: ChartViewState) {
+        super(data, pixel, settings, state)
 
         if (this.min > this.max)
             fail(ErrorType.InvalidGaugeRange)
@@ -56,7 +57,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         const formatValue = (value: number) => this.formatValue(value)
         const legendAvailableWidth = this.units.toPxX(COORDS_MAX_X) - this.units.toPxX(CANVAS_PADDING) * 2
 
-        this.enabledSectors = data.values.filter(sector => !sector.disabled)
+        this.enabledSectors = data.values.filter(sector => !state.isDisabled(sector))
         this.legendLines = GaugeLegend.getLegendLines(
             GaugeLegend.getLegendItems(this.enabledSectors, value => this.formatValueWithRangeMark(value)),
             legendAvailableWidth

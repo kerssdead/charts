@@ -8,9 +8,11 @@ import TreeBarRow from '@/types/TreeBarRow'
 import Formatter from '@/helpers/Formatter'
 import TextResources from '@/static/TextResources'
 import { PlotAxisType } from '@/static/Enums'
+import { IsDisabled } from '@/types/ChartViewState'
 
 export function getValueRows<T extends Value>(
     values: T[],
+    isDisabled: IsDisabled,
     getValue: (value: T) => number = value => value.value
 ): TableData {
     const key = TextResources.value
@@ -20,13 +22,13 @@ export function getValueRows<T extends Value>(
         values: values.map(value => ({
             name: value.label ?? '',
             color: value.color,
-            disabled: value.disabled,
+            disabled: isDisabled(value),
             values: new Map([[key, getValue(value)]])
         }))
     }
 }
 
-export function getPlotRows(data: PlotData): TableData {
+export function getPlotRows(data: PlotData, isDisabled: IsDisabled): TableData {
     const headers = new Map<string, TableHeaderValue>()
 
     const values = data.values.map(series => {
@@ -44,7 +46,7 @@ export function getPlotRows(data: PlotData): TableData {
                 headers.set(key, { value: key, display: Formatter.axis(value.x, data.xType) })
         }
 
-        return { name: series.label, color: series.color, disabled: series.disabled, values: seriesValues }
+        return { name: series.label, color: series.color, disabled: isDisabled(series), values: seriesValues }
     })
 
     const uniqueHeaders = [...headers.values()]
@@ -57,7 +59,7 @@ export function getPlotRows(data: PlotData): TableData {
     return { headers: uniqueHeaders, values }
 }
 
-export function getTreeBarRows(data: TreeBarData): TableData {
+export function getTreeBarRows(data: TreeBarData, isDisabled: IsDisabled): TableData {
     const columns = data.columns ?? []
     const entries = flattenTreeBarRows(data.values)
     const nodes = entries.map(({ node }) => node)
@@ -69,11 +71,11 @@ export function getTreeBarRows(data: TreeBarData): TableData {
                       values: nodes.map(row => ({
                           name: row.label,
                           color: row.color,
-                          disabled: row.disabled,
+                          disabled: isDisabled(row),
                           values: new Map(columns.map(column => [column.key, getCellValue(row, column.key)]))
                       }))
                   }
-                  : getValueRows(nodes, getTreeBarTotal)
+                  : getValueRows(nodes, isDisabled, getTreeBarTotal)
 
     for (const [index, row] of table.values.entries()) {
         row.name = row.name.replace(/\n/g, ' ')
