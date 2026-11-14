@@ -29,4 +29,22 @@ describe('Saving charts as CSV', () => {
         expect(await getCsv([{ type: ChartType.Plot, data } as ChartItem]))
             .toBe('"","1","2"\n"A","1","2"\n"B","",""\n"","1","2"')
     })
+
+    it('Should escape csv formulas in series labels', async () => {
+        const data = {
+            values: [{ label: '=SUM(A1)', values: [{ x: 1, y: 1 }] }]
+        } as PlotData
+
+        expect(await getCsv([{ type: ChartType.Plot, data } as ChartItem]))
+            .toContain("'=SUM(A1)")
+    })
+
+    it('Should double quotes in series labels', async () => {
+        const data = {
+            values: [{ label: 'He"ader', values: [{ x: 1, y: 1 }] }]
+        } as PlotData
+
+        expect(await getCsv([{ type: ChartType.Plot, data } as ChartItem]))
+            .toContain('"He""ader"')
+    })
 })

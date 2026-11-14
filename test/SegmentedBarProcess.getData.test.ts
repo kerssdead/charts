@@ -10,6 +10,11 @@ import { createState } from './ViewStateTestData'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
 
+jest.mock('@/helpers/Text', () => ({
+    ...jest.requireActual('@/helpers/Text'),
+    stringWidth: (text: string) => text.length * 10
+}))
+
 const PIXEL = { x: 5000 / 1000, y: 5000 / 40 }
 
 const SETTINGS: ProcessSettings = { valuePostfix: undefined }
@@ -124,6 +129,33 @@ describe('Getting segmented bar data', () => {
         expect(rects.get('segmented-bar-stop-small')?.absolute.x).toBeCloseTo(BAR.x + BAR.width / 4)
         expect(rects.get('segmented-bar-stop-large')?.absolute.x).toBeCloseTo(BAR.x + BAR.width - 5 * PIXEL.x)
         expect(rects.get('segmented-bar-stop-percent')?.absolute.x).toBeCloseTo(BAR.x + BAR.width / 2)
+    })
+
+    it('Should label wide parts on both sides', () => {
+        const items = getItems({
+            values: [
+                new Sector({ id: 'left', label: 'Left', value: 10000, color: '#ff0000' }),
+                new Sector({ id: 'right', label: 'Right', value: 10000, color: '#ff0000' })
+            ]
+        })
+
+        expect(items.has('segmented-bar-part-left-label'))
+            .toBe(true)
+        expect(items.has('segmented-bar-part-right-label'))
+            .toBe(true)
+    })
+
+    it('Should add left and right labels from the data', () => {
+        const items = getItems({
+            values: [part('a', 1), part('b', 1)],
+            leftLabel: 'Left label',
+            rightLabel: 'Right label'
+        })
+
+        expect(items.has('segmented-bar-left-label'))
+            .toBe(true)
+        expect(items.has('segmented-bar-right-label'))
+            .toBe(true)
     })
 
     it('Should show percent values in tooltips in percentage mode', () => {

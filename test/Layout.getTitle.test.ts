@@ -65,3 +65,66 @@ describe('Getting chart title', () => {
             .toBe('A'.repeat(38) + '…')
     })
 })
+
+describe('Getting panel title', () => {
+    const built = (action: (items: QueueItemsBuilder) => void) => {
+        const items = new QueueItemsBuilder()
+
+        action(items)
+
+        return items.build()
+    }
+
+    it('Should build a fixed panel title item with key', () => {
+        const layout = new Layout()
+
+        layout.width = 800
+        layout.height = 300
+
+        const [item] = built(layout.getPanelTitle('Panel', { x: 1, y: 1 }) as (items: QueueItemsBuilder) => void)
+
+        expect(item.key)
+            .toBe('panel-title')
+    })
+
+    it('Should not build a panel title without a title', () => {
+        const layout = new Layout()
+
+        expect(layout.getPanelTitle(undefined, { x: 1, y: 1 }))
+            .toBe(QueueItemsBuilder.empty)
+    })
+})
+
+describe('Getting empty state title', () => {
+    it('Should build an empty state item with key', () => {
+        const layout = new Layout()
+        const items = new QueueItemsBuilder()
+
+        layout.getEmpty()(items)
+
+        const [item] = items.build()
+
+        expect(item.key)
+            .toBe('empty')
+    })
+})
+
+describe('Resetting layout window', () => {
+    it('Should have no area before sizing', () => {
+        expect(new Layout().hasArea)
+            .toBe(false)
+    })
+
+    it('Should reset the window to the layout size', () => {
+        const layout = new Layout()
+
+        layout.width = 800
+        layout.height = 300
+        layout.reset()
+
+        expect([layout.window.width, layout.window.height])
+            .toEqual([800, 300])
+        expect(layout.hasArea)
+            .toBe(true)
+    })
+})

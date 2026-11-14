@@ -5,6 +5,8 @@ import PlotSeries from '@/types/PlotSeries'
 import Sector from '@/types/Sector'
 import TextResources from '@/static/TextResources'
 import SegmentedBarData from '@/types/data/SegmentedBarData'
+import TreeBarData from '@/types/data/TreeBarData'
+import TreeBarRow from '@/types/TreeBarRow'
 
 describe('Normalizing settings', () => {
     it('Should convert legacy type and data to charts', () => {
@@ -185,5 +187,55 @@ describe('Normalizing settings', () => {
         } as unknown as ChartSettings))
             .not
             .toThrow()
+    })
+
+    it('Should prepare nested tree bar rows and parts', () => {
+        const settings = normalize({
+            type: ChartType.TreeBar,
+            data: {
+                values: [{ label: 'Lorem', parts: [{ value: '5' }], children: [{ label: 'Ipsum', parts: [{ value: 2 }] }] }]
+            }
+        } as unknown as ChartSettings)
+
+        const [root] = (settings.charts[0].data as TreeBarData).values
+        const child = root.children?.[0]
+
+        expect([root instanceof TreeBarRow, child instanceof TreeBarRow, root.parts[0] instanceof Sector])
+            .toEqual([true, true, true])
+        expect([root.parts[0].value, root.parts[0].label, child?.id])
+            .toEqual([5, undefined, 'Ipsum-0'])
+    })
+
+    it('Should parse tree bar parts and keep number locale for cells', () => {
+        const settings = normalize({
+            type: ChartType.TreeBar,
+            numberLocale: 'de-DE',
+            data: { values: [{ label: 'Lorem', parts: [{ value: '1.500' }] }] }
+        } as unknown as ChartSettings)
+
+        const data = settings.charts[0].data as TreeBarData
+
+        expect([data.values[0].parts[0].value, data.numberLocale])
+            .toEqual([1500, 'de-DE'])
+    })
+
+    it('Should inherit tree bar colors from parent rows and base color', () => {
+        const settings = normalize({
+            type: ChartType.TreeBar,
+            baseColor: '#336699',
+            data: {
+                values: [{
+                    label: 'Lorem',
+                    parts: [{ value: 1 }],
+                    children: [{ label: 'Ipsum', color: '#ff0000', parts: [{ value: 1 }, { value: 1, color: '#00ff00' }] }]
+                }]
+            }
+        } as unknown as ChartSettings)
+
+        const [root] = (settings.charts[0].data as TreeBarData).values
+        const child = root.children?.[0]
+
+        expect([root.parts[0].color, child?.parts[0].color, child?.parts[1].color])
+            .toEqual(['#336699', '#ff0000', '#00ff00'])
     })
 })

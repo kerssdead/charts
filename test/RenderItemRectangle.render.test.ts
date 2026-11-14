@@ -16,6 +16,8 @@ const context = () => ({
     roundRect: jest.fn(),
     fill: jest.fn(),
     stroke: jest.fn(),
+    beginPath: jest.fn(),
+    clip: jest.fn(),
     createLinearGradient: jest.fn(() => ({ addColorStop: jest.fn() }))
 })
 
@@ -131,6 +133,44 @@ describe('Rendering rectangle', () => {
             ctx.restore.mock.calls.length
         ])
             .toEqual([0, 0, 0])
+    })
+
+    it('Should shrink the rectangle while initializing without a grow axis', () => {
+        const ctx = context()
+        const shape = new RenderItemRectangle()
+        const item = new RenderItem(shape)
+
+        shape.absolute = { x: 1000, y: 2000, width: 500, height: 1000 }
+        shape.align = { x: HorizontalAlignment.Left, y: VerticalAlignment.Top }
+        item.animation.init = .5
+        shape.adjust(WINDOW)
+        shape.render(ctx as unknown as CanvasRenderingContext2D, item)
+
+        expect(ctx.roundRect.mock.calls[0].slice(0, 4))
+            .toEqual([100, 200, 25, 50])
+    })
+
+    it('Should clip the rectangle to its clip box', () => {
+        const ctx = context()
+        const shape = new RenderItemRectangle()
+        const item = new RenderItem(shape)
+
+        shape.absolute = { x: 1000, y: 2000, width: 500, height: 1000 }
+        shape.align = { x: HorizontalAlignment.Left, y: VerticalAlignment.Top }
+        shape.clip = { x: 100, y: 100, width: 2000, height: 2000, radius: 10 }
+        shape.adjust(WINDOW)
+        shape.render(ctx as unknown as CanvasRenderingContext2D, item)
+
+        expect(ctx.save)
+            .toHaveBeenCalled()
+        expect(ctx.roundRect)
+            .toHaveBeenCalledWith(10, 10, 200, 200, 1)
+        expect(ctx.clip)
+            .toHaveBeenCalled()
+        expect(ctx.beginPath)
+            .toHaveBeenCalled()
+        expect(ctx.restore)
+            .toHaveBeenCalled()
     })
 
 })

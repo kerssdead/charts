@@ -33,4 +33,25 @@ describe('Laying out labels', () => {
         expect(layoutLabels(labels, DISTANCE, BOUNDS))
             .toHaveLength(labels.length)
     })
+
+    it('Should fit labels that start outside the bounds', () => {
+        const placements = layoutLabels([
+            { angle: Math.PI / 2, value: 1, halfWidth: 20, halfHeight: 5 },
+            { angle: 0, value: 2, halfWidth: 20, halfHeight: 5 }
+        ], DISTANCE, { x: 100, y: 49 })
+
+        expect(placements.length)
+            .toBe(2)
+    })
+
+    it('Should spread overlapping labels apart', () => {
+        const placements = layoutLabels([
+            { angle: 0, value: 3, halfWidth: 20, halfHeight: 5 },
+            { angle: 0, value: 2, halfWidth: 20, halfHeight: 5 },
+            { angle: 0, value: 1, halfWidth: 20, halfHeight: 5 }
+        ], DISTANCE, BOUNDS)
+
+        expect(placements)
+            .toHaveLength(3)
+    })
 })

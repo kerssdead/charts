@@ -166,6 +166,11 @@ describe('Parsing string to number', () => {
             .toStrictEqual(144587.045)
     })
 
+    it('plus sign', () => {
+        expect(parseNumber('+5'))
+            .toStrictEqual(5)
+    })
+
     it('not a number', () => {
         expect(parseNumber('abc'))
             .toStrictEqual(NaN)

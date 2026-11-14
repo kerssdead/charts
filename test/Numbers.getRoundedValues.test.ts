@@ -213,4 +213,31 @@ describe('Calculating rounded values', () => {
             0.00]))
             .toStrictEqual([-1600000, -1200000, -800000, -400000, 0])
     })
+
+    it('Should grow the step when the nice step leaves no fit', () => {
+        expect(getRoundedValues([-350, 3.5]))
+            .toStrictEqual([-375, -250, -125, 0, 125])
+    })
+
+    it('Should distribute the remaining intervals between the sides', () => {
+        expect(getRoundedValues([-4.5, 2.5]))
+            .toStrictEqual([-5, -2.5, 0, 2.5, 5])
+        expect(getRoundedValues([-4, 7]))
+            .toStrictEqual([-8, -4, 0, 4, 8])
+    })
+
+    it('Should grow the negative intervals to cover a deep minimum with a fixed max', () => {
+        const result = getRoundedValues([-1000, 0, 1000], 5, 100)
+
+        expect(result[0])
+            .toBe(-1000)
+        expect(result[1])
+            .toBeCloseTo(-666.67, 2)
+        expect(result[2])
+            .toBeCloseTo(-333.33, 2)
+        expect(result[3])
+            .toBe(0)
+        expect(result[4])
+            .toBeCloseTo(333.33, 2)
+    })
 })

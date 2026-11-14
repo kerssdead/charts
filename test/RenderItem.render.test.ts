@@ -1,6 +1,7 @@
 import RenderItem from '@/types/RenderItem'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import CanvasWindow from '@/types/CanvasWindow'
+import Panel from '@/types/Panel'
 import { HorizontalAlignment, LineJoin, VerticalAlignment } from '@/static/Enums'
 
 const context = () => ({
@@ -13,7 +14,11 @@ const context = () => ({
     setLineDash: jest.fn(),
     roundRect: jest.fn(),
     fill: jest.fn(),
-    stroke: jest.fn()
+    stroke: jest.fn(),
+    save: jest.fn(),
+    rect: jest.fn(),
+    clip: jest.fn(),
+    restore: jest.fn()
 })
 
 const item = (x: number) => {
@@ -71,5 +76,77 @@ describe('Rendering item', () => {
 
         expect(ctx.lineJoin)
             .toBe(LineJoin.Miter)
+    })
+
+    it('Should skip ghosts that are not morphing', () => {
+        const target = item(0)
+
+        target.isGhost = true
+
+        const ctx = render(target, new CanvasWindow(100, 100))
+
+        expect(ctx.beginPath)
+            .not.toHaveBeenCalled()
+    })
+
+    it('Should mark leaving items as temp after their frame', () => {
+        const target = item(0)
+        const ctx = context()
+
+        target.animation.startInit(100, true)
+        target.render(ctx as unknown as CanvasRenderingContext2D, WINDOW, new CanvasWindow(100, 100), 0)
+        target.render(ctx as unknown as CanvasRenderingContext2D, WINDOW, new CanvasWindow(100, 100), 1000)
+
+        expect(target.isTemp)
+            .toBe(true)
+    })
+
+    it('Should fill with the item color and stroke with its stroke', () => {
+        const target = item(0)
+
+        target.color = '#ff0000'
+        target.stroke = '#00ff00'
+
+        const ctx = render(target, new CanvasWindow(100, 100))
+
+        expect(ctx.fillStyle)
+            .toBe('#ff0000')
+        expect(ctx.strokeStyle)
+            .toBe('#00ff00')
+    })
+
+    it('Should stroke with the fill color when no stroke is set', () => {
+        const target = item(0)
+
+        target.color = '#0000ff'
+
+        const ctx = render(target, new CanvasWindow(100, 100))
+
+        expect(ctx.strokeStyle)
+            .toBe('#0000ff')
+    })
+
+    it('Should clip items that cross the scroll panel bounds', () => {
+        const panel = new Panel(0, { x: 0, y: 0, width: 1, height: 1 })
+        const target = item(0)
+
+        panel.scroll = { top: 0, height: 100 }
+        panel.baseHeight = 50
+        panel.window = new CanvasWindow(100, 100)
+        panel.clip = { x: 0, y: 0, width: 100, height: 100 }
+
+        target.panel = panel
+        target.isScrollable = true
+
+        const ctx = context()
+
+        target.render(ctx as unknown as CanvasRenderingContext2D, WINDOW, new CanvasWindow(100, 100), 0)
+
+        expect(ctx.save)
+            .toHaveBeenCalled()
+        expect(ctx.clip)
+            .toHaveBeenCalled()
+        expect(ctx.restore)
+            .toHaveBeenCalled()
     })
 })

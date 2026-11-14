@@ -121,4 +121,15 @@ describe('Attaching table column highlight', () => {
         expect(highlight.hidden)
             .toBe(false)
     })
+
+    it('Should keep the highlight when the same cell stays hovered', () => {
+        const { highlight, hover } = attach()
+        const cell = { offsetLeft: 120, offsetWidth: 80 }
+
+        hover(cell)
+        hover(cell)
+
+        expect(highlight.style)
+            .toEqual({ left: '120px', width: '80px', height: '500px' })
+    })
 })

@@ -3,11 +3,13 @@ import Layout from '@/renderer/Layout'
 import Queue from '@/render/Queue'
 import ChartSettings from '@/types/ChartSettings'
 import Sector from '@/types/Sector'
+import TreeBarRow from '@/types/TreeBarRow'
 import { ChartType, PlotType } from '@/static/Enums'
 import { createSeries } from './PlotTestData'
 import ViewState from '@/charts/ViewState'
+import { Layer } from '@/static/constants/Index'
 
-jest.mock('@/Theme', () => ({}))
+jest.mock('@/Theme', () => ({ text: '#123456', canvasBackground: '#ffffff' }))
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -44,5 +46,76 @@ describe('Building chart panels', () => {
 
         expect([plot.valueAxis?.getAxisValue(plot.valueAxis.getAxisY(37)), pie.valueAxis])
             .toEqual([expect.closeTo(37), null])
+    })
+
+    it('Should add a scrollbar for a tree bar chart', () => {
+        const layout = new Layout()
+
+        layout.width = 600
+        layout.height = 300
+        layout.update({ title: undefined })
+
+        const queue = new Queue({} as CanvasRenderingContext2D)
+        const panels = new ChartPanels(queue, layout)
+
+        const chartSettings = {
+            charts: [{
+                type: ChartType.TreeBar,
+                data: {
+                    values: [new TreeBarRow({
+                        id: 'a',
+                        label: 'A',
+                        value: 1,
+                        parts: [new Sector({ id: 'p', value: 1, color: '#ff0000' })]
+                    })]
+                }
+            }]
+        } as unknown as ChartSettings
+
+        const viewState = new ViewState()
+
+        viewState.apply(chartSettings)
+        panels.build(chartSettings, viewState, true, () => {})
+
+        const scrollbar = queue.items.find(item => item.layer === Layer.Scrollbar)
+
+        expect(scrollbar)
+            .toBeDefined()
+        expect(scrollbar?.isFixed)
+            .toBe(true)
+    })
+
+    it('Should build an empty panel for an unknown chart', () => {
+        const panels = buildPanels({
+            charts: [{ type: 'Unknown' as ChartType, data: { values: [] } }]
+        })
+
+        expect(panels)
+            .toHaveLength(1)
+    })
+
+    it('Should show the empty state for a chart without values', () => {
+        const layout = new Layout()
+
+        layout.width = 600
+        layout.height = 300
+        layout.update({ title: undefined })
+
+        const queue = new Queue({} as CanvasRenderingContext2D)
+        const panels = new ChartPanels(queue, layout)
+
+        const chartSettings = {
+            charts: [{ type: ChartType.Plot, data: { values: [createSeries(PlotType.Line, [])] } }]
+        } as unknown as ChartSettings
+
+        const viewState = new ViewState()
+
+        viewState.apply(chartSettings)
+        panels.build(chartSettings, viewState, true, () => {})
+
+        const empty = queue.items.find(item => item.key === 'empty')
+
+        expect(empty)
+            .toBeDefined()
     })
 })

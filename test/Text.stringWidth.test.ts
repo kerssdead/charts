@@ -28,4 +28,16 @@ describe('Calculating string width', () => {
         expect(measureText)
             .toHaveBeenCalledTimes(1)
     })
+
+    it('Should prune the measurement cache when it is full', () => {
+        stringWidth('first')
+
+        for (let i = 0; i < 10001; i++)
+            stringWidth(`text ${ i }`)
+
+        stringWidth('first')
+
+        expect(measureText.mock.calls.filter(call => call[0] === 'first'))
+            .toHaveLength(2)
+    })
 })
