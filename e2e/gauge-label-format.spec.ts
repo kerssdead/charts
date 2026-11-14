@@ -14,8 +14,8 @@ test(
         await Utils.setup(page, browserName)
 
         await Settings.staticMode()
-        await Settings.gaugeMax(99)
         await Settings.chartType(ChartType.Gauge)
+        await Settings.gaugeMax(99)
 
         await Utils.checkRender('e3626988')
     }

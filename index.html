@@ -12,12 +12,16 @@
 
 <body>
     <div class="base">
-        <div class="chart-container">
-            <div id="chart"></div>
-        </div>
+        <header class="toolbar">
+            <h1>Sandbox</h1>
 
-        <div class="d-flex">
-            <div class="flex-grow-1">
+            <label class="toolbar-seed">
+                Seed
+
+                <input type="number" id="seed" oninput="initRNG(); refresh()"/>
+            </label>
+
+            <div class="toolbar-actions">
                 <button onclick="saveCookiesToClipboard()">
                     Save to clipboard
                 </button>
@@ -26,448 +30,17 @@
                     Load
                 </button>
             </div>
+        </header>
 
-            <label class="flex-shrink-0">
-                Seed
+        <div class="preview">
+            <div class="chart-container">
+                <div id="chart"></div>
+            </div>
 
-                <input type="number" id="seed" oninput="initRNG(); refresh()"/>
-            </label>
+            <div class="examples"></div>
         </div>
 
-        <div class="settings">
-            <div>
-                <label>
-                    Chart Type
-
-                    <select id="chart-type" onchange="refresh()">
-                        <option value="0">
-                            Plot
-                        </option>
-
-                        <option value="1">
-                            Circular
-                        </option>
-
-                        <option value="2">
-                            Gauge
-                        </option>
-
-                        <option value="3">
-                            Tree Map
-                        </option>
-
-                        <option value="4">
-                            Segmented Bar
-                        </option>
-
-                        <option value="5">
-                            Tree Bar
-                        </option>
-                    </select>
-                </label>
-
-                <label>
-                    Charts Count
-
-                    <input type="number" min="1" id="charts-count" onchange="refresh()" value="1"/>
-                </label>
-
-                <label>
-                    Columns
-
-                    <input type="number" min="0" id="columns" onchange="refresh()" value=""/>
-                </label>
-
-                <label>
-                    Values
-
-                    <select id="values-type" onchange="refresh()">
-                        <option value="0">
-                            Random
-                        </option>
-
-                        <option value="1">
-                            Ascending
-                        </option>
-
-                        <option value="2">
-                            Same
-                        </option>
-                    </select>
-                </label>
-
-                <label>
-                    Values Count
-
-                    <input type="number" min="0" id="values-count" onchange="refresh()" value="1"/>
-                </label>
-
-                <label>
-                    Width
-
-                    <input type="range" id="width" value="100" oninput="setWidth()"/>
-                </label>
-
-                <label>
-                    Height
-
-                    <input type="range" id="height" height="100" oninput="setHeight()"/>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="tooltip" onchange="refresh()"/>
-
-                    Tooltip
-                </label>
-
-                <label>
-                    <input type="checkbox" id="custom-tooltip" onchange="refresh()"/>
-
-                    Custom Tooltip
-                </label>
-
-                <label>
-                    <input type="checkbox" id="legend" onchange="refresh()"/>
-
-                    Legend
-                </label>
-
-                <label>
-                    <input type="checkbox" id="title" onchange="refresh()"/>
-
-                    Title
-                </label>
-
-                <label>
-                    <input type="checkbox" id="context-menu" onchange="refresh()"/>
-
-                    Context Menu
-                </label>
-
-                <label>
-                    <input type="checkbox" id="dark-theme" onchange="refresh()"/>
-
-                    Dark Theme
-                </label>
-
-                <label>
-                    <input type="checkbox" id="static-mode" onchange="refresh()"/>
-
-                    Static mode
-                </label>
-
-                <label>
-                    Colors
-
-                    <select id="color-mode" onchange="refresh()">
-                        <option value="0">
-                            Random
-                        </option>
-
-                        <option value="1">
-                            Palette
-                        </option>
-
-                        <option value="2">
-                            Base color
-                        </option>
-                    </select>
-                </label>
-
-                <label>
-                    Base Color
-
-                    <input type="color" id="base-color" onchange="refresh()" value="#32a852"/>
-                </label>
-
-                <label>
-                    Custom Label
-
-                    <input type="text" id="custom-label" onchange="refresh()" value=""/>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="indexed-custom-label" onchange="refresh()"/>
-
-                    Indexed custom label
-                </label>
-
-                <label>
-                    Postfix
-
-                    <input type="text" id="postfix" onchange="refresh()"/>
-                </label>
-
-                <label>
-                    Base Value
-
-                    <input type="number" id="base-value" onchange="refresh()" value="1000"/>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="debug-mode" onchange="refresh()"/>
-
-                    Debug mode
-                </label>
-
-                <label>
-                    <input type="checkbox" id="move" onchange="refresh()"/>
-
-                    Move
-                </label>
-            </div>
-
-            <div>
-                <label>
-                    Plot Type
-
-                    <select id="plot-type" onchange="refresh()">
-                        <option value="0">
-                            Line
-                        </option>
-
-                        <option value="1">
-                            Attention Line
-                        </option>
-
-                        <option value="2">
-                            Column
-                        </option>
-
-                        <option value="3">
-                            Bar
-                        </option>
-
-                        <option value="4">
-                            Stacking Column
-                        </option>
-
-                        <option value="5">
-                            Area
-                        </option>
-                    </select>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="x-axis-label" onchange="refresh()"/>
-
-                    X-axis Label
-                </label>
-
-                <label>
-                    <input type="checkbox" id="y-axis-label" onchange="refresh()"/>
-
-                    Y-axis Label
-                </label>
-
-                <label>
-                    Points count
-
-                    <input type="number" min="0" id="points-count" onchange="refresh()" value="40"/>
-                </label>
-
-                <label>
-                    Series Width
-
-                    <input type="number" id="series-width" onchange="refresh()" value="4"/>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="simple" onchange="refresh()"/>
-
-                    Simple
-                </label>
-
-                <label>
-                    X-axis type
-
-                    <select id="x-axis-type" onchange="refresh()">
-                        <option value="0">
-                            Number
-                        </option>
-
-                        <option value="1">
-                            Date
-                        </option>
-
-                        <option value="2">
-                            Text
-                        </option>
-
-                        <option>
-                            undefined
-                        </option>
-                    </select>
-                </label>
-
-                <label>
-                    X-axis scale
-
-                    <select id="x-scale" onchange="refresh()">
-                        <option value="0">
-                            Category
-                        </option>
-
-                        <option value="1">
-                            Linear
-                        </option>
-
-                        <option value="2">
-                            Log
-                        </option>
-                    </select>
-                </label>
-
-                <label>
-                    Y-axis scale
-
-                    <select id="y-scale" onchange="refresh()">
-                        <option value="1">
-                            Linear
-                        </option>
-
-                        <option value="2">
-                            Log
-                        </option>
-                    </select>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="negative-values-in-plot" onchange="refresh()"/>
-
-                    Enable negative values in plot
-                </label>
-
-                <label>
-                    Line type
-
-                    <select id="line-type" onchange="refresh()">
-                        <option value="[]">
-                            Solid
-                        </option>
-
-                        <option value="[15,5]">
-                            Dash
-                        </option>
-
-                        <option value="[5,5]">
-                            Dotted
-                        </option>
-                    </select>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="smooth-line" onchange="refresh()"/>
-
-                    Smooth line
-                </label>
-
-                <label>
-                    <input type="checkbox" id="short-labels" onchange="refresh()"/>
-
-                    Short Labels
-                </label>
-
-                <label>
-                    Y-axis max
-
-                    <input type="number" min="0" id="y-max" onchange="refresh()" value=""/>
-                </label>
-            </div>
-
-            <div>
-                <label>
-                    Inner Radius
-
-                    <input type="range" id="inner-radius" oninput="refresh()"/>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="other" onchange="refresh()"/>
-
-                    Other
-                </label>
-
-                <label>
-                    <input type="text" id="inner-title" onchange="refresh()"/>
-
-                    Inner Title
-                </label>
-            </div>
-
-
-            <div>
-                <label>
-                    Min
-
-                    <input type="number" id="gauge-min" onchange="refresh()" value="0"/>
-                </label>
-
-                <label>
-                    Max
-
-                    <input type="number" id="gauge-max" onchange="refresh()" value="100"/>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="use-track" onchange="refresh()" checked/>
-
-                    Use track
-                </label>
-
-                <label>
-                    <input type="checkbox" id="disable-step-labels" onchange="refresh()"/>
-
-                    Hide step labels
-                </label>
-            </div>
-
-            <div>
-                <label>
-                    Padding
-
-                    <input type="range" id="tree-padding" oninput="refresh()"/>
-                </label>
-
-                <label>
-                    Gap
-
-                    <input type="range" id="tree-gap" min="0" max="20" value="4" oninput="refresh()"/>
-                </label>
-
-                <label>
-                    Sectors Count
-
-                    <input type="number" min="0" id="tree-sectors-count" onchange="refresh()" value="10"/>
-                </label>
-            </div>
-
-            <div>
-                <label>
-                    Left label
-
-                    <input type="text" id="left-label" onchange="refresh()" value="08/01/2009"/>
-                </label>
-
-                <label>
-                    Right label
-
-                    <input type="text" id="right-label" onchange="refresh()" value="03/23/2013"/>
-                </label>
-
-                <label>
-                    Stops count
-
-                    <input type="number" min="0" id="stops-count" onchange="refresh()" value="2"/>
-                </label>
-
-                <label>
-                    <input type="checkbox" id="percentage-mode" onchange="refresh()"/>
-
-                    Percentage mode
-                </label>
-            </div>
-        </div>
+        <div class="settings"></div>
     </div>
 </body>
 
@@ -489,83 +62,88 @@
     let rng,
         chart
 
-    function RNG() {
-        const seed = +document.getElementById('seed').value
+    class RNG {
+        m = 0x80000000
 
-        this.m = 0x80000000
-        this.a = 1103515245
-        this.c = 12345
+        a = 1103515245
 
-        this.state = seed ? seed : Math.floor(Math.random() * (this.m - 1))
+        c = 12345
+
+        constructor(seed) {
+            this.state = seed || Math.floor(Math.random() * (this.m - 1))
+        }
+
+        nextInt() {
+            this.state = (this.a * this.state + this.c) % this.m
+
+            return this.state
+        }
+
+        nextFloat() {
+            return this.nextInt() / (this.m - 1)
+        }
     }
-    RNG.prototype.nextInt = function() {
-        this.state = (this.a * this.state + this.c) % this.m
-        return this.state
+
+    function inputValue(id) {
+        return document.getElementById(id).value
     }
-    RNG.prototype.nextFloat = function() {
-        return this.nextInt() / (this.m - 1)
+
+    function inputNumber(id) {
+        return +inputValue(id)
+    }
+
+    function isChecked(id) {
+        return document.getElementById(id).checked
     }
 
     function initRNG() {
-        rng = new RNG()
+        rng = new RNG(inputNumber('seed'))
     }
 
-    function setCookie(name,value,days) {
-        let expires = ''
-        if (days) {
-            let date = new Date()
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000))
-            expires = '; expires=' + date.toUTCString()
-        }
-        document.cookie = name + '=' + (value || '')  + expires + '; path=/'
+    function setCookie(name, value, days) {
+        const expires = days ? '; expires=' + new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString() : ''
+
+        document.cookie = name + '=' + (value || '') + expires + '; path=/'
     }
 
     function getCookie(name) {
-        let nameEQ = name + '=',
-            ca = document.cookie.split(';')
-        for(let i = 0; i < ca.length; i++) {
-            let c = ca[i]
-            while (c.charAt(0) === ' ')
-                c = c.substring(1, c.length)
-            if (c.indexOf(nameEQ) === 0)
-                return c.substring(nameEQ.length, c.length)
-        }
+        const cookie = document.cookie
+            .split(';')
+            .map(part => part.trimStart())
+            .find(part => part.startsWith(name + '='))
 
-        return null
+        return cookie ? cookie.substring(name.length + 1) : null
     }
 
     function saveState() {
-        let object = { }
+        const state = {}
 
-        const inputs = document.querySelectorAll('input, select')
+        for (const input of document.querySelectorAll('input, select'))
+            state[input.id] = input.type === 'checkbox' ? input.checked : input.value
 
-        for (const input of inputs) {
-            const id = input.id
-
-            if (id !== null)
-                object[id] = input.type === 'checkbox' ? input.checked : input.value
-        }
-
-        setCookie('state', JSON.stringify(object), 365)
+        setCookie('state', JSON.stringify(state), 365)
     }
 
     function restoreState() {
-        const cookieStr = getCookie('state'),
-            object = cookieStr && cookieStr.length !== 0 ? JSON.parse(cookieStr) : null
+        const savedState = getCookie('state')
 
-        if (object !== null) {
-            for (const [key, value] of Object.entries(object)) {
-                const element = document.getElementById(key)
-
-                if (element) {
-                    if (element.type === 'checkbox')
-                        element.checked = value
-                    else if (element.tagName !== 'SELECT' || [...element.options].some(option => option.value === value))
-                        element.value = value
-                }
-            }
-        } else {
+        if (!savedState) {
             document.getElementById('seed').value = 123
+            initRNG()
+
+            return
+        }
+
+        for (const [id, value] of Object.entries(JSON.parse(savedState))) {
+            const element = document.getElementById(id)
+
+            if (!element)
+                continue
+
+            if (element.type === 'checkbox')
+                element.checked = value
+            else if (element.tagName !== 'SELECT' || [...element.options].some(option => option.value === value))
+                element.value = value
         }
 
         initRNG()
@@ -591,101 +169,80 @@
         const color = `#${Math.floor(rng.nextFloat() * 16777215).toString(16).padStart(6, '0')}`
 
         // random value is taken anyway, so other generated values don't change when color mode is switched
-        return +document.getElementById('color-mode').value === 0 ? color : undefined
+        return inputNumber('color-mode') === 0 ? color : undefined
+    }
+
+    function getData(index) {
+        return {
+            Id: 50,
+            Name: 'First Second ' + index,
+            Value: 16
+        }
+    }
+
+    function addDays(days) {
+        const result = new Date('2025-10-11T08:00:00.000Z')
+
+        result.setDate(result.getDate() + days)
+
+        return result
     }
 
     function getValues(type, count, valuesType, pointsCount, plotType) {
-        let values = [],
-            sameValue = 0
-
-        const seriesWidth = +document.getElementById('series-width').value,
-            customLabel = document.getElementById('custom-label').value,
-            indexedCustomLabel = document.getElementById('indexed-custom-label').checked,
+        const values = [],
+            seriesWidth = inputNumber('series-width'),
+            customLabel = inputValue('custom-label'),
+            indexedCustomLabel = isChecked('indexed-custom-label'),
             isCustomLabel = customLabel.trim().length !== 0,
-            enableNegativeValuesInPlot = document.getElementById('negative-values-in-plot').checked,
-            lineType = document.getElementById('line-type').value,
-            lineDrawMode = document.getElementById('smooth-line').checked ? 1 : 0
+            enableNegativeValuesInPlot = isChecked('negative-values-in-plot'),
+            lineType = inputValue('line-type'),
+            lineDrawMode = isChecked('smooth-line') ? 1 : 0,
+            baseValue = inputValue('base-value')
 
-        function getData(index) {
-            return {
-                Id: 50,
-                Name: 'First Second ' + index,
-                Value: 16
+        function getLabel(prefix, index) {
+            if (!isCustomLabel)
+                return `${prefix} ${index}`
+
+            return indexedCustomLabel ? customLabel + ` ${index}` : customLabel
+        }
+
+        function pickValue(ascendingValue, sameValue) {
+            switch (valuesType) {
+                case 0:
+                    return rng.nextFloat() * baseValue
+
+                case 1:
+                    return ascendingValue
+
+                case 2:
+                    return sameValue
+
+                default:
+                    return 0
             }
         }
 
-        const baseValue = document.getElementById('base-value').value ?? 1000
-
         switch (type) {
-            case 0:
-                const xType = +document.getElementById('x-axis-type').value
+            case 0: {
+                const xType = inputNumber('x-axis-type'),
+                    negativeShift = valuesType === 0 && enableNegativeValuesInPlot ? baseValue / 2 : 0
 
                 for (let i = 0; i < count; i++) {
-                    let points = []
-
-                    sameValue = rng.nextFloat() * baseValue
+                    const points = [],
+                        sameValue = rng.nextFloat() * baseValue
 
                     for (let j = 0; j < pointsCount; j++) {
-                        let x = 0,
-                            y = 0
-
-                        let xValue
-
-                        switch (xType) {
-                            case 0:
-                            default:
-                                xValue = j
-
-                                break
-
-                            case 1:
-                                function addDays(days) {
-                                    let result = new Date('2025-10-11T08:00:00.000Z')
-                                    result.setDate(result.getDate() + days)
-                                    return result
-                                }
-
-                                xValue = addDays(j).toISOString()
-
-                                break
-                        }
+                        const x = xType === 1 ? addDays(j).toISOString() : j
 
                         if (plotType === 1) {
-                            points.push({
-                                x: xValue,
-                                y: sameValue
-                            })
+                            points.push({ x, y: sameValue })
 
                             break
                         }
 
-                        switch (valuesType) {
-                            case 0:
-                                x = xValue
-                                y = rng.nextFloat() * baseValue
-                                    - (enableNegativeValuesInPlot ? baseValue / 2 : 0)
-
-                                break
-
-                            case 1:
-                                x = xValue
-                                y = j
-
-                                break
-
-                            case 2:
-                                x = xValue
-                                y = sameValue
-
-                                break
-
-                            default:
-                                break
-                        }
-
                         points.push({
-                            x: x,
-                            y: y,
+                            x,
+                            y: pickValue(j, sameValue) - negativeShift,
                             data: getData(j + i)
                         })
                     }
@@ -694,11 +251,7 @@
                         type: plotType,
                         values: points,
                         width: seriesWidth,
-                        label: isCustomLabel
-                            ? indexedCustomLabel
-                                ? customLabel + ` ${i}`
-                                : customLabel
-                            : `Series ${i}`,
+                        label: getLabel('Series', i),
                         data: getData(i),
                         dash: JSON.parse(lineType),
                         drawMode: lineDrawMode,
@@ -707,179 +260,60 @@
                 }
 
                 break
+            }
 
             case 1:
-                sameValue = rng.nextFloat() * baseValue
+            case 4: {
+                const sameValue = rng.nextFloat() * baseValue
 
-                for (let i = 0; i < count; i++) {
-                    let value = 0
-
-                    switch (valuesType) {
-                        case 0:
-                            value = rng.nextFloat() * baseValue
-
-                            break
-
-                        case 1:
-                            value = i
-
-                            break
-
-                        case 2:
-                            value = sameValue
-
-                            break
-
-                        default:
-                            break
-                    }
-
-
+                for (let i = 0; i < count; i++)
                     values.push({
-                        value: value,
-                        label: isCustomLabel
-                            ? indexedCustomLabel
-                                ? customLabel + ` ${i}`
-                                : customLabel
-                            : `Sector ${i}`,
+                        value: pickValue(i, sameValue),
+                        label: getLabel(type === 1 ? 'Sector' : 'Part', i),
                         data: getData(i),
                         color: getColor()
                     })
-                }
 
                 break
+            }
 
-            case 2:
-                sameValue = rng.nextFloat() * baseValue
+            case 2: {
+                const sameValue = rng.nextFloat() * baseValue
 
-                for (let i = 0; i < count; i++) {
-                    let value = 0
-
-                    switch (valuesType) {
-                        case 0:
-                            value = rng.nextFloat() * baseValue
-
-                            break
-
-                        case 1:
-                            value = 50
-
-                            break
-
-                        case 2:
-                            value = sameValue
-
-                            break
-
-                        default:
-                            break
-                    }
-
+                for (let i = 0; i < count; i++)
                     values.push({
-                        value: value,
-                        label: isCustomLabel
-                            ? customLabel
-                            : `Label ${i}`,
+                        value: pickValue(50, sameValue),
+                        label: isCustomLabel ? customLabel : `Label ${i}`,
                         data: getData(i),
                         color: getColor()
                     })
-                }
 
                 break
+            }
 
-            case 3:
-                sameValue = rng.nextFloat() * baseValue
-
-                const sectorsCount = +document.getElementById('tree-sectors-count').value
+            case 3: {
+                const sameValue = rng.nextFloat() * baseValue,
+                    sectorsCount = inputNumber('tree-sectors-count')
 
                 for (let i = 0; i < count; i++) {
-                    let sectors = []
-
-                    for (let j = 0; j < sectorsCount; j++) {
-                        let value = 0
-
-                        switch (valuesType) {
-                            case 0:
-                                value = rng.nextFloat() * baseValue
-
-                                break
-
-                            case 1:
-                                value = j
-
-                                break
-
-                            case 2:
-                                value = sameValue
-
-                                break
-
-                            default:
-                                break
-                        }
-
-                        sectors.push({
-                            value: value,
-                            label: isCustomLabel
-                                ? indexedCustomLabel
-                                    ? customLabel + ` ${j}`
-                                    : customLabel
-                                : `Cell ${j}`,
-                            data: getData(j)
-                        })
-                    }
+                    const sectors = Array.from({ length: sectorsCount }, (_, j) => ({
+                        value: pickValue(j, sameValue),
+                        label: getLabel('Cell', j),
+                        data: getData(j)
+                    }))
 
                     values.push({
                         label: `Group ${i}`,
-                        sectors: sectors,
+                        sectors,
                         data: getData(i),
                         color: getColor()
                     })
                 }
 
                 break
+            }
 
-            case 4:
-                sameValue = rng.nextFloat() * baseValue
-
-                for (let i = 0; i < count; i++) {
-                    let value = 0
-
-                    switch (valuesType) {
-                        case 0:
-                            value = rng.nextFloat() * baseValue
-
-                            break
-
-                        case 1:
-                            value = i
-
-                            break
-
-                        case 2:
-                            value = sameValue
-
-                            break
-
-                        default:
-                            break
-                    }
-
-                    values.push({
-                        value: value,
-                        label: isCustomLabel
-                            ? indexedCustomLabel
-                                ? customLabel + ` ${i}`
-                                : customLabel
-                            : `Part ${i}`,
-                        data: getData(i),
-                        color: getColor()
-                    })
-                }
-
-                break
-
-            case 5:
+            case 5: {
                 const getRow = (label, level) => {
                     const value = valuesType === 1 ? level + 1 : rng.nextFloat() * baseValue,
                         children = level < 2
@@ -903,6 +337,7 @@
                     values.push(getRow(i, 0))
 
                 break
+            }
 
             default:
                 break
@@ -911,114 +346,81 @@
         return values
     }
 
+    function getContextMenu() {
+        return [
+            {
+                text: 'Button 1',
+                action: data => {
+                    console.log('Button 1 action', data)
+                }
+            },
+            {
+                text: 'Button 2',
+                action: () => {
+                    console.log('Another action')
+                }
+            }
+        ]
+    }
+
+    function getStops(values, isPercent) {
+        const total = values.reduce((acc, value) => acc + value.value, 0)
+
+        return Array.from({ length: inputNumber('stops-count') }, (_, i) => ({
+            label: `Stop ${i}`,
+            value: isPercent ? +(rng.nextFloat() * 100).toFixed(1) : rng.nextFloat() * total,
+            color: getColor()
+        }))
+    }
+
+    function getPercentParts(values) {
+        const total = values.reduce((acc, value) => acc + value.value, 0),
+            filled = rng.nextFloat() * 100
+
+        return values.map(value => ({ ...value, value: +(value.value / total * filled).toFixed(1) }))
+    }
+
     function refresh() {
         initRNG()
 
-        const titleEnabled = document.getElementById('title').checked,
-            customTooltipEnabled = document.getElementById('custom-tooltip').checked,
-            tooltipEnabled = document.getElementById('tooltip').checked || customTooltipEnabled,
-            darkThemeEnabled = document.getElementById('dark-theme').checked,
-            legendEnabled = document.getElementById('legend').checked,
-            xAxisTitleEnabled = document.getElementById('x-axis-label').checked,
-            yAxisTitleEnabled = document.getElementById('y-axis-label').checked,
-            contextMenuEnabled = document.getElementById('context-menu').checked,
-            otherEnabled = document.getElementById('other').checked,
-            simpleEnabled = document.getElementById('simple').checked,
-            staticMode = document.getElementById('static-mode').checked,
-            shortLabels = document.getElementById('short-labels').checked,
-            debugModeEnabled = document.getElementById('debug-mode').checked,
-            moveEnabled = document.getElementById('move').checked
+        const customTooltipEnabled = isChecked('custom-tooltip'),
+            type = inputNumber('chart-type'),
+            chartsCount = Math.max(inputNumber('charts-count'), 1),
+            typesCount = document.getElementById('chart-type').options.length
 
-
-        const title = titleEnabled ? 'Title' : null,
-            type = +document.getElementById('chart-type').value,
-            valuesCount = +document.getElementById('values-count').value,
-            xAxisTitle = xAxisTitleEnabled ? 'X-axis title' : null,
-            yAxisTitle = yAxisTitleEnabled ? 'Y-axis title' : null,
-            valuesType = +document.getElementById('values-type').value,
-            pointsCount = +document.getElementById('points-count').value,
-            plotType = +document.getElementById('plot-type').value,
-            baseColor = +document.getElementById('color-mode').value === 2
-                        ? document.getElementById('base-color').value
-                        : null,
-            gaugeMin = +document.getElementById('gauge-min').value,
-            gaugeMax = +document.getElementById('gauge-max').value,
-            enableTrack = document.getElementById('use-track').checked,
-            disableStepLabels = document.getElementById('disable-step-labels').checked,
-            padding = +document.getElementById('tree-padding').value,
-            gap = +document.getElementById('tree-gap').value,
-            customTooltip = customTooltipEnabled ? 'custom-tooltip-template' : null,
-            innerRadius = +document.getElementById('inner-radius').value,
-            xType = +document.getElementById('x-axis-type').value,
-            xScale = +document.getElementById('x-scale').value,
-            yScale = +document.getElementById('y-scale').value,
-            postfix = document.getElementById('postfix').value,
-            innerTitle = document.getElementById('inner-title').value,
-            yMax = document.getElementById('y-max').value,
-            chartsCount = Math.max(+document.getElementById('charts-count').value, 1),
-            typesCount = document.getElementById('chart-type').options.length,
-            columns = +document.getElementById('columns').value || undefined,
-            contextMenu = !contextMenuEnabled
-                ? null
-                : [
-                    {
-                        text: 'Button 1',
-                        action: data => {
-                            console.log('Button 1 action', data)
-                        }
-                    },
-                    {
-                        text: 'Button 2',
-                        action: () => {
-                            console.log('Another action')
-                        }
-                    }
-                ]
-
-        function getStops(values, isPercent) {
-            const total = values.reduce((acc, value) => acc + value.value, 0)
-
-            return Array.from({ length: +document.getElementById('stops-count').value }, (_, i) => ({
-                label: `Stop ${i}`,
-                value: isPercent ? +(rng.nextFloat() * 100).toFixed(1) : rng.nextFloat() * total,
-                color: getColor()
-            }))
-        }
-
-        function getPercentParts(values) {
-            const total = values.reduce((acc, value) => acc + value.value, 0),
-                filled = rng.nextFloat() * 100
-
-            return values.map(value => ({ ...value, value: +(value.value / total * filled).toFixed(1) }))
-        }
-
-        const chartData = chartType => {
-            const values = getValues(chartType, valuesCount, valuesType, pointsCount, plotType),
-                isPercent = chartType === 4 && document.getElementById('percentage-mode').checked
+        function chartData(chartType) {
+            const values = getValues(
+                    chartType,
+                    inputNumber('values-count'),
+                    inputNumber('values-type'),
+                    inputNumber('points-count'),
+                    inputNumber('plot-type')
+                ),
+                isPercent = chartType === 4 && isChecked('percentage-mode')
 
             return {
                 values: isPercent ? getPercentParts(values) : values,
                 stops: chartType === 4 ? getStops(values, isPercent) : undefined,
                 columns: chartType === 5 ? [{ key: 'value', title: 'Value' }, { key: 'level', title: 'Level' }] : undefined,
                 percentageMode: isPercent,
-                leftLabel: document.getElementById('left-label').value,
-                rightLabel: document.getElementById('right-label').value,
-                xTitle: xAxisTitle,
-                yTitle: yAxisTitle,
-                xType: xType,
-                xScale: xScale,
-                yScale: yScale,
-                min: gaugeMin,
-                max: gaugeMax,
-                enableTrack: enableTrack,
-                disableStepLabels: disableStepLabels,
-                padding: padding,
-                gap: gap,
-                innerRadius: innerRadius,
-                simple: simpleEnabled,
-                innerTitle: innerTitle,
-                shortLabels: shortLabels,
-                yMax: yMax
+                leftLabel: inputValue('left-label'),
+                rightLabel: inputValue('right-label'),
+                xTitle: isChecked('x-axis-label') ? 'X-axis title' : null,
+                yTitle: isChecked('y-axis-label') ? 'Y-axis title' : null,
+                xType: inputNumber('x-axis-type'),
+                xScale: inputNumber('x-scale'),
+                yScale: inputNumber('y-scale'),
+                min: inputNumber('gauge-min'),
+                max: inputNumber('gauge-max'),
+                enableTrack: isChecked('use-track'),
+                disableStepLabels: isChecked('disable-step-labels'),
+                padding: inputNumber('tree-padding'),
+                gap: inputNumber('tree-gap'),
+                innerRadius: inputNumber('inner-radius'),
+                simple: isChecked('simple'),
+                innerTitle: inputValue('inner-title'),
+                shortLabels: isChecked('short-labels'),
+                yMax: inputValue('y-max')
             }
         }
 
@@ -1031,23 +433,28 @@
             : undefined
 
         const settings = {
-            title: title,
-            enableTooltip: tooltipEnabled,
-            enableLegend: legendEnabled,
-            enableOther: otherEnabled,
-            staticMode: staticMode,
+            title: isChecked('title') ? 'Title' : null,
+            enableTooltip: isChecked('tooltip') || customTooltipEnabled,
+            enableLegend: isChecked('legend'),
+            enableOther: isChecked('other'),
+            staticMode: isChecked('static-mode'),
             data: charts ? undefined : chartData(type),
-            charts: charts,
-            columns: columns,
-            type: type,
-            baseColor: baseColor,
-            templateId: customTooltip,
-            contextMenu: contextMenu,
-            valuePostfix: postfix,
-            isDarkThemeFunction: () => darkThemeEnabled,
-            enableDebugMode: debugModeEnabled,
-            enableMove: moveEnabled
+            charts,
+            columns: inputNumber('columns') || undefined,
+            type,
+            baseColor: inputNumber('color-mode') === 2 ? inputValue('base-color') : null,
+            templateId: customTooltipEnabled ? 'custom-tooltip-template' : null,
+            contextMenu: isChecked('context-menu') ? getContextMenu() : null,
+            valuePostfix: inputValue('postfix'),
+            isDarkThemeFunction: isDarkTheme,
+            enableDebugMode: isChecked('debug-mode'),
+            enableMove: isChecked('move')
         }
+
+        applyPageTheme()
+        showChartTypeSettings(type, chartsCount)
+        highlightAppliedExamples()
+        updateSettingsFade()
 
         if (chart === undefined)
             chart = OCharts.chart(document.getElementById('chart'), settings)
@@ -1058,21 +465,24 @@
     }
 
     function setWidth() {
-        const width = document.getElementById('width').value
-
-        document.getElementById('chart').style.width = width + '%'
+        document.getElementById('chart').style.width = inputValue('width') + '%'
 
         saveState()
     }
 
     function setHeight() {
-        const height = document.getElementById('height').value
-
-        document.getElementById('chart').style.height = height + '%'
+        document.getElementById('chart').style.height = inputValue('height') + '%'
 
         saveState()
     }
+</script>
 
+<script src="./example/js/sandbox-theme.js"></script>
+<script src="./example/js/sandbox-settings.js"></script>
+<script src="./example/js/sandbox-examples.js"></script>
+<script src="./example/js/sandbox-effects.js"></script>
+
+<script>
     restoreState()
 
     refresh()
