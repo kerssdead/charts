@@ -12,8 +12,23 @@ export default tseslint.config({
     },
     rules: {
         '@stylistic/max-len': ['warn', { code: 115, ignoreUrls: true, ignoreStrings: true }],
-        '@stylistic/function-call-argument-newline': ['error', 'consistent'],
-        '@stylistic/function-paren-newline': ['error', 'multiline-arguments'],
+        '@stylistic/list-style': ['error', {
+            overrides: {
+                '[]': 'off',
+                '{}': 'off',
+                '<>': 'off',
+                IfStatement: 'off',
+                CallExpression: {},
+                NewExpression: {},
+                FunctionDeclaration: {},
+                FunctionExpression: {},
+                ArrowFunctionExpression: {},
+                TSDeclareFunction: {},
+                TSFunctionType: {},
+                TSTypeParameterDeclaration: {},
+                TSTypeParameterInstantiation: {}
+            }
+        }],
         'no-nested-ternary': 'warn',
         '@typescript-eslint/no-non-null-assertion': 'warn',
         'max-params': ['warn', 4],

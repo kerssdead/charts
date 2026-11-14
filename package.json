@@ -2,7 +2,12 @@
   "name": "charts",
   "version": "2.1.154",
   "description": "Typescript Canvas Charts",
+  "main": "./dist/ocharts.js",
+  "types": "./dist/ocharts.d.ts",
   "jsdelivr": "./dist/ocharts.js",
+  "files": [
+    "dist"
+  ],
   "repository": "https://github.com/kerssdead/charts",
   "bugs": {
     "email": "kerss26rus@gmail.com",
@@ -12,26 +17,35 @@
   "license": "MIT",
   "keywords": [
     "charts",
-    "typescript"
+    "typescript",
+    "canvas",
+    "data-visualization",
+    "plot",
+    "pie-chart",
+    "gauge",
+    "treemap",
+    "treebar",
+    "segmented-bar",
+    "legend",
+    "dashboard"
   ],
   "scripts": {
     "prebuild": "npm version patch --no-git-tag-version",
-    "build": "webpack && npm run sass",
+    "build": "webpack && npm run sass && dts-bundle-generator --project tsconfig.json --umd-module-name OCharts -o dist/ocharts.d.ts src/OCharts.ts",
     "watch": "webpack --watch",
     "test": "jest",
     "lint": "eslint src test e2e",
     "e2e": "npx playwright test",
     "e2e-ui": "npx playwright test --ui",
-    "test-all": "jest",
     "sass": "sass --style=compressed src/styles/index.scss dist/main.css"
   },
   "devDependencies": {
-    "@jest/globals": "^29.7.0",
     "@playwright/test": "^1.56.0",
-    "@stylistic/eslint-plugin": "^5.10.0",
+    "@stylistic/eslint-plugin": "^6.0.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "^24.7.0",
+    "@types/node": "^26.6.6",
     "@types/wicg-file-system-access": "^2023.10.6",
+    "dts-bundle-generator": "^10.0.0",
     "eslint": "^10.14.0",
     "jest": "^29.7.0",
     "sass": "^1.93.2",
@@ -41,6 +55,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.2",
-    "webpack-cli": "^6.0.1"
+    "webpack": "^5.102.1",
+    "webpack-cli": "^7.3.1"
   }
 }

@@ -10,3 +10,7 @@ OCharts.chart = function(context: HTMLElement, settings: ChartSettings) {
 
 // @ts-ignore
 window.OCharts = OCharts
+
+export default OCharts
+export type { default as ChartSettings } from '@/types/ChartSettings'
+export { ChartType, LegendPlace } from '@/static/Enums'
