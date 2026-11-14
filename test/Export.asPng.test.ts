@@ -55,7 +55,7 @@ function exportAsPng(title: string = 'Chart') {
     Export.asPng(new FakeCanvas() as unknown as HTMLCanvasElement, {
         ratio: 1,
         title,
-        exclude: { x: 1, y: 0, width: 2, height: 1 }
+        exclude: { x: 1, y: 0, width: 2, height: 1 } as DOMRect
     })
 }
 

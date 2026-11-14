@@ -94,7 +94,7 @@ describe('Modal content', () => {
         const body = installFakeDocument()
         const content = new FakeElement('div')
 
-        new Modal(content, 'Title')
+        new Modal(content as unknown as HTMLElement, 'Title')
 
         const modal = body.elements[0] as FakeElement
 

@@ -15,8 +15,8 @@ const handlers = () => {
     const onClick = jest.fn()
     const canDrag = jest.fn(() => false)
     const hasContextMenuAt = jest.fn(() => false)
-    const scrollBy = jest.fn(() => null)
-    const getScrollDrag = jest.fn(() => null)
+    const scrollBy: jest.Mock = jest.fn(() => null)
+    const getScrollDrag: jest.Mock = jest.fn(() => null)
 
     return {
         onChange,

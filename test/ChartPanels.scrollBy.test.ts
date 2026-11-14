@@ -10,7 +10,7 @@ const panel = () => {
     result.clip = { x: 0, y: 0, width: 100, height: 100 }
     result.baseHeight = 50
     result.scroll = { top: 0, height: 200 }
-    result.window = new CanvasWindow(100, 100)
+    Object.assign(result, { window: new CanvasWindow(100, 100) })
 
     return result
 }

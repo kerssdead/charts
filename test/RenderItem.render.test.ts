@@ -132,7 +132,7 @@ describe('Rendering item', () => {
 
         panel.scroll = { top: 0, height: 100 }
         panel.baseHeight = 50
-        panel.window = new CanvasWindow(100, 100)
+        Object.assign(panel, { window: new CanvasWindow(100, 100) })
         panel.clip = { x: 0, y: 0, width: 100, height: 100 }
 
         target.panel = panel

@@ -23,17 +23,19 @@ const install = () => {
 
     const createElement = document.createElement.bind(document) as (tagName: string) => FakeElement
 
-    document.createElement = (tagName: string) => {
-        const element = createElement(tagName)
+    Object.assign(document, {
+        createElement: (tagName: string) => {
+            const element = createElement(tagName)
 
-        Object.assign(element, {
-            getBoundingClientRect: () => ({ left: 0, top: 0, width: 0, height: 0, right: 0, bottom: 0 }),
-            offsetWidth: 0,
-            offsetHeight: 0
-        })
+            Object.assign(element, {
+                getBoundingClientRect: () => ({ left: 0, top: 0, width: 0, height: 0, right: 0, bottom: 0 }),
+                offsetWidth: 0,
+                offsetHeight: 0
+            })
 
-        return element
-    }
+            return element
+        }
+    })
 
     Object.assign(document, {
         documentElement: { clientWidth: 800, clientHeight: 600 },

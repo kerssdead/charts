@@ -87,7 +87,7 @@ describe('Building chart panels', () => {
 
     it('Should build an empty panel for an unknown chart', () => {
         const panels = buildPanels({
-            charts: [{ type: 'Unknown' as ChartType, data: { values: [] } }]
+            charts: [{ type: 'Unknown' as unknown as ChartType, data: { values: [] } }]
         })
 
         expect(panels)

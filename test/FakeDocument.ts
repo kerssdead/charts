@@ -11,6 +11,12 @@ export class FakeElement {
 
     textContent = ''
 
+    innerHTML = ''
+
+    href = ''
+
+    download = ''
+
     title = ''
 
     hidden = false
@@ -22,6 +28,12 @@ export class FakeElement {
     value = ''
 
     onclick: (() => void) | undefined
+
+    oncancel: (() => void) | null = null
+
+    showModal: (() => void) | undefined
+
+    close: (() => void) | undefined
 
     offsetLeft = 0
 

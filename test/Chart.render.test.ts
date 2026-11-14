@@ -168,7 +168,7 @@ describe('Resizing chart', () => {
 
 describe('Binding menu actions', () => {
     it('Should bind missing actions of context menu items', () => {
-        const chart = create(settings([{ id: 'custom' }, { id: undefined }]))
+        const chart = create(settings([{ id: 'custom', text: 'Custom' }, { id: undefined, text: 'None' }]))
 
         chart.render()
 

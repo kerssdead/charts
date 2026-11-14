@@ -9,7 +9,7 @@ type DropdownItem = {
 
     text: string
 
-    action: (arg?: ItemData) => void
+    action?: (arg?: ItemData) => void
 }
 
 export default DropdownItem

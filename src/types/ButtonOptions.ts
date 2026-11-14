@@ -24,7 +24,7 @@ export function fromDropdownItems(items: DropdownItem[] | undefined, data?: Item
 
     for (const item of items ?? []) {
         if (!item.isDivider && isShown(item, data))
-            buttons.push({ text: item.text, action: () => item.action(data) })
+            buttons.push({ text: item.text, action: () => item.action?.(data) })
         else if (item.isDivider && buttons.length > 0 && !endsWithDivider(buttons))
             buttons.push(DIVIDER)
     }

@@ -23,9 +23,9 @@ describe('Animating queue items', () => {
 
         expect(top.canHoverGroupAt)
             .toHaveBeenCalledWith({ x: 10, y: 20 })
-        expect(top.animate.mock.calls[0][2])
+        expect((top.animate as jest.Mock).mock.calls[0][2])
             .toBeInstanceOf(Set)
-        expect([...(top.animate.mock.calls[0][2] as Set<string>)])
+        expect([...((top.animate as jest.Mock).mock.calls[0][2] as Set<string>)])
             .toEqual(['group'])
     })
 
