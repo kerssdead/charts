@@ -1,4 +1,4 @@
-import LineArea from '@/render/LineArea'
+import LineArea from '@/helpers/LineArea'
 import { layerContext, WINDOW } from './RenderItemLineTestData'
 
 const mockLayer: { current: unknown } = { current: null }

@@ -1,5 +1,5 @@
 import { contains } from '@/helpers/Geometry'
-import Frame from '@/types/Frame'
+import Frame from '@/renderer/Frame'
 import Overlay from '@/renderer/Overlay'
 import { addButtonRect, addButtonText } from '@/renderer/OverlayButtons'
 import Units from '@/helpers/Units'

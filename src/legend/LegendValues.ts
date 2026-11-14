@@ -1,9 +1,9 @@
 import Value from '@/types/base/Value'
-import ChartItem from '@/types/ChartItem'
 import ChartSettings from '@/types/ChartSettings'
 import { groupBy } from '@/helpers/Collections'
 import { AnimationTiming } from '@/static/constants/Index'
-import { ChartType } from '@/static/Enums'
+import { hasLegend } from '@/helpers/ChartFeatures'
+import { getGroupKey } from '@/helpers/ValueKeys'
 
 export default class LegendValues {
     private settings: ChartSettings
@@ -17,19 +17,8 @@ export default class LegendValues {
         this.values = LegendValues.getValues(settings)
     }
 
-    static isSupported(chart: ChartItem) {
-        return chart.type !== ChartType.Gauge
-               && chart.type !== ChartType.SegmentedBar
-               && chart.type !== ChartType.TreeBar
-               && (chart.type !== ChartType.TreeMap || (chart.data?.values?.length ?? 0) > 1)
-    }
-
-    static getGroupKey(value: Value, isShared: boolean) {
-        return isShared ? `${ value.label }-${ value.labelIndex }` : value.id
-    }
-
     private static getValues(settings: ChartSettings): Value[] {
-        return settings.charts.filter(LegendValues.isSupported).flatMap(chart => chart.data.values)
+        return settings.charts.filter(hasLegend).flatMap(chart => chart.data.values)
     }
 
     get isToggling() {
@@ -48,7 +37,7 @@ export default class LegendValues {
     }
 
     getKey(value: Value) {
-        return LegendValues.getGroupKey(value, this.settings.charts.length > 1)
+        return getGroupKey(value, this.settings.charts.length > 1)
     }
 
     toggle(value: Value): boolean {

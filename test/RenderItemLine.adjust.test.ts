@@ -1,6 +1,6 @@
 import RenderItemLine from '@/types/RenderItemLine'
 import CanvasWindow from '@/types/CanvasWindow'
-import LinePathTracer from '@/render/LinePathTracer'
+import LinePathTracer from '@/helpers/LinePathTracer'
 import { LineDrawMode } from '@/static/Enums'
 
 const WINDOW = new CanvasWindow(500, 500)

@@ -3,6 +3,7 @@ import PlotSeries from '@/types/PlotSeries'
 import PlotPoint from '@/types/PlotPoint'
 import Point from '@/types/Point'
 import ProcessSettings from '@/types/ProcessSettings'
+import ValueAxis from '@/types/ValueAxis'
 import ChartProcess from '@/render/ChartProcess'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import PlotLayout from '@/render/plot/PlotLayout'
@@ -50,6 +51,10 @@ export default class PlotProcess extends ChartProcess<PlotData> {
 
     getAxisValue(y: number) {
         return this.layout.vertical.valueScale.getValue(y)
+    }
+
+    getValueAxis(): ValueAxis {
+        return this
     }
 
     isEmpty() {

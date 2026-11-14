@@ -7,9 +7,9 @@ import { contains, lerp, lerpRect } from '@/helpers/Geometry'
 import { GradientCache } from '@/helpers/Canvas'
 import { LineJoin } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import LinePathTracer from '@/render/LinePathTracer'
-import LineArea, { LinePath } from '@/render/LineArea'
-import LineMarkers from '@/render/LineMarkers'
+import LinePathTracer from '@/helpers/LinePathTracer'
+import LineArea, { LinePath } from '@/helpers/LineArea'
+import LineMarkers from '@/helpers/LineMarkers'
 
 const ALPHA_DELTA = 0.5
 

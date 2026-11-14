@@ -2,7 +2,7 @@ import ChartSettings from '@/types/ChartSettings'
 import { ChartType } from '@/static/Enums'
 import { normalizeColor, paletteColor, spreadColor } from '@/helpers/Color'
 import { groupBy } from '@/helpers/Collections'
-import LegendValues from '@/legend/LegendValues'
+import { getGroupKey } from '@/helpers/ValueKeys'
 import Value from '@/types/base/Value'
 import ChartItem from '@/types/ChartItem'
 import TreeBarData, { colorTreeBarRows } from '@/types/data/TreeBarData'
@@ -31,9 +31,9 @@ export function applyDefaultColors(settings: ChartSettings, scope?: Element) {
     const chartValues = settings.charts
                                 .filter(chart => !isTreeBar(chart))
                                 .flatMap(chart => chart.data?.values ?? [])
-    const getGroupKey = (value: Value): string | Value => isShared ? LegendValues.getGroupKey(value, true) : value
+    const getColorKey = (value: Value): string | Value => isShared ? getGroupKey(value, true) : value
 
-    const groups = groupBy(chartValues, getGroupKey)
+    const groups = groupBy(chartValues, getColorKey)
 
     shareGroupColors(groups.values())
 

@@ -125,7 +125,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
              .monochrome()
              .interact()
              .contextMenu()
-             .tooltipHtml(this.valueTooltip(sector, sector.label, this.getPartValueText(sector)))
+             .tooltip(this.valueTooltip(sector, sector.label, this.getPartValueText(sector)))
              .data(SegmentedBarProcess.getItemData(sector))
 
         if (sector.label && visibleWidth > padding)
@@ -174,7 +174,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
              .monochrome()
              .interact()
              .contextMenu()
-             .tooltipHtml(this.valueTooltip(stop, stop.label, this.getStopValueText(stop)))
+             .tooltip(this.valueTooltip(stop, stop.label, this.getStopValueText(stop)))
              .data(SegmentedBarProcess.getItemData(stop))
     }
 

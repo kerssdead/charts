@@ -7,7 +7,7 @@ import Data from '@/types/interfaces/Data'
 import type { PanelScroll } from '@/types/Panel'
 import Value from '@/types/base/Value'
 import ItemData from '@/types/ItemData'
-import CustomTooltip from '@/renderer/CustomTooltip'
+import ValueAxis from '@/types/ValueAxis'
 import { stringWidth } from '@/helpers/Text'
 
 const LINE_BREAK = /<br\s*\/?>/gi
@@ -40,6 +40,10 @@ export default abstract class ChartProcess<
         return null
     }
 
+    getValueAxis(): ValueAxis | null {
+        return null
+    }
+
     isEmpty() {
         return !this.data.values.some(value => !value.disabled && value.value > 0)
     }
@@ -56,7 +60,7 @@ export default abstract class ChartProcess<
         const data = item.data as ItemData | string | undefined
         const text = typeof data == 'string' ? data.replace(LINE_BREAK, '\n') : undefined
 
-        return CustomTooltip.fromText(this.tooltip(label, text, value))
+        return this.tooltip(label, text, value)
     }
 
     protected static getItemData(item: Value) {

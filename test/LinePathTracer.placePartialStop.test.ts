@@ -1,4 +1,4 @@
-import LinePathTracer from '@/render/LinePathTracer'
+import LinePathTracer from '@/helpers/LinePathTracer'
 import { getMonotoneSegments, splitCurveSegment } from '@/helpers/MonotoneCurve'
 import { LineDrawMode } from '@/static/Enums'
 

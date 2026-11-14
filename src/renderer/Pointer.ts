@@ -4,6 +4,7 @@ import { ZOOM_DEFAULT_STEP } from '@/static/constants/Index'
 import Styles from '@/static/constants/Styles'
 import CanvasWindow from '@/types/CanvasWindow'
 import PointerContext from '@/types/PointerContext'
+import ScrollDrag from '@/types/ScrollDrag'
 import { clamp, copyRect, sameRect, samePoint } from '@/helpers/Geometry'
 
 type PointerHandlers = {
@@ -14,8 +15,6 @@ type PointerHandlers = {
     scrollBy: (point: Point, delta: number) => boolean | null
     getScrollDrag: (point: Point) => ScrollDrag | null
 }
-
-export type ScrollDrag = (dy: number) => boolean
 
 type DragState = {
     pointerId: number

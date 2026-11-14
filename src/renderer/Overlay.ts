@@ -1,6 +1,6 @@
 import Queue from '@/render/Queue'
 import RenderItem from '@/types/RenderItem'
-import Frame from '@/types/Frame'
+import Frame from '@/renderer/Frame'
 
 export default abstract class Overlay {
     protected items: Set<RenderItem> = new Set()

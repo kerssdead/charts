@@ -2,7 +2,7 @@ import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
 import RenderItemLine from '@/types/RenderItemLine'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { LineDrawMode } from '@/static/Enums'
-import LinePathTracer from '@/render/LinePathTracer'
+import LinePathTracer from '@/helpers/LinePathTracer'
 
 export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderItemLine> {
     constructor() {

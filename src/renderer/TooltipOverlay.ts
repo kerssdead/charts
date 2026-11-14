@@ -1,7 +1,7 @@
 import Queue from '@/render/Queue'
 import Overlay from '@/renderer/Overlay'
 import CanvasWindow from '@/types/CanvasWindow'
-import Frame from '@/types/Frame'
+import Frame from '@/renderer/Frame'
 import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import ItemData from '@/types/ItemData'
@@ -122,7 +122,7 @@ export default class TooltipOverlay extends Overlay {
             version: queue.version,
             window: copyRect(window),
             template: target?.tooltipAt(point) ?? null,
-            html: target ? this.getHtml(target) : null
+            html: target ? this.getTemplateHtml(target) : null
         }
 
         return this.scan
@@ -135,9 +135,7 @@ export default class TooltipOverlay extends Overlay {
                && sameRect(scan.window, window)
     }
 
-    private getHtml(target: RenderItem) {
-        const templateHtml = this.template && target.data ? this.template(target.data) : undefined
-
-        return templateHtml ?? target.tooltipHtml ?? null
+    private getTemplateHtml(target: RenderItem) {
+        return this.template && target.data ? this.template(target.data) : null
     }
 }

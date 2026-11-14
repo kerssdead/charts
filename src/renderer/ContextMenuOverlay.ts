@@ -1,5 +1,5 @@
 import Queue from '@/render/Queue'
-import Frame from '@/types/Frame'
+import Frame from '@/renderer/Frame'
 import PointerContext from '@/types/PointerContext'
 import ButtonOptions, { fromDropdownItems } from '@/types/ButtonOptions'
 import DropdownItem from '@/types/DropdownItem'

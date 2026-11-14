@@ -131,8 +131,8 @@ describe('Getting segmented bar data', () => {
             stops: [new SegmentedBarStop({ id: 'b', label: 'Ipsum', value: 40, color: '#0000ff' })]
         })
 
-        expect(items.get('segmented-bar-part-a')?.tooltipHtml).toContain('>Lorem\n15%</div>')
-        expect(items.get('segmented-bar-stop-b')?.tooltipHtml).toContain('>Ipsum\n40%</div>')
+        expect(items.get('segmented-bar-part-a')?.tooltipTemplate).toBe('Lorem\n15%')
+        expect(items.get('segmented-bar-stop-b')?.tooltipTemplate).toBe('Ipsum\n40%')
     })
 
     it('Should show string data in tooltip and pass object data to item', () => {
@@ -146,9 +146,9 @@ describe('Getting segmented bar data', () => {
         const text = items.get('segmented-bar-part-text')
         const object = items.get('segmented-bar-part-object')
 
-        expect(text?.tooltipHtml).toContain('>Lorem\nIpsum: 7\nDolor: &lt;b&gt;9&lt;/b&gt;\n1.00 (50%)</div>')
+        expect(text?.tooltipTemplate).toBe('Lorem\nIpsum: 7\nDolor: <b>9</b>\n1.00 (50%)')
         expect(text?.data).toBeNull()
-        expect(object?.tooltipHtml).toContain('>Amet\n1.00 (50%)</div>')
+        expect(object?.tooltipTemplate).toBe('Amet\n1.00 (50%)')
         expect(object?.data).toEqual({ Sit: '9' })
     })
 })

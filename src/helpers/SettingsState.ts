@@ -1,6 +1,6 @@
 import ChartSettings from '@/types/ChartSettings'
 import { ChartType } from '@/static/Enums'
-import LegendValues from '@/legend/LegendValues'
+import { getGroupKey } from '@/helpers/ValueKeys'
 import Value from '@/types/base/Value'
 import TreeBarData, { keepTreeBarState } from '@/types/data/TreeBarData'
 
@@ -18,7 +18,7 @@ export function keepState(previous: ChartSettings, next: ChartSettings) {
 export function keepDisabled(previous: ChartSettings, next: ChartSettings) {
     const getValues = (settings: ChartSettings) => settings.charts.flatMap(chart => chart.data?.values ?? [])
     const getKey = (settings: ChartSettings, value: Value) => {
-        return LegendValues.getGroupKey(value, settings.charts.length > 1)
+        return getGroupKey(value, settings.charts.length > 1)
     }
 
     const disabled = new Map<string, boolean>()

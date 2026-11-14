@@ -49,12 +49,6 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         return this
     }
 
-    tooltipHtml(html: string): this {
-        this.current.tooltipHtml = html
-
-        return this
-    }
-
     data(data: ItemData | undefined): this {
         this.current.data = data ?? null
 
@@ -97,7 +91,6 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         if (value) {
             this.current.isInteractive = false
             this.current.tooltipTemplate = ''
-            this.current.tooltipHtml = null
             this.current.hasContextMenu = false
         }
 

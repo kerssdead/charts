@@ -58,8 +58,6 @@ export default class RenderItem {
 
     tooltipTemplate?: string
 
-    tooltipHtml: string | null = null
-
     data: ItemData | null = null
 
     hasContextMenu: boolean = false
@@ -181,7 +179,7 @@ export default class RenderItem {
     }
 
     hasTooltipAt(point: Point) {
-        return !this.isInitializing && this.in(point) && !!(this.tooltipAt(point) || this.tooltipHtml)
+        return !this.isInitializing && this.in(point) && !!this.tooltipAt(point)
     }
 
     tooltipAt(point: Point) {

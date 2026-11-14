@@ -5,7 +5,7 @@ import { AnimationTiming, COORDS_MAX_X, FULL_ANGLE } from '@/static/constants/In
 import Point from '@/types/Point'
 import { GradientCache } from '@/helpers/Canvas'
 import { lerp } from '@/helpers/Geometry'
-import { ArcShape, isFullCircle, isInsideSector, traceSector } from '@/render/ArcSector'
+import { ArcShape, isFullCircle, isInsideSector, traceSector } from '@/helpers/ArcSector'
 import LeaderOrigin, { LeaderStart } from '@/types/interfaces/LeaderOrigin'
 
 export const HOVER_OFFSET = 8

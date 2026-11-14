@@ -1,7 +1,7 @@
 import RenderItemLine from '@/types/RenderItemLine'
 import RenderItem from '@/types/RenderItem'
 import { LineDrawMode, LineJoin } from '@/static/Enums'
-import LinePathTracer from '@/render/LinePathTracer'
+import LinePathTracer from '@/helpers/LinePathTracer'
 import { AREA_STOPS, CLIP, context, layerContext, STOPS, WINDOW } from './RenderItemLineTestData'
 
 const mockLayer: { current: unknown } = { current: null }

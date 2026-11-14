@@ -1,8 +1,8 @@
 import Queue from '@/render/Queue'
-import PlotProcess from '@/render/plot/PlotProcess'
 import RenderItem from '@/types/RenderItem'
 import RenderItemArc from '@/types/RenderItemArc'
 import Panel from '@/types/Panel'
+import ValueAxis from '@/types/ValueAxis'
 import ArcNeighbours from '@/renderer/ArcNeighbours'
 
 type ArcChanges = {
@@ -73,17 +73,17 @@ export default class Transition {
         if (old?.isGhost && item.isGhost)
             return false
 
-        const verticalPrevious = Transition.verticalPlot(this.previousPanels, item)
-        const verticalNext = Transition.verticalPlot(this.panels, item)
+        const previousAxis = Transition.verticalAxis(this.previousPanels, item)
+        const nextAxis = Transition.verticalAxis(this.panels, item)
 
         if (old)
             item.morphFrom(old, this.duration)
-        else if (item.axisValue != null && verticalPrevious)
-            item.enterFromAxis(verticalPrevious.getAxisY(item.axisValue), this.duration)
+        else if (item.axisValue != null && previousAxis)
+            item.enterFromAxis(previousAxis.getAxisY(item.axisValue), this.duration)
         else if (Transition.isArc(item) && !item.isGhost)
             return true
         else if (!item.isGhost)
-            item.appear(this.duration, Transition.mapY(verticalPrevious, verticalNext))
+            item.appear(this.duration, Transition.mapY(previousAxis, nextAxis))
 
         return false
     }
@@ -92,16 +92,16 @@ export default class Transition {
         if (item.isGhost || Transition.isArc(item))
             return
 
-        const verticalNext = Transition.verticalPlot(this.panels, item)
+        const nextAxis = Transition.verticalAxis(this.panels, item)
 
-        item.isFading ||= !verticalNext
+        item.isFading ||= !nextAxis
 
-        if (item.axisValue != null && verticalNext)
-            item.leaveToAxis(verticalNext.getAxisY(item.axisValue), this.duration)
+        if (item.axisValue != null && nextAxis)
+            item.leaveToAxis(nextAxis.getAxisY(item.axisValue), this.duration)
         else
             item.disappear(
                 this.duration,
-                Transition.mapY(verticalNext, Transition.verticalPlot(this.previousPanels, item))
+                Transition.mapY(nextAxis, Transition.verticalAxis(this.previousPanels, item))
             )
 
         this.queue.add([item])
@@ -135,13 +135,13 @@ export default class Transition {
         })
     }
 
-    private static verticalPlot(panels: Panel[], item: RenderItem) {
-        const plot = item.panel ? panels[item.panel.index]?.plot : null
+    private static verticalAxis(panels: Panel[], item: RenderItem) {
+        const axis = item.panel ? panels[item.panel.index]?.valueAxis : null
 
-        return plot && !plot.isHorizontal ? plot : null
+        return axis && !axis.isHorizontal ? axis : null
     }
 
-    private static mapY(from: PlotProcess | null, to: PlotProcess | null) {
+    private static mapY(from: ValueAxis | null, to: ValueAxis | null) {
         return from && to
                ? (y: number) => from.getAxisY(to.getAxisValue(y))
                : undefined

@@ -1,4 +1,4 @@
-import LinePathTracer from '@/render/LinePathTracer'
+import LinePathTracer from '@/helpers/LinePathTracer'
 import { LineDrawMode } from '@/static/Enums'
 import Point from '@/types/Point'
 

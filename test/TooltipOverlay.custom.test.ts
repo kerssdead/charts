@@ -34,7 +34,7 @@ afterEach(() => {
     delete (globalThis as any).document
 })
 
-function getShownHtml(data: ItemData | null, tooltipHtml: string | null, templateId?: string) {
+function getShownHtml(data: ItemData | null, tooltipText: string, templateId?: string) {
     const shape = new RenderItemRectangle()
 
     shape.canvas = { x: 50, y: 50, width: 100, height: 100, radii: [0, 0, 0, 0] }
@@ -42,7 +42,7 @@ function getShownHtml(data: ItemData | null, tooltipHtml: string | null, templat
     const item = new RenderItem(shape)
 
     item.data = data
-    item.tooltipHtml = tooltipHtml
+    item.tooltipTemplate = tooltipText
 
     const queue = new Queue({} as CanvasRenderingContext2D)
 
@@ -62,15 +62,15 @@ function getShownHtml(data: ItemData | null, tooltipHtml: string | null, templat
 
 describe('Showing custom tooltip', () => {
     it('Should fill user template with item data', () => {
-        expect(getShownHtml({ Name: 'First' }, '<i>built-in</i>', 'template')).toBe('<b>First</b>')
+        expect(getShownHtml({ Name: 'First' }, 'Built-in', 'template')).toBe('<b>First</b>')
     })
 
-    it('Should show built-in html without user template', () => {
-        expect(getShownHtml({ Name: 'First' }, '<i>built-in</i>')).toBe('<i>built-in</i>')
+    it('Should show escaped built-in text without user template', () => {
+        expect(getShownHtml({ Name: 'First' }, '<i>Built-in</i>')).toContain('>&lt;i&gt;Built-in&lt;/i&gt;</div>')
     })
 
-    it('Should show built-in html when item has no data', () => {
-        expect(getShownHtml(null, '<i>built-in</i>', 'template')).toBe('<i>built-in</i>')
+    it('Should show built-in text when item has no data', () => {
+        expect(getShownHtml(null, 'Built-in', 'template')).toContain('>Built-in</div>')
     })
 
     it('Should fill template once per data', () => {

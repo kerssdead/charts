@@ -1,7 +1,7 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
-import type PlotProcess from '@/render/plot/PlotProcess'
-import type { ScrollDrag } from '@/renderer/Pointer'
+import ValueAxis from '@/types/ValueAxis'
+import ScrollDrag from '@/types/ScrollDrag'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { clamp, contains } from '@/helpers/Geometry'
 
@@ -36,7 +36,7 @@ export default class Panel {
 
     readonly body: CanvasWindow = new CanvasWindow(0, 0)
 
-    plot: PlotProcess | null = null
+    valueAxis: ValueAxis | null = null
 
     scroll: PanelScroll | null = null
 

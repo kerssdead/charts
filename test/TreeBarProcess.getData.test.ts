@@ -171,6 +171,13 @@ describe('Getting tree bar data', () => {
             .toBe(true)
     })
 
+    it('Should show part label and value as tooltip text', () => {
+        const items = getItems(create({ values: [row('a', [7])] }))
+
+        expect(items.get('tree-bar-row-a-part-0')?.tooltipTemplate)
+            .toBe('a\n7.00')
+    })
+
     it('Should load row images with the chart cross-origin mode', () => {
         const process = new TreeBarProcess(
             { values: [row('a', [1], { image: 'a.png' })] } as TreeBarData,

@@ -1,7 +1,7 @@
 import ChartSettings from '@/types/ChartSettings'
 import { ChartType } from '@/static/Enums'
 import { deepClone } from '@/helpers/Collections'
-import LegendValues from '@/legend/LegendValues'
+import { hasLegend } from '@/helpers/ChartFeatures'
 import { mergeSameLabelValues } from '@/helpers/ValueMerging'
 import { getStops, normalizeDates, normalizeValues, prepareValues } from '@/helpers/SettingsInput'
 import { applyDefaultColors } from '@/helpers/DefaultColors'
@@ -28,6 +28,6 @@ export function normalize(source: ChartSettings, scope?: Element): ChartSettings
     return {
         ...settings,
         enableTooltip: !settings.disableInteractions && settings.enableTooltip,
-        enableLegend: charts.some(LegendValues.isSupported) && settings.enableLegend
+        enableLegend: charts.some(hasLegend) && settings.enableLegend
     }
 }

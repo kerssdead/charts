@@ -5,11 +5,10 @@ import Point from '@/types/Point'
 import RenderItem from '@/types/RenderItem'
 import RenderItemScrollbar from '@/types/RenderItemScrollbar'
 import Data from '@/types/interfaces/Data'
-import { ScrollDrag } from '@/renderer/Pointer'
+import ScrollDrag from '@/types/ScrollDrag'
 import Layout from '@/renderer/Layout'
 import ChartProcess from '@/render/ChartProcess'
 import ProcessFactory from '@/render/ProcessFactory'
-import PlotProcess from '@/render/plot/PlotProcess'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import { Layer } from '@/static/constants/Index'
@@ -87,7 +86,7 @@ export default class ChartPanels {
         const pixel = panel.pixel(this.layout.window)
         const process = ProcessFactory.create(chart, pixel, build.settings)
 
-        panel.plot = process instanceof PlotProcess ? process : null
+        panel.valueAxis = process?.getValueAxis() ?? null
 
         if (process)
             process.onChange = build.onChange
