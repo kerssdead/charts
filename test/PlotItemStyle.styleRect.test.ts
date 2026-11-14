@@ -46,7 +46,7 @@ describe('Styling plot rectangle', () => {
 
         expect(item.isInteractive)
             .toBe(true)
-        expect(item.tooltipTemplate)
+        expect(item.tooltipAt({ x: 0, y: 0 }))
             .toBe(`${ series.label }: 5`)
         expect(item.layer)
             .toBe(Layer.Data)

@@ -185,6 +185,47 @@
                 }))
             }
         }),
+        'Segmented bar': scale => ({
+            type: 4,
+            title: 'Segmented bar',
+            enableTooltip: true,
+            data: {
+                values: range(20 * scale).map(i => ({
+                    id: `Part ${ i }`,
+                    label: `Part ${ i }`,
+                    value: 1 + Math.round(random() * 100)
+                })),
+                stops: range(3).map(i => ({
+                    id: `Stop ${ i }`,
+                    label: `Stop ${ i }`,
+                    value: 1 + Math.round(random() * 100)
+                }))
+            }
+        }),
+        'Tree bar': scale => ({
+            type: 5,
+            title: 'Tree bar',
+            enableTooltip: true,
+            data: {
+                values: range(10 * scale).map(i => ({
+                    id: `Row ${ i }`,
+                    label: `Row ${ i }`,
+                    expanded: i % 3 == 0,
+                    parts: range(3).map(j => ({
+                        id: `R${ i }p${ j }`,
+                        value: 1 + Math.round(random() * 100)
+                    })),
+                    children: i % 3 == 0 ? range(3).map(j => ({
+                        id: `Row ${ i }.${ j }`,
+                        label: `Row ${ i }.${ j }`,
+                        parts: range(2).map(k => ({
+                            id: `R${ i }.${ j }p${ k }`,
+                            value: 1 + Math.round(random() * 100)
+                        }))
+                    })) : []
+                }))
+            }
+        }),
         'Grid · 9 charts': scale => ({
             title: 'Grid',
             enableLegend: true,

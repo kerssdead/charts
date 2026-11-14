@@ -3,9 +3,10 @@ import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, FULL_ANGLE } from '@/static/constants/Index'
-import { contains, lerp, lerpRect } from '@/helpers/Geometry'
+import { contains, findClosestStop, lerp, lerpRect } from '@/helpers/Geometry'
 import { GradientCache } from '@/helpers/Canvas'
 import { LineJoin } from '@/static/Enums'
+import { Tooltip, resolveTooltip } from '@/types/Tooltip'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import LinePathTracer from '@/helpers/LinePathTracer'
 import LineArea, { LinePath } from '@/helpers/LineArea'
@@ -28,7 +29,7 @@ export default class RenderItemLine extends RenderItemBase {
 
     pathTracer = new LinePathTracer()
 
-    tooltips: string[] = []
+    tooltips: Tooltip[] = []
 
     isGradient: boolean = false
 
@@ -43,6 +44,8 @@ export default class RenderItemLine extends RenderItemBase {
     private readonly canvasClip: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
 
     private hovered: number = -1
+
+    private isSortedX: boolean = true
 
     private readonly gradient = new GradientCache()
 
@@ -99,12 +102,19 @@ export default class RenderItemLine extends RenderItemBase {
         if (this.canvas.length !== stops.length)
             this.canvas = stops.map(() => ({ x: 0, y: 0 }))
 
+        let isSorted = true
+
         for (let i = 0; i < stops.length; i++) {
             this.canvas[i].x = window.mapX(stops[i].x)
             this.canvas[i].y = window.mapY(stops[i].y)
+
+            if (i > 0 && this.canvas[i].x < this.canvas[i - 1].x)
+                isSorted = false
         }
 
-        this.pathTracer.updateCurve(this.canvas)
+        this.isSortedX = isSorted
+
+        this.pathTracer.updateCurve(this.canvas, morph < 1)
 
         this.area.adjust(window, morph)
 
@@ -230,35 +240,23 @@ export default class RenderItemLine extends RenderItemBase {
     }
 
     isMouseOver(point: Point): boolean {
-        this.hovered = this.stopAt(point)
-
-        return this.hovered >= 0
+        return this.stopAt(point) >= 0
     }
 
     tooltipAt(point: Point): string | null {
         if (this.tooltips.length !== this.canvas.length)
             return null
 
-        return this.tooltips[this.stopAt(point)] ?? null
+        return resolveTooltip(this.tooltips[this.stopAt(point)] ?? null)
     }
 
     private stopAt(point: Point) {
-        let closest = -1
-        let distance = this.width / 2 + HIT_RADIUS
-
-        this.canvas.forEach((stop, i) => {
-            if (!this.isInsideClip(stop))
-                return
-
-            const current = Math.hypot(point.x - stop.x, point.y - stop.y)
-
-            if (current <= distance) {
-                closest = i
-                distance = current
-            }
-        })
-
-        return closest
+        return findClosestStop(
+            this.canvas,
+            point,
+            this.width / 2 + HIT_RADIUS,
+            { isSortedX: this.isSortedX, isInside: stop => this.isInsideClip(stop) }
+        )
     }
 
     private isInsideClip(stop: Point) {
@@ -272,7 +270,9 @@ export default class RenderItemLine extends RenderItemBase {
         item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, now, AnimationTiming.hover)
     }
 
-    animateHover(now: DOMHighResTimeStamp): boolean {
+    animateHover(point: Point | null, now: DOMHighResTimeStamp): boolean {
+        this.hovered = point ? this.stopAt(point) : -1
+
         return this.markers.animate(this.hovered, now)
     }
 

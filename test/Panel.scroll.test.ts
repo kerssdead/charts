@@ -108,3 +108,53 @@ describe('Gliding panel scroll', () => {
             .toEqual([20, 20, false])
     })
 })
+
+describe('Panel content window', () => {
+    const createPanel = () => {
+        const panel = create(300)
+        const onChange = jest.fn()
+
+        panel.onContentChange = onChange
+
+        return { panel, onChange }
+    }
+
+    it('Should rebuild when the scroll target leaves the built window', () => {
+        const { panel, onChange } = createPanel()
+
+        panel.setContentWindow(20, 200)
+
+        panel.scrollTo(180)
+
+        expect(onChange)
+            .not.toHaveBeenCalled()
+
+        panel.scrollTo(181)
+
+        expect(onChange)
+            .toHaveBeenCalledTimes(1)
+    })
+
+    it('Should rebuild when gliding past the built window', () => {
+        const { panel, onChange } = createPanel()
+
+        panel.setContentWindow(20, 200)
+
+        panel.glideTo(180)
+        panel.glideTo(181)
+
+        expect(onChange)
+            .toHaveBeenCalledTimes(1)
+    })
+
+    it('Should rebuild when scrolling before the built window', () => {
+        const { panel, onChange } = createPanel()
+
+        panel.setContentWindow(150, 400)
+
+        panel.scrollTo(40)
+
+        expect(onChange)
+            .toHaveBeenCalledTimes(1)
+    })
+})

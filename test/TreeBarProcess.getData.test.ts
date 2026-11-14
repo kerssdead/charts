@@ -9,6 +9,8 @@ import Sector from '@/types/Sector'
 import ProcessSettings from '@/types/ProcessSettings'
 import RenderItemImage from '@/types/RenderItemImage'
 import { ImageCrossOrigin } from '@/static/Enums'
+import Panel from '@/types/Panel'
+import CanvasWindow from '@/types/CanvasWindow'
 import { createState } from './ViewStateTestData'
 
 jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000', lineAxis: '#e0e0e0' }))
@@ -178,8 +180,45 @@ describe('Getting tree bar data', () => {
     it('Should show part label and value as tooltip text', () => {
         const items = getItems(create({ values: [row('a', [7])] }))
 
-        expect(items.get('tree-bar-row-a-part-0')?.tooltipTemplate)
+        expect(items.get('tree-bar-row-a-part-0')?.tooltipAt({ x: 0, y: 0 }))
             .toBe('a\n7.00')
+    })
+
+    it('Should build only rows near the scroll window', () => {
+        const process = create({ values: Array.from({ length: 50 }, (_, i) => row(`r${ i }`, [1])) })
+        const panel = new Panel(0, { x: 0, y: 0, width: 1, height: 1 })
+
+        panel.scroll = process.getScroll()
+        panel.update(new CanvasWindow(500, 400))
+
+        process.panel = panel
+
+        const labels = texts(getItems(process), '-label-0')
+
+        expect(labels.length)
+            .toBeGreaterThan(0)
+        expect(labels.length)
+            .toBeLessThan(50)
+        expect(labels[0])
+            .toBe('r0')
+    })
+
+    it('Should recenter the built window after scrolling', () => {
+        const process = create({ values: Array.from({ length: 50 }, (_, i) => row(`r${ i }`, [1])) })
+        const panel = new Panel(0, { x: 0, y: 0, width: 1, height: 1 })
+
+        panel.scroll = process.getScroll()
+        panel.update(new CanvasWindow(500, 400))
+        panel.scrollTo(500)
+
+        process.panel = panel
+
+        const labels = texts(getItems(process), '-label-0')
+
+        expect(labels[0])
+            .toBe('r3')
+        expect(labels.length)
+            .toBeLessThan(50)
     })
 
     it('Should load row images with the chart cross-origin mode', () => {
@@ -193,4 +232,5 @@ describe('Getting tree bar data', () => {
         expect((getItems(process).get('tree-bar-row-a-image')?.shape as RenderItemImage).crossOrigin)
             .toBe(ImageCrossOrigin.None)
     })
+
 })

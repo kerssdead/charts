@@ -20,25 +20,34 @@ export default class LinePathTracer {
 
     private partialCurveSegment: CurveSegment | null = null
 
+    private lengths: number[] = []
+
+    private total: number = 0
+
+    private lengthStops: Point[] | null = null
+
+    private isMorphing: boolean = false
+
     constructor(drawMode: LineDrawMode = LineDrawMode.Straight) {
         this.isSmooth = drawMode === LineDrawMode.Smooth
     }
 
-    updateCurve(stops: Point[]) {
+    updateCurve(stops: Point[], isMorphing: boolean = false) {
+        this.isMorphing = isMorphing
+
         if (this.isSmooth)
             this.curveSegments = getMonotoneSegments(stops)
     }
 
     placeProgress(stops: Point[], progress: number): number {
-        let total = 0
+        const lengths = this.isMorphing || this.lengthStops !== stops
+                        ? this.cacheLengths(stops)
+                        : this.lengths
 
-        for (let i = 1; i < stops.length; i++)
-            total += segmentLength(stops, i)
-
-        let left = total * progress
+        let left = this.total * progress
 
         for (let i = 1; i < stops.length; i++) {
-            const length = segmentLength(stops, i)
+            const length = lengths[i]
 
             if (left >= length) {
                 left -= length
@@ -52,6 +61,27 @@ export default class LinePathTracer {
         }
 
         return stops.length
+    }
+
+    private cacheLengths(stops: Point[]) {
+        this.lengthStops = stops
+
+        let total = 0
+
+        this.lengths = stops.map((stop, i) => {
+            if (i === 0)
+                return 0
+
+            const length = segmentLength(stops, i)
+
+            total += length
+
+            return length
+        })
+
+        this.total = total
+
+        return this.lengths
     }
 
     placePartialStop(stops: Point[], endIndex: number, segmentProgress: number) {

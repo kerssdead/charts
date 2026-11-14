@@ -4,7 +4,7 @@ import Units from '@/helpers/Units'
 import Point from '@/types/Point'
 import ProcessSettings from '@/types/ProcessSettings'
 import Data from '@/types/interfaces/Data'
-import type { PanelScroll } from '@/types/Panel'
+import Panel, { type PanelScroll } from '@/types/Panel'
 import Value from '@/types/base/Value'
 import ItemData from '@/types/ItemData'
 import ValueAxis from '@/types/ValueAxis'
@@ -24,6 +24,8 @@ export default abstract class ChartProcess<
     protected readonly settings: TSettings
 
     protected readonly state: ChartViewState
+
+    panel: Panel | null = null
 
     onChange: (() => void) | undefined
 

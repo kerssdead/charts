@@ -100,3 +100,53 @@ export function boxEdgeDistance(angle: number, halfWidth: number, halfHeight: nu
 
     return cornerProjection + Math.sqrt(Math.max(discriminant, 0)) - distance
 }
+
+export function findClosestStop(
+    stops: Point[],
+    point: Point,
+    maxDistance: number,
+    { isSortedX, isInside }: { isSortedX: boolean, isInside: (stop: Point) => boolean }
+) {
+    if (stops.length === 0)
+        return -1
+
+    let start = 0
+
+    if (isSortedX) {
+        let low = 0
+        let high = stops.length
+
+        while (low < high) {
+            const mid = (low + high) >> 1
+
+            if (stops[mid].x < point.x - maxDistance)
+                low = mid + 1
+            else
+                high = mid
+        }
+
+        start = low
+    }
+
+    let closest = -1
+    let distance = maxDistance
+
+    for (let i = start; i < stops.length; i++) {
+        const stop = stops[i]
+
+        if (isSortedX && stop.x > point.x + maxDistance)
+            break
+
+        if (!isInside(stop))
+            continue
+
+        const current = Math.hypot(point.x - stop.x, point.y - stop.y)
+
+        if (current <= distance) {
+            closest = i
+            distance = current
+        }
+    }
+
+    return closest
+}

@@ -1,6 +1,7 @@
 import RenderItem from '@/types/RenderItem'
 import ItemData from '@/types/ItemData'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import { Tooltip } from '@/types/Tooltip'
 
 export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemBase> {
     readonly shape: S
@@ -43,7 +44,7 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         return this
     }
 
-    tooltip(template: string): this {
+    tooltip(template: Tooltip): this {
         this.current.tooltipTemplate = template
 
         return this

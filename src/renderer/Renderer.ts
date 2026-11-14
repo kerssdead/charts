@@ -19,6 +19,8 @@ import Frames from '@/renderer/Frames'
 import ViewState from '@/charts/ViewState'
 
 export default class Renderer {
+    private static readonly RESIZE_REBUILD_DELAY = 150
+
     private readonly input: InputRouter
 
     private readonly frames: Frames
@@ -36,6 +38,8 @@ export default class Renderer {
     private isApplied: boolean = false
 
     private isLaidOut: boolean = false
+
+    private rebuildTimer: ReturnType<typeof setTimeout> | null = null
 
     private legend: Legend | undefined
 
@@ -87,6 +91,8 @@ export default class Renderer {
 
     apply(settings: ChartSettings) {
         this.settings = settings
+
+        this.cancelPendingRebuild()
 
         this.menu.apply(settings, value => this.viewState.isDisabled(value))
         this.syncLegend()
@@ -149,17 +155,44 @@ export default class Renderer {
 
         const isResized = this.updateLayout()
 
-        if (isResized && this.layout.hasArea)
-            this.rebuild({ isInitialized: this.isLaidOut && !this.queue.items.some(item => item.isInitializing) })
-        else
+        if (isResized && this.layout.hasArea) {
+            if (this.isLaidOut)
+                this.scheduleRebuild()
+            else
+                this.rebuild({ isInitialized: false })
+        } else {
             this.render()
+        }
 
         this.isLaidOut ||= this.layout.hasArea
 
         this.frames.drawNow()
     }
 
+    private scheduleRebuild() {
+        if (this.rebuildTimer != null)
+            clearTimeout(this.rebuildTimer)
+
+        this.rebuildTimer = setTimeout(() => {
+            this.rebuildTimer = null
+
+            const isInitialized = this.isLaidOut && !this.queue.items.some(item => item.isInitializing)
+
+            this.rebuild({ isInitialized })
+        }, Renderer.RESIZE_REBUILD_DELAY)
+    }
+
+    private cancelPendingRebuild() {
+        if (this.rebuildTimer == null)
+            return
+
+        clearTimeout(this.rebuildTimer)
+        this.rebuildTimer = null
+    }
+
     destroy() {
+        this.cancelPendingRebuild()
+
         this.input.detach()
         this.detachImages()
 

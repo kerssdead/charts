@@ -34,7 +34,7 @@ export default class PlotLineItems {
                     line.stop(
                         categoryScale.getSlotCenter(slot),
                         valueScale.getCoordinate(y),
-                        this.style.getValueTooltip(series, value)
+                        () => this.style.getValueTooltip(series, value)
                     )
                 })
 

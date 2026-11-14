@@ -38,7 +38,7 @@ export default class PlotItemStyle {
                          .key(this.getKey(series, 'rect', this.getPointKey(series, valueIndex)))
                          .interact()
                          .init(AnimationTiming.plotInit, slot * this.initStagger)
-                         .tooltip(this.getValueTooltip(series, value))
+                         .tooltip(() => this.getValueTooltip(series, value))
                          .data(value.data)
                          .contextMenu()
 

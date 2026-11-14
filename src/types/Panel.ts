@@ -44,13 +44,17 @@ export default class Panel {
 
     target: number = 0
 
+    onContentChange: (() => void) | null = null
+
     clip: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
 
     zoom: number = 1
 
-    private baseHeight: number = 0
+    baseHeight: number = 0
 
     private scrollTime: DOMHighResTimeStamp | null = null
+
+    private contentWindow: { top: number, bottom: number } | null = null
 
     constructor(index: number, rect: RectangleDimensions) {
         this.index = index
@@ -117,13 +121,32 @@ export default class Panel {
         this.target = previous?.target ?? 0
     }
 
+    setContentWindow(top: number, bottom: number) {
+        this.contentWindow = { top, bottom }
+    }
+
     scrollTo(offset: number): boolean {
         const next = this.clampOffset(offset)
         const isChanged = next !== this.offset
 
         this.offset = this.target = next
 
+        if (isChanged && this.isOutsideContent(next))
+            this.onContentChange?.()
+
         return isChanged
+    }
+
+    private isOutsideContent(offset: number): boolean {
+        const content = this.contentWindow
+
+        if (content == null || this.scroll == null)
+            return false
+
+        if (this.baseHeight + offset < content.top)
+            return true
+
+        return this.scroll.top + offset > content.bottom
     }
 
     glideTo(target: number): boolean {
@@ -131,6 +154,9 @@ export default class Panel {
         const isChanged = next !== this.target
 
         this.target = next
+
+        if (isChanged && this.isOutsideContent(next))
+            this.onContentChange?.()
 
         return isChanged
     }

@@ -89,9 +89,12 @@ export default class ChartPanels {
         const process = createProcess(chart, pixel, build.settings, build.viewState.getChartState(index))
 
         panel.valueAxis = process?.getValueAxis() ?? null
+        panel.onContentChange = build.onChange
 
-        if (process)
+        if (process) {
+            process.panel = panel
             process.onChange = build.onChange
+        }
 
         panel.scroll = process?.getScroll() ?? null
         panel.keepScroll(build.previousPanels[index])

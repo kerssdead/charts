@@ -10,6 +10,7 @@ import { contains } from '@/helpers/Geometry'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { grayScale } from '@/helpers/Color'
 import { LineJoin } from '@/static/Enums'
+import { Tooltip, resolveTooltip } from '@/types/Tooltip'
 
 const SOLID_LINE: number[] = []
 
@@ -56,7 +57,7 @@ export default class RenderItem {
 
     stroke?: string
 
-    tooltipTemplate?: string
+    tooltipTemplate?: Tooltip
 
     data: ItemData | null = null
 
@@ -153,15 +154,14 @@ export default class RenderItem {
     }
 
     animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>): boolean {
-        if (!this.isInteractive || this.isInitializing) {
+        if (!this.isInteractive || this.isInitializing)
             return false
-        }
 
-        const isOver = this.hoverGroup == null
-                       ? this.in(point)
-                       : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
+        const isOver = this.isOverAt(point, hoveredGroups)
 
-        const isShapeAnimating = this.shape.animateHover(now)
+        const isHoverTarget = this.hoverGroup == null ? isOver : this.in(point)
+
+        const isShapeAnimating = this.shape.animateHover(isHoverTarget ? point : null, now)
 
         if (!isOver && this.hover.isIdle)
             return isShapeAnimating
@@ -174,6 +174,12 @@ export default class RenderItem {
         return this.hover.isAnimating || isShapeAnimating
     }
 
+    private isOverAt(point: Point, hoveredGroups: Set<string>) {
+        return this.hoverGroup == null
+               ? this.in(point)
+               : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
+    }
+
     canHoverGroupAt(point: Point) {
         return this.hoverGroup != null && this.isInteractive && !this.isInitializing && this.in(point)
     }
@@ -183,7 +189,7 @@ export default class RenderItem {
     }
 
     tooltipAt(point: Point) {
-        return this.shape.tooltipAt(point) ?? this.tooltipTemplate
+        return this.shape.tooltipAt(point) ?? resolveTooltip(this.tooltipTemplate ?? null)
     }
 
     isClickableAt(point: Point, isContextOpen: boolean) {

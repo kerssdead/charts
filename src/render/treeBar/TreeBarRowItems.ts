@@ -219,7 +219,7 @@ export default class TreeBarRowItems {
                  .monochrome()
                  .interact()
                  .contextMenu()
-                 .tooltip(this.actions.getPartTooltip(part, label))
+                 .tooltip(() => this.actions.getPartTooltip(part, label))
                  .data(this.actions.getPartData(part))
 
             x += width

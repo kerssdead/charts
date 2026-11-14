@@ -2,6 +2,7 @@ import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
 import RenderItemLine from '@/types/RenderItemLine'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { LineDrawMode } from '@/static/Enums'
+import { Tooltip } from '@/types/Tooltip'
 import LinePathTracer from '@/helpers/LinePathTracer'
 
 export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderItemLine> {
@@ -9,7 +10,7 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
         super(new RenderItemLine())
     }
 
-    stop(x: number, y: number, tooltip?: string) {
+    stop(x: number, y: number, tooltip?: Tooltip) {
         this.shape.absolute.push({ x, y })
 
         if (tooltip !== undefined)

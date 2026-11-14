@@ -3,6 +3,7 @@ import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemLine from '@/types/RenderItemLine'
 import PlotLineItems from '@/render/plot/PlotLineItems'
+import { resolveTooltip } from '@/types/Tooltip'
 import { LineDrawMode, PlotAxisType, PlotScaleType, PlotType } from '@/static/Enums'
 
 jest.mock('@/helpers/Text', () => ({
@@ -50,7 +51,7 @@ describe('Getting plot line items', () => {
         const series = createSeries(PlotType.Line, [], { values: [{ x: 3, y: 30 }, { x: 1, y: 10 }] })
         const { line } = getLine([series], series, { xType: PlotAxisType.Number })
 
-        expect(line.tooltips)
+        expect(line.tooltips.map(resolveTooltip))
             .toEqual([`${ series.label }: 10`, `${ series.label }: 30`])
     })
 
@@ -166,7 +167,7 @@ describe('Getting plot line items', () => {
         })
         const { items } = getLines([series], series, { xType: PlotAxisType.Number })
 
-        expect(items.map(item => (item.shape as RenderItemLine).tooltips))
+        expect(items.map(item => (item.shape as RenderItemLine).tooltips.map(resolveTooltip)))
             .toEqual([[`${ series.label }: 10`], [`${ series.label }: 30`]])
     })
 

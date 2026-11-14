@@ -96,7 +96,48 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
     }
 
     getData(): QueueAction[] {
-        return this.rows.map(row => (items: QueueItemsBuilder) => this.rowItems.add(items, row))
+        const range = this.getVisibleRowRange()
+
+        return this.rows.slice(range.start, range.end)
+                        .map(row => (items: QueueItemsBuilder) => this.rowItems.add(items, row))
+    }
+
+    private getVisibleRowRange() {
+        const { panel, rows } = this
+        const all = { start: 0, end: rows.length }
+
+        if (panel?.scroll == null)
+            return all
+
+        const visibleTop = panel.scroll.top + panel.target
+        const visibleBottom = panel.baseHeight + panel.target
+        const buffer = Math.max(visibleBottom - visibleTop, 0)
+
+        const top = visibleTop - buffer
+        const bottom = visibleBottom + buffer
+
+        panel.setContentWindow(top, bottom)
+
+        return {
+            start: this.findRowIndex(row => row.y + row.height > top),
+            end: this.findRowIndex(row => row.y >= bottom)
+        }
+    }
+
+    private findRowIndex(predicate: (row: TreeBarRowEntry) => boolean) {
+        let low = 0
+        let high = this.rows.length
+
+        while (low < high) {
+            const mid = (low + high) >> 1
+
+            if (!predicate(this.rows[mid]))
+                low = mid + 1
+            else
+                high = mid
+        }
+
+        return low
     }
 
     private x(px: number) {
