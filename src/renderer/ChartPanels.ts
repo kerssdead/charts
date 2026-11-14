@@ -8,7 +8,7 @@ import Data from '@/types/interfaces/Data'
 import ScrollDrag from '@/types/ScrollDrag'
 import Layout from '@/renderer/Layout'
 import ChartProcess from '@/render/ChartProcess'
-import ProcessFactory from '@/render/ProcessFactory'
+import { createProcess } from '@/charts/ChartDefinitions'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import { Layer } from '@/static/constants/Index'
@@ -84,7 +84,7 @@ export default class ChartPanels {
     private buildPanel(panel: Panel, index: number, build: PanelBuild) {
         const chart = build.settings.charts[index]
         const pixel = panel.pixel(this.layout.window)
-        const process = ProcessFactory.create(chart, pixel, build.settings)
+        const process = createProcess(chart, pixel, build.settings)
 
         panel.valueAxis = process?.getValueAxis() ?? null
 

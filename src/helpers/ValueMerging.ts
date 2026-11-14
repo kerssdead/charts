@@ -1,6 +1,4 @@
 import { groupBy } from '@/helpers/Collections'
-import { ChartType } from '@/static/Enums'
-import ChartItem from '@/types/ChartItem'
 import Value from '@/types/base/Value'
 import Sector from '@/types/Sector'
 import PlotSeries from '@/types/PlotSeries'
@@ -10,26 +8,14 @@ import GaugeData from '@/types/data/GaugeData'
 import PlotData from '@/types/data/PlotData'
 import TreeData, { TreeValue } from '@/types/data/TreeData'
 
-export function mergeSameLabelValues(chart: ChartItem) {
-    if (!chart.data?.values)
-        return
-
-    if (chart.type === ChartType.Pie || chart.type === ChartType.Gauge)
-        mergeSectors(chart.data as PieData | GaugeData)
-    else if (chart.type === ChartType.TreeMap)
-        mergeTreeValues(chart.data as TreeData)
-    else if (chart.type === ChartType.Plot)
-        mergeSeries(chart.data as PlotData)
-}
-
-function mergeSectors(data: PieData | GaugeData) {
+export function mergeSectors(data: PieData | GaugeData) {
     if (data.enableMerging === false)
         return
 
     data.values = mergeByLabel(data.values, addValue)
 }
 
-function mergeTreeValues(data: TreeData) {
+export function mergeTreeValues(data: TreeData) {
     if (data.enableMerging === false)
         return
 
@@ -40,7 +26,7 @@ function mergeTreeValues(data: TreeData) {
             value.sectors = mergeByLabel(value.sectors, addValue)
 }
 
-function mergeSeries(data: PlotData) {
+export function mergeSeries(data: PlotData) {
     if (data.enableMerging)
         data.values = mergeByLabel(data.values, addPoints)
 }

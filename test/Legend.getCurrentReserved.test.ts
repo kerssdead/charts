@@ -1,5 +1,5 @@
 import Legend from '@/Legend'
-import { normalize } from '@/helpers/Settings'
+import { normalize } from '@/charts/Settings'
 import { ChartType, LegendPlace } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 

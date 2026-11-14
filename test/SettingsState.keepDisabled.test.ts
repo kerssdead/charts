@@ -1,5 +1,5 @@
-import { normalize } from '@/helpers/Settings'
-import { keepDisabled } from '@/helpers/SettingsState'
+import { normalize } from '@/charts/Settings'
+import { keepDisabled } from '@/charts/SettingsState'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 

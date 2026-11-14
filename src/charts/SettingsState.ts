@@ -1,8 +1,7 @@
 import ChartSettings from '@/types/ChartSettings'
-import { ChartType } from '@/static/Enums'
 import { getGroupKey } from '@/helpers/ValueKeys'
 import Value from '@/types/base/Value'
-import TreeBarData, { keepTreeBarState } from '@/types/data/TreeBarData'
+import { getChartDefinition } from '@/charts/ChartDefinitions'
 
 export function keepState(previous: ChartSettings, next: ChartSettings) {
     keepDisabled(previous, next)
@@ -10,8 +9,8 @@ export function keepState(previous: ChartSettings, next: ChartSettings) {
     next.charts.forEach((chart, index) => {
         const old = previous.charts[index]
 
-        if (chart.type === ChartType.TreeBar && old?.type === ChartType.TreeBar)
-            keepTreeBarState(old.data as TreeBarData, chart.data as TreeBarData)
+        if (old?.type === chart.type)
+            getChartDefinition(chart.type)?.keepState?.(old.data, chart.data)
     })
 }
 

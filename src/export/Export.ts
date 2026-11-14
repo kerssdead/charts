@@ -2,7 +2,7 @@ import Theme from '@/Theme'
 import { getContext, isPixelBusy } from '@/helpers/Canvas'
 import { Tag } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
-import Decomposition from '@/export/Decomposition'
+import { getTableRows } from '@/charts/ChartDefinitions'
 import { getTotals } from '@/export/TableTotals'
 import TextResources from '@/static/TextResources'
 
@@ -119,7 +119,7 @@ export default class Export {
         }
 
         const blocks = charts.map(chart => {
-            const table = Decomposition.getRows(chart)
+            const table = getTableRows(chart)
             const { headers, values } = table
 
             const headerRow = ['', ...headers.map(header => header.display)]

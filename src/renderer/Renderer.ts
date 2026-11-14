@@ -2,7 +2,7 @@ import { getContext } from '@/helpers/Canvas'
 import ChartSettings from '@/types/ChartSettings'
 import Legend from '@/Legend'
 import Queue from '@/render/Queue'
-import ProcessFactory from '@/render/ProcessFactory'
+import { hasFixedHeader } from '@/charts/ChartDefinitions'
 import Transition from '@/renderer/Transition'
 import ChartPanels from '@/renderer/ChartPanels'
 import Overlay from '@/renderer/Overlay'
@@ -214,7 +214,7 @@ export default class Renderer {
     }
 
     private updateLayout() {
-        const reserveMenuRow = this.settings.charts.some(chart => ProcessFactory.hasFixedHeader(chart.type))
+        const reserveMenuRow = this.settings.charts.some(hasFixedHeader)
 
         return this.layout.update({
             title: this.settings.title,

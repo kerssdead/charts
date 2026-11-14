@@ -1,4 +1,4 @@
-import Decomposition from '@/export/Decomposition'
+import { getTableRows, summarizeTable } from '@/charts/ChartDefinitions'
 import ChartItem from '@/types/ChartItem'
 import { ChartType, TableColumnKey } from '@/static/Enums'
 
@@ -13,9 +13,9 @@ const plotChart = (xs: number[]) => {
     } as unknown as ChartItem
 }
 
-const keys = (chart: ChartItem) => Decomposition.getDisplayRows(chart).headers.map(header => header.value)
+const keys = (chart: ChartItem) => summarizeTable(chart, getTableRows(chart)).headers.map(header => header.value)
 
-describe('Getting decomposition display rows', () => {
+describe('Summarizing chart tables', () => {
     it('Should add a row total column to plots with several x values', () => {
         expect(keys(plotChart([1, 2])))
             .toEqual(['1', '2', TableColumnKey.RowTotal])
@@ -31,8 +31,15 @@ describe('Getting decomposition display rows', () => {
             .toEqual([['Value', TableColumnKey.Share], ['Value', TableColumnKey.Share]])
     })
 
-    it('Should keep other charts unchanged', () => {
-        expect(keys(valueChart(ChartType.Gauge)))
+    it.each([ChartType.Gauge, ChartType.SegmentedBar])('Should keep table of chart type %s unchanged', type => {
+        expect(keys(valueChart(type)))
             .toEqual(['Value'])
+    })
+
+    it('Should keep table of unknown chart type unchanged', () => {
+        const table = { headers: [{ value: 'a', display: 'a' }], values: [] }
+
+        expect(summarizeTable(valueChart(-1 as ChartType), table))
+            .toBe(table)
     })
 })

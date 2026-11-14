@@ -1,4 +1,4 @@
-import ProcessFactory from '@/render/ProcessFactory'
+import { createProcess } from '@/charts/ChartDefinitions'
 import GaugeProcess from '@/render/gauge/GaugeProcess'
 import PieProcess from '@/render/pie/PieProcess'
 import PlotProcess from '@/render/plot/PlotProcess'
@@ -29,14 +29,14 @@ describe('Checking process creation', () => {
         [ChartType.SegmentedBar, SegmentedBarProcess],
         [ChartType.TreeBar, TreeBarProcess]
     ])('Should create matching process for chart type %s', (type, Process) => {
-        expect(ProcessFactory.create({ type, data }, pixel, settings))
+        expect(createProcess({ type, data }, pixel, settings))
             .toBeInstanceOf(Process)
         expect(Process)
             .toHaveBeenLastCalledWith(data, pixel, settings)
     })
 
     it('Should return undefined for unknown chart type', () => {
-        expect(ProcessFactory.create({ type: -1 as ChartType, data }, pixel, settings))
+        expect(createProcess({ type: -1 as ChartType, data }, pixel, settings))
             .toBeUndefined()
     })
 })

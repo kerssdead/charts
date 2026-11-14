@@ -8,7 +8,7 @@ import Modal from '@/ui/Modal'
 import Decomposition from '@/export/Decomposition'
 import TextResources from '@/static/TextResources'
 import { ContextMenu } from '@/static/constants/Index'
-import { ChartType } from '@/static/Enums'
+import { hasMenu } from '@/charts/ChartDefinitions'
 import Theme, { ColorTheme } from '@/Theme'
 
 export default class ChartMenu {
@@ -40,7 +40,7 @@ export default class ChartMenu {
         this.buttons = undefined
 
         if (settings.disableInteractions || settings.disableMenu
-            || settings.charts.every(chart => chart.type === ChartType.SegmentedBar)) {
+            || !settings.charts.some(hasMenu)) {
             this.remove()
         } else if (!this.button) {
             this.button = new MenuButton()

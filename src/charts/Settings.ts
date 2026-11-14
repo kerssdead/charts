@@ -1,10 +1,24 @@
 import ChartSettings from '@/types/ChartSettings'
+import ChartItem from '@/types/ChartItem'
 import { ChartType } from '@/static/Enums'
 import { deepClone } from '@/helpers/Collections'
-import { hasLegend } from '@/helpers/ChartFeatures'
-import { mergeSameLabelValues } from '@/helpers/ValueMerging'
-import { getStops, normalizeDates, normalizeValues, prepareValues } from '@/helpers/SettingsInput'
-import { applyDefaultColors } from '@/helpers/DefaultColors'
+import { getChartDefinition, hasLegend } from '@/charts/ChartDefinitions'
+import { applyDefaultColors } from '@/charts/DefaultColors'
+
+function normalizeChart({ type, data }: ChartItem, numberLocale: string | undefined, scope?: Element) {
+    const definition = getChartDefinition(type)
+
+    if (!definition || !data)
+        return
+
+    if (data.values)
+        definition.prepareData(data, numberLocale)
+
+    definition.normalizeData(data, numberLocale, scope)
+
+    if (data.values)
+        definition.mergeSameLabelValues?.(data)
+}
 
 export function normalize(source: ChartSettings, scope?: Element): ChartSettings {
     const clone = deepClone(source)
@@ -15,13 +29,8 @@ export function normalize(source: ChartSettings, scope?: Element): ChartSettings
 
     const settings = { ...clone, charts }
 
-    for (const chart of charts) {
-        prepareValues(chart, settings.numberLocale)
-        normalizeValues(chart.data?.values, settings.numberLocale, scope)
-        normalizeValues(getStops(chart), settings.numberLocale, scope)
-        normalizeDates(chart)
-        mergeSameLabelValues(chart)
-    }
+    for (const chart of charts)
+        normalizeChart(chart, settings.numberLocale, scope)
 
     applyDefaultColors(settings, scope)
 

@@ -1,4 +1,4 @@
-import { applyDefaultColors } from '@/helpers/DefaultColors'
+import { applyDefaultColors } from '@/charts/DefaultColors'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import TreeBarData from '@/types/data/TreeBarData'
@@ -103,5 +103,17 @@ describe('Applying default colors', () => {
             .toEqual(first)
         expect(first[0])
             .toBe('#ff0000')
+    })
+
+    it('Should not color values of unknown chart type', () => {
+        const settings = create([
+            { type: -1, data: { values: [{ label: 'A' }] } },
+            { type: ChartType.Pie, data: { values: [{ label: 'B' }] } }
+        ])
+
+        applyDefaultColors(settings)
+
+        expect(settings.charts.map(chart => chart.data.values[0].color))
+            .toEqual([undefined, Palette[0]])
     })
 })

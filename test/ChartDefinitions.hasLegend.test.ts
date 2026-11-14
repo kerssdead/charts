@@ -1,4 +1,4 @@
-import { hasLegend } from '@/helpers/ChartFeatures'
+import { hasLegend } from '@/charts/ChartDefinitions'
 import { ChartType } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import Value from '@/types/base/Value'
@@ -21,5 +21,10 @@ describe('Checking chart legend support', () => {
     it('Should support legend for tree map only with several roots', () => {
         expect([hasLegend(chart(ChartType.TreeMap, 1)), hasLegend(chart(ChartType.TreeMap, 2))])
             .toEqual([false, true])
+    })
+
+    it('Should not support legend for unknown chart type', () => {
+        expect(hasLegend(chart(-1 as ChartType)))
+            .toBe(false)
     })
 })

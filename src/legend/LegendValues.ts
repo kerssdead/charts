@@ -2,7 +2,7 @@ import Value from '@/types/base/Value'
 import ChartSettings from '@/types/ChartSettings'
 import { groupBy } from '@/helpers/Collections'
 import { AnimationTiming } from '@/static/constants/Index'
-import { hasLegend } from '@/helpers/ChartFeatures'
+import { hasLegend } from '@/charts/ChartDefinitions'
 import { getGroupKey } from '@/helpers/ValueKeys'
 
 export default class LegendValues {

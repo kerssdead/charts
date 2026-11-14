@@ -1,4 +1,4 @@
-import { normalize } from '@/helpers/Settings'
+import { normalize } from '@/charts/Settings'
 import { ChartType, PlotAxisType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import PlotSeries from '@/types/PlotSeries'
@@ -158,5 +158,32 @@ describe('Normalizing settings', () => {
 
         expect((settings.charts[0].data.values[0] as PlotSeries).values.map(point => point.x))
             .toEqual(['2024-01-02T03:04:05.000Z', '2024-01-02T03:04:05.000Z', '2024-01-02T03:04:05.001Z'])
+    })
+
+    it('Should keep values of unknown chart type untouched', () => {
+        const settings = normalize({
+            charts: [{ type: -1, data: { values: [{ label: 'A', value: '5' }, { label: 'A', value: '1' }] } }]
+        } as unknown as ChartSettings)
+
+        expect(settings.charts[0].data.values)
+            .toEqual([{ label: 'A', value: '5' }, { label: 'A', value: '1' }])
+    })
+
+    it('Should keep same label values of segmented bar', () => {
+        const settings = normalize({
+            type: ChartType.SegmentedBar,
+            data: { values: [{ label: 'A', value: 1 }, { label: 'A', value: 3 }] }
+        } as unknown as ChartSettings)
+
+        expect(settings.charts[0].data.values.map(value => value.value))
+            .toEqual([1, 3])
+    })
+
+    it('Should skip charts without data or values', () => {
+        expect(() => normalize({
+            charts: [{ type: ChartType.Pie }, { type: ChartType.SegmentedBar, data: { stops: [{ value: '1' }] } }]
+        } as unknown as ChartSettings))
+            .not
+            .toThrow()
     })
 })

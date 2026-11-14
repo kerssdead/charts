@@ -1,12 +1,9 @@
 import ChartSettings from '@/types/ChartSettings'
-import { ChartType } from '@/static/Enums'
 import { normalizeColor, paletteColor, spreadColor } from '@/helpers/Color'
 import { groupBy } from '@/helpers/Collections'
 import { getGroupKey } from '@/helpers/ValueKeys'
 import Value from '@/types/base/Value'
-import ChartItem from '@/types/ChartItem'
-import TreeBarData, { colorTreeBarRows } from '@/types/data/TreeBarData'
-import { getStops } from '@/helpers/SettingsInput'
+import { getChartDefinition } from '@/charts/ChartDefinitions'
 
 const BASE_COLOR_RANGE = 67
 
@@ -20,26 +17,33 @@ function shareGroupColors(groups: Iterable<Value[]>) {
     }
 }
 
+function getChartsWithDefinitions(settings: ChartSettings) {
+    return settings.charts.flatMap(({ type, data }) => {
+        const definition = getChartDefinition(type)
+
+        return definition && data ? [{ definition, data }] : []
+    })
+}
+
 export function applyDefaultColors(settings: ChartSettings, scope?: Element) {
     const isShared = settings.charts.length > 1
-    const isTreeBar = (chart: ChartItem) => chart.type === ChartType.TreeBar
     const base = settings.baseColor ? normalizeColor(settings.baseColor, scope) : undefined
+    const charts = getChartsWithDefinitions(settings)
 
-    for (const chart of settings.charts.filter(isTreeBar))
-        colorTreeBarRows((chart.data as TreeBarData | undefined)?.values, base ?? paletteColor(0))
+    for (const { definition, data } of charts)
+        definition.applyOwnColors?.(data, base ?? paletteColor(0))
 
-    const chartValues = settings.charts
-                                .filter(chart => !isTreeBar(chart))
-                                .flatMap(chart => chart.data?.values ?? [])
+    const chartValues = charts.flatMap(({ definition, data }) => definition.getPaletteValues(data))
     const getColorKey = (value: Value): string | Value => isShared ? getGroupKey(value, true) : value
 
     const groups = groupBy(chartValues, getColorKey)
 
     shareGroupColors(groups.values())
 
-    const stops = settings.charts.flatMap(chart => getStops(chart) ?? []).map(stop => [stop])
+    const ungrouped = charts.flatMap(({ definition, data }) => definition.getUngroupedPaletteValues?.(data) ?? [])
+                            .map(value => [value])
 
-    const uncolored = [...groups.values(), ...stops].filter(values => !values[0].color)
+    const uncolored = [...groups.values(), ...ungrouped].filter(values => !values[0].color)
 
     if (uncolored.length === 0)
         return

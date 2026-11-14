@@ -1,22 +1,16 @@
-import TableData from '@/types/TableData'
-import { getPlotRows, getTreeBarRows, getValueRows } from '@/export/TableRows'
-import { withRowTotals, withShares } from '@/export/TableTotals'
 import { toTabSeparatedText } from '@/export/TableText'
-import { ChartType, TableClasses } from '@/static/Enums'
+import { TableClasses } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
-import PlotData from '@/types/data/PlotData'
-import TreeData, { getTreeSum } from '@/types/data/TreeData'
-import TreeBarData from '@/types/data/TreeBarData'
-import TextResources from '@/static/TextResources'
 import TableView from '@/export/TableView'
 import TableToolbar from '@/export/TableToolbar'
 import { caption, div } from '@/export/TableElements'
+import { getTableRows, summarizeTable } from '@/charts/ChartDefinitions'
 
 const FILTER_MIN_ROWS = 10
 
 export default class Decomposition {
     static fromCharts(charts: ChartItem[], onSave: () => void, decimals?: number) {
-        const tables = charts.map(chart => Decomposition.getDisplayRows(chart))
+        const tables = charts.map(chart => summarizeTable(chart, getTableRows(chart)))
         const views = tables.map(table => new TableView(table, decimals))
 
         const list = div(TableClasses.List, views.map((view, index) => {
@@ -38,37 +32,5 @@ export default class Decomposition {
         })
 
         return div(TableClasses.Tables, [toolbar, list])
-    }
-
-    static getDisplayRows(chart: ChartItem): TableData {
-        const table = Decomposition.getRows(chart)
-
-        switch (chart.type) {
-            case ChartType.Plot:
-                return withRowTotals(table)
-
-            case ChartType.Pie:
-            case ChartType.TreeMap:
-                return withShares(table, TextResources.value)
-
-            default:
-                return table
-        }
-    }
-
-    static getRows(chart: ChartItem): TableData {
-        switch (chart.type) {
-            case ChartType.Plot:
-                return getPlotRows(chart.data as PlotData)
-
-            case ChartType.TreeMap:
-                return getValueRows((chart.data as TreeData).values, getTreeSum)
-
-            case ChartType.TreeBar:
-                return getTreeBarRows(chart.data as TreeBarData)
-
-            default:
-                return getValueRows(chart.data.values)
-        }
     }
 }
