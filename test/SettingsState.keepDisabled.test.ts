@@ -1,4 +1,5 @@
-import { keepDisabled, normalize } from '@/helpers/Settings'
+import { normalize } from '@/helpers/Settings'
+import { keepDisabled } from '@/helpers/SettingsState'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 

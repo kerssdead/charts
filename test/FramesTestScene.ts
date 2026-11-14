@@ -1,0 +1,64 @@
+import Frames from '@/renderer/Frames'
+import ChartSettings from '@/types/ChartSettings'
+import Point from '@/types/Point'
+
+export const WINDOW = { name: 'window' }
+
+export const SCREEN = { name: 'screen' }
+
+export const POSITION: Point = { x: 10, y: 20 }
+
+export const RESERVED = { left: 1, top: 2, right: 3, bottom: 4 }
+
+const pendingFrames = new Map<number, FrameRequestCallback>()
+
+let lastFrameId = 0
+
+export function installAnimationFrames() {
+    pendingFrames.clear()
+
+    Object.assign(globalThis, {
+        requestAnimationFrame: jest.fn((callback: FrameRequestCallback) => {
+            pendingFrames.set(++lastFrameId, callback)
+
+            return lastFrameId
+        }),
+        cancelAnimationFrame: jest.fn((id: number) => pendingFrames.delete(id))
+    })
+}
+
+export function pendingFrameCount() {
+    return pendingFrames.size
+}
+
+export function runFrame(timestamp: DOMHighResTimeStamp) {
+    const callbacks = [...pendingFrames.values()]
+
+    pendingFrames.clear()
+
+    for (const callback of callbacks)
+        callback(timestamp)
+}
+
+export function createFrames(settings: Partial<ChartSettings> = {}) {
+    const queue = { animate: jest.fn(() => false), render: jest.fn(() => false) }
+    const layout = { window: WINDOW, screen: SCREEN, fit: jest.fn() }
+    const panels = { animate: jest.fn(() => false) }
+    const input = { position: POSITION as Point | null, context: null }
+    const overlay = { update: jest.fn(() => false) }
+    const legend = { isMoving: false, getCurrentReserved: jest.fn(() => RESERVED) }
+    const onError = jest.fn()
+
+    const frames = new Frames({
+        queue,
+        layout,
+        panels,
+        input,
+        getLegend: () => legend,
+        getOverlays: () => [overlay],
+        getSettings: () => settings as ChartSettings,
+        onError
+    } as unknown as ConstructorParameters<typeof Frames>[0])
+
+    return { frames, queue, layout, panels, input, overlay, legend, onError }
+}

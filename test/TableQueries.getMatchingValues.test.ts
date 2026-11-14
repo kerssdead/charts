@@ -1,4 +1,4 @@
-import { getMatchingValues } from '@/types/TableData'
+import { getMatchingValues } from '@/export/TableQueries'
 import TableValue from '@/types/TableValue'
 
 const row = (name: string, level?: number): TableValue => ({ name, level, values: new Map() })

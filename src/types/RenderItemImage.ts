@@ -1,6 +1,5 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
-import RenderItem from '@/types/RenderItem'
 import Point from '@/types/Point'
 import { COORDS_MAX_X, FULL_ANGLE } from '@/static/constants/Index'
 import { getImage } from '@/helpers/Images'
@@ -52,8 +51,8 @@ export default class RenderItemImage extends RenderItemBase {
     adjust(window: CanvasWindow, morph: number = 1): void {
         const position = this.current(morph)
 
-        this.canvas.x = RenderItem.adjustX(window, position.x)
-        this.canvas.y = RenderItem.adjustY(window, position.y)
+        this.canvas.x = window.mapX(position.x)
+        this.canvas.y = window.mapY(position.y)
         this.canvas.size = this.size / COORDS_MAX_X * window.width
     }
 

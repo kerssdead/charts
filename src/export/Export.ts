@@ -3,7 +3,7 @@ import { getContext, isPixelBusy } from '@/helpers/Canvas'
 import { Tag } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import Decomposition from '@/export/Decomposition'
-import { getTotals } from '@/types/TableData'
+import { getTotals } from '@/export/TableTotals'
 import TextResources from '@/static/TextResources'
 
 const PNG_MARGIN = 4

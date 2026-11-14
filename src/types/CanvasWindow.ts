@@ -37,6 +37,14 @@ export default class CanvasWindow {
         this.base = { x: 0, y: 0, width, height }
     }
 
+    mapX(x: number) {
+        return Math.round(x / COORDS_MAX_X * this.width + this.x)
+    }
+
+    mapY(y: number) {
+        return Math.round(y / COORDS_MAX_Y * this.height + this.y)
+    }
+
     fit(x: number, y: number, width: number, height: number): boolean {
         const isResized = width !== this.base.width || height !== this.base.height
         const offsetX = this.x - this.base.x

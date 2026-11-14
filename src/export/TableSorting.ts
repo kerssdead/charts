@@ -1,4 +1,5 @@
-import TableData, { sortTableValues } from '@/types/TableData'
+import TableData from '@/types/TableData'
+import { sortTableValues } from '@/export/TableQueries'
 import TableValue from '@/types/TableValue'
 import { Attribute, Events, SortDirection, TableClasses } from '@/static/Enums'
 

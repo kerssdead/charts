@@ -1,4 +1,4 @@
-import { applyDefaultColors } from '@/helpers/Settings'
+import { applyDefaultColors } from '@/helpers/DefaultColors'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import TreeBarData from '@/types/data/TreeBarData'

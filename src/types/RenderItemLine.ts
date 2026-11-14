@@ -100,8 +100,8 @@ export default class RenderItemLine extends RenderItemBase {
             this.canvas = stops.map(() => ({ x: 0, y: 0 }))
 
         for (let i = 0; i < stops.length; i++) {
-            this.canvas[i].x = RenderItem.adjustX(window, stops[i].x)
-            this.canvas[i].y = RenderItem.adjustY(window, stops[i].y)
+            this.canvas[i].x = window.mapX(stops[i].x)
+            this.canvas[i].y = window.mapY(stops[i].y)
         }
 
         this.pathTracer.updateCurve(this.canvas)
@@ -111,8 +111,8 @@ export default class RenderItemLine extends RenderItemBase {
         const clip = this.currentClip(morph)
 
         if (clip) {
-            this.canvasClip.x = RenderItem.adjustX(window, clip.x)
-            this.canvasClip.y = RenderItem.adjustY(window, clip.y)
+            this.canvasClip.x = window.mapX(clip.x)
+            this.canvasClip.y = window.mapY(clip.y)
             this.canvasClip.width = clip.width / COORDS_MAX_X * window.width
             this.canvasClip.height = clip.height / COORDS_MAX_Y * window.height
         }

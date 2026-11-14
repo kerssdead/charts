@@ -1,5 +1,4 @@
 import CanvasWindow from '@/types/CanvasWindow'
-import RenderItem from '@/types/RenderItem'
 import { Bounds } from '@/types/interfaces/RenderItemBase'
 import { lerp } from '@/helpers/Geometry'
 import { withAlpha } from '@/helpers/Color'
@@ -40,7 +39,7 @@ export default class LineArea {
         const baseline = this.current(morph)
 
         if (baseline != null)
-            this.canvasBaseline = RenderItem.adjustY(window, baseline)
+            this.canvasBaseline = window.mapY(baseline)
     }
 
     fill(ctx: CanvasRenderingContext2D, color: string, { top, bottom }: Bounds, { left, right, trace }: LinePath) {

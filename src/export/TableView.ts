@@ -1,4 +1,6 @@
-import TableData, { getMatchingValues, getTotals } from '@/types/TableData'
+import TableData from '@/types/TableData'
+import { getMatchingValues } from '@/export/TableQueries'
+import { getTotals } from '@/export/TableTotals'
 import TableValue from '@/types/TableValue'
 import TableHeaderValue from '@/types/TableHeaderValue'
 import Formatter from '@/helpers/Formatter'

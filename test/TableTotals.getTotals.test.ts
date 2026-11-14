@@ -1,4 +1,4 @@
-import { getTotals } from '@/types/TableData'
+import { getTotals } from '@/export/TableTotals'
 
 describe('Getting table totals', () => {
     it('Should sum each column', () => {

@@ -3,11 +3,10 @@ import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming, COORDS_MAX_X, FULL_ANGLE } from '@/static/constants/Index'
 import Point from '@/types/Point'
-import Theme from '@/Theme'
 import { GradientCache } from '@/helpers/Canvas'
-import { clamp, lerp } from '@/helpers/Geometry'
-import type RenderItemText from '@/types/RenderItemText'
+import { lerp } from '@/helpers/Geometry'
 import { ArcShape, isFullCircle, isInsideSector, traceSector } from '@/render/ArcSector'
+import LeaderOrigin, { LeaderStart } from '@/types/interfaces/LeaderOrigin'
 
 export const HOVER_OFFSET = 8
 
@@ -21,18 +20,14 @@ type ArcGeometry = {
     startAngle: number
     endAngle: number
     pull: number
-    leaderOffset: number
-    leaderAnchor: number
 }
 
 type ArcCanvas = ArcGeometry & {
     gap: number
     cornerRadius: number
-    leaderGap: number
-    leaderLength: number
 }
 
-export default class RenderItemArc extends RenderItemBase {
+export default class RenderItemArc extends RenderItemBase implements LeaderOrigin {
     isFill: boolean = false
 
     isGradient: boolean = false
@@ -49,25 +44,15 @@ export default class RenderItemArc extends RenderItemBase {
 
     growOrigin: number | null = null
 
-    leaderGap: number = 0
-
-    leaderLength: number = 0
-
-    leaderOffset: number = 0
-
-    leaderAnchor: number = 0
-
-    leaderLabel: RenderItem | null = null
-
     hover: number = 0
 
     pull: number = 0
 
     readonly pop: Point = { x: 0, y: 0 }
 
-    private readonly gradient = new GradientCache()
+    private drawnShape: ArcShape = { x: 0, y: 0, start: 0, end: 0, middle: 0 }
 
-    private window!: CanvasWindow
+    private readonly gradient = new GradientCache()
 
     startAngle: number = 0
 
@@ -78,9 +63,7 @@ export default class RenderItemArc extends RenderItemBase {
     canvas: ArcCanvas = {
         ...this.current(),
         gap: this.gap,
-        cornerRadius: this.cornerRadius,
-        leaderGap: this.leaderGap,
-        leaderLength: this.leaderLength
+        cornerRadius: this.cornerRadius
     }
 
     current(morph: number = 1): ArcGeometry {
@@ -91,9 +74,7 @@ export default class RenderItemArc extends RenderItemBase {
             innerRadius: this.innerRadius,
             startAngle: this.startAngle,
             endAngle: this.endAngle,
-            pull: this.pull,
-            leaderOffset: this.leaderOffset,
-            leaderAnchor: this.leaderAnchor
+            pull: this.pull
         }
 
         if (!this.from || morph >= 1)
@@ -106,9 +87,7 @@ export default class RenderItemArc extends RenderItemBase {
             innerRadius: lerp(this.from.innerRadius, result.innerRadius, morph),
             startAngle: lerp(this.from.startAngle, result.startAngle, morph),
             endAngle: lerp(this.from.endAngle, result.endAngle, morph),
-            pull: lerp(this.from.pull, result.pull, morph),
-            leaderOffset: lerp(this.from.leaderOffset, result.leaderOffset, morph),
-            leaderAnchor: lerp(this.from.leaderAnchor, result.leaderAnchor, morph)
+            pull: lerp(this.from.pull, result.pull, morph)
         }
     }
 
@@ -135,27 +114,21 @@ export default class RenderItemArc extends RenderItemBase {
         const geometry = this.current(morph)
         const scale = window.width / COORDS_MAX_X
 
-        this.window = window
-
         this.canvas = {
-            x: RenderItem.adjustX(window, geometry.x),
-            y: RenderItem.adjustY(window, geometry.y),
+            x: window.mapX(geometry.x),
+            y: window.mapY(geometry.y),
             radius: geometry.radius * scale,
             innerRadius: geometry.innerRadius * scale,
             gap: this.gap * scale,
             cornerRadius: this.cornerRadius * scale,
-            leaderGap: this.leaderGap * scale,
-            leaderLength: this.leaderLength * scale,
             startAngle: geometry.startAngle,
             endAngle: geometry.endAngle,
-            pull: geometry.pull * scale,
-            leaderOffset: geometry.leaderOffset,
-            leaderAnchor: geometry.leaderAnchor
+            pull: geometry.pull * scale
         }
     }
 
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
-        const shape = this.shape(item.animation.init)
+        const shape = this.drawnShape = this.shape(item.animation.init)
         const fill = item.fill
 
         if (this.isGradient && fill)
@@ -176,8 +149,6 @@ export default class RenderItemArc extends RenderItemBase {
         }
 
         ctx.stroke()
-
-        this.leader(ctx, shape)
     }
 
     private shape(progress: number): ArcShape {
@@ -198,54 +169,29 @@ export default class RenderItemArc extends RenderItemBase {
         return { x: this.canvas.x + this.pop.x, y: this.canvas.y + this.pop.y, start, end, middle }
     }
 
-    private leader(ctx: CanvasRenderingContext2D, shape: ArcShape) {
-        const label = this.leaderLabel
-        const visibility = label?.animation.visibility ?? 0
-
-        if (!label || visibility <= 0)
-            return
-
-        const anchorAngle = shape.middle + this.canvas.leaderAnchor
-        const turn = this.canvas.leaderOffset - this.canvas.leaderAnchor
-        const labelAngle = anchorAngle + turn
-
-        const hover = isFullCircle(shape.end - shape.start) ? 0 : HOVER_OFFSET * this.hover
-        const x = shape.x - hover * Math.cos(shape.middle)
-        const y = shape.y - hover * Math.sin(shape.middle)
-        const start = this.canvas.radius + this.canvas.leaderGap
-        const end = start + this.canvas.leaderLength
-        const lift = start + hover
-        const handle = 4 / 3 * Math.tan(turn / 4) * end
-
-        ctx.globalAlpha *= visibility
-        ctx.strokeStyle = Theme.line
-
-        const endX = x + end * Math.cos(labelAngle)
-        const endY = y + end * Math.sin(labelAngle)
-
-        label.shape.adjust(this.window, label.animation.morph)
-
-        const box = (label.shape as RenderItemText).orbitBox()
-
-        ctx.beginPath()
-        ctx.moveTo(x + lift * Math.cos(anchorAngle), y + lift * Math.sin(anchorAngle))
-        ctx.bezierCurveTo(
-            x + end * Math.cos(anchorAngle) - handle * Math.sin(anchorAngle),
-            y + end * Math.sin(anchorAngle) + handle * Math.cos(anchorAngle),
-            endX + handle * Math.sin(labelAngle),
-            endY - handle * Math.cos(labelAngle),
-            clamp(endX, box.x - box.halfWidth, box.x + box.halfWidth),
-            clamp(endY, box.y - box.halfHeight, box.y + box.halfHeight)
-        )
-        ctx.stroke()
-    }
-
     private circle(ctx: CanvasRenderingContext2D, shape: ArcShape) {
         ctx.arc(shape.x, shape.y, this.canvas.radius, 0, FULL_ANGLE)
 
         if (this.canvas.innerRadius > 0) {
             ctx.moveTo(shape.x + this.canvas.innerRadius, shape.y)
             ctx.arc(shape.x, shape.y, this.canvas.innerRadius, FULL_ANGLE, 0, true)
+        }
+    }
+
+    private get hoverOffset() {
+        return isFullCircle(this.drawnShape.end - this.drawnShape.start) ? 0 : HOVER_OFFSET * this.hover
+    }
+
+    leaderOrigin(): LeaderStart {
+        const { x, y, middle } = this.drawnShape
+        const lift = this.hoverOffset
+
+        return {
+            x: x - lift * Math.cos(middle),
+            y: y - lift * Math.sin(middle),
+            angle: middle,
+            distance: this.canvas.radius,
+            lift
         }
     }
 

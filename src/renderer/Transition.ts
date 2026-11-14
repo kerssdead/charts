@@ -3,9 +3,7 @@ import PlotProcess from '@/render/plot/PlotProcess'
 import RenderItem from '@/types/RenderItem'
 import RenderItemArc from '@/types/RenderItemArc'
 import Panel from '@/types/Panel'
-import { firstMappedValue, groupBy } from '@/helpers/Collections'
-
-const ANGLE_EPSILON = 1e-9
+import ArcNeighbours from '@/renderer/ArcNeighbours'
 
 type ArcChanges = {
     appeared: RenderItem[]
@@ -113,57 +111,12 @@ export default class Transition {
         const arc = (item: RenderItem) => item.shape as RenderItemArc
 
         const newArcs = this.queue.items.filter(Transition.isArc)
-        const newByOld = new Map<RenderItem, RenderItem>()
-
-        for (const [item, old] of matches)
-            newByOld.set(old, item)
-
         const oldArcs = [...matches.values(), ...removed].filter(Transition.isArc)
+        const neighbours = new ArcNeighbours(newArcs, oldArcs, matches)
 
-        const key = (item: RenderItem, angle: number) => {
-            return `${ item.panel?.index }|${ Math.round(angle / ANGLE_EPSILON) }`
-        }
-
-        const newByEnd = groupBy(newArcs, item => key(item, arc(item).endAngle))
-        const oldByEnd = groupBy(oldArcs, item => key(item, arc(item).current(item.animation.morph).endAngle))
-
-        const previousEnd = (item: RenderItem, visited: Set<RenderItem>): number => {
-            visited.add(item)
-
-            const start = arc(item).startAngle
-
-            const before = (newByEnd.get(key(item, start)) ?? []).filter(other => !visited.has(other))
-
-            const old = firstMappedValue(before, matches)
-
-            if (old)
-                return arc(old).current(old.animation.morph).endAngle
-
-            return before.length > 0
-                   ? previousEnd(before[0], visited)
-                   : start
-        }
-
-        const nextEnd = (item: RenderItem, visited: Set<RenderItem>): number => {
-            visited.add(item)
-
-            const start = arc(item).current(item.animation.morph).startAngle
-
-            const before = (oldByEnd.get(key(item, start)) ?? []).filter(other => !visited.has(other))
-
-            const matchedNew = firstMappedValue(before, newByOld)
-
-            if (matchedNew)
-                return arc(matchedNew).endAngle
-
-            return before.length > 0
-                   ? nextEnd(before[0], visited)
-                   : start
-        }
-
-        const appearAngles = appeared.map(item => previousEnd(item, new Set()))
+        const appearAngles = appeared.map(item => neighbours.appearAngle(item))
         const removeAngles = removed.map(item => {
-            return Transition.isArc(item) && !item.isGhost ? nextEnd(item, new Set()) : 0
+            return Transition.isArc(item) && !item.isGhost ? neighbours.disappearAngle(item) : 0
         })
 
         appeared.forEach((item, i) => {

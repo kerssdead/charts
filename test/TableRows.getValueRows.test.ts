@@ -1,6 +1,6 @@
 import PieData from '@/types/data/PieData'
 import TreeData, { getTreeSum } from '@/types/data/TreeData'
-import { getValueRows } from '@/types/TableData'
+import { getValueRows } from '@/export/TableRows'
 import Sector from '@/types/Sector'
 
 describe('Getting value rows for decomposition', () => {

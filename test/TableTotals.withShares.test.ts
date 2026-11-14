@@ -1,4 +1,4 @@
-import { withShares } from '@/types/TableData'
+import { withShares } from '@/export/TableTotals'
 import { TableColumnKey } from '@/static/Enums'
 import TextResources from '@/static/TextResources'
 import TableValue from '@/types/TableValue'

@@ -152,12 +152,6 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             .cornerRadius(SECTOR_CORNER_RADIUS)
             .pull(sector.pinned && !sector.disabled ? this.units.x(PINNED_SECTOR_OFFSET) : 0)
             .grow(this.startAngle)
-            .leader(
-                LEADER_GAP,
-                LEADER_LENGTH,
-                labelAngleOffset,
-                clamp(labelAngleOffset, -leaderAnchorRange, leaderAnchorRange)
-            )
             .fill()
             .gradient()
             .color(sector.color)
@@ -176,6 +170,16 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
                 this.onChange?.()
             })
 
+        const leader = items.leaderLine(arc)
+            .gap(LEADER_GAP)
+            .length(LEADER_LENGTH)
+            .offset(labelAngleOffset)
+            .anchor(clamp(labelAngleOffset, -leaderAnchorRange, leaderAnchorRange))
+            .key(`sector-leader-${ key }`)
+
+        if (sector.disabled)
+            leader.ghost()
+
         if (!labelPlacement.isVisible)
             return
 
@@ -186,7 +190,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             .key(`sector-label-${ key }`)
             .init(AnimationTiming.pieLabelInit, AnimationTiming.pieInit, true)
 
-        arc.shape.leaderLabel = text.build()
+        leader.target(text)
 
         if (sector.disabled)
             text.ghost()

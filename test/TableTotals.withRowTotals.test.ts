@@ -1,4 +1,4 @@
-import { withRowTotals } from '@/types/TableData'
+import { withRowTotals } from '@/export/TableTotals'
 import { TableColumnKey } from '@/static/Enums'
 import TextResources from '@/static/TextResources'
 

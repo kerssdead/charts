@@ -1,4 +1,5 @@
-import PlotData, { getPlotRows } from '@/types/data/PlotData'
+import PlotData from '@/types/data/PlotData'
+import { getPlotRows } from '@/export/TableRows'
 
 describe('Getting plot rows for decomposition', () => {
     it('Should has 3 rows', () => {

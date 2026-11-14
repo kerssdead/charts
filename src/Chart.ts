@@ -1,12 +1,12 @@
-import { createCanvas } from '@/helpers/Canvas'
 import ChartSettings from '@/types/ChartSettings'
 import Theme, { ColorTheme } from '@/Theme'
-import { Events } from '@/static/Enums'
 import Renderer from '@/renderer/Renderer'
 import Debug from '@/helpers/Debug'
-import { keepState, normalize } from '@/helpers/Settings'
+import { normalize } from '@/helpers/Settings'
+import { keepState } from '@/helpers/SettingsState'
 import ChartFailure from '@/ui/ChartFailure'
-import { applyFallbackHostSize, applyHostSize, getPixelSize } from '@/helpers/HostSize'
+import { applyFallbackHostSize, applyHostSize } from '@/helpers/HostSize'
+import CanvasHost from '@/renderer/CanvasHost'
 
 // todo: add public api
 
@@ -25,17 +25,9 @@ export default class Chart {
 
     private readonly failure: ChartFailure
 
-    private canvas!: HTMLCanvasElement
+    private host!: CanvasHost
 
     private renderer!: Renderer
-
-    private observer!: ResizeObserver
-
-    private ratioWatcher!: AbortController
-
-    private width: number = 0
-
-    private height: number = 0
 
     private readonly onThemeChange = () => {
         this.applySettings(this.source)
@@ -78,21 +70,20 @@ export default class Chart {
             applyHostSize(element, this.settings)
             applyFallbackHostSize(element, this.settings)
 
-            this.canvas = createCanvas()
-            element.appendChild(this.canvas)
+            this.host = new CanvasHost(element, {
+                onResize: (width, height, ratio) => this.resize(width, height, ratio),
+                onDetach: () => this.suspend(),
+                onAttach: () => this.resume()
+            })
 
             Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
 
-            this.renderer = new Renderer(this.canvas, error => this.handleError(error))
+            this.renderer = new Renderer(this.host.canvas, error => this.handleError(error))
             this.renderer.apply(this.settings)
 
-            Debug.log(settings, this.settings, this.canvas)
+            Debug.log(settings, this.settings, this.host.canvas)
 
-            this.observer = this.createObserver(element)
-            this.ratioWatcher = new AbortController()
-            this.watchRatio()
-
-            if (!this.canvas.isConnected)
+            if (!this.host.isAttached)
                 this.suspend()
         } catch (error) {
             this.handleError(error)
@@ -100,11 +91,9 @@ export default class Chart {
     }
 
     private stop() {
-        this.observer?.disconnect()
-        this.ratioWatcher?.abort()
+        this.host?.destroy()
 
         Theme.detach(this.onThemeChange)
-        this.canvas?.remove()
 
         this.renderer?.destroy()
     }
@@ -132,7 +121,7 @@ export default class Chart {
 
         this.failure.report(error, {
             element: this.element,
-            size: { width: this.width, height: this.height },
+            size: this.host?.size ?? { width: 0, height: 0 },
             theme: ColorTheme[Theme.currentTheme],
             input: this.source,
             settings: this.settings
@@ -143,8 +132,6 @@ export default class Chart {
         this.failure.clear()
 
         this.isSuspended = false
-        this.width = 0
-        this.height = 0
 
         this.start(settings)
     }
@@ -172,7 +159,7 @@ export default class Chart {
 
         this.renderer.apply(this.settings)
 
-        Debug.log(settings, this.settings, this.canvas)
+        Debug.log(settings, this.settings, this.host.canvas)
     }
 
     private bindMenuActions() {
@@ -188,77 +175,11 @@ export default class Chart {
         }
     }
 
-    private resize(width: number, height: number, device?: ResizeObserverSize) {
-        this.guard(() => this.resizeCanvas(width, height, device))
-    }
-
-    private resizeCanvas(
-        width: number,
-        height: number,
-        device?: ResizeObserverSize
-    ) {
-        width = Math.floor(width)
-        height = Math.floor(height)
-
-        if (width === 0 || height === 0)
-            return
-
-        const { width: pixelWidth, height: pixelHeight } = getPixelSize(
-            { width, height },
-            window.devicePixelRatio || 1,
-            device
-        )
-
-        if (this.width === width && this.height === height
-            && this.canvas.width === pixelWidth && this.canvas.height === pixelHeight)
-            return
-
-        this.width = width
-        this.height = height
-
-        this.canvas.width = pixelWidth
-        this.canvas.height = pixelHeight
-        this.canvas.style.width = `${ width }px`
-        this.canvas.style.height = `${ height }px`
-
-        this.renderer.resize(width, height, pixelWidth / width)
-        this.renderer.render()
-    }
-
-    private watchRatio() {
-        matchMedia(`(resolution: ${ window.devicePixelRatio }dppx)`).addEventListener(Events.Change, () => {
-            this.resize(this.width, this.height)
-            this.watchRatio()
-        }, { once: true, signal: this.ratioWatcher.signal })
-    }
-
-    private createObserver(node: HTMLElement) {
-        const observer = new ResizeObserver(entries => {
-            if (!this.canvas.isConnected) {
-                this.suspend()
-
-                return
-            }
-
-            this.resume()
-
-            for (const entry of entries) {
-                if (entry.target === this.canvas)
-                    this.resize(this.width, this.height, entry.devicePixelContentBoxSize?.[0])
-                else
-                    this.resize(entry.contentRect.width, entry.contentRect.height)
-            }
+    private resize(width: number, height: number, ratio: number) {
+        this.guard(() => {
+            this.renderer.resize(width, height, ratio)
+            this.renderer.render()
         })
-
-        observer.observe(node)
-
-        try {
-            observer.observe(this.canvas, { box: 'device-pixel-content-box' })
-        } catch {
-            // Safari has no device-pixel-content-box; the node observer above still tracks resizes
-        }
-
-        return observer
     }
 
     private suspend() {

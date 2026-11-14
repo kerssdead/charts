@@ -1,13 +1,13 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import Point from '@/types/Point'
-import RenderItem from '@/types/RenderItem'
 import { TextAlignment, TextBaseline } from '@/static/Enums'
 import RenderItemArc from '@/types/RenderItemArc'
 import { boxEdgeDistance, clamp, lerp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
 import { COORDS_MAX_X, FONT_FAMILY } from '@/static/constants/Index'
 import Theme from '@/Theme'
+import LeaderTarget, { LeaderBox } from '@/types/interfaces/LeaderTarget'
 
 export type Orbit = {
     x: number
@@ -28,7 +28,7 @@ type TextCanvas = Point & {
     orbitHalfWidth: number
 }
 
-export default class RenderItemText extends RenderItemBase {
+export default class RenderItemText extends RenderItemBase implements LeaderTarget {
     value: string
 
     absolute: Point = { x: 0, y: 0 }
@@ -150,8 +150,8 @@ export default class RenderItemText extends RenderItemBase {
         this.canvas.radius = (this.orbit?.radiusX ?? 0) / COORDS_MAX_X * window.width
         this.canvasClipWidth = (this.clipWidth ?? 0) / COORDS_MAX_X * window.width
 
-        this.canvas.x = RenderItem.adjustX(window, position.x)
-        this.canvas.y = RenderItem.adjustY(window, position.y) + (this.rotate === 0 ? this.baselineShift : 0)
+        this.canvas.x = window.mapX(position.x)
+        this.canvas.y = window.mapY(position.y) + (this.rotate === 0 ? this.baselineShift : 0)
 
         if (this.orbit)
             this.canvas.orbitHalfWidth = this.currentOrbitHalfWidth(morph)
@@ -160,6 +160,12 @@ export default class RenderItemText extends RenderItemBase {
             this.canvas.x += this.follow.pop.x
             this.canvas.y += this.follow.pop.y
         }
+    }
+
+    leaderBox(window: CanvasWindow, morph: number): LeaderBox {
+        this.adjust(window, morph)
+
+        return this.orbitBox()
     }
 
     orbitBox() {

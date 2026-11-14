@@ -1,4 +1,5 @@
-import TreeBarData, { getTreeBarRows } from '@/types/data/TreeBarData'
+import TreeBarData from '@/types/data/TreeBarData'
+import { getTreeBarRows } from '@/export/TableRows'
 import TreeBarRow from '@/types/TreeBarRow'
 import Sector from '@/types/Sector'
 

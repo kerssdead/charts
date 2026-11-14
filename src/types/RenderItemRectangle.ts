@@ -169,24 +169,24 @@ export default class RenderItemRectangle extends RenderItemBase {
         for (let i = 0; i < radii.length; i++)
             radii[i] = radii[i] / COORDS_MAX_X * window.width
 
-        this.canvas.x = RenderItem.adjustX(window, absolute.x)
-        this.canvas.y = RenderItem.adjustY(window, absolute.y)
+        this.canvas.x = window.mapX(absolute.x)
+        this.canvas.y = window.mapY(absolute.y)
         this.canvas.width = absolute.width / COORDS_MAX_X * window.width
         this.canvas.height = absolute.height / COORDS_MAX_Y * window.height
 
         const clip = this.currentClip(morph)
 
         if (clip) {
-            this.canvasClip.x = RenderItem.adjustX(window, clip.x)
-            this.canvasClip.y = RenderItem.adjustY(window, clip.y)
+            this.canvasClip.x = window.mapX(clip.x)
+            this.canvasClip.y = window.mapY(clip.y)
             this.canvasClip.width = clip.width / COORDS_MAX_X * window.width
             this.canvasClip.height = clip.height / COORDS_MAX_Y * window.height
             this.canvasClip.radius = clip.radius / COORDS_MAX_X * window.width
         }
 
         this.canvasGrowOrigin = this.growAxis === 'x'
-                                ? RenderItem.adjustX(window, this.growOrigin)
-                                : RenderItem.adjustY(window, this.growOrigin)
+                                ? window.mapX(this.growOrigin)
+                                : window.mapY(this.growOrigin)
     }
 
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {

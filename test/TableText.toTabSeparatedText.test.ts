@@ -1,4 +1,4 @@
-import { toTabSeparatedText } from '@/types/TableData'
+import { toTabSeparatedText } from '@/export/TableText'
 import TextResources from '@/static/TextResources'
 
 describe('Converting a table to tab separated text', () => {

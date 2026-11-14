@@ -2,6 +2,7 @@ import PieProcess from '@/render/pie/PieProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemArc from '@/types/RenderItemArc'
 import RenderItemText from '@/types/RenderItemText'
+import RenderItemLeaderLine from '@/types/RenderItemLeaderLine'
 import PieData from '@/types/data/PieData'
 import Sector from '@/types/Sector'
 import PieProcessSettings from '@/render/pie/PieProcessSettings'
@@ -32,6 +33,10 @@ function getItems(process: PieProcess) {
 }
 
 const getArc = (items: ReturnType<typeof getItems>, key: string) => items.get(key)?.shape as RenderItemArc
+
+const getLeader = (items: ReturnType<typeof getItems>, key: string) => {
+    return items.get(key)?.shape as RenderItemLeaderLine
+}
 
 const getText = (items: ReturnType<typeof getItems>, key: string) => items.get(key)?.shape as RenderItemText
 
@@ -83,6 +88,41 @@ describe('Getting pie data', () => {
             .toBe(true)
     })
 
+    it('Should connect each sector to its label with a leader line', () => {
+        const items = getItems(create({ values: [sector('A', 1), sector('B', 3)] }))
+        const leader = getLeader(items, 'sector-leader-A')
+
+        expect(leader.origin)
+            .toBe(getArc(items, 'sector-A'))
+        expect(leader.target)
+            .toBe(getText(items, 'sector-label-A'))
+        expect(items.get('sector-leader-A')?.isFading)
+            .toBe(false)
+    })
+
+    it('Should keep a leader line without target when the label is hidden', () => {
+        const items = getItems(create({ values: [sector('A', 1), sector('B', 0)] }))
+
+        expect(getLeader(items, 'sector-leader-B').target)
+            .toBeNull()
+    })
+
+    it('Should ghost leader line of disabled sector', () => {
+        const items = getItems(create({ values: [sector('A', 1), sector('B', 2, { disabled: true })] }))
+
+        expect(items.get('sector-leader-B')?.isGhost)
+            .toBe(true)
+        expect(items.get('sector-leader-A')?.isGhost)
+            .toBe(false)
+    })
+
+    it('Should draw leader line after its sector and before its label', () => {
+        const keys = QueueItemsBuilder.build(create({ values: [sector('A', 1)] }).getData()).map(item => item.key)
+
+        expect(keys.filter(key => key?.endsWith('-A')))
+            .toEqual(['sector-A', 'sector-leader-A', 'sector-label-A'])
+    })
+
     it('Should toggle pin on click and notify about change', () => {
         const values = [sector('A', 1), sector('B', 3)]
         const process = create({ values })
@@ -102,7 +142,7 @@ describe('Getting pie data', () => {
 
         const items = getItems(create({ values }, { enableOther: true }))
 
-        expect([...items.keys()].filter(key => key.startsWith('sector-') && !key.includes('label')))
+        expect([...items.keys()].filter(key => key.startsWith('sector-') && !key.includes('label') && !key.includes('leader')))
             .toEqual(['sector-A', 'sector-other'])
         expect(items.get('sector-other')?.tooltipTemplate)
             .toBe('Other\n1.00 (1%)\nB: 0.50 (0.5%)\nC: 0.50 (0.5%)')

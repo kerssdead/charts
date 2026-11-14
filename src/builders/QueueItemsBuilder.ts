@@ -5,6 +5,9 @@ import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
 import QueueArcItemBuilder from '@/builders/QueueArcItemBuilder'
 import QueueTextItemBuilder from '@/builders/QueueTextItemBuilder'
 import QueueImageItemBuilder from '@/builders/QueueImageItemBuilder'
+import QueueLeaderLineItemBuilder from '@/builders/QueueLeaderLineItemBuilder'
+import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import LeaderOrigin from '@/types/interfaces/LeaderOrigin'
 
 export type QueueAction = (items: QueueItemsBuilder) => void
 
@@ -43,6 +46,10 @@ export default class QueueItemsBuilder {
 
     arc() {
         return this.next(new QueueArcItemBuilder())
+    }
+
+    leaderLine(origin: QueueItemBaseBuilder<RenderItemBase & LeaderOrigin>) {
+        return this.next(new QueueLeaderLineItemBuilder(origin))
     }
 
     text(text: string) {

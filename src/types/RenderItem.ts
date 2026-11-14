@@ -1,4 +1,4 @@
-import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, DEFAULT_LINE_WIDTH } from '@/static/constants/Index'
+import { AnimationTiming, DEFAULT_LINE_WIDTH } from '@/static/constants/Index'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
 import Point from '@/types/Point'
@@ -281,13 +281,5 @@ export default class RenderItem {
 
         return bounds.left >= area.x + margin && bounds.right <= area.x + area.width - margin
                && bounds.top >= area.y + margin && bounds.bottom <= area.y + area.height - margin
-    }
-
-    static adjustX(window: CanvasWindow, x: number) {
-        return Math.round(x / COORDS_MAX_X * window.width + window.x)
-    }
-
-    static adjustY(window: CanvasWindow, y: number) {
-        return Math.round(y / COORDS_MAX_Y * window.height + window.y)
     }
 }

@@ -1,6 +1,5 @@
 import TreeBarRow from '@/types/TreeBarRow'
 import Data from '@/types/interfaces/Data'
-import TableData, { getValueRows } from '@/types/TableData'
 import { sum } from '@/helpers/Collections'
 import { parseNumber } from '@/helpers/Numbers'
 
@@ -68,30 +67,4 @@ export function getTreeBarTotal(row: TreeBarRow) {
 
 export function getCellNumber(value: string | number | undefined, numberLocale?: string) {
     return typeof value == 'number' ? value : parseNumber(value, numberLocale)
-}
-
-export function getTreeBarRows(data: TreeBarData): TableData {
-    const columns = data.columns ?? []
-    const entries = flattenTreeBarRows(data.values)
-    const nodes = entries.map(({ node }) => node)
-    const getCellValue = (row: TreeBarRow, key: string) => getCellNumber(row.cells?.[key], data.numberLocale) || 0
-
-    const table: TableData = columns.length > 0
-                  ? {
-                      headers: columns.map(column => ({ value: column.key, display: column.title })),
-                      values: nodes.map(row => ({
-                          name: row.label,
-                          color: row.color,
-                          disabled: row.disabled,
-                          values: new Map(columns.map(column => [column.key, getCellValue(row, column.key)]))
-                      }))
-                  }
-                  : getValueRows(nodes, getTreeBarTotal)
-
-    for (const [index, row] of table.values.entries()) {
-        row.name = row.name.replace(/\n/g, ' ')
-        row.level = entries[index].level
-    }
-
-    return table
 }
