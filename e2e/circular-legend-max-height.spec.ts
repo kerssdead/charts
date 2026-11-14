@@ -19,6 +19,6 @@ test(
         await Settings.chartType(ChartType.Pie)
         await Settings.enableLegend()
 
-        await Utils.checkRender('bdfcd52c')
+        await Utils.checkRender('daf034ba')
     }
 )

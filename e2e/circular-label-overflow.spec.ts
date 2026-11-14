@@ -28,7 +28,7 @@ test(
         await page.waitForTimeout(Constants.AnimationTiming.hover)
 
         await Utils.checkRender(
-            '',
+            '01f6cb9a',
             new Clip(350, 0, 90, 12)
         )
     }

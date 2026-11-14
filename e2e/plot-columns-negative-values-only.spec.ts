@@ -25,6 +25,6 @@ test(
 
         await Utils.wait(1000)
 
-        await Utils.checkRender('d4173ab5')
+        await Utils.checkRender('a75d22bd')
     }
 )

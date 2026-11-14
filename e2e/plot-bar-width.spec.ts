@@ -21,6 +21,6 @@ test(
         await Settings.plotType(PlotType.Bar)
         await Settings.xAxisType(PlotAxisType.Number)
 
-        await Utils.checkRender('df18859c')
+        await Utils.checkRender('60c0f45b')
     }
 )

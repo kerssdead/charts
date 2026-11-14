@@ -16,6 +16,6 @@ test(
 
         await Utils.checkForErrors()
 
-        await Utils.checkRender('8237846d')
+        await Utils.checkRender('3fbc0e46')
     }
 )

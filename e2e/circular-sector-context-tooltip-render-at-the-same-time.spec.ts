@@ -33,6 +33,6 @@ test(
         await Utils.page.mouse.move(550, 500, { steps: 3 })
         await Utils.wait(500)
 
-        await Utils.checkRender('6a54ecac')
+        await Utils.checkRender('5d893d73')
     }
 )

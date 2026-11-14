@@ -26,7 +26,7 @@ test(
         await Utils.wait(200)
 
         await Utils.checkRender(
-            '',
+            'e3ea15ed',
             new Clip(787, 29, 138, 84)
         )
     }

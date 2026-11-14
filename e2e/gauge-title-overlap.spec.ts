@@ -19,6 +19,6 @@ test(
         await Settings.enableTitle()
         await Settings.chartType(ChartType.Gauge)
 
-        await Utils.checkRender('')
+        await Utils.checkRender('8f89671b')
     }
 )

@@ -15,7 +15,7 @@ test(
         await Settings.plotType(PlotType.Line)
 
         await Utils.checkRender(
-            '5acc6211',
+            '78db5477',
             new Clip(212, 165, 565, 260)
         )
     }

@@ -19,7 +19,7 @@ test('Plot title should be rendered', async ({ page, browserName }) => {
     await Settings.chartType(ChartType.Plot)
 
     await Utils.checkRender(
-        '',
+        'bf981427',
         new Clip(440, 10, 48, 30)
     )
 })

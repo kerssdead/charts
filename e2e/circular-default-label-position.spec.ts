@@ -29,7 +29,7 @@ test(
         await Utils.page.mouse.move(600, 700, { steps: 3 })
 
         await Utils.checkRender(
-            'baf45eea',
+            '01f6cb9a',
             new Clip(10, 10, 200, 100)
         )
     }

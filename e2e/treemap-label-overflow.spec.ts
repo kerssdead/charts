@@ -18,7 +18,7 @@ test('Tree Map label with spaces should not overflow cell', async ({ page, brows
     await Settings.seed(181)
 
     await Utils.checkRender(
-        '',
+        '5f150385',
         new Clip(678, 181, 212, 30)
     )
 })

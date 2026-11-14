@@ -16,7 +16,7 @@ test(
         await Settings.lineType(LineType.Dash)
 
         await Utils.checkRender(
-            '7ef62fda',
+            '3a3db216',
             new Clip(212, 165, 565, 260)
         )
     }

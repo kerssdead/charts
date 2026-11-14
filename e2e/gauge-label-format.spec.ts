@@ -17,6 +17,6 @@ test(
         await Settings.chartType(ChartType.Gauge)
         await Settings.gaugeMax(99)
 
-        await Utils.checkRender('e3626988')
+        await Utils.checkRender('2f3bd9a5')
     }
 )

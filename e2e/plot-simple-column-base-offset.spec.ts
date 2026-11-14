@@ -20,12 +20,12 @@ test('Simple plot offsets should be minimal', async ({ page, browserName }) => {
     await Settings.plotType(PlotType.Column)
 
     await Utils.checkRender(
-        '',
+        '81d25744',
         new Clip(0, 688, 32, 32)
     )
 
     await Utils.checkRender(
-        '',
+        '2656c0b2',
         new Clip(896, 688, 32, 32)
     )
 })

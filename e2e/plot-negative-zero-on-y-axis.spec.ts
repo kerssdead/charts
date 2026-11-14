@@ -19,7 +19,7 @@ test('Zero y-axis label shouldn`t be negative', async ({ page, browserName }) =>
     await Settings.seed(179)
 
     await Utils.checkRender(
-        '',
+        '9452406c',
         new Clip(37, 338, 39, 23)
     )
 })

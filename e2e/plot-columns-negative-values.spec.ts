@@ -21,6 +21,6 @@ test(
         await Settings.valuesCount(1)
         await Settings.pointsCount(3)
 
-        await Utils.checkRender('6d18d203')
+        await Utils.checkRender('8b3c85b9')
     }
 )

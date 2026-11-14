@@ -7,7 +7,6 @@ import { test } from '@playwright/test'
 import Utils from '@e2e/utils/Utils'
 import Settings from '@e2e/utils/Settings'
 import { PlotType } from '@/static/Enums'
-import Clip from '@e2e/utils/Clip'
 
 test(
     'Bars on plot should render negative values',
@@ -22,6 +21,6 @@ test(
         await Settings.enableNegativeValuesInPlot()
         await Settings.plotType(PlotType.Bar)
 
-        await Utils.checkRender('20b772c9')
+        await Utils.checkRender('17ca4f70')
     }
 )

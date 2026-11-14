@@ -25,7 +25,5 @@ test('Pie chart sectors should not has another item over states', async ({ page,
     await Utils.page.mouse.click(600, 700)
     await Utils.wait(AnimationTiming.hover * 2)
 
-    await Utils.checkRender(
-        ''
-    )
+    await Utils.checkRender('7d7fcd0f')
 })

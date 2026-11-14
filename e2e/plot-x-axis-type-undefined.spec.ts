@@ -19,7 +19,7 @@ test('Plot with undefined x-axis type should render default label instead of emp
     await Settings.xAxisType()
 
     await Utils.checkRender(
-        '',
+        '6a02132b',
         new Clip(88, 624, 812, 48)
     )
 })

@@ -25,7 +25,7 @@ test('Regular tooltip should not overflow canvas', async ({ page, browserName })
     await page.waitForTimeout(Constants.Tooltip.fadeDuration * 3)
 
     await Utils.checkRender(
-        '',
+        '804eab28',
         new Clip(579, 688, 150, 32)
     )
 })

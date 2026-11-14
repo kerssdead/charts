@@ -18,7 +18,7 @@ test('Plot chart should not renders outside plot', async ({ page, browserName })
     await Settings.plotType(PlotType.Line)
 
     await Utils.checkRender(
-        '',
+        '86c8353d',
         new Clip(883, 261, 10, 210)
     )
 })

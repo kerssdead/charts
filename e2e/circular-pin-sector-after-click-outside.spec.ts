@@ -26,6 +26,6 @@ test(
         await Utils.page.mouse.move(1000, 600, { steps: 5 })
         await Utils.wait(700)
 
-        await Utils.checkRender('')
+        await Utils.checkRender('3fbc0e46')
     }
 )

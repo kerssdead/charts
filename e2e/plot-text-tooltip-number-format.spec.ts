@@ -35,7 +35,7 @@ test('When x-axis type is text tooltip value for y-axis should be formatted as n
     await page.waitForTimeout(Constants.Tooltip.fadeDuration * 3)
 
     await Utils.checkRender(
-        '',
+        '658226d6',
         new Clip(344, 313, 151, 58)
     )
 })

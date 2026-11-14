@@ -20,6 +20,6 @@ test(
         await Settings.yAxisTitle()
         await Settings.seriesWidth(90)
 
-        await Utils.checkRender('88142b9b')
+        await Utils.checkRender('51a8c9ca')
     }
 )

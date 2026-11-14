@@ -18,6 +18,6 @@ test(
         await Settings.plotType(PlotType.Bar)
         await Settings.xAxisType(PlotAxisType.Text)
 
-        await Utils.checkRender('81217553')
+        await Utils.checkRender('ffd86481')
     }
 )

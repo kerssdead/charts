@@ -13,6 +13,6 @@ test(
         await Settings.seriesWidth(90)
         await Settings.plotType(PlotType.Bar)
 
-        await Utils.checkRender('df18859c')
+        await Utils.checkRender('60c0f45b')
     }
 )

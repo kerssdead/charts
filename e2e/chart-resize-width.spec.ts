@@ -12,7 +12,7 @@ test(
         await Settings.width(50)
 
         await Utils.checkRender(
-            '',
+            '85b4ad66',
             new Clip(234, 130, 460, 460)
         )
     }

@@ -14,7 +14,5 @@ test('Tree Map without data should render empty placeholder', async ({ page, bro
     await Settings.valuesCount(0)
     await Settings.chartType(ChartType.TreeMap)
 
-    await Utils.checkRender(
-        ''
-    )
+    await Utils.checkRender('d5970199')
 })

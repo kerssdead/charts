@@ -18,7 +18,7 @@ test('Plot with x-axis types is date first date shouldn`t be "Invalid Date"', as
     await Settings.xAxisType(PlotAxisType.Date)
 
     await Utils.checkRender(
-        '',
+        '6d16a8e7',
         new Clip(61, 634, 80, 22)
     )
 })

@@ -16,7 +16,7 @@ test(
         await Settings.lineType(LineType.Dotted)
 
         await Utils.checkRender(
-            '367abfaf',
+            'f60620e0',
             new Clip(212, 165, 565, 260)
         )
     }

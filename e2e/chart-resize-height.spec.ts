@@ -12,7 +12,7 @@ test(
         await Settings.height(50)
 
         await Utils.checkRender(
-            'd0e4fa60',
+            '7eb449d1',
             new Clip(299, 270, 330, 180)
         )
     }

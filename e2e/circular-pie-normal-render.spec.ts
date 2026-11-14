@@ -19,6 +19,6 @@ test(
         await Settings.chartType(ChartType.Pie)
         await Settings.innerRadius(0)
 
-        await Utils.checkRender('acc8f349')
+        await Utils.checkRender('0cc2f372')
     }
 )

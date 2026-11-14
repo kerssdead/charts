@@ -24,7 +24,5 @@ test('Pie chart sector should be highlighted from legend', async ({ page, browse
     await Utils.page.mouse.move(600, 700)
     await Utils.wait(AnimationTiming.hover * 2)
 
-    await Utils.checkRender(
-        ''
-    )
+    await Utils.checkRender('e69f9c21')
 })

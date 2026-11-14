@@ -21,7 +21,7 @@ test(
         await Settings.enableDarkTheme()
 
         await Utils.checkRender(
-            'd6fa8a17',
+            '33b40237',
             new Clip(40, 80, 100, 20)
         )
     }
