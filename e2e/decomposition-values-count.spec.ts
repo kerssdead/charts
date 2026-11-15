@@ -21,11 +21,14 @@ test(
         await Settings.customLabel('Same')
         await Settings.chartType(ChartType.Plot)
 
+        // Commit pending settings changes before opening the canvas menu.
+        await page.mouse.click(0, 0)
+
         await Utils.scrollToCanvas()
         await Utils.wait(50)
 
         await Utils.page.mouse.click(1084, 20)
-        await page.mouse.click(1084, 90)
+        await page.locator('[role="menuitem"]', { hasText: 'Show as table' }).click()
 
         await page.waitForSelector('dialog', { timeout: 6000 })
 

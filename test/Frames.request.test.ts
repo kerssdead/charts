@@ -96,6 +96,22 @@ describe('Requesting a frame', () => {
             .toHaveBeenCalledWith(POSITION, 100, true)
     })
 
+    it('Should draw instantly when reduced motion is preferred', () => {
+        const { frames, overlay } = createFrames()
+
+        Object.assign(globalThis, { matchMedia: () => ({ matches: true }) })
+
+        try {
+            frames.request()
+            runFrame(100)
+
+            expect(overlay.update)
+                .toHaveBeenCalledWith(expect.objectContaining({ isInstant: true }))
+        } finally {
+            delete (globalThis as Record<string, unknown>).matchMedia
+        }
+    })
+
     it('Should report a failed draw', () => {
         const error = new Error('Broken')
         const { frames, queue, onError } = createFrames()

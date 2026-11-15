@@ -1,35 +1,35 @@
 const enum AnimationTiming {
-    legend = 500,
+    legend = 400,
 
-    rebuild = 500,
+    rebuild = 400,
 
-    button = 200,
+    button = 150,
 
-    title = 500,
+    title = 400,
 
-    plotInit = 800,
+    plotInit = 600,
 
-    plotLineInit = 1200,
+    plotLineInit = 900,
 
-    plotInitStagger = 40,
+    plotInitStagger = 30,
 
-    plotInitStaggerTotal = 800,
+    plotInitStaggerTotal = 600,
 
-    plotBreakInit = 300,
+    plotBreakInit = 250,
 
-    hover = 450,
+    hover = 300,
 
-    pieInit = 800,
+    pieInit = 600,
 
-    pieLabelInit = 300,
+    pieLabelInit = 250,
 
-    gaugeInit = 800,
+    gaugeInit = 600,
 
-    gaugeLabelInit = 300,
+    gaugeLabelInit = 250,
 
-    treeInit = 500,
+    treeInit = 400,
 
-    treeInitStagger = 40
+    treeInitStagger = 30
 }
 
 export default AnimationTiming

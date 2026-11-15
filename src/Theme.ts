@@ -29,7 +29,7 @@ export type ThemePalette = Readonly<{
 
     canvasBackgroundInt: number
 
-    contextMenuBackground: string
+    floatingBackground: string
 
     contextMenuButton: string
 
@@ -40,15 +40,16 @@ const HOVER_ADJUSTMENT = 25
 
 export function createTheme(index: ColorTheme): ThemePalette {
     const palette = ThemeOptions.palettes[index]
+    const { floatingOpacity, ...colors } = palette
     const dropdownItemHoverColor = adjustColor(palette.background, index === ColorTheme.light ? -50 : 50)
     const { r, g, b } = hexToRgb(palette.canvasBackground) ?? fail(ErrorType.InvalidHexColor)
 
     return Object.freeze({
         isDark: index === ColorTheme.dark,
-        ...palette,
+        ...colors,
         dropdownItemHoverColor,
         canvasBackgroundInt: new Uint32Array(new Uint8ClampedArray([r, g, b, 255]).buffer)[0],
-        contextMenuBackground: withAlpha(palette.background, ThemeOptions.contextMenuOpacity),
+        floatingBackground: withAlpha(palette.background, floatingOpacity),
         contextMenuButton: withAlpha(dropdownItemHoverColor, 0),
         contextMenuButtonHover: withAlpha(dropdownItemHoverColor, 1)
     })

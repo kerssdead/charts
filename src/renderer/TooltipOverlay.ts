@@ -24,7 +24,7 @@ type TooltipScan = TooltipTarget & {
     window: RectangleDimensions
 }
 
-type TextUpdate = Pick<Frame, 'now' | 'theme' | 'isInstant'>
+type TextUpdate = Pick<Frame, 'now' | 'isInstant'>
 
 const NO_TARGET: TooltipTarget = { template: null, html: null }
 
@@ -79,23 +79,23 @@ export default class TooltipOverlay extends Overlay {
 
         const target = mouse ? this.getTarget(queue, window, mouse) : NO_TARGET
 
-        if (mouse && target.html) {
-            this.state = null
-            this.fade = new HoverProgress()
-            this.custom.show(target.html, mouse)
-            this.custom.setOpacity(1)
-
-            return false
-        }
-
-        return this.updateText(mouse, target.template, { now, theme, isInstant })
+        return this.updateHtml(mouse, this.getHtml(target, theme), { now, isInstant })
     }
 
-    private updateText(mouse: Point | null, template: string | null, { now, theme, isInstant }: TextUpdate) {
-        const isVisible = mouse != null && template != null
+    private getHtml(target: TooltipTarget, theme: ThemePalette) {
+        if (target.html)
+            return target.html
+
+        return target.template ? CustomTooltip.fromText(target.template, theme) : null
+    }
+
+    private updateHtml(mouse: Point | null, html: string | null, { now, isInstant }: TextUpdate) {
+        const isVisible = mouse != null && html != null
 
         if (isVisible)
-            this.state = { point: mouse, html: CustomTooltip.fromText(template, theme) }
+            this.state = { point: mouse, html }
+        else if (this.state && mouse)
+            this.state = { point: mouse, html: this.state.html }
 
         this.fade.step(isVisible, now, Tooltip.fadeDuration, isInstant)
 
@@ -107,7 +107,7 @@ export default class TooltipOverlay extends Overlay {
         }
 
         this.custom.show(this.state.html, this.state.point)
-        this.custom.setOpacity(this.fade.value)
+        this.custom.setAppearProgress(this.fade.value)
 
         return this.fade.isAnimating
     }

@@ -6,6 +6,7 @@ import RenderItemRectangle from '@/types/RenderItemRectangle'
 import RenderItemText from '@/types/RenderItemText'
 import TreeData, { TreeValue } from '@/types/data/TreeData'
 import Value from '@/types/base/Value'
+import { AnimationTiming } from '@/static/constants/Index'
 import { spreadColor } from '@/helpers/Color'
 import { createState } from './ViewStateTestData'
 
@@ -50,7 +51,7 @@ describe('Getting tree data', () => {
         expect(items.get('tree-a')?.animation.appearDelay)
             .toBe(0)
         expect(items.get('tree-b')?.animation.appearDelay)
-            .toBe(40)
+            .toBe(AnimationTiming.treeInitStagger)
     })
 
     it('Should skip disabled and not positive values', () => {

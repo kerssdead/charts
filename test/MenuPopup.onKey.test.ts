@@ -1,5 +1,6 @@
 import { Events } from '@/static/Enums'
 import { installMenuPopup } from './MenuPopupTestData'
+import { DARK_THEME } from './TestTheme'
 
 const keyEvent = (key: string) => {
     return {
@@ -50,6 +51,61 @@ describe('Handling menu popup keys', () => {
 
         expect(buttons[1].focus)
             .toHaveBeenCalledTimes(3)
+    })
+
+    it('Should reveal the highlight after a navigation key', () => {
+        const { element, buttons } = installMenuPopup([
+            { text: 'First', action: () => {} },
+            { text: 'Second', action: () => {} }
+        ])
+
+        setActiveElement(buttons[0])
+        element.dispatch(Events.KeyDown, keyEvent('ArrowDown'))
+
+        expect([buttons[0].style.background, buttons[1].style.background])
+            .toEqual([DARK_THEME.contextMenuButton, DARK_THEME.text])
+        expect(buttons[1].style.color)
+            .toBe(DARK_THEME.background)
+    })
+
+    it('Should reveal the highlight on enter without blocking the action', () => {
+        const { element, buttons } = installMenuPopup([
+            { text: 'First', action: () => {} },
+            { text: 'Second', action: () => {} }
+        ])
+
+        setActiveElement(buttons[1])
+
+        const enter = keyEvent('Enter')
+
+        element.dispatch(Events.KeyDown, enter)
+
+        expect(buttons[1].style.background)
+            .toBe(DARK_THEME.text)
+        expect(buttons[1].style.color)
+            .toBe(DARK_THEME.background)
+        expect(enter.preventDefault)
+            .not.toHaveBeenCalled()
+    })
+
+    it('Should reveal the highlight on space without blocking the action', () => {
+        const { element, buttons } = installMenuPopup([
+            { text: 'First', action: () => {} },
+            { text: 'Second', action: () => {} }
+        ])
+
+        setActiveElement(buttons[0])
+
+        const space = keyEvent(' ')
+
+        element.dispatch(Events.KeyDown, space)
+
+        expect(buttons[0].style.background)
+            .toBe(DARK_THEME.text)
+        expect(buttons[0].style.color)
+            .toBe(DARK_THEME.background)
+        expect(space.preventDefault)
+            .not.toHaveBeenCalled()
     })
 
     it('Should dismiss on escape and tab', () => {

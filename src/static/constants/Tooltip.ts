@@ -7,9 +7,9 @@ const enum Tooltip {
 
     fontSize = 14,
 
-    radius = 4,
+    radius = 12,
 
-    fadeDuration = 150
+    fadeDuration = 250
 }
 
 export default Tooltip

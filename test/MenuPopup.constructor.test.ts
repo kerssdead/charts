@@ -1,4 +1,5 @@
 import MenuPopup from '@/renderer/MenuPopup'
+import { ContextMenu } from '@/static/constants/Index'
 import { FakeElement, installFakeDocument } from './FakeDocument'
 import { DARK_THEME } from './TestTheme'
 import { Events } from '@/static/Enums'
@@ -25,11 +26,21 @@ describe('Creating menu popup', () => {
         const button = element.elements.find(child => child.tagName === 'button')
 
         expect([element.style.background, element.style.color])
-            .toEqual([DARK_THEME.contextMenuBackground, DARK_THEME.text])
+            .toEqual([DARK_THEME.floatingBackground, DARK_THEME.text])
         expect(element.style.border)
             .toBe(`1px solid ${ DARK_THEME.dropdownBorder }`)
+        expect(element.style.boxShadow)
+            .toContain('0 8px 32px')
+        expect(element.style.backdropFilter)
+            .toBe('blur(12px)')
+        expect(element.style.font)
+            .toContain('system-ui, sans-serif')
         expect(button?.textContent)
             .toBe('Run')
+        expect([button?.style.height, button?.style.minHeight])
+            .toEqual(['auto', `${ ContextMenu.buttonHeight }px`])
+        expect(button?.style.backdropFilter)
+            .toBe('none')
     })
 
     it('Should use the theme colours for hover and dividers', () => {
@@ -51,6 +62,11 @@ describe('Creating menu popup', () => {
             .toBe(DARK_THEME.contextMenuButtonHover)
         expect(divider?.style.background)
             .toBe(DARK_THEME.dropdownBorder)
+
+        button?.dispatch(Events.PointerLeave)
+
+        expect(button?.style.background)
+            .toBe(DARK_THEME.contextMenuButton)
     })
 
     it('Should select the button action', () => {

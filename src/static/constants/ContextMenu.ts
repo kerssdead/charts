@@ -1,23 +1,23 @@
 const enum ContextMenu {
     offset = 2,
 
-    padding = 5,
+    padding = 4,
 
-    buttonHeight = 22,
+    buttonHeight = 24,
 
     dividerHeight = 9,
 
-    textPadding = 10,
+    textPadding = 8,
 
     fontSize = 13,
 
     minWidth = 120,
 
-    menuRadius = 6,
+    menuRadius = 12,
 
     buttonRadius = 4,
 
-    fadeDuration = 150
+    fadeDuration = 250
 }
 
 export default ContextMenu

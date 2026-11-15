@@ -9,6 +9,7 @@ import ChartSettings from '@/types/ChartSettings'
 import Frame from '@/renderer/Frame'
 import { ThemePalette } from '@/Theme'
 import { guard } from '@/helpers/Errors'
+import { prefersReducedMotion } from '@/helpers/Motion'
 
 type FrameScene = {
     queue: Queue
@@ -87,6 +88,10 @@ export default class Frames {
             this.scene.rebuildForTheme()
     }
 
+    private shouldDrawInstant(settings: ChartSettings) {
+        return settings.staticMode || this.isClean || prefersReducedMotion()
+    }
+
     private draw(timestamp: DOMHighResTimeStamp) {
         const { queue, layout, panels, input } = this.scene
         const settings = this.scene.getSettings()
@@ -94,7 +99,7 @@ export default class Frames {
         this.syncTheme()
 
         const theme = this.scene.getThemePalette()
-        const isInstant = settings.staticMode || this.isClean
+        const isInstant = this.shouldDrawInstant(settings)
 
         const { window, screen } = layout
         const position = this.isClean ? null : input.position

@@ -12,6 +12,8 @@ type Palette = {
     canvasBackground: string
 
     other: string
+
+    floatingOpacity: number
 }
 
 class ThemeOptions {
@@ -23,7 +25,8 @@ class ThemeOptions {
             lineAxis: '#e0e0e0',
             dropdownBorder: '#bcbcbc',
             canvasBackground: '#ffffff',
-            other: '#9e9e9e'
+            other: '#9e9e9e',
+            floatingOpacity: .5
         },
         {
             text: '#ffffff',
@@ -32,11 +35,10 @@ class ThemeOptions {
             lineAxis: '#434343',
             dropdownBorder: '#7e7e7e',
             canvasBackground: '#222222',
-            other: '#757575'
+            other: '#757575',
+            floatingOpacity: .45
         }
     ]
-
-    static readonly contextMenuOpacity = 0.85
 }
 
 export default ThemeOptions

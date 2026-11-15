@@ -16,7 +16,7 @@ const overlay = () => {
     const result = new TooltipOverlay({} as HTMLCanvasElement)
 
     jest.spyOn(result.custom, 'show').mockImplementation()
-    jest.spyOn(result.custom, 'setOpacity').mockImplementation()
+    jest.spyOn(result.custom, 'setAppearProgress').mockImplementation()
     jest.spyOn(result.custom, 'hide').mockImplementation()
 
     return result
@@ -50,6 +50,14 @@ const frame = (
         theme,
         isInstant: false
     } as unknown as Frame
+}
+
+const frameAt = (queue: Queue, mouse: { x: number, y: number } | null, now: number) => {
+    const result = frame(queue, mouse)
+
+    result.now = now
+
+    return result
 }
 
 describe('Applying tooltip settings', () => {
@@ -113,7 +121,34 @@ describe('Updating tooltip overlay', () => {
 
         expect(target.custom.show)
             .toHaveBeenCalledWith(expect.stringContaining('&lt;b&gt;Tip&lt;/b&gt;'), { x: 75, y: 75 })
-        expect(target.custom.setOpacity)
+        expect(target.custom.setAppearProgress)
+            .toHaveBeenCalled()
+    })
+
+    it('Should fade out at the pointer when it leaves the item', () => {
+        const queue = new Queue({} as CanvasRenderingContext2D)
+
+        queue.add([item('<b>Tip</b>')])
+
+        const target = overlay()
+
+        target.isEnabled = true
+
+        target.update(frameAt(queue, { x: 75, y: 75 }, 0))
+        target.update(frameAt(queue, { x: 75, y: 75 }, 250))
+        ;(target.custom.show as jest.Mock).mockClear()
+        ;(target.custom.hide as jest.Mock).mockClear()
+
+        expect(target.update(frameAt(queue, { x: 150, y: 150 }, 300)))
+            .toBe(true)
+        expect(target.custom.show)
+            .toHaveBeenLastCalledWith(expect.stringContaining('Tip'), { x: 150, y: 150 })
+        expect(target.custom.hide)
+            .not.toHaveBeenCalled()
+
+        expect(target.update(frameAt(queue, { x: 150, y: 150 }, 600)))
+            .toBe(false)
+        expect(target.custom.hide)
             .toHaveBeenCalled()
     })
 

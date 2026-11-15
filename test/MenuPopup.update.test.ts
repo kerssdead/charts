@@ -6,12 +6,12 @@ describe('Updating menu popup', () => {
 
         popup.update(.5, false)
 
-        expect([element.style.opacity, element.style.pointerEvents, buttons[0].disabled])
-            .toEqual(['0.5', 'none', true])
+        expect([element.style.opacity, element.style.transform, element.style.pointerEvents, buttons[0].disabled])
+            .toEqual(['0.5', 'scale(1.025)', 'none', true])
 
         popup.update(1, true)
 
-        expect([element.style.opacity, element.style.pointerEvents, buttons[0].disabled])
-            .toEqual(['1', 'auto', false])
+        expect([element.style.opacity, element.style.transform, element.style.pointerEvents, buttons[0].disabled])
+            .toEqual(['1', 'scale(1)', 'auto', false])
     })
 })

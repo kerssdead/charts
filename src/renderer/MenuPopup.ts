@@ -2,8 +2,10 @@ import FloatingElement from '@/renderer/FloatingElement'
 import ButtonOptions from '@/types/ButtonOptions'
 import Point from '@/types/Point'
 import { ThemePalette } from '@/Theme'
-import { ContextMenu, FONT_FAMILY } from '@/static/constants/Index'
+import { ContextMenu, UI_FONT_FAMILY } from '@/static/constants/Index'
 import { Events } from '@/static/Enums'
+import { appearScale } from '@/animation/Animations'
+import { FLOATING_PANEL_BLUR, floatingPanelShadow } from '@/helpers/FloatingStyle'
 
 export type MenuPopupOptions = {
     options: ButtonOptions[]
@@ -12,16 +14,25 @@ export type MenuPopupOptions = {
     dismiss: () => void
 }
 
+const HIGHLIGHT_TRANSITION = 'background-color .15s ease'
+
 export default class MenuPopup {
     private readonly floating: FloatingElement
 
     private readonly buttons: HTMLButtonElement[] = []
 
+    private readonly hovered = new Set<HTMLButtonElement>()
+
+    private readonly theme: ThemePalette
+
     private previousFocus: Element | null = null
 
     private isInteractive = true
 
+    private isHighlightVisible = false
+
     constructor(canvas: HTMLCanvasElement, { options, theme, select, dismiss }: MenuPopupOptions) {
+        this.theme = theme
         this.floating = new FloatingElement(canvas, ContextMenu.offset)
 
         this.floating.minWidth = ContextMenu.minWidth
@@ -33,14 +44,19 @@ export default class MenuPopup {
             padding: `${ ContextMenu.padding }px`,
             border: `1px solid ${ theme.dropdownBorder }`,
             borderRadius: `${ ContextMenu.menuRadius }px`,
-            background: theme.contextMenuBackground,
+            background: theme.floatingBackground,
             color: theme.text,
-            font: `${ ContextMenu.fontSize }px ${ FONT_FAMILY }`,
-            overscrollBehavior: 'contain'
+            font: `${ ContextMenu.fontSize }px ${ UI_FONT_FAMILY }`,
+            overscrollBehavior: 'contain',
+            userSelect: 'none',
+            transformOrigin: 'center',
+            boxShadow: floatingPanelShadow(theme.isDark)
         })
+        element.style.backdropFilter = FLOATING_PANEL_BLUR
+        element.style.setProperty('-webkit-backdrop-filter', FLOATING_PANEL_BLUR)
 
         for (const option of options)
-            element.appendChild(option.isDivider ? this.divider(theme) : this.button(option, theme, select))
+            element.appendChild(option.isDivider ? this.divider() : this.button(option, select))
 
         element.addEventListener(Events.KeyDown, event => this.onKey(event, dismiss))
         element.addEventListener(Events.ContextMenu, event => event.preventDefault())
@@ -49,8 +65,11 @@ export default class MenuPopup {
     show(point: Point) {
         const isNew = !this.floating.element.isConnected
 
-        if (isNew)
+        if (isNew) {
             this.previousFocus = document.activeElement
+            this.isHighlightVisible = false
+            this.refreshHighlights(null)
+        }
 
         this.floating.show(point)
 
@@ -59,8 +78,11 @@ export default class MenuPopup {
     }
 
     update(alpha: number, isInteractive: boolean) {
-        this.floating.element.style.opacity = String(alpha)
-        this.floating.element.style.pointerEvents = isInteractive ? 'auto' : 'none'
+        const element = this.floating.element
+
+        element.style.opacity = String(alpha)
+        element.style.transform = `scale(${ appearScale(alpha) })`
+        element.style.pointerEvents = isInteractive ? 'auto' : 'none'
 
         if (this.isInteractive === isInteractive)
             return
@@ -85,23 +107,21 @@ export default class MenuPopup {
             this.previousFocus.focus({ preventScroll: true })
     }
 
-    private divider(theme: ThemePalette) {
+    private divider() {
         const divider = document.createElement('div')
 
         divider.setAttribute('role', 'separator')
         Object.assign(divider.style, {
             height: '1px',
             margin: `${ (ContextMenu.dividerHeight - 1) / 2 }px 0`,
-            background: theme.dropdownBorder
+            background: this.theme.dropdownBorder
         })
 
         return divider
     }
 
-    private button(option: ButtonOptions, theme: ThemePalette, select: (action: () => void) => void) {
+    private button(option: ButtonOptions, select: (action: () => void) => void) {
         const button = document.createElement('button')
-        const hoverColor = theme.contextMenuButtonHover
-        const focusColor = theme.text
 
         button.type = 'button'
         button.setAttribute('role', 'menuitem')
@@ -111,23 +131,34 @@ export default class MenuPopup {
             display: 'block',
             width: '100%',
             boxSizing: 'border-box',
+            height: 'auto',
             minHeight: `${ ContextMenu.buttonHeight }px`,
-            padding: `2px ${ ContextMenu.textPadding }px`,
+            padding: `4px ${ ContextMenu.textPadding }px`,
             border: '0',
             borderRadius: `${ ContextMenu.buttonRadius }px`,
-            background: 'transparent',
+            background: this.theme.contextMenuButton,
+            boxShadow: 'none',
+            backdropFilter: 'none',
             color: 'inherit',
             font: 'inherit',
             textAlign: 'start',
             overflowWrap: 'anywhere',
             cursor: 'pointer',
-            outlineOffset: '-2px'
+            outline: 'none',
+            transition: HIGHLIGHT_TRANSITION
         })
+        button.style.setProperty('-webkit-backdrop-filter', 'none')
 
-        button.addEventListener(Events.PointerEnter, () => button.style.background = hoverColor)
-        button.addEventListener(Events.PointerLeave, () => button.style.background = 'transparent')
-        button.addEventListener(Events.Focus, () => button.style.outline = `2px solid ${ focusColor }`)
-        button.addEventListener(Events.Blur, () => button.style.outline = '')
+        button.addEventListener(Events.PointerEnter, () => {
+            this.hovered.add(button)
+            this.refreshHighlights(document.activeElement)
+        })
+        button.addEventListener(Events.PointerLeave, () => {
+            this.hovered.delete(button)
+            this.refreshHighlights(document.activeElement)
+        })
+        button.addEventListener(Events.Focus, () => this.refreshHighlights(document.activeElement))
+        button.addEventListener(Events.Blur, () => this.refreshHighlights(document.activeElement))
         button.addEventListener(Events.Click, () => {
             if (this.isInteractive)
                 select(option.action)
@@ -137,6 +168,30 @@ export default class MenuPopup {
         return button
     }
 
+    private refreshHighlights(selected: Element | null) {
+        for (const button of this.buttons) {
+            const isSelected = this.isHighlightVisible && button === selected
+
+            this.applyHighlight(button, this.hovered.has(button), isSelected)
+        }
+    }
+
+    private applyHighlight(button: HTMLButtonElement, isHovered: boolean, isSelected: boolean) {
+        if (isSelected) {
+            button.style.background = this.theme.text
+            button.style.color = this.theme.background
+
+            return
+        }
+
+        button.style.background = isHovered ? this.theme.contextMenuButtonHover : this.theme.contextMenuButton
+        button.style.color = 'inherit'
+    }
+
+    private isActivationKey(event: KeyboardEvent) {
+        return event.key === 'Enter' || event.key === ' '
+    }
+
     private onKey(event: KeyboardEvent, dismiss: () => void) {
         if (event.key === 'Escape' || event.key === 'Tab') {
             if (event.key === 'Escape')
@@ -144,6 +199,13 @@ export default class MenuPopup {
 
             event.stopPropagation()
             dismiss()
+
+            return
+        }
+
+        if (this.isActivationKey(event)) {
+            this.isHighlightVisible = true
+            this.refreshHighlights(document.activeElement)
 
             return
         }
@@ -159,7 +221,9 @@ export default class MenuPopup {
 
         if (next !== undefined) {
             event.preventDefault()
+            this.isHighlightVisible = true
             this.buttons[next]?.focus()
+            this.refreshHighlights(this.buttons[next] ?? null)
         }
     }
 }

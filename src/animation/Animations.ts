@@ -20,6 +20,12 @@ const SAMPLES = 1024
 
 const TABLE = Float64Array.from({ length: SAMPLES + 1 }, (_, i) => cubicBezier(solve(i / SAMPLES), Y1, Y2))
 
+const APPEAR_SCALE = .05
+
+export function appearScale(progress: number) {
+    return Math.round((1 + (1 - progress) * APPEAR_SCALE) * 1000) / 1000
+}
+
 export default function ease(value: number): number {
     if (value <= 0)
         return 0

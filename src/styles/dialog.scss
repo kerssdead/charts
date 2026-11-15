@@ -47,19 +47,26 @@
 .o-modal-header > .o-modal-close {
     cursor: pointer;
     border: 0;
+    border-radius: 4px;
+    padding: 0;
     outline: 0;
     background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     color: inherit;
     width: fit-content;
+    height: auto;
     font-size: 20px;
     line-height: 16px;
 
     opacity: 1;
 
-    transition: opacity .3s ease-in-out;
+    transition: opacity .2s ease-in-out;
 }
 
 .o-modal-header > .o-modal-close:hover {
+    background: transparent;
     opacity: .5;
 }
 
