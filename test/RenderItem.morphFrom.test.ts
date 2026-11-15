@@ -1,6 +1,5 @@
 import RenderItem from '@/types/RenderItem'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
-import HoverProgress from '@/types/HoverProgress'
 
 const shape = (overrides: Partial<RenderItemBase> = {}) => {
     return {
@@ -165,9 +164,9 @@ describe('Moving item along the axis', () => {
 
 describe('Stepping the hover factor', () => {
     it('Should grow when hovering and shrink when leaving', () => {
-        jest.replaceProperty(HoverProgress, 'isInstant', true)
-
         const item = createItem()
+
+        item.isInstant = true
 
         expect(item.hoverFactor(false, 100, 200))
             .toBe(1)

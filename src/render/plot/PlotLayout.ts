@@ -27,7 +27,7 @@ export default class PlotLayout {
 
     private readonly data: PlotData
 
-    private readonly seriesGroups: PlotSeriesGroups
+    readonly seriesGroups: PlotSeriesGroups
 
     constructor(data: PlotData, units: Units, seriesGroups: PlotSeriesGroups) {
         this.data = data

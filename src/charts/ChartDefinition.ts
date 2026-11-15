@@ -5,12 +5,13 @@ import Value from '@/types/base/Value'
 import Data from '@/types/interfaces/Data'
 import TableData from '@/types/TableData'
 import ChartViewState, { IsDisabled } from '@/types/ChartViewState'
+import { ThemePalette } from '@/Theme'
 
 type ChartDefinition<TData extends Data> = {
     createProcess: (
         data: TData,
         pixel: Point,
-        settings: ChartSettings,
+        settings: ChartSettings & { theme: ThemePalette },
         state: ChartViewState
     ) => ChartProcess<TData>
 

@@ -1,6 +1,5 @@
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import RenderItem from '@/types/RenderItem'
-import HoverProgress from '@/types/HoverProgress'
 
 describe('Morphing rectangle', () => {
     it('Should not morph from a different shape', () => {
@@ -79,11 +78,10 @@ describe('Disappearing rectangle', () => {
 
 describe('Animating rectangle hover', () => {
     it('Should dim the item alpha while hovering', () => {
-        jest.replaceProperty(HoverProgress, 'isInstant', true)
-
         const shape = new RenderItemRectangle()
         const item = new RenderItem(shape)
 
+        item.isInstant = true
         shape.animate(item, false, 0)
 
         expect(item.animation.alpha)

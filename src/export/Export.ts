@@ -1,4 +1,4 @@
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { getContext, isPixelBusy } from '@/helpers/Canvas'
 import { Tag } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
@@ -16,16 +16,14 @@ type PngOptions = {
     ratio: number
     title: string
     exclude?: DOMRect
-    isDark?: () => boolean
+    theme: ThemePalette
     prepare?: () => void
 }
 
 export default class Export {
-    static asPng(canvas: HTMLCanvasElement, { ratio, title, exclude, isDark, prepare }: PngOptions) {
+    static asPng(canvas: HTMLCanvasElement, { ratio, title, exclude, theme, prepare }: PngOptions) {
         requestAnimationFrame(() => {
             prepare?.()
-
-            Theme.update(isDark)
 
             const { width, height } = canvas
 
@@ -39,7 +37,7 @@ export default class Export {
 
             if (exclude) {
                 ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
-                ctx.fillStyle = Theme.canvasBackground
+                ctx.fillStyle = theme.canvasBackground
                 ctx.fillRect(exclude.x, exclude.y, exclude.width, exclude.height)
             }
 
@@ -50,7 +48,7 @@ export default class Export {
 
             const isEmptyColumn = (x: number) => {
                 for (let y = 0; y < height; y++)
-                    if (isPixelBusy(imageData[x + y * width]))
+                    if (isPixelBusy(imageData[x + y * width], theme.canvasBackgroundInt))
                         return false
 
                 return true
@@ -79,7 +77,7 @@ export default class Export {
 
             const destCtx = getContext(destination)
 
-            destCtx.fillStyle = Theme.background
+            destCtx.fillStyle = theme.background
             destCtx.fillRect(0, 0, destination.width, destination.height)
 
             destCtx.drawImage(source, -trim, 0)

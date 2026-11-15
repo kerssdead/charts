@@ -270,10 +270,10 @@ export default class RenderItemLine extends RenderItemBase {
         item.animation.alpha = 1 - ALPHA_DELTA * item.hoverFactor(isBackward, now, AnimationTiming.hover)
     }
 
-    animateHover(point: Point | null, now: DOMHighResTimeStamp): boolean {
+    animateHover(point: Point | null, now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
         this.hovered = point ? this.stopAt(point) : -1
 
-        return this.markers.animate(this.hovered, now)
+        return this.markers.animate(this.hovered, now, isInstant)
     }
 
     private clipToBox(ctx: CanvasRenderingContext2D) {

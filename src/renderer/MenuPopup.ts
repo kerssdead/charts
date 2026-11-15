@@ -1,9 +1,16 @@
 import FloatingElement from '@/renderer/FloatingElement'
 import ButtonOptions from '@/types/ButtonOptions'
 import Point from '@/types/Point'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { ContextMenu, FONT_FAMILY } from '@/static/constants/Index'
 import { Events } from '@/static/Enums'
+
+export type MenuPopupOptions = {
+    options: ButtonOptions[]
+    theme: ThemePalette
+    select: (action: () => void) => void
+    dismiss: () => void
+}
 
 export default class MenuPopup {
     private readonly floating: FloatingElement
@@ -14,12 +21,7 @@ export default class MenuPopup {
 
     private isInteractive = true
 
-    constructor(
-        canvas: HTMLCanvasElement,
-        options: ButtonOptions[],
-        select: (action: () => void) => void,
-        dismiss: () => void
-    ) {
+    constructor(canvas: HTMLCanvasElement, { options, theme, select, dismiss }: MenuPopupOptions) {
         this.floating = new FloatingElement(canvas, ContextMenu.offset)
 
         this.floating.minWidth = ContextMenu.minWidth
@@ -29,16 +31,16 @@ export default class MenuPopup {
         element.setAttribute('role', 'menu')
         Object.assign(element.style, {
             padding: `${ ContextMenu.padding }px`,
-            border: `1px solid ${ Theme.dropdownBorder }`,
+            border: `1px solid ${ theme.dropdownBorder }`,
             borderRadius: `${ ContextMenu.menuRadius }px`,
-            background: Theme.contextMenuBackground,
-            color: Theme.text,
+            background: theme.contextMenuBackground,
+            color: theme.text,
             font: `${ ContextMenu.fontSize }px ${ FONT_FAMILY }`,
             overscrollBehavior: 'contain'
         })
 
         for (const option of options)
-            element.appendChild(option.isDivider ? this.divider() : this.button(option, select))
+            element.appendChild(option.isDivider ? this.divider(theme) : this.button(option, theme, select))
 
         element.addEventListener(Events.KeyDown, event => this.onKey(event, dismiss))
         element.addEventListener(Events.ContextMenu, event => event.preventDefault())
@@ -83,23 +85,23 @@ export default class MenuPopup {
             this.previousFocus.focus({ preventScroll: true })
     }
 
-    private divider() {
+    private divider(theme: ThemePalette) {
         const divider = document.createElement('div')
 
         divider.setAttribute('role', 'separator')
         Object.assign(divider.style, {
             height: '1px',
             margin: `${ (ContextMenu.dividerHeight - 1) / 2 }px 0`,
-            background: Theme.dropdownBorder
+            background: theme.dropdownBorder
         })
 
         return divider
     }
 
-    private button(option: ButtonOptions, select: (action: () => void) => void) {
+    private button(option: ButtonOptions, theme: ThemePalette, select: (action: () => void) => void) {
         const button = document.createElement('button')
-        const hoverColor = Theme.contextMenuButtonHover
-        const focusColor = Theme.text
+        const hoverColor = theme.contextMenuButtonHover
+        const focusColor = theme.text
 
         button.type = 'button'
         button.setAttribute('role', 'menuitem')

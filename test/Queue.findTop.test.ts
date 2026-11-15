@@ -2,8 +2,6 @@ import Queue from '@/render/Queue'
 import RenderItem from '@/types/RenderItem'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 
-jest.mock('@/Theme', () => ({}))
-
 function item(key: string, layer: number) {
     const result = new RenderItem(new RenderItemRectangle())
 

@@ -2,7 +2,7 @@ import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import Panel from '@/types/Panel'
 import RenderItem from '@/types/RenderItem'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { withAlpha } from '@/helpers/Color'
 
 const ALPHA = .3
@@ -18,8 +18,8 @@ export default class RenderItemScrollbar extends RenderItemBase {
         this.panel = panel
     }
 
-    get defaultColor(): string {
-        return withAlpha(Theme.text, ALPHA)
+    defaultColor(theme: ThemePalette): string {
+        return withAlpha(theme.text, ALPHA)
     }
 
     adjust(): void {

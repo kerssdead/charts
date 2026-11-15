@@ -1,12 +1,8 @@
 import MenuButton from '@/renderer/MenuButton'
 import Queue from '@/render/Queue'
 import Frame from '@/renderer/Frame'
-import HoverProgress from '@/types/HoverProgress'
-
-jest.mock('@/Theme', () => ({
-    hoverBackground: (hover: number) => `#0000${ Math.round(hover * 255).toString(16) }00`,
-    text: '#000000'
-}))
+import { LIGHT_THEME, ThemePalette } from '@/Theme'
+import { DARK_THEME } from './TestTheme'
 
 globalThis.DOMRect = class {
     constructor(public x = 0, public y = 0, public width = 0, public height = 0) {
@@ -25,8 +21,13 @@ const create = (width: number, height: number, top: number) => {
     return { button, queue }
 }
 
-const update = (button: MenuButton, queue: Queue, mouse: { x: number, y: number } | null) => {
-    return button.update({ queue, mouse, now: 0 } as unknown as Frame)
+const update = (
+    button: MenuButton,
+    queue: Queue,
+    mouse: { x: number, y: number } | null,
+    theme: ThemePalette = LIGHT_THEME
+) => {
+    return button.update({ queue, mouse, now: 0, theme, isInstant: false } as unknown as Frame)
 }
 
 describe('Updating menu button', () => {
@@ -47,6 +48,15 @@ describe('Updating menu button', () => {
 
         expect(queue.items.length)
             .toBe(2)
+    })
+
+    it('Should use the theme text colour for the button', () => {
+        const { button, queue } = create(200, 100, 10)
+
+        update(button, queue, { x: 200, y: 10 }, DARK_THEME)
+
+        expect(queue.items.some(item => item.color === DARK_THEME.text))
+            .toBe(true)
     })
 
     it('Should keep the button items when nothing changes', () => {

@@ -1,9 +1,9 @@
 import RenderItemScrollbar from '@/types/RenderItemScrollbar'
 import RenderItem from '@/types/RenderItem'
 import Panel from '@/types/Panel'
-import Theme from '@/Theme'
+import { LIGHT_THEME } from '@/Theme'
 
-jest.mock('@/Theme', () => ({ text: '#123456' }))
+const THEME = { ...LIGHT_THEME, text: '#123456' }
 
 const panel = () => {
     const result = new Panel(0, { x: 0, y: 0, width: 1, height: 1 })
@@ -23,7 +23,7 @@ const context = () => ({
 
 describe('Scrollbar default color', () => {
     it('Should be the text color with low alpha', () => {
-        expect(new RenderItemScrollbar(panel()).defaultColor)
+        expect(new RenderItemScrollbar(panel()).defaultColor(THEME))
             .toBe('#1234564d')
     })
 })

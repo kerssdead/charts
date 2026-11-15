@@ -1,5 +1,8 @@
 import Legend from '@/Legend'
 import { normalize } from '@/charts/Settings'
+import { LIGHT_THEME, ThemePalette } from '@/Theme'
+import { DARK_THEME } from './TestTheme'
+import { Layer } from '@/static/constants/Index'
 import { ChartType, LegendPlace } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import ViewState from '@/charts/ViewState'
@@ -9,12 +12,6 @@ import Frame from '@/renderer/Frame'
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
     stringWidth: (text: string) => text.length * 10
-}))
-
-jest.mock('@/Theme', () => ({
-    canvasBackground: '#ffffff',
-    text: '#000000',
-    hoverBackground: () => '#ffffff'
 }))
 
 globalThis.DOMRect = class {
@@ -47,8 +44,13 @@ const create = (legendPlace: LegendPlace = LegendPlace.Bottom) => {
     return legend
 }
 
-const update = (legend: Legend, queue: Queue, mouse: { x: number, y: number } | null = null) => {
-    return legend.update({ queue, mouse, now: 0 } as unknown as Frame)
+const update = (
+    legend: Legend,
+    queue: Queue,
+    mouse: { x: number, y: number } | null = null,
+    theme: ThemePalette = LIGHT_THEME
+) => {
+    return legend.update({ queue, mouse, now: 0, theme, isInstant: false } as unknown as Frame)
 }
 
 describe('Updating legend', () => {
@@ -62,6 +64,18 @@ describe('Updating legend', () => {
             .toBeGreaterThan(0)
         expect(legend.isMoving)
             .toBe(false)
+    })
+
+    it('Should use the theme canvas colour for the legend background', () => {
+        const queue = new Queue({} as CanvasRenderingContext2D)
+        const legend = create()
+
+        update(legend, queue, null, DARK_THEME)
+
+        const background = queue.items.find(item => item.layer === Layer.Legend)
+
+        expect(background?.color)
+            .toBe(DARK_THEME.canvasBackground)
     })
 
     it('Should clear the legend when it has no area', () => {

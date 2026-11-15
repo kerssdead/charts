@@ -1,12 +1,11 @@
 import Debug from '@/helpers/Debug'
-
-jest.mock('@/Theme', () => ({ currentTheme: 0, ColorTheme: { 0: 'light', 1: 'dark' } }))
+import { ColorTheme } from '@/Theme'
 
 describe('Debug logging', () => {
     it('Should not log when debug mode is disabled', () => {
         const log = jest.spyOn(console, 'log').mockImplementation()
 
-        Debug.log({} as never, { enableDebugMode: false } as never, {} as HTMLCanvasElement)
+        Debug.log({} as never, { enableDebugMode: false } as never, {} as HTMLCanvasElement, ColorTheme.light)
 
         expect(log)
             .not.toHaveBeenCalled()
@@ -15,9 +14,14 @@ describe('Debug logging', () => {
     it('Should log the chart state in debug mode', () => {
         const log = jest.spyOn(console, 'log').mockImplementation()
 
-        Debug.log({ title: 'Input' } as never, { enableDebugMode: true } as never, {} as HTMLCanvasElement)
+        Debug.log(
+            { title: 'Input' } as never,
+            { enableDebugMode: true } as never,
+            {} as HTMLCanvasElement,
+            ColorTheme.dark
+        )
 
         expect(log)
-            .toHaveBeenCalledWith('OCharts:', expect.objectContaining({ theme: 'light' }))
+            .toHaveBeenCalledWith('OCharts:', expect.objectContaining({ theme: ColorTheme[ColorTheme.dark] }))
     })
 })

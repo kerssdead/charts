@@ -1,8 +1,8 @@
 import ChartSettings from '@/types/ChartSettings'
-import Theme, { ColorTheme } from '@/Theme'
+import { ColorTheme } from '@/Theme'
 
 export default class Debug {
-    static log(input: ChartSettings, settings: ChartSettings, canvas: HTMLCanvasElement) {
+    static log(input: ChartSettings, settings: ChartSettings, canvas: HTMLCanvasElement, theme: ColorTheme) {
         if (!settings.enableDebugMode)
             return
 
@@ -13,7 +13,7 @@ export default class Debug {
                 width: canvas.parentElement?.clientWidth,
                 height: canvas.parentElement?.clientHeight
             },
-            theme: ColorTheme[Theme.currentTheme]
+            theme: ColorTheme[theme]
         })
     }
 }

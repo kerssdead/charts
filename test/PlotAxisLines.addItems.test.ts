@@ -5,15 +5,17 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import PlotAxisLines from '@/render/plot/PlotAxisLines'
 import { Layer } from '@/static/constants/Index'
 import { PlotType } from '@/static/Enums'
+import { LIGHT_THEME, ThemePalette } from '@/Theme'
+import { DARK_THEME } from './TestTheme'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
     stringWidth: (text: string | undefined, font: number = 14) => (text?.length ?? 0) * font / 2
 }))
 
-const getLines = (all: PlotSeries[]) => {
+const getLines = (all: PlotSeries[], theme: ThemePalette = LIGHT_THEME) => {
     const plot = createPlot(all)
-    const lines = new PlotAxisLines(plot.layout, plot.seriesGroups)
+    const lines = new PlotAxisLines(plot.layout, plot.seriesGroups, theme)
     const items = buildItems((builder: QueueItemsBuilder) => lines.addItems(builder))
 
     return { ...plot, items, lines: new Map(items.map(item => [item.key ?? '', item])) }
@@ -43,6 +45,16 @@ describe('Adding plot axis lines', () => {
             expect(grid?.layer)
                 .toBe(Layer.Base)
         }
+    })
+
+    it('Should use the theme colours for axis and grid lines', () => {
+        const { lines } = getLines([createSeries(PlotType.Line, [10, 40])], DARK_THEME)
+        const grid = [...lines].find(([key]) => key.startsWith('grid-y-'))
+
+        expect(lines.get('axis-y')?.stroke)
+            .toBe(DARK_THEME.line)
+        expect(grid?.[1].stroke)
+            .toBe(DARK_THEME.lineAxis)
     })
 
     it('Should draw vertical bar axis and grid across horizontal section', () => {

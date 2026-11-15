@@ -10,6 +10,7 @@ import PlotBarItems from '@/render/plot/PlotBarItems'
 import PlotLineItems from '@/render/plot/PlotLineItems'
 import { getColumnGroups } from '@/render/plot/PlotColumnGroups'
 import { GHOST_TYPES } from '@/render/plot/PlotConstants'
+import { ThemePalette } from '@/Theme'
 
 export default class PlotSeriesItems {
     private readonly allSeries: PlotSeries[]
@@ -27,10 +28,11 @@ export default class PlotSeriesItems {
     constructor(
         allSeries: PlotSeries[],
         layout: PlotLayout,
-        seriesGroups: PlotSeriesGroups,
-        getValueTooltip: ValueTooltip
+        getValueTooltip: ValueTooltip,
+        theme: ThemePalette
     ) {
-        const style = new PlotItemStyle(layout, seriesGroups, getValueTooltip)
+        const seriesGroups = layout.seriesGroups
+        const style = new PlotItemStyle(layout, seriesGroups, getValueTooltip, theme)
         const columnGroups = getColumnGroups(seriesGroups.enabledSeries)
 
         this.allSeries = allSeries

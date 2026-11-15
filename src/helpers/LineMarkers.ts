@@ -21,7 +21,7 @@ export default class LineMarkers {
         }
     }
 
-    animate(hoveredIndex: number, now: DOMHighResTimeStamp): boolean {
+    animate(hoveredIndex: number, now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
         const targets = new Map<number, boolean>()
 
         for (const [index, hover] of this.hovers.entries())
@@ -31,7 +31,7 @@ export default class LineMarkers {
         if (hoveredIndex >= 0)
             targets.set(hoveredIndex, true)
 
-        this.hovers.update([...targets], now)
+        this.hovers.update([...targets], now, isInstant)
 
         return this.hovers.isAnimating
     }

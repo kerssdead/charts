@@ -8,75 +8,119 @@ export enum ColorTheme {
     dark = 1
 }
 
-class Theme {
-    static currentTheme = ColorTheme.light
+export type ThemePalette = Readonly<{
+    isDark: boolean
 
-    static text: string
+    text: string
 
-    static background: string
+    background: string
 
-    static line: string
+    line: string
 
-    static lineAxis: string
+    lineAxis: string
 
-    static dropdownItemHoverColor: string
+    dropdownItemHoverColor: string
 
-    static dropdownBorder: string
+    dropdownBorder: string
 
-    static canvasBackground: string
+    canvasBackground: string
 
-    static other: string
+    other: string
 
-    static canvasBackgroundInt: number
+    canvasBackgroundInt: number
 
-    static contextMenuBackground: string
+    contextMenuBackground: string
 
-    static contextMenuButton: string
+    contextMenuButton: string
 
-    static contextMenuButtonHover: string
+    contextMenuButtonHover: string
+}>
 
-    static media: MediaQueryList | undefined
+const HOVER_ADJUSTMENT = 25
 
-    static initialize(callback: () => void, isDark?: () => boolean) {
-        Theme.media ??= window.matchMedia('(prefers-color-scheme: dark)')
+export function createTheme(index: ColorTheme): ThemePalette {
+    const palette = ThemeOptions.palettes[index]
+    const dropdownItemHoverColor = adjustColor(palette.background, index === ColorTheme.light ? -50 : 50)
+    const { r, g, b } = hexToRgb(palette.canvasBackground) ?? fail(ErrorType.InvalidHexColor)
 
-        Theme.update(isDark)
-
-        Theme.media.addEventListener(Events.Change, callback)
-    }
-
-    static detach(callback: () => void) {
-        Theme.media?.removeEventListener(Events.Change, callback)
-    }
-
-    static setTheme(index: ColorTheme) {
-        if (Theme.text !== undefined && index === Theme.currentTheme)
-            return
-
-        Theme.currentTheme = index
-
-        Object.assign(Theme, ThemeOptions.palettes[index])
-
-        Theme.dropdownItemHoverColor = adjustColor(Theme.background, index === ColorTheme.light ? -50 : 50)
-
-        const { r, g, b } = hexToRgb(Theme.canvasBackground) ?? fail(ErrorType.InvalidHexColor)
-        Theme.canvasBackgroundInt = new Uint32Array(new Uint8ClampedArray([r, g, b, 255]).buffer)[0]
-        Theme.contextMenuBackground = withAlpha(Theme.background, ThemeOptions.contextMenuOpacity)
-        Theme.contextMenuButton = withAlpha(Theme.dropdownItemHoverColor, 0)
-        Theme.contextMenuButtonHover = withAlpha(Theme.dropdownItemHoverColor, 1)
-    }
-
-    static hoverBackground(hover: number) {
-        const fullAdjustment = Theme.currentTheme === ColorTheme.dark ? 25 : -25
-
-        return adjustColor(Theme.canvasBackground, Math.round(fullAdjustment * hover))
-    }
-
-    static update(isDark?: () => boolean) {
-        const isDarkTheme = isDark ? isDark() : Theme.media?.matches
-
-        Theme.setTheme(isDarkTheme ? ColorTheme.dark : ColorTheme.light)
-    }
+    return Object.freeze({
+        isDark: index === ColorTheme.dark,
+        ...palette,
+        dropdownItemHoverColor,
+        canvasBackgroundInt: new Uint32Array(new Uint8ClampedArray([r, g, b, 255]).buffer)[0],
+        contextMenuBackground: withAlpha(palette.background, ThemeOptions.contextMenuOpacity),
+        contextMenuButton: withAlpha(dropdownItemHoverColor, 0),
+        contextMenuButtonHover: withAlpha(dropdownItemHoverColor, 1)
+    })
 }
 
-export default Theme
+export const LIGHT_THEME = createTheme(ColorTheme.light)
+
+export function hoverBackground(theme: ThemePalette, hover: number) {
+    const fullAdjustment = theme.isDark ? HOVER_ADJUSTMENT : -HOVER_ADJUSTMENT
+
+    return adjustColor(theme.canvasBackground, Math.round(fullAdjustment * hover))
+}
+
+export default class Theme {
+    private media: MediaQueryList | undefined
+
+    private isDarkThemeFunction: (() => boolean) | undefined
+
+    private onChange!: () => void
+
+    private isAttached: boolean = false
+
+    private currentColorTheme: ColorTheme = ColorTheme.light
+
+    private currentPalette: ThemePalette = LIGHT_THEME
+
+    get palette(): ThemePalette {
+        return this.currentPalette
+    }
+
+    get colorTheme(): ColorTheme {
+        return this.currentColorTheme
+    }
+
+    initialize(onChange: () => void, isDarkThemeFunction?: () => boolean) {
+        this.onChange = onChange
+        this.isDarkThemeFunction = isDarkThemeFunction
+        this.media ??= window.matchMedia('(prefers-color-scheme: dark)')
+
+        if (!this.isAttached) {
+            this.media.addEventListener(Events.Change, this.handleChange)
+            this.isAttached = true
+        }
+
+        this.updatePalette(isDarkThemeFunction)
+    }
+
+    detach() {
+        if (!this.isAttached)
+            return
+
+        this.media?.removeEventListener(Events.Change, this.handleChange)
+        this.isAttached = false
+    }
+
+    updatePalette(isDarkThemeFunction: (() => boolean) | undefined) {
+        this.isDarkThemeFunction = isDarkThemeFunction
+
+        const isDarkTheme = isDarkThemeFunction ? isDarkThemeFunction() : this.media?.matches
+        const colorTheme = isDarkTheme ? ColorTheme.dark : ColorTheme.light
+
+        if (colorTheme === this.currentColorTheme)
+            return false
+
+        this.currentColorTheme = colorTheme
+        this.currentPalette = createTheme(colorTheme)
+
+        return true
+    }
+
+    private readonly handleChange = () => {
+        this.updatePalette(this.isDarkThemeFunction)
+        this.onChange()
+    }
+}

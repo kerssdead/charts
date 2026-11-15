@@ -1,9 +1,9 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import GaugeProcess from '@/render/gauge/GaugeProcess'
 import GaugeData from '@/types/data/GaugeData'
 import Sector from '@/types/Sector'
 import { createState } from './ViewStateTestData'
-
-jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -14,7 +14,7 @@ const create = (values: Sector[]) => {
     return new GaugeProcess(
         { values } as GaugeData,
         { x: 5, y: 12.5 },
-        { valuePostfix: undefined },
+        { valuePostfix: undefined, theme: LIGHT_THEME },
         createState({ values })
     )
 }

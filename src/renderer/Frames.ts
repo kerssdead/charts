@@ -7,8 +7,7 @@ import Overlay from '@/renderer/Overlay'
 import Legend from '@/Legend'
 import ChartSettings from '@/types/ChartSettings'
 import Frame from '@/renderer/Frame'
-import HoverProgress from '@/types/HoverProgress'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { guard } from '@/helpers/Errors'
 
 type FrameScene = {
@@ -19,6 +18,9 @@ type FrameScene = {
     getLegend: () => Legend | undefined
     getOverlays: () => Overlay[]
     getSettings: () => ChartSettings
+    getThemePalette: () => ThemePalette
+    syncTheme: () => boolean
+    rebuildForTheme: () => void
     onError: (error: unknown) => void
 }
 
@@ -80,20 +82,36 @@ export default class Frames {
         this.request()
     }
 
+    private syncTheme() {
+        if (this.scene.syncTheme())
+            this.scene.rebuildForTheme()
+    }
+
     private draw(timestamp: DOMHighResTimeStamp) {
         const { queue, layout, panels, input } = this.scene
         const settings = this.scene.getSettings()
 
-        Theme.update(settings.isDarkThemeFunction)
-        HoverProgress.isInstant = settings.staticMode || this.isClean
+        this.syncTheme()
+
+        const theme = this.scene.getThemePalette()
+        const isInstant = settings.staticMode || this.isClean
 
         const { window, screen } = layout
         const position = this.isClean ? null : input.position
         const legend = this.scene.getLegend()
         const movingLegend = legend?.isMoving ? legend : undefined
-        const frame = { queue, window, screen, mouse: position, context: input.context, now: timestamp }
+        const frame = {
+            queue,
+            window,
+            screen,
+            mouse: position,
+            context: input.context,
+            now: timestamp,
+            theme,
+            isInstant
+        }
 
-        let isAnimating = queue.animate(position, timestamp)
+        let isAnimating = queue.animate(position, timestamp, isInstant)
 
         isAnimating = this.updateOverlays(frame) || isAnimating
 
@@ -101,7 +119,7 @@ export default class Frames {
             layout.fit(movingLegend.getCurrentReserved(timestamp))
 
         isAnimating = panels.animate(timestamp, window) || isAnimating
-        isAnimating = queue.render(timestamp, window, screen) || isAnimating
+        isAnimating = queue.render(timestamp, window, screen, theme) || isAnimating
 
         if (isAnimating)
             this.request()

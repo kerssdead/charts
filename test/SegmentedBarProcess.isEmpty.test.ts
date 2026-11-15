@@ -1,16 +1,16 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import SegmentedBarProcess from '@/render/segmentedBar/SegmentedBarProcess'
 import SegmentedBarData from '@/types/data/SegmentedBarData'
 import Sector from '@/types/Sector'
 import SegmentedBarStop from '@/types/SegmentedBarStop'
 import { createState } from './ViewStateTestData'
 
-jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
-
 const create = (values: Sector[], stops: SegmentedBarStop[]) => {
     return new SegmentedBarProcess(
         { values, stops } as SegmentedBarData,
         { x: 5, y: 125 },
-        { valuePostfix: undefined },
+        { valuePostfix: undefined, theme: LIGHT_THEME },
         createState({ values })
     )
 }

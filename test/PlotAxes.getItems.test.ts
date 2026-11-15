@@ -4,6 +4,7 @@ import RenderItemText from '@/types/RenderItemText'
 import RenderItemLine from '@/types/RenderItemLine'
 import PlotAxes from '@/render/plot/PlotAxes'
 import { PlotType } from '@/static/Enums'
+import { LIGHT_THEME } from '@/Theme'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -13,7 +14,9 @@ jest.mock('@/helpers/Text', () => ({
 const getAxes = (data: Partial<PlotData> = {}) => {
     const plot = createPlot([createSeries(PlotType.Line, [10, 40])], data)
 
-    return buildItems(new PlotAxes(plot.data, UNITS, plot.layout, plot.seriesGroups).getItems())
+    const axes = new PlotAxes(plot.data, UNITS, plot.layout, LIGHT_THEME)
+
+    return buildItems(axes.getItems())
 }
 
 describe('Getting plot axes', () => {

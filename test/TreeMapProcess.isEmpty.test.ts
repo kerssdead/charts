@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import TreeMapProcess from '@/render/tree/TreeMapProcess'
 import TreeData, { TreeValue } from '@/types/data/TreeData'
 import Value from '@/types/base/Value'
@@ -7,7 +9,7 @@ const create = (values: TreeValue[]) => {
     return new TreeMapProcess(
         { values } as TreeData,
         { x: 5, y: 5 },
-        { valuePostfix: undefined },
+        { valuePostfix: undefined, theme: LIGHT_THEME },
         createState({ values })
     )
 }

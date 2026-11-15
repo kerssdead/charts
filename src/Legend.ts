@@ -8,7 +8,7 @@ import Paddings, { NO_PADDINGS } from '@/types/Paddings'
 import RenderItem from '@/types/RenderItem'
 import Overlay from '@/renderer/Overlay'
 import Units from '@/helpers/Units'
-import Theme from '@/Theme'
+import { hoverBackground, ThemePalette } from '@/Theme'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import TextResources from '@/static/TextResources'
@@ -23,7 +23,7 @@ import { addLegendEntry, addResetButton } from '@/legend/LegendItems'
 import { getHorizontalPlacement, getVerticalPlacement, LegendEntry } from '@/legend/LegendLayout'
 import { BUTTON_TEXT_PADDING, ITEM_HEIGHT, PADDING_X, PADDING_Y, RESET_KEY, SIDES } from '@/legend/LegendConstants'
 
-class Legend extends Overlay {
+export default class Legend extends Overlay {
     settings: ChartSettings
 
     onChange: (() => void) | undefined
@@ -151,7 +151,7 @@ class Legend extends Overlay {
         this.isDirty = true
     }
 
-    update({ queue, mouse, now }: Frame): boolean {
+    update({ queue, mouse, now, theme, isInstant }: Frame): boolean {
         if (!this.area || !this.hasSize) {
             this.clear(queue)
 
@@ -161,16 +161,16 @@ class Legend extends Overlay {
         this.motion.begin(now)
         this.values.updateToggles(now)
 
-        const isHoverChanged = this.updateHover(mouse, now)
+        const isHoverChanged = this.updateHover(mouse, now, isInstant)
 
         if (!this.isDirty && !this.motion.isStarted) {
             if (isHoverChanged)
-                this.updateBackgrounds()
+                this.updateBackgrounds(theme)
 
             return this.isAnimating
         }
 
-        this.build(queue, this.area, this.motion.getProgress(now))
+        this.build(queue, this.area, this.motion.getProgress(now), theme)
 
         return this.isAnimating
     }
@@ -190,7 +190,7 @@ class Legend extends Overlay {
         this.area = undefined
     }
 
-    private build(queue: Queue, area: DOMRect, progress: number) {
+    private build(queue: Queue, area: DOMRect, progress: number, theme: ThemePalette) {
         this.clear(queue)
 
         const builder = new QueueItemsBuilder()
@@ -198,7 +198,7 @@ class Legend extends Overlay {
         builder.rect()
                .box(this.units, this.motion.getArea(area, progress))
                .fill()
-               .color(Theme.canvasBackground)
+               .color(theme.canvasBackground)
                .layer(Layer.Legend)
                .fixed()
                .onClick(() => {
@@ -207,7 +207,8 @@ class Legend extends Overlay {
 
         const resetBackground = this.button && addResetButton(builder, this.units, this.button, {
             hover: this.hover.value(RESET_KEY),
-            onClick: () => this.reset()
+            onClick: () => this.reset(),
+            theme
         })
         const added = builder.build()
 
@@ -217,7 +218,7 @@ class Legend extends Overlay {
         this.entries.forEach(entry => {
             const current = this.motion.getCurrent(entry, progress)
             const alpha = this.motion.hasFrom(entry) ? 1 : progress
-            const { items, background } = this.createEntry(current, this.hover.value(entry.value.id), alpha)
+            const { items, background } = this.createEntry(current, this.hover.value(entry.value.id), alpha, theme)
 
             this.backgrounds.set(entry.value.id, background)
 
@@ -225,7 +226,7 @@ class Legend extends Overlay {
         })
 
         for (const entry of this.motion.leaving)
-            added.push(...this.createEntry(entry, 0, 1 - progress).items)
+            added.push(...this.createEntry(entry, 0, 1 - progress, theme).items)
 
         if (progress === 1)
             this.motion.finish()
@@ -235,12 +236,13 @@ class Legend extends Overlay {
         this.isDirty = false
     }
 
-    private createEntry(entry: LegendEntry, hover: number, alpha: number) {
+    private createEntry(entry: LegendEntry, hover: number, alpha: number, theme: ThemePalette) {
         const builder = new QueueItemsBuilder()
         const background = addLegendEntry(builder, this.units, entry, {
             hover,
             isDisabled: this.values.isDisabled(entry.value),
-            onClick: () => this.toggle(entry.value)
+            onClick: () => this.toggle(entry.value),
+            theme
         })
         const items = builder.build()
 
@@ -264,7 +266,7 @@ class Legend extends Overlay {
         this.onChange?.()
     }
 
-    private updateHover(mouse: Point | null, now: DOMHighResTimeStamp) {
+    private updateHover(mouse: Point | null, now: DOMHighResTimeStamp, isInstant: boolean) {
         const progress = this.motion.getProgress(now)
 
         const targets = this.entries.map((entry): [string, boolean] => {
@@ -276,13 +278,11 @@ class Legend extends Overlay {
         if (this.button)
             targets.push([RESET_KEY, contains(this.button, mouse)])
 
-        return this.hover.update(targets, now)
+        return this.hover.update(targets, now, isInstant)
     }
 
-    private updateBackgrounds() {
+    private updateBackgrounds(theme: ThemePalette) {
         for (const [key, item] of this.backgrounds)
-            item.color = Theme.hoverBackground(this.hover.value(key))
+            item.color = hoverBackground(theme, this.hover.value(key))
     }
 }
-
-export default Legend

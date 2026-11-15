@@ -2,11 +2,11 @@ import { getSectorsWithSmallGroupedIntoOther } from '@/render/pie/PieSlices'
 import Sector from '@/types/Sector'
 import { isDisabledByFlag } from './ViewStateTestData'
 
-jest.mock('@/Theme', () => ({ other: '#888888' }))
-
 const isSmall = (sector: Sector) => sector.value < 10
 
-const group = (sectors: Sector[]) => getSectorsWithSmallGroupedIntoOther(sectors, isDisabledByFlag, isSmall)
+const group = (sectors: Sector[]) => {
+    return getSectorsWithSmallGroupedIntoOther(sectors, isDisabledByFlag, isSmall, '#888888')
+}
 
 describe('Getting sectors with small grouped into other', () => {
     it('Should replace small sectors with other sector at the end', () => {

@@ -10,6 +10,7 @@ import ItemData from '@/types/ItemData'
 import ValueAxis from '@/types/ValueAxis'
 import { stringWidth } from '@/helpers/Text'
 import ChartViewState from '@/types/ChartViewState'
+import { ThemePalette } from '@/Theme'
 
 const LINE_BREAK = /<br\s*\/?>/gi
 
@@ -34,6 +35,10 @@ export default abstract class ChartProcess<
         this.units = new Units(pixel)
         this.settings = settings
         this.state = state
+    }
+
+    protected get theme(): ThemePalette {
+        return this.settings.theme
     }
 
     abstract getData(): QueueAction[]

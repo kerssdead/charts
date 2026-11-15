@@ -11,7 +11,6 @@ import { contrastTextColor, withAlpha } from '@/helpers/Color'
 import { clamp } from '@/helpers/Geometry'
 import { sum } from '@/helpers/Collections'
 import ChartProcess from '@/render/ChartProcess'
-import Theme from '@/Theme'
 import * as SegmentedBarLayout from '@/render/segmentedBar/SegmentedBarLayout'
 import * as SegmentedBarParts from '@/render/segmentedBar/SegmentedBarParts'
 import { Part, PartsLayout } from '@/render/segmentedBar/SegmentedBarParts'
@@ -102,7 +101,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
              .align(HorizontalAlignment.Left, VerticalAlignment.Top)
              .round(this.barRadius)
              .fill()
-             .color(withAlpha(Theme.text, TRACK_ALPHA))
+             .color(withAlpha(this.theme.text, TRACK_ALPHA))
              .layer(Layer.Base)
              .key('segmented-bar-track')
     }
@@ -159,7 +158,7 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
              .size(width + outline.x * 2, height + outline.y * 2)
              .round(this.units.x(STOP_RADIUS + STOP_OUTLINE))
              .fill()
-             .color(Theme.canvasBackground)
+             .color(this.theme.canvasBackground)
              .layer(STOP_LAYER)
              .key(`${ key }-outline`)
 

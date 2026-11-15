@@ -5,7 +5,7 @@ import ItemData from '@/types/ItemData'
 import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import Units from '@/helpers/Units'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { withAlpha } from '@/helpers/Color'
 import { getTreeBarTotal, TreeBarEntry } from '@/types/data/TreeBarData'
 import { Layer } from '@/static/constants/Index'
@@ -53,6 +53,11 @@ export type TreeBarRowActions = {
     onToggle: (row: TreeBarRow) => void
 }
 
+export type TreeBarRowStyle = {
+    imageCrossOrigin: ImageCrossOrigin | undefined
+    theme: ThemePalette
+}
+
 type RowContext = {
     key: string
     node: TreeBarRow
@@ -66,17 +71,20 @@ export default class TreeBarRowItems {
 
     private readonly imageCrossOrigin: ImageCrossOrigin | undefined
 
+    private readonly theme: ThemePalette
+
     private readonly actions: TreeBarRowActions
 
     constructor(
         units: Units,
         geometry: TreeBarGeometry,
-        imageCrossOrigin: ImageCrossOrigin | undefined,
+        style: TreeBarRowStyle,
         actions: TreeBarRowActions
     ) {
         this.units = units
         this.geometry = geometry
-        this.imageCrossOrigin = imageCrossOrigin
+        this.imageCrossOrigin = style.imageCrossOrigin
+        this.theme = style.theme
         this.actions = actions
     }
 
@@ -99,7 +107,7 @@ export default class TreeBarRowItems {
                  .position(this.x(left + TOGGLE_WIDTH + IMAGE_SIZE / 2), this.y(row.center))
                  .size(this.x(IMAGE_SIZE))
                  .crossOrigin(this.imageCrossOrigin)
-                 .color(withAlpha(Theme.text, IMAGE_PLACEHOLDER_ALPHA))
+                 .color(withAlpha(this.theme.text, IMAGE_PLACEHOLDER_ALPHA))
                  .appearDelay(ROW_APPEAR_DELAY)
                  .key(`${ row.key }-image`)
 
@@ -136,7 +144,7 @@ export default class TreeBarRowItems {
              .box(this.units, gridLine)
              .collapse(false, false)
              .fill()
-             .color(Theme.lineAxis)
+             .color(this.theme.lineAxis)
              .stroke(TRANSPARENT)
              .layer(Layer.Base)
              .appearDelay(ROW_APPEAR_DELAY)
@@ -157,7 +165,7 @@ export default class TreeBarRowItems {
             line.stop(this.x(px), this.y(py))
 
         line.width(TOGGLE_LINE_WIDTH)
-            .color(getMutedTextColor())
+            .color(getMutedTextColor(this.theme))
             .layer(Layer.Data)
             .appearDelay(ROW_APPEAR_DELAY)
             .key(`${ key }-toggle`)
@@ -181,7 +189,7 @@ export default class TreeBarRowItems {
                               .key(`${ key }-label-${ index }`)
 
             if (line.isSubLabel)
-                text.color(getMutedTextColor())
+                text.color(getMutedTextColor(this.theme))
         })
     }
 

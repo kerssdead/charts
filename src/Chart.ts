@@ -7,6 +7,7 @@ import ViewState from '@/charts/ViewState'
 import ChartFailure from '@/ui/ChartFailure'
 import { applyFallbackHostSize, applyHostSize } from '@/helpers/HostSize'
 import CanvasHost from '@/renderer/CanvasHost'
+import RendererTheme from '@/renderer/RendererTheme'
 
 // todo: add public api
 
@@ -16,6 +17,13 @@ export default class Chart {
     private isSuspended: boolean = false
 
     private suspendedTheme: ColorTheme = ColorTheme.light
+
+    private readonly theme = new Theme()
+
+    private readonly rendererTheme: RendererTheme = {
+        getPalette: () => this.theme.palette,
+        sync: () => this.theme.updatePalette(this.settings.isDarkThemeFunction)
+    }
 
     private source!: ChartSettings
 
@@ -80,12 +88,17 @@ export default class Chart {
                 onAttach: () => this.resume()
             })
 
-            Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
+            this.theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
 
-            this.renderer = new Renderer(this.host.canvas, this.viewState, error => this.handleError(error))
+            this.renderer = new Renderer(
+                this.host.canvas,
+                this.viewState,
+                this.rendererTheme,
+                error => this.handleError(error)
+            )
             this.renderer.apply(this.settings)
 
-            Debug.log(settings, this.settings, this.host.canvas)
+            Debug.log(settings, this.settings, this.host.canvas, this.theme.colorTheme)
 
             if (!this.host.isAttached)
                 this.suspend()
@@ -97,7 +110,7 @@ export default class Chart {
     private stop() {
         this.host?.destroy()
 
-        Theme.detach(this.onThemeChange)
+        this.theme.detach()
 
         this.renderer?.destroy()
     }
@@ -126,7 +139,7 @@ export default class Chart {
         this.failure.report(error, {
             element: this.element,
             size: this.host?.size ?? { width: 0, height: 0 },
-            theme: ColorTheme[Theme.currentTheme],
+            theme: ColorTheme[this.theme.colorTheme],
             input: this.source,
             settings: this.settings
         }, this.source.onError)
@@ -158,9 +171,10 @@ export default class Chart {
         this.bindMenuActions()
         applyHostSize(this.element, this.settings)
 
+        this.theme.updatePalette(this.settings.isDarkThemeFunction)
         this.renderer.apply(this.settings)
 
-        Debug.log(settings, this.settings, this.host.canvas)
+        Debug.log(settings, this.settings, this.host.canvas, this.theme.colorTheme)
     }
 
     private bindMenuActions() {
@@ -189,10 +203,10 @@ export default class Chart {
 
         this.isSuspended = true
 
-        Theme.update(this.settings.isDarkThemeFunction)
-        this.suspendedTheme = Theme.currentTheme
+        this.theme.updatePalette(this.settings.isDarkThemeFunction)
+        this.suspendedTheme = this.theme.colorTheme
 
-        Theme.detach(this.onThemeChange)
+        this.theme.detach()
         this.renderer.suspend()
     }
 
@@ -202,10 +216,10 @@ export default class Chart {
 
         this.isSuspended = false
 
-        Theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
+        this.theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
         this.renderer.resume()
 
-        if (Theme.currentTheme !== this.suspendedTheme)
+        if (this.theme.colorTheme !== this.suspendedTheme)
             this.onThemeChange()
     }
 }

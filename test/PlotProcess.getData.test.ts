@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import PlotProcess from '@/render/plot/PlotProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemText from '@/types/RenderItemText'
@@ -14,7 +16,7 @@ jest.mock('@/helpers/Text', () => ({
 
 const PIXEL = { x: 5000 / 800, y: 5000 / 500 }
 
-const SETTINGS: ProcessSettings = { valuePostfix: undefined }
+const SETTINGS: ProcessSettings = { valuePostfix: undefined, theme: LIGHT_THEME }
 
 function getTexts(data: Partial<PlotData>) {
     const plotData = { values: [], ...data } as PlotData

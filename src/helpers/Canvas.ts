@@ -1,6 +1,5 @@
 import fail from '@/helpers/Errors'
 import { ErrorType, Tag } from '@/static/Enums'
-import Theme from '@/Theme'
 import { adjustColor, withAlpha } from '@/helpers/Color'
 import Styles from '@/static/constants/Styles'
 
@@ -134,8 +133,8 @@ export function getContext(
            ?? fail(ErrorType.NullContext)
 }
 
-export function isPixelBusy(pixel: number) {
-    return pixel !== undefined && pixel !== Theme.canvasBackgroundInt
+export function isPixelBusy(pixel: number, canvasBackgroundInt: number) {
+    return pixel !== undefined && pixel !== canvasBackgroundInt
 }
 
 export function createCanvas() {

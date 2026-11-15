@@ -6,9 +6,19 @@ import { FakeElement, installFakeDocument } from './FakeDocument'
 
 const BROKEN_TITLE = 'Broken'
 
+const mockThemeGetters: (() => { isDark: boolean })[] = []
+
 jest.mock('@/renderer/Renderer', () => ({
     __esModule: true,
     default: class {
+        constructor(
+            _canvas: unknown,
+            _viewState: unknown,
+            theme: { getPalette: () => { isDark: boolean } }
+        ) {
+            mockThemeGetters.push(theme.getPalette)
+        }
+
         apply(settings: { title?: string }) {
             if (settings.title === 'Broken')
                 throw new Error('Broken')
@@ -38,6 +48,7 @@ beforeEach(() => {
 
     host = new FakeElement(Tag.Div)
     body.appendChild(host)
+    mockThemeGetters.length = 0
 
     Object.assign(globalThis, {
         window: { devicePixelRatio: 1, matchMedia: () => media },
@@ -109,6 +120,25 @@ describe('Applying settings', () => {
 
         expect(children())
             .toEqual([])
+    })
+
+    it('Should refresh the chart palette when settings are applied', () => {
+        let isDark = false
+        const chart = create({
+            title: 'Working',
+            data: { values: [] },
+            isDarkThemeFunction: () => isDark
+        } as unknown as ChartSettings)
+
+        isDark = true
+        chart.applySettings({
+            title: 'Working',
+            data: { values: [] },
+            isDarkThemeFunction: () => isDark
+        } as unknown as ChartSettings)
+
+        expect(mockThemeGetters.at(-1)?.().isDark)
+            .toBe(true)
     })
 
     it('Should do nothing after the chart is destroyed', () => {

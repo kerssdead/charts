@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import PlotProcess from '@/render/plot/PlotProcess'
 import PlotData from '@/types/data/PlotData'
 import { createSeries } from './PlotTestData'
@@ -13,7 +15,7 @@ const create = (values: PlotData['values']) => {
     return new PlotProcess(
         { values } as PlotData,
         { x: 1, y: 1 },
-        { valuePostfix: undefined },
+        { valuePostfix: undefined, theme: LIGHT_THEME },
         createState({ values })
     )
 }

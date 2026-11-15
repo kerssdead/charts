@@ -1,6 +1,5 @@
 import RenderItem from '@/types/RenderItem'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
-import HoverProgress from '@/types/HoverProgress'
 
 const shape = (overrides: Partial<RenderItemBase> = {}) => {
     const animate = jest.fn((item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp) => {
@@ -104,8 +103,6 @@ describe('Animating item hover', () => {
     })
 
     it('Should keep animating the monochrome factor', () => {
-        jest.replaceProperty(HoverProgress, 'isInstant', false)
-
         const item = createItem(shape({ isMouseOver: jest.fn(() => true) }))
 
         item.isInteractive = true

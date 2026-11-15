@@ -1,5 +1,5 @@
 import Point from '@/types/Point'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { COORDS_MAX_X, Layer } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
@@ -11,9 +11,12 @@ export default class PlotAxisLines {
 
     private readonly seriesGroups: PlotSeriesGroups
 
-    constructor(layout: PlotLayout, seriesGroups: PlotSeriesGroups) {
+    private readonly theme: ThemePalette
+
+    constructor(layout: PlotLayout, seriesGroups: PlotSeriesGroups, theme: ThemePalette) {
         this.layout = layout
         this.seriesGroups = seriesGroups
+        this.theme = theme
     }
 
     addItems(items: QueueItemsBuilder) {
@@ -56,7 +59,7 @@ export default class PlotAxisLines {
         items.line()
              .stop(from.x, from.y)
              .stop(to.x, to.y)
-             .stroke(Theme.line)
+             .stroke(this.theme.line)
              .layer(AXIS_LAYER)
              .key(`axis-${ axis }`)
 
@@ -67,7 +70,7 @@ export default class PlotAxisLines {
                               .stop(from.x, from.y)
                               .stop(to.x, to.y)
                               .dash(GRID_DASH)
-                              .stroke(Theme.lineAxis)
+                              .stroke(this.theme.lineAxis)
                               .layer(Layer.Base)
                               .key(`grid-${ axis }-${ value }`)
 

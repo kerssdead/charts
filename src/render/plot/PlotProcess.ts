@@ -29,12 +29,12 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         this.seriesGroups = new PlotSeriesGroups(data.values, state.isDisabled)
         this.layout = new PlotLayout(data, this.units, this.seriesGroups)
         this.titles = new PlotTitles(data, this.units, this.layout)
-        this.axes = new PlotAxes(data, this.units, this.layout, this.seriesGroups)
+        this.axes = new PlotAxes(data, this.units, this.layout, this.theme)
         this.seriesItems = new PlotSeriesItems(
             data.values,
             this.layout,
-            this.seriesGroups,
-            (series, value) => this.getValueTooltip(series, value)
+            (series, value) => this.getValueTooltip(series, value),
+            this.theme
         )
     }
 

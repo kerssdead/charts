@@ -33,7 +33,7 @@ export default class ContextMenuOverlay extends Overlay {
         this.onAction = onAction
     }
 
-    update({ queue, context, now }: Frame): boolean {
+    update({ queue, context, now, theme, isInstant }: Frame): boolean {
         if (context && context !== this.context) {
             this.clear(queue)
             this.context = context
@@ -41,15 +41,20 @@ export default class ContextMenuOverlay extends Overlay {
             const buttons = this.findButtons(queue, context)
 
             if (buttons.length > 0)
-                this.popup = new MenuPopup(this.canvas, buttons, action => {
-                    this.dismiss()
-                    this.onAction(action)
-                }, () => this.dismiss())
+                this.popup = new MenuPopup(this.canvas, {
+                    options: buttons,
+                    theme,
+                    select: action => {
+                        this.dismiss()
+                        this.onAction(action)
+                    },
+                    dismiss: () => this.dismiss()
+                })
         }
 
         const isVisible = context != null && this.popup != null
 
-        this.fade.step(isVisible, now, ContextMenu.fadeDuration)
+        this.fade.step(isVisible, now, ContextMenu.fadeDuration, isInstant)
 
         if (!isVisible && this.fade.isIdle) {
             this.clear(queue)

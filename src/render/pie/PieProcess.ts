@@ -71,7 +71,8 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
         return PieSlices.getSectorsWithSmallGroupedIntoOther(
             this.data.values,
             this.state.isDisabled,
-            sector => sector.value * radiansPerUnit * this.sizing.radius < minArcLength
+            sector => sector.value * radiansPerUnit * this.sizing.radius < minArcLength,
+            this.theme.other
         )
     }
 

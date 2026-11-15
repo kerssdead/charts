@@ -4,7 +4,6 @@ import Sector from '@/types/Sector'
 import { AnimationTiming, COORDS_MAX_X, Layer } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import ProcessSettings from '@/types/ProcessSettings'
-import Theme from '@/Theme'
 import { withAlpha } from '@/helpers/Color'
 import { clamp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
@@ -150,7 +149,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
             return
 
         this.addRingShape(items, ringIndex, START_ANGLE + SWEEP_ANGLE)
-            .color(withAlpha(Theme.text, TRACK_ALPHA))
+            .color(withAlpha(this.theme.text, TRACK_ALPHA))
             .layer(Layer.Base)
             .key(`gauge-track-${ ringIndex }`)
             .init(AnimationTiming.gaugeInit, 0, true)

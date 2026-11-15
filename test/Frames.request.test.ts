@@ -1,7 +1,5 @@
-import HoverProgress from '@/types/HoverProgress'
+import { LIGHT_THEME } from '@/Theme'
 import { createFrames, installAnimationFrames, pendingFrameCount, POSITION, RESERVED, runFrame, SCREEN, WINDOW } from './FramesTestScene'
-
-jest.mock('@/Theme', () => ({ __esModule: true, default: { update: jest.fn() } }))
 
 beforeEach(installAnimationFrames)
 
@@ -13,11 +11,11 @@ describe('Requesting a frame', () => {
         runFrame(100)
 
         expect(queue.animate)
-            .toHaveBeenCalledWith(POSITION, 100)
+            .toHaveBeenCalledWith(POSITION, 100, false)
         expect(panels.animate)
             .toHaveBeenCalledWith(100, WINDOW)
         expect(queue.render)
-            .toHaveBeenCalledWith(100, WINDOW, SCREEN)
+            .toHaveBeenCalledWith(100, WINDOW, SCREEN, LIGHT_THEME)
     })
 
     it('Should request only one frame at a time', () => {
@@ -70,7 +68,9 @@ describe('Requesting a frame', () => {
                 screen: SCREEN,
                 mouse: POSITION,
                 context: null,
-                now: 100
+                now: 100,
+                theme: LIGHT_THEME,
+                isInstant: false
             })
     })
 
@@ -87,13 +87,13 @@ describe('Requesting a frame', () => {
     })
 
     it('Should follow static mode for hover', () => {
-        const { frames } = createFrames({ staticMode: true })
+        const { frames, queue } = createFrames({ staticMode: true })
 
         frames.request()
         runFrame(100)
 
-        expect(HoverProgress.isInstant)
-            .toBe(true)
+        expect(queue.animate)
+            .toHaveBeenCalledWith(POSITION, 100, true)
     })
 
     it('Should report a failed draw', () => {

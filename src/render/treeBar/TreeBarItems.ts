@@ -1,13 +1,13 @@
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import Units from '@/helpers/Units'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { withAlpha } from '@/helpers/Color'
 import { Layer } from '@/static/constants/Index'
 import { MUTED_ALPHA, TRANSPARENT } from '@/render/treeBar/TreeBarConstants'
 
-export function getMutedTextColor() {
-    return withAlpha(Theme.text, MUTED_ALPHA)
+export function getMutedTextColor(theme: ThemePalette) {
+    return withAlpha(theme.text, MUTED_ALPHA)
 }
 
 export function addClickArea(

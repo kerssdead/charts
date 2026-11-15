@@ -1,7 +1,5 @@
 import { createFrames, installAnimationFrames, pendingFrameCount } from './FramesTestScene'
 
-jest.mock('@/Theme', () => ({ __esModule: true, default: { update: jest.fn() } }))
-
 beforeEach(installAnimationFrames)
 
 describe('Resuming frames', () => {

@@ -8,8 +8,7 @@ import { ChartType, PlotType } from '@/static/Enums'
 import { createSeries } from './PlotTestData'
 import ViewState from '@/charts/ViewState'
 import { Layer } from '@/static/constants/Index'
-
-jest.mock('@/Theme', () => ({ text: '#123456', canvasBackground: '#ffffff' }))
+import { LIGHT_THEME } from '@/Theme'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -29,7 +28,13 @@ function buildPanels(settings: Partial<ChartSettings>) {
     const viewState = new ViewState()
 
     viewState.apply(chartSettings)
-    panels.build(chartSettings, viewState, true, () => {})
+    panels.build({
+        settings: chartSettings,
+        viewState,
+        isInitialized: true,
+        onChange: () => {},
+        theme: LIGHT_THEME
+    })
 
     return panels.list
 }
@@ -75,7 +80,13 @@ describe('Building chart panels', () => {
         const viewState = new ViewState()
 
         viewState.apply(chartSettings)
-        panels.build(chartSettings, viewState, true, () => {})
+        panels.build({
+        settings: chartSettings,
+        viewState,
+        isInitialized: true,
+        onChange: () => {},
+        theme: LIGHT_THEME
+    })
 
         const scrollbar = queue.items.find(item => item.layer === Layer.Scrollbar)
 
@@ -111,7 +122,13 @@ describe('Building chart panels', () => {
         const viewState = new ViewState()
 
         viewState.apply(chartSettings)
-        panels.build(chartSettings, viewState, true, () => {})
+        panels.build({
+        settings: chartSettings,
+        viewState,
+        isInitialized: true,
+        onChange: () => {},
+        theme: LIGHT_THEME
+    })
 
         const empty = queue.items.find(item => item.key === 'empty')
 

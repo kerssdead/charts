@@ -61,9 +61,9 @@ const installEnvironment = (offset: number = 8) => {
                 this.callback = callback
             }
 
-            observe = (target: unknown) => observer!.observe(target)
+            observe = (target: unknown) => observer?.observe(target)
 
-            disconnect = () => observer!.disconnect()
+            disconnect = () => observer?.disconnect()
         }
     })
 

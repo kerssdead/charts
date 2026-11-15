@@ -8,6 +8,7 @@ import TreeBarProcess from '@/render/treeBar/TreeBarProcess'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import Data from '@/types/interfaces/Data'
+import { LIGHT_THEME } from '@/Theme'
 import { createState } from './ViewStateTestData'
 
 jest.mock('@/render/gauge/GaugeProcess')
@@ -31,14 +32,19 @@ describe('Checking process creation', () => {
         [ChartType.SegmentedBar, SegmentedBarProcess],
         [ChartType.TreeBar, TreeBarProcess]
     ])('Should create matching process for chart type %s', (type, Process) => {
-        expect(createProcess({ type, data }, pixel, settings, state))
+        const processSettings = { ...settings, theme: LIGHT_THEME }
+
+        expect(createProcess({ type, data }, pixel, processSettings, state))
             .toBeInstanceOf(Process)
         expect(Process)
-            .toHaveBeenLastCalledWith(data, pixel, settings, state)
+            .toHaveBeenLastCalledWith(data, pixel, processSettings, state)
     })
 
     it('Should return undefined for unknown chart type', () => {
-        expect(createProcess({ type: -1 as ChartType, data }, pixel, settings, state))
+        expect(createProcess({ type: -1 as ChartType, data }, pixel, {
+            ...settings,
+            theme: LIGHT_THEME
+        }, state))
             .toBeUndefined()
     })
 })

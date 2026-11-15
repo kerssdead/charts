@@ -36,7 +36,7 @@ export default class MenuButton extends Overlay {
         this.isDirty = true
     }
 
-    update({ queue, mouse, now }: Frame): boolean {
+    update({ queue, mouse, now, theme, isInstant }: Frame): boolean {
         if (!this.bounds || !this.size || this.size.width <= 0 || this.size.height <= 0) {
             this.clear(queue)
 
@@ -45,7 +45,7 @@ export default class MenuButton extends Overlay {
 
         const bounds = this.bounds
 
-        const isHoverChanged = this.hover.step(contains(bounds, mouse), now, AnimationTiming.button)
+        const isHoverChanged = this.hover.step(contains(bounds, mouse), now, AnimationTiming.button, isInstant)
 
         if (!this.isDirty && !isHoverChanged)
             return this.hover.isAnimating
@@ -58,8 +58,8 @@ export default class MenuButton extends Overlay {
                 radius: 4,
                 hover: this.hover.value,
                 onClick: () => this.onClick?.()
-            })
-            addButtonText(items, units, { rect: bounds, text: Icon.ThreeDots, size: FONT_SIZE })
+            }, theme)
+            addButtonText(items, units, { rect: bounds, text: Icon.ThreeDots, size: FONT_SIZE }, theme)
         }))
 
         this.isDirty = false

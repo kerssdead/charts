@@ -9,7 +9,6 @@ import { getRoundedValues } from '@/helpers/Numbers'
 import { maxOf } from '@/helpers/Collections'
 import { short, stringWidth } from '@/helpers/Text'
 import ChartProcess from '@/render/ChartProcess'
-import Theme from '@/Theme'
 import * as TreeBarLayout from '@/render/treeBar/TreeBarLayout'
 import * as TreeBarRowText from '@/render/treeBar/TreeBarRowText'
 import * as TreeBarSorting from '@/render/treeBar/TreeBarSorting'
@@ -60,7 +59,10 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
             barLabelWidth,
             maxTickValue: this.ticks[this.ticks.length - 1] || 1
         }
-        this.rowItems = new TreeBarRowItems(this.units, this.geometry, settings.imageCrossOrigin, {
+        this.rowItems = new TreeBarRowItems(this.units, this.geometry, {
+            imageCrossOrigin: settings.imageCrossOrigin,
+            theme: this.theme
+        }, {
             getPartTooltip: (part, label) => this.valueTooltip(part, label, this.formatValue(part.value)),
             getPartData: part => TreeBarProcess.getItemData(part),
             isExpanded: row => state.isExpanded(row),
@@ -158,13 +160,13 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
             items.text(short(tick, false))
                  .position(x, this.y(HEADER_HEIGHT / 2))
                  .size(HEADER_FONT_SIZE)
-                 .color(getMutedTextColor())
+                 .color(getMutedTextColor(this.theme))
                  .key(`tree-bar-tick-${ tick }`)
 
             items.line()
                  .stop(x, this.y(HEADER_HEIGHT))
                  .stop(x, bodyBottom)
-                 .color(Theme.lineAxis)
+                 .color(this.theme.lineAxis)
                  .layer(Layer.Base)
                  .key(`tree-bar-tick-line-${ tick }`)
         }
@@ -194,7 +196,7 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
         items.line()
              .stop(this.x(PADDING), this.y(HEADER_HEIGHT))
              .stop(this.x(width - PADDING), this.y(HEADER_HEIGHT))
-             .color(Theme.lineAxis)
+             .color(this.theme.lineAxis)
              .layer(Layer.Base)
              .key('tree-bar-header-line')
     }

@@ -5,8 +5,7 @@ import { addLegendEntry } from '@/legend/LegendItems'
 import RenderItemArc from '@/types/RenderItemArc'
 import RenderItemLine from '@/types/RenderItemLine'
 import Sector from '@/types/Sector'
-
-jest.mock('@/Theme', () => ({ text: '#000000', hoverBackground: () => '#ffffff' }))
+import { LIGHT_THEME } from '@/Theme'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -21,7 +20,8 @@ const build = (value: Sector, isDisabled: boolean) => {
     addLegendEntry(items, Units.fromSize(100, 100), { value, label: 'A', x: 0, y: 0, width: 50 }, {
         hover: 0,
         isDisabled,
-        onClick: () => {}
+        onClick: () => {},
+        theme: LIGHT_THEME
     })
 
     const built = items.build()

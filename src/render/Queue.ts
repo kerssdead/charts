@@ -1,7 +1,7 @@
 import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 
 const OUTSIDE: Point = { x: -Infinity, y: -Infinity }
 
@@ -28,11 +28,16 @@ export default class Queue {
         return this.queue
     }
 
-    render(now: DOMHighResTimeStamp, window: CanvasWindow, screen: CanvasWindow = window): boolean {
+    render(
+        now: DOMHighResTimeStamp,
+        window: CanvasWindow,
+        screen: CanvasWindow,
+        theme: ThemePalette
+    ): boolean {
         this.ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0)
 
         this.ctx.globalAlpha = 1
-        this.ctx.fillStyle = Theme.canvasBackground
+        this.ctx.fillStyle = theme.canvasBackground
         this.ctx.fillRect(0, 0, screen.width, screen.height)
 
         let isAnimating = false
@@ -40,13 +45,15 @@ export default class Queue {
         let hasTemp = false
 
         const steps = this.getSorted()
+        const frame = { window, screen, now, theme }
 
         for (let i = 0; i < steps.length; i++) {
             const step = steps[i]
 
             this.ctx.globalAlpha = step.animation.alpha
+            frame.window = step.isFixed ? screen : window
 
-            step.render(this.ctx, step.isFixed ? screen : window, screen, now)
+            step.render(this.ctx, frame)
 
             if (step.isTemp)
                 hasTemp = true
@@ -62,7 +69,7 @@ export default class Queue {
         return isAnimating
     }
 
-    animate(pointer: Point | null, now: DOMHighResTimeStamp): boolean {
+    animate(pointer: Point | null, now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
         const point = pointer ?? OUTSIDE
 
         const hoveredGroups = this.hoveredGroups
@@ -77,7 +84,7 @@ export default class Queue {
         let isAnimating = false
 
         for (let i = 0; i < this.queue.length; i++) {
-            if (this.queue[i].animate(point, now, hoveredGroups))
+            if (this.queue[i].animate(point, now, hoveredGroups, isInstant))
                 isAnimating = true
         }
 

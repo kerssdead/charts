@@ -3,8 +3,6 @@ import ChartItem from '@/types/ChartItem'
 import PlotData from '@/types/data/PlotData'
 import { ChartType } from '@/static/Enums'
 
-jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff' }))
-
 const getCsv = async (charts: ChartItem[]) => {
     const saveAs = jest.spyOn(Export, 'saveAs').mockResolvedValue()
 

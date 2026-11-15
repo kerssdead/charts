@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import SegmentedBarProcess from '@/render/segmentedBar/SegmentedBarProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
@@ -7,8 +9,9 @@ import SegmentedBarStop from '@/types/SegmentedBarStop'
 import { COORDS_MAX_X } from '@/static/constants/Index'
 import ProcessSettings from '@/types/ProcessSettings'
 import { createState } from './ViewStateTestData'
-
-jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
+import { DARK_THEME } from './TestTheme'
+import { TRACK_ALPHA } from '@/render/segmentedBar/SegmentedBarConstants'
+import { withAlpha } from '@/helpers/Color'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -17,15 +20,15 @@ jest.mock('@/helpers/Text', () => ({
 
 const PIXEL = { x: 5000 / 1000, y: 5000 / 40 }
 
-const SETTINGS: ProcessSettings = { valuePostfix: undefined }
+const SETTINGS: ProcessSettings = { valuePostfix: undefined, theme: LIGHT_THEME }
 
 const BAR = { x: 7 * PIXEL.x, width: COORDS_MAX_X - 14 * PIXEL.x }
 
-function getItems(data: Partial<SegmentedBarData>) {
+function getItems(data: Partial<SegmentedBarData>, settings = SETTINGS) {
     const process = new SegmentedBarProcess(
         { values: [], stops: [], ...data } as SegmentedBarData,
         PIXEL,
-        SETTINGS,
+        settings,
         createState()
     )
 
@@ -156,6 +159,13 @@ describe('Getting segmented bar data', () => {
             .toBe(true)
         expect(items.has('segmented-bar-right-label'))
             .toBe(true)
+    })
+
+    it('Should use the theme colour for the track', () => {
+        const items = getItems({ percentageMode: true }, { ...SETTINGS, theme: DARK_THEME })
+
+        expect(items.get('segmented-bar-track')?.color)
+            .toBe(withAlpha(DARK_THEME.text, TRACK_ALPHA))
     })
 
     it('Should show percent values in tooltips in percentage mode', () => {

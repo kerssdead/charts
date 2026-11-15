@@ -7,8 +7,8 @@ import CanvasWindow from '@/types/CanvasWindow'
 import Frame from '@/renderer/Frame'
 import ChartSettings from '@/types/ChartSettings'
 import ItemData from '@/types/ItemData'
-
-jest.mock('@/Theme', () => ({}))
+import { LIGHT_THEME, ThemePalette } from '@/Theme'
+import { DARK_THEME } from './TestTheme'
 
 const WINDOW = new CanvasWindow(100, 100)
 
@@ -34,8 +34,22 @@ const item = (tooltipText: string | undefined) => {
     return result
 }
 
-const frame = (queue: Queue, mouse: { x: number, y: number } | null, context: unknown = null) => {
-    return { queue, window: WINDOW, screen: WINDOW, mouse, context, now: 0 } as unknown as Frame
+const frame = (
+    queue: Queue,
+    mouse: { x: number, y: number } | null,
+    context: unknown = null,
+    theme: ThemePalette = LIGHT_THEME
+) => {
+    return {
+        queue,
+        window: WINDOW,
+        screen: WINDOW,
+        mouse,
+        context,
+        now: 0,
+        theme,
+        isInstant: false
+    } as unknown as Frame
 }
 
 describe('Applying tooltip settings', () => {
@@ -101,6 +115,24 @@ describe('Updating tooltip overlay', () => {
             .toHaveBeenCalledWith(expect.stringContaining('&lt;b&gt;Tip&lt;/b&gt;'), { x: 75, y: 75 })
         expect(target.custom.setOpacity)
             .toHaveBeenCalled()
+    })
+
+    it('Should use the theme colours for the tooltip', () => {
+        const queue = new Queue({} as CanvasRenderingContext2D)
+
+        queue.add([item('<b>Tip</b>')])
+
+        const target = overlay()
+
+        target.isEnabled = true
+        target.update(frame(queue, { x: 75, y: 75 }, null, DARK_THEME))
+
+        const html = (target.custom.show as jest.Mock).mock.calls[0][0] as string
+
+        expect(html)
+            .toContain(DARK_THEME.background)
+        expect(html)
+            .toContain(DARK_THEME.text)
     })
 
     it('Should reuse the scan for the same point and queue', () => {

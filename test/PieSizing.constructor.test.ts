@@ -3,8 +3,6 @@ import Units from '@/helpers/Units'
 import { COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import { HOVER_OFFSET } from '@/types/RenderItemArc'
 
-jest.mock('@/Theme', () => ({}))
-
 const create = (width: number, height: number, innerRadiusPercent: number = 0) => {
     return new PieSizing(new Units({ x: COORDS_MAX_X / width, y: COORDS_MAX_Y / height }), innerRadiusPercent)
 }

@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import PlotProcess from '@/render/plot/PlotProcess'
 import PlotData from '@/types/data/PlotData'
 import { createSeries } from './PlotTestData'
@@ -14,7 +16,7 @@ describe('Getting plot value at y coordinate', () => {
         const process = new PlotProcess(
             { values: [createSeries(PlotType.Line, [0, 100])] } as PlotData,
             { x: 1, y: 1 },
-            { valuePostfix: undefined },
+            { valuePostfix: undefined, theme: LIGHT_THEME },
             createState()
         )
 
@@ -26,7 +28,7 @@ describe('Getting plot value at y coordinate', () => {
         const process = new PlotProcess(
             { values: [] } as unknown as PlotData,
             { x: 1, y: 1 },
-            { valuePostfix: undefined },
+            { valuePostfix: undefined, theme: LIGHT_THEME },
             createState()
         )
 
@@ -38,7 +40,7 @@ describe('Getting plot value at y coordinate', () => {
         const process = new PlotProcess(
             { values: [createSeries(PlotType.Line, [3, 700])], yScale: PlotScaleType.Log } as PlotData,
             { x: 1, y: 1 },
-            { valuePostfix: undefined },
+            { valuePostfix: undefined, theme: LIGHT_THEME },
             createState()
         )
 

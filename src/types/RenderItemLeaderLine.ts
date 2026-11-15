@@ -4,7 +4,7 @@ import RenderItem from '@/types/RenderItem'
 import LeaderOrigin from '@/types/interfaces/LeaderOrigin'
 import LeaderTarget from '@/types/interfaces/LeaderTarget'
 import { COORDS_MAX_X } from '@/static/constants/Index'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { clamp, lerp } from '@/helpers/Geometry'
 
 type LeaderAngles = {
@@ -45,6 +45,10 @@ export default class RenderItemLeaderLine extends RenderItemBase {
 
         this.origin = origin
         this.originItem = originItem
+    }
+
+    defaultColor(theme: ThemePalette): string {
+        return theme.line
     }
 
     current(morph: number = 1): LeaderAngles {
@@ -97,7 +101,6 @@ export default class RenderItemLeaderLine extends RenderItemBase {
         const handle = 4 / 3 * Math.tan(turn / 4) * end
 
         ctx.globalAlpha *= this.originItem.animation.visibility * visibility
-        ctx.strokeStyle = Theme.line
 
         const endX = x + end * Math.cos(targetAngle)
         const endY = y + end * Math.sin(targetAngle)

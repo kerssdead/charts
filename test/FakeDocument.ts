@@ -31,6 +31,11 @@ export class FakeElement {
 
     oncancel: (() => void) | null = null
 
+    disabled = false
+
+    focus() {
+    }
+
     showModal: (() => void) | undefined
 
     close: (() => void) | undefined
@@ -114,6 +119,10 @@ export class FakeElement {
     click() {
         this.dispatch(Events.Click)
         this.onclick?.()
+    }
+
+    contains(node: FakeElement | undefined) {
+        return node === this || (node instanceof FakeElement && this.elements.includes(node))
     }
 
     findByClass(name: string): FakeElement[] {

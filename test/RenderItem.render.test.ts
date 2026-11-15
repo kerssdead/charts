@@ -3,6 +3,7 @@ import RenderItemRectangle from '@/types/RenderItemRectangle'
 import CanvasWindow from '@/types/CanvasWindow'
 import Panel from '@/types/Panel'
 import { HorizontalAlignment, LineJoin, VerticalAlignment } from '@/static/Enums'
+import { LIGHT_THEME } from '@/Theme'
 
 const context = () => ({
     globalAlpha: 1,
@@ -33,10 +34,14 @@ const item = (x: number) => {
 
 const WINDOW = new CanvasWindow(1000, 100)
 
+const frame = (screen: CanvasWindow, now = 0) => {
+    return { window: WINDOW, screen, now, theme: LIGHT_THEME }
+}
+
 const render = (target: RenderItem, screen: CanvasWindow) => {
     const ctx = context()
 
-    target.render(ctx as unknown as CanvasRenderingContext2D, WINDOW, screen, 0)
+    target.render(ctx as unknown as CanvasRenderingContext2D, frame(screen))
 
     return ctx
 }
@@ -72,7 +77,7 @@ describe('Rendering item', () => {
 
         ctx.lineJoin = LineJoin.Round
 
-        item(0).render(ctx as unknown as CanvasRenderingContext2D, WINDOW, new CanvasWindow(100, 100), 0)
+        item(0).render(ctx as unknown as CanvasRenderingContext2D, frame(new CanvasWindow(100, 100)))
 
         expect(ctx.lineJoin)
             .toBe(LineJoin.Miter)
@@ -94,8 +99,8 @@ describe('Rendering item', () => {
         const ctx = context()
 
         target.animation.startInit(100, true)
-        target.render(ctx as unknown as CanvasRenderingContext2D, WINDOW, new CanvasWindow(100, 100), 0)
-        target.render(ctx as unknown as CanvasRenderingContext2D, WINDOW, new CanvasWindow(100, 100), 1000)
+        target.render(ctx as unknown as CanvasRenderingContext2D, frame(new CanvasWindow(100, 100)))
+        target.render(ctx as unknown as CanvasRenderingContext2D, frame(new CanvasWindow(100, 100), 1000))
 
         expect(target.isTemp)
             .toBe(true)
@@ -140,7 +145,7 @@ describe('Rendering item', () => {
 
         const ctx = context()
 
-        target.render(ctx as unknown as CanvasRenderingContext2D, WINDOW, new CanvasWindow(100, 100), 0)
+        target.render(ctx as unknown as CanvasRenderingContext2D, frame(new CanvasWindow(100, 100)))
 
         expect(ctx.save)
             .toHaveBeenCalled()

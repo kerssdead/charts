@@ -1,6 +1,7 @@
 import Frames from '@/renderer/Frames'
 import ChartSettings from '@/types/ChartSettings'
 import Point from '@/types/Point'
+import { LIGHT_THEME } from '@/Theme'
 
 export const WINDOW = { name: 'window' }
 
@@ -47,6 +48,8 @@ export function createFrames(settings: Partial<ChartSettings> = {}) {
     const input = { position: POSITION as Point | null, context: null }
     const overlay = { update: jest.fn(() => false) }
     const legend = { isMoving: false, getCurrentReserved: jest.fn(() => RESERVED) }
+    const syncTheme = jest.fn(() => false)
+    const rebuildForTheme = jest.fn()
     const onError = jest.fn()
 
     const frames = new Frames({
@@ -57,8 +60,11 @@ export function createFrames(settings: Partial<ChartSettings> = {}) {
         getLegend: () => legend,
         getOverlays: () => [overlay],
         getSettings: () => settings as ChartSettings,
+        getThemePalette: () => LIGHT_THEME,
+        syncTheme,
+        rebuildForTheme,
         onError
     } as unknown as ConstructorParameters<typeof Frames>[0])
 
-    return { frames, queue, layout, panels, input, overlay, legend, onError }
+    return { frames, queue, layout, panels, input, overlay, legend, syncTheme, rebuildForTheme, onError }
 }

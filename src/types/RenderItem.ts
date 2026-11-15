@@ -11,6 +11,8 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import { grayScale } from '@/helpers/Color'
 import { LineJoin } from '@/static/Enums'
 import { Tooltip, resolveTooltip } from '@/types/Tooltip'
+import { LIGHT_THEME, ThemePalette } from '@/Theme'
+import RenderFrame from '@/types/RenderFrame'
 
 const SOLID_LINE: number[] = []
 
@@ -37,6 +39,8 @@ export default class RenderItem {
 
     isMonochrome: boolean = false
 
+    isInstant: boolean = false
+
     hoverGroup: string | null = null
 
     panel: Panel | null = null
@@ -45,13 +49,15 @@ export default class RenderItem {
         return this.animation.isInitializing
     }
 
+    color?: string
+
+    private palette: ThemePalette = LIGHT_THEME
+
     get fill(): string | undefined {
-        const color = this.color ?? this.shape.defaultColor
+        const color = this.color ?? this.shape.defaultColor(this.palette)
 
         return color && grayScale(color, this.animation.mono)
     }
-
-    color?: string
 
     animation: AnimationData = new AnimationData()
 
@@ -75,7 +81,7 @@ export default class RenderItem {
         this.shape = shape
     }
 
-    render(ctx: CanvasRenderingContext2D, window: CanvasWindow, screen: CanvasWindow, now: DOMHighResTimeStamp) {
+    render(ctx: CanvasRenderingContext2D, { window, screen, now, theme }: RenderFrame) {
         if (!this.animateFrame(now))
             return
 
@@ -90,7 +96,7 @@ export default class RenderItem {
         if (isClipped)
             RenderItem.clipTo(ctx, clip)
 
-        this.draw(ctx)
+        this.draw(ctx, theme)
 
         if (isClipped)
             ctx.restore()
@@ -117,7 +123,7 @@ export default class RenderItem {
         return this.shape.getBounds()
     }
 
-    private draw(ctx: CanvasRenderingContext2D) {
+    private draw(ctx: CanvasRenderingContext2D, theme: ThemePalette) {
         ctx.beginPath()
 
         ctx.globalAlpha *= this.animation.visibility
@@ -125,6 +131,8 @@ export default class RenderItem {
         ctx.lineWidth = DEFAULT_LINE_WIDTH
         ctx.lineJoin = LineJoin.Miter
         ctx.setLineDash(SOLID_LINE)
+
+        this.palette = theme
 
         const fill = this.fill
         const stroke = this.stroke ?? fill
@@ -153,15 +161,17 @@ export default class RenderItem {
         return SCREEN_AREA
     }
 
-    animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>): boolean {
+    animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>, isInstant = false): boolean {
         if (!this.isInteractive || this.isInitializing)
             return false
+
+        this.isInstant = isInstant
 
         const isOver = this.isOverAt(point, hoveredGroups)
 
         const isHoverTarget = this.hoverGroup == null ? isOver : this.in(point)
 
-        const isShapeAnimating = this.shape.animateHover(isHoverTarget ? point : null, now)
+        const isShapeAnimating = this.shape.animateHover(isHoverTarget ? point : null, now, isInstant)
 
         if (!isOver && this.hover.isIdle)
             return isShapeAnimating
@@ -268,7 +278,7 @@ export default class RenderItem {
     }
 
     hoverFactor(isBackward: boolean, now: DOMHighResTimeStamp, duration: number) {
-        this.hover.step(!isBackward, now, duration)
+        this.hover.step(!isBackward, now, duration, this.isInstant)
 
         return this.hover.value
     }

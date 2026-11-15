@@ -2,8 +2,8 @@ import Queue from '@/render/Queue'
 import RenderItem from '@/types/RenderItem'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import CanvasWindow from '@/types/CanvasWindow'
-
-jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff' }))
+import { LIGHT_THEME } from '@/Theme'
+import { DARK_THEME } from './TestTheme'
 
 const WINDOW = new CanvasWindow(100, 100)
 
@@ -28,7 +28,7 @@ describe('Rendering queue', () => {
 
         queue.add([item('top', 2, rendered), item('bottom', 0, rendered), item('middle', 1, rendered)])
 
-        queue.render(0, WINDOW)
+        queue.render(0, WINDOW, WINDOW, LIGHT_THEME)
 
         expect(rendered)
             .toEqual(['bottom', 'middle', 'top'])
@@ -42,10 +42,24 @@ describe('Rendering queue', () => {
         temp.isTemp = true
 
         queue.add([temp, item('kept', 0, rendered)])
-        queue.render(0, WINDOW)
+        queue.render(0, WINDOW, WINDOW, LIGHT_THEME)
 
         expect(queue.items.map(i => i.key))
             .toEqual(['kept'])
+    })
+
+    it('Should clear the canvas with the theme background', () => {
+        const ctx = {
+            setTransform: jest.fn(),
+            fillRect: jest.fn(),
+            fillStyle: ''
+        } as unknown as CanvasRenderingContext2D
+        const queue = new Queue(ctx)
+
+        queue.render(0, WINDOW, WINDOW, DARK_THEME)
+
+        expect(ctx.fillStyle)
+            .toBe(DARK_THEME.canvasBackground)
     })
 
     it('Should report animation of initializing items', () => {
@@ -56,7 +70,7 @@ describe('Rendering queue', () => {
 
         queue.add([animated])
 
-        expect(queue.render(0, WINDOW))
+        expect(queue.render(0, WINDOW, WINDOW, LIGHT_THEME))
             .toBe(true)
     })
 })

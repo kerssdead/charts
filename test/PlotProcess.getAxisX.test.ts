@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import PlotProcess from '@/render/plot/PlotProcess'
 import PlotData from '@/types/data/PlotData'
 import { createSeries } from './PlotTestData'
@@ -14,7 +16,7 @@ describe('Getting plot x coordinate', () => {
         const process = new PlotProcess(
             { values: [createSeries(PlotType.Bar, [0, 100])] } as PlotData,
             { x: 1, y: 1 },
-            { valuePostfix: undefined },
+            { valuePostfix: undefined, theme: LIGHT_THEME },
             createState()
         )
 

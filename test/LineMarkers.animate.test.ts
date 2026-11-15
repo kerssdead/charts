@@ -1,5 +1,4 @@
 import LineMarkers from '@/helpers/LineMarkers'
-import HoverProgress from '@/types/HoverProgress'
 
 describe('Animating line markers', () => {
     it('Should grow the hovered marker', () => {

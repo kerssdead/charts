@@ -1,5 +1,6 @@
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import RenderItem from '@/types/RenderItem'
+import { LIGHT_THEME } from '@/Theme'
 
 class DummyShape extends RenderItemBase {
     adjust(): void {
@@ -13,7 +14,7 @@ describe('Default render item shape behavior', () => {
     const shape = new DummyShape()
 
     it('Should not animate hover', () => {
-        expect(shape.animateHover({ x: 1, y: 1 }, 0))
+        expect(shape.animateHover({ x: 1, y: 1 }, 0, false))
             .toBe(false)
     })
 
@@ -28,7 +29,7 @@ describe('Default render item shape behavior', () => {
     })
 
     it('Should have no default color', () => {
-        expect(shape.defaultColor)
+        expect(shape.defaultColor(LIGHT_THEME))
             .toBeUndefined()
     })
 

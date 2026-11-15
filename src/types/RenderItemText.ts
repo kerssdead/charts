@@ -6,7 +6,7 @@ import RenderItemArc from '@/types/RenderItemArc'
 import { boxEdgeDistance, clamp, lerp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
 import { COORDS_MAX_X, FONT_FAMILY } from '@/static/constants/Index'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import LeaderTarget, { LeaderBox } from '@/types/interfaces/LeaderTarget'
 
 export type Orbit = {
@@ -73,8 +73,8 @@ export default class RenderItemText extends RenderItemBase implements LeaderTarg
         this.value = value
     }
 
-    get defaultColor(): string {
-        return Theme.text
+    defaultColor(theme: ThemePalette): string {
+        return theme.text
     }
 
     private get baselineShift(): number {

@@ -39,7 +39,7 @@ describe('Animating queue items', () => {
         expect(queue.animate({ x: 1, y: 2 }, 100))
             .toBe(true)
         expect(a.animate)
-            .toHaveBeenCalledWith({ x: 1, y: 2 }, 100, expect.any(Set))
+            .toHaveBeenCalledWith({ x: 1, y: 2 }, 100, expect.any(Set), false)
         expect(b.animate)
             .toHaveBeenCalled()
     })
@@ -55,7 +55,11 @@ describe('Animating queue items', () => {
 
     it('Should hover nothing when no pointer is given', () => {
         const queue = new Queue({} as CanvasRenderingContext2D)
-        const item = { layer: 0, canHoverGroupAt: jest.fn(() => true), animate: jest.fn(() => false) } as unknown as RenderItem
+        const item = {
+            layer: 0,
+            canHoverGroupAt: jest.fn(() => true),
+            animate: jest.fn(() => false)
+        } as unknown as RenderItem
 
         queue.add([item])
 

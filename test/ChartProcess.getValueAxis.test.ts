@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import ChartProcess from '@/render/ChartProcess'
 import Data from '@/types/interfaces/Data'
 import { createState } from './ViewStateTestData'
@@ -13,7 +15,7 @@ describe('Getting chart value axis', () => {
         const process = new TestProcess(
             { values: [] } as unknown as Data,
             { x: 1, y: 1 },
-            { valuePostfix: undefined },
+            { valuePostfix: undefined, theme: LIGHT_THEME },
             createState()
         )
 

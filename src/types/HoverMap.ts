@@ -6,7 +6,7 @@ export default class HoverMap<K> {
 
     private items = new Map<K, HoverProgress>()
 
-    update(targets: [K, boolean][], now: DOMHighResTimeStamp): boolean {
+    update(targets: [K, boolean][], now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
         const items = new Map<K, HoverProgress>()
 
         let isChanged = false
@@ -16,7 +16,7 @@ export default class HoverMap<K> {
         for (const [key, isOver] of targets) {
             const hover = this.items.get(key) ?? new HoverProgress()
 
-            isChanged = hover.step(isOver, now, AnimationTiming.button) || isChanged
+            isChanged = hover.step(isOver, now, AnimationTiming.button, isInstant) || isChanged
 
             this.isAnimating ||= hover.isAnimating
 

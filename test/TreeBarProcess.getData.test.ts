@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import TreeBarProcess from '@/render/treeBar/TreeBarProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItem from '@/types/RenderItem'
@@ -12,8 +14,9 @@ import { ImageCrossOrigin } from '@/static/Enums'
 import Panel from '@/types/Panel'
 import CanvasWindow from '@/types/CanvasWindow'
 import { createState } from './ViewStateTestData'
-
-jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000', lineAxis: '#e0e0e0' }))
+import { DARK_THEME } from './TestTheme'
+import { MUTED_ALPHA } from '@/render/treeBar/TreeBarConstants'
+import { withAlpha } from '@/helpers/Color'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -22,7 +25,7 @@ jest.mock('@/helpers/Text', () => ({
 
 const PIXEL = { x: 5000 / 1000, y: 5000 / 400 }
 
-const SETTINGS: ProcessSettings = { valuePostfix: undefined }
+const SETTINGS: ProcessSettings = { valuePostfix: undefined, theme: LIGHT_THEME }
 
 const BAR = { x: 104 * PIXEL.x, width: 880 * PIXEL.x }
 
@@ -32,8 +35,12 @@ const row = (id: string, values: number[], extra: Partial<TreeBarRow> = {}) => {
     return new TreeBarRow({ id, label: id, parts: values.map(part), ...extra })
 }
 
-function create(data: Partial<TreeBarData>, state = createState(data)) {
-    return new TreeBarProcess({ values: [], ...data } as TreeBarData, PIXEL, SETTINGS, state)
+function create(
+    data: Partial<TreeBarData>,
+    state = createState(data),
+    settings = SETTINGS
+) {
+    return new TreeBarProcess({ values: [], ...data } as TreeBarData, PIXEL, settings, state)
 }
 
 function getItems(process: TreeBarProcess) {
@@ -164,6 +171,22 @@ describe('Getting tree bar data', () => {
             (items.get('tree-bar-row-a-cell-code')?.shape as RenderItemText).value,
             (items.get('tree-bar-row-a-bar-label')?.shape as RenderItemText).value
         ]).toEqual([(1234.5).toLocaleString(undefined, { maximumFractionDigits: 2 }), 'XY', '1.2K'])
+    })
+
+    it('Should use the theme colours for header lines and muted text', () => {
+        const items = getItems(create(
+            { values: [row('A', [1])] },
+            undefined,
+            { ...SETTINGS, theme: DARK_THEME }
+        ))
+        const tickKey = [...items.keys()].find(key => {
+            return key.startsWith('tree-bar-tick-') && !key.includes('-line-')
+        })
+
+        expect(items.get('tree-bar-header-line')?.color)
+            .toBe(DARK_THEME.lineAxis)
+        expect(tickKey && items.get(tickKey)?.color)
+            .toBe(withAlpha(DARK_THEME.text, MUTED_ALPHA))
     })
 
     it('Should keep header in fixed data and rows in scrolling data', () => {

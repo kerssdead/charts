@@ -4,6 +4,7 @@ import RenderItemRectangle from '@/types/RenderItemRectangle'
 import RenderItemLine from '@/types/RenderItemLine'
 import PlotSeriesItems from '@/render/plot/PlotSeriesItems'
 import { PlotType } from '@/static/Enums'
+import { LIGHT_THEME } from '@/Theme'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -13,7 +14,12 @@ jest.mock('@/helpers/Text', () => ({
 const create = (all: PlotSeries[]) => {
     const plot = createPlot(all)
 
-    return new PlotSeriesItems(all, plot.layout, plot.seriesGroups, plot.style.getValueTooltip)
+    return new PlotSeriesItems(
+        all,
+        plot.layout,
+        plot.style.getValueTooltip,
+        LIGHT_THEME
+    )
 }
 
 const getKeys = (all: PlotSeries[]) => buildItems(create(all).getItems()).map(item => item.key)

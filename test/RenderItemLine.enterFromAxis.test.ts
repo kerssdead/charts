@@ -1,7 +1,6 @@
 import RenderItemLine from '@/types/RenderItemLine'
 import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
-import HoverProgress from '@/types/HoverProgress'
 
 const WINDOW = new CanvasWindow(500, 500)
 
@@ -50,11 +49,10 @@ describe('Animating line hover', () => {
     })
 
     it('Should dim lines whose group is hovered', () => {
-        jest.replaceProperty(HoverProgress, 'isInstant', true)
-
         const target = line()
         const item = new RenderItem(target)
 
+        item.isInstant = true
         item.hoverGroup = 'group'
         target.animate(item, false, 0)
 

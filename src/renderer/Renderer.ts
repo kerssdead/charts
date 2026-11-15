@@ -11,7 +11,7 @@ import ContextMenuOverlay from '@/renderer/ContextMenuOverlay'
 import Layout from '@/renderer/Layout'
 import ChartMenu from '@/renderer/ChartMenu'
 import { AnimationTiming } from '@/static/constants/Index'
-import Theme from '@/Theme'
+import RendererTheme from '@/renderer/RendererTheme'
 import { onImageLoad } from '@/helpers/Images'
 import { guard } from '@/helpers/Errors'
 import InputRouter from '@/renderer/InputRouter'
@@ -51,8 +51,16 @@ export default class Renderer {
 
     private readonly viewState: ViewState
 
-    constructor(canvas: HTMLCanvasElement, viewState: ViewState, onError: (error: unknown) => void) {
+    private readonly theme: RendererTheme
+
+    constructor(
+        canvas: HTMLCanvasElement,
+        viewState: ViewState,
+        theme: RendererTheme,
+        onError: (error: unknown) => void
+    ) {
         this.viewState = viewState
+        this.theme = theme
         this.queue = new Queue(getContext(canvas))
         this.panels = new ChartPanels(this.queue, this.layout)
         this.tooltip = new TooltipOverlay(canvas)
@@ -60,10 +68,7 @@ export default class Renderer {
             this.frames.drawClean()
         })
         this.contextMenu = new ContextMenuOverlay(canvas, () => this.input.closeContext(), action => {
-            guard(() => {
-                Theme.update(this.settings.isDarkThemeFunction)
-                action()
-            }, onError)
+            guard(() => action(), onError)
         })
         this.contextMenu.fixedButtons = () => this.menu.getButtons()
         this.detachImages = onImageLoad(() => this.render())
@@ -85,6 +90,9 @@ export default class Renderer {
             getLegend: () => this.legend,
             getOverlays: () => this.overlays,
             getSettings: () => this.settings,
+            getThemePalette: () => this.theme.getPalette(),
+            syncTheme: () => this.theme.sync(),
+            rebuildForTheme: () => this.rebuildAnimated(),
             onError
         })
     }
@@ -94,7 +102,7 @@ export default class Renderer {
 
         this.cancelPendingRebuild()
 
-        this.menu.apply(settings, value => this.viewState.isDisabled(value))
+        this.menu.apply(settings, value => this.viewState.isDisabled(value), this.theme.getPalette())
         this.syncLegend()
 
         this.contextMenu.menu = settings.contextMenu
@@ -113,8 +121,6 @@ export default class Renderer {
     }
 
     private rebuild({ isInitialized }: { isInitialized: boolean }) {
-        Theme.update(this.settings.isDarkThemeFunction)
-
         this.queue.clear()
 
         for (const overlay of this.overlays)
@@ -123,7 +129,13 @@ export default class Renderer {
         this.input.closeContext()
 
         if (this.layout.hasArea) {
-            this.panels.build(this.settings, this.viewState, isInitialized, () => this.rebuildAnimated())
+            this.panels.build({
+                settings: this.settings,
+                viewState: this.viewState,
+                isInitialized,
+                onChange: () => this.rebuildAnimated(),
+                theme: this.theme.getPalette()
+            })
             this.input.setScrollable(this.panels.canScroll)
         } else {
             this.panels.clear()

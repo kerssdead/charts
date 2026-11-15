@@ -6,8 +6,19 @@ const CENTER = 2500
 
 const WINDOW = new CanvasWindow(5000, 5000)
 
+const arc = () => {
+    const result = new RenderItemArc()
+
+    result.absolute = { x: CENTER, y: CENTER }
+    result.radius = 500
+
+    return result
+}
+
+
 const context = () => ({
     globalAlpha: 1,
+    createLinearGradient: jest.fn(() => ({ addColorStop: jest.fn() })),
     strokeStyle: '',
     fillStyle: '',
     arc: jest.fn(),
@@ -85,4 +96,95 @@ describe('Rendering arc', () => {
             .not.toHaveBeenCalled()
     })
 
+it('Should apply the gradient when enabled and filled', () => {
+        const target = arc()
+        const item = new RenderItem(target)
+
+        item.color = '#336699'
+        target.isGradient = true
+        target.endAngle = 1
+        target.adjust(WINDOW)
+
+        const ctx = context()
+
+        target.render(ctx as unknown as CanvasRenderingContext2D, item)
+
+        expect(ctx.createLinearGradient)
+            .toHaveBeenCalled()
+        expect(ctx.fillStyle)
+            .toBe(ctx.strokeStyle)
+    })
+
+    it('Should fill the arc when it is filled', () => {
+        const target = arc()
+
+        target.isFill = true
+        target.endAngle = 1
+        target.adjust(WINDOW)
+
+        const ctx = context()
+
+        target.render(ctx as unknown as CanvasRenderingContext2D, new RenderItem(target))
+
+        expect(ctx.fill)
+            .toHaveBeenCalled()
+        expect(ctx.stroke)
+            .toHaveBeenCalled()
+    })
+
+    it('Should skip drawing a collapsed arc', () => {
+        const target = arc()
+
+        target.startAngle = .5
+        target.endAngle = .5
+        target.adjust(WINDOW)
+
+        const ctx = context()
+
+        target.render(ctx as unknown as CanvasRenderingContext2D, new RenderItem(target))
+
+        expect(ctx.stroke)
+            .not.toHaveBeenCalled()
+    })
+
+    it('Should trace the inner circle of a full ring', () => {
+        const target = arc()
+
+        target.innerRadius = 200
+        target.endAngle = Math.PI * 2
+        target.adjust(WINDOW)
+
+        const ctx = context()
+
+        target.render(ctx as unknown as CanvasRenderingContext2D, new RenderItem(target))
+
+        expect(ctx.moveTo)
+            .toHaveBeenCalled()
+        expect(ctx.arc.mock.calls.length)
+            .toBeGreaterThanOrEqual(2)
+    })
+
+    it('Should grow the angles from the origin while initializing', () => {
+        const target = arc()
+
+        target.startAngle = 0
+        target.endAngle = 1
+        target.growOrigin = .5
+        target.adjust(WINDOW)
+
+        const item = new RenderItem(target)
+
+        item.animation.init = .5
+
+        const ctx = context()
+
+        target.render(ctx as unknown as CanvasRenderingContext2D, item)
+
+        const shape = (target as unknown as { drawnShape: { start: number, end: number } }).drawnShape
+
+        expect(shape.start)
+            .toBeCloseTo(.25, 3)
+        expect(shape.end)
+            .toBeCloseTo(.75, 3)
+    })
 })

@@ -1,6 +1,6 @@
 import Point from '@/types/Point'
 import { DEFAULT_LINE_WIDTH, FONT_FAMILY, Tooltip } from '@/static/constants/Index'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { escapeHtml } from '@/helpers/Text'
 import FloatingElement from '@/renderer/FloatingElement'
 import ItemData from '@/types/ItemData'
@@ -37,12 +37,12 @@ export default class CustomTooltip {
         }
     }
 
-    static fromText(text: string) {
+    static fromText(text: string, theme: ThemePalette) {
         const style = `padding: ${ Tooltip.padding }px;
-                       border: ${ DEFAULT_LINE_WIDTH }px solid ${ Theme.dropdownBorder };
+                       border: ${ DEFAULT_LINE_WIDTH }px solid ${ theme.dropdownBorder };
                        border-radius: ${ Tooltip.radius }px;
-                       background: ${ Theme.background };
-                       color: ${ Theme.text };
+                       background: ${ theme.background };
+                       color: ${ theme.text };
                        font: ${ Tooltip.fontSize }px/${ Tooltip.rowHeight }px ${ FONT_FAMILY };
                        box-sizing: border-box;
                        white-space: pre-wrap;

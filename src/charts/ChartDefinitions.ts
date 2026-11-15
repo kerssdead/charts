@@ -19,6 +19,7 @@ import SegmentedBarData from '@/types/data/SegmentedBarData'
 import TreeBarData from '@/types/data/TreeBarData'
 import ChartViewState, { IsDisabled } from '@/types/ChartViewState'
 import Value from '@/types/base/Value'
+import { ThemePalette } from '@/Theme'
 
 type ChartDataByType = {
     [ChartType.Plot]: PlotData
@@ -61,7 +62,12 @@ export function getValuesWithChildren(chart: ChartItem): Value[] {
     return getChartDefinition(chart.type)?.getValuesWithChildren?.(chart.data) ?? chart.data.values ?? []
 }
 
-export function createProcess(chart: ChartItem, pixel: Point, settings: ChartSettings, state: ChartViewState) {
+export function createProcess(
+    chart: ChartItem,
+    pixel: Point,
+    settings: ChartSettings & { theme: ThemePalette },
+    state: ChartViewState
+) {
     return getChartDefinition(chart.type)?.createProcess(chart.data, pixel, settings, state)
 }
 

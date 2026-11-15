@@ -1,6 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
 import { createFrames, installAnimationFrames, pendingFrameCount, SCREEN, WINDOW } from './FramesTestScene'
-
-jest.mock('@/Theme', () => ({ __esModule: true, default: { update: jest.fn() } }))
 
 beforeEach(installAnimationFrames)
 
@@ -11,7 +10,7 @@ describe('Drawing a frame now', () => {
         frames.drawNow()
 
         expect(queue.render)
-            .toHaveBeenCalledWith(expect.any(Number), WINDOW, SCREEN)
+            .toHaveBeenCalledWith(expect.any(Number), WINDOW, SCREEN, LIGHT_THEME)
     })
 
     it('Should cancel the pending frame', () => {

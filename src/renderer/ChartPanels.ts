@@ -14,13 +14,18 @@ import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import { Layer } from '@/static/constants/Index'
 import { contains } from '@/helpers/Geometry'
 import ViewState from '@/charts/ViewState'
+import { ThemePalette } from '@/Theme'
 
-type PanelBuild = {
+export type PanelBuildRequest = {
     settings: ChartSettings
     viewState: ViewState
     isInitialized: boolean
-    previousPanels: Panel[]
     onChange: () => void
+    theme: ThemePalette
+}
+
+type PanelBuild = PanelBuildRequest & {
+    previousPanels: Panel[]
 }
 
 type PanelData = {
@@ -48,10 +53,10 @@ export default class ChartPanels {
         this.list = []
     }
 
-    build(settings: ChartSettings, viewState: ViewState, isInitialized: boolean, onChange: () => void) {
-        const build = { settings, viewState, isInitialized, previousPanels: this.list, onChange }
+    build(request: PanelBuildRequest) {
+        const build = { ...request, previousPanels: this.list }
 
-        this.list = this.layout.getPanels(settings.charts, settings.columns)
+        this.list = this.layout.getPanels(request.settings.charts, request.settings.columns)
         this.list.forEach((panel, index) => this.buildPanel(panel, index, build))
 
         this.add([this.layout.getTitle()], build)
@@ -86,7 +91,12 @@ export default class ChartPanels {
     private buildPanel(panel: Panel, index: number, build: PanelBuild) {
         const chart = build.settings.charts[index]
         const pixel = panel.pixel(this.layout.window)
-        const process = createProcess(chart, pixel, build.settings, build.viewState.getChartState(index))
+        const process = createProcess(
+            chart,
+            pixel,
+            { ...build.settings, theme: build.theme },
+            build.viewState.getChartState(index)
+        )
 
         panel.valueAxis = process?.getValueAxis() ?? null
         panel.onContentChange = build.onChange

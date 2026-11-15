@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import PieProcess from '@/render/pie/PieProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemArc from '@/types/RenderItemArc'
@@ -7,8 +9,7 @@ import PieData from '@/types/data/PieData'
 import Sector from '@/types/Sector'
 import PieProcessSettings from '@/render/pie/PieProcessSettings'
 import { createState } from './ViewStateTestData'
-
-jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000', other: '#888888' }))
+import { DARK_THEME } from './TestTheme'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -19,7 +20,7 @@ const PIXEL = { x: 5000 / 800, y: 5000 / 600 }
 
 const SMALL_PIXEL = { x: 5000 / 200, y: 5000 / 200 }
 
-const SETTINGS: PieProcessSettings = { valuePostfix: undefined, enableOther: false }
+const SETTINGS: PieProcessSettings = { valuePostfix: undefined, theme: LIGHT_THEME, enableOther: false }
 
 const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
     return new Sector({ id: label, label, value, color: '#ff0000', ...extra })
@@ -152,6 +153,15 @@ describe('Getting pie data', () => {
             .toBe('Other\n1.00 (1%)\nB: 0.50 (0.5%)\nC: 0.50 (0.5%)')
         expect(items.get('sector-other')?.onClick)
             .toBeUndefined()
+    })
+
+    it('Should use the theme colour for grouped sectors', () => {
+        const values = [sector('A', 100), sector('B', .5), sector('C', .5)]
+
+        const items = getItems(create({ values }, { enableOther: true, theme: DARK_THEME }))
+
+        expect(items.get('sector-other')?.color)
+            .toBe(DARK_THEME.other)
     })
 
     it('Should not group small sectors when disabled', () => {

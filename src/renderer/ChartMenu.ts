@@ -9,7 +9,7 @@ import Decomposition from '@/export/Decomposition'
 import TextResources from '@/static/TextResources'
 import { ContextMenu } from '@/static/constants/Index'
 import { hasMenu } from '@/charts/ChartDefinitions'
-import Theme, { ColorTheme } from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { IsDisabled } from '@/types/ChartViewState'
 
 export default class ChartMenu {
@@ -27,6 +27,8 @@ export default class ChartMenu {
 
     private isDisabled!: IsDisabled
 
+    private theme!: ThemePalette
+
     private readonly onOpen: (point: Point) => void
 
     private readonly drawClean: () => void
@@ -38,9 +40,10 @@ export default class ChartMenu {
         this.drawClean = drawClean
     }
 
-    apply(settings: ChartSettings, isDisabled: IsDisabled) {
+    apply(settings: ChartSettings, isDisabled: IsDisabled, theme: ThemePalette) {
         this.settings = settings
         this.isDisabled = isDisabled
+        this.theme = theme
         this.buttons = undefined
 
         if (settings.disableInteractions || settings.disableMenu
@@ -73,7 +76,7 @@ export default class ChartMenu {
                         ratio: this.ratio,
                         title,
                         exclude: this.button?.bounds,
-                        isDark: this.settings.isDarkThemeFunction,
+                        theme: this.theme,
                         prepare: this.drawClean
                     })
                 }, ContextMenu.fadeDuration)
@@ -93,7 +96,7 @@ export default class ChartMenu {
                         this.settings.decimals
                     ),
                     title || TextResources.dataAsTable,
-                    Theme.currentTheme === ColorTheme.dark
+                    this.theme.isDark
                 ).open()
             }
         ]

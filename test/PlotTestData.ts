@@ -6,6 +6,7 @@ import { PlotType } from '@/static/Enums'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotItemStyle from '@/render/plot/PlotItemStyle'
+import { LIGHT_THEME, ThemePalette } from '@/Theme'
 import { isDisabledByFlag } from './ViewStateTestData'
 
 export const UNITS = new Units({ x: 1, y: 1 })
@@ -23,11 +24,20 @@ export function createSeries(type: PlotType, ys: (number | null)[], extra: Parti
     } as PlotSeries
 }
 
-export function createPlot(values: PlotSeries[], data: Partial<PlotData> = {}) {
+export function createPlot(
+    values: PlotSeries[],
+    data: Partial<PlotData> = {},
+    theme: ThemePalette = LIGHT_THEME
+) {
     const plotData = { values, ...data } as PlotData
     const seriesGroups = new PlotSeriesGroups(values, isDisabledByFlag)
     const layout = new PlotLayout(plotData, UNITS, seriesGroups)
-    const style = new PlotItemStyle(layout, seriesGroups, (series, value) => `${ series.label }: ${ value.y }`)
+    const style = new PlotItemStyle(
+        layout,
+        seriesGroups,
+        (series, value) => `${ series.label }: ${ value.y }`,
+        theme
+    )
 
     return { data: plotData, seriesGroups, layout, style }
 }

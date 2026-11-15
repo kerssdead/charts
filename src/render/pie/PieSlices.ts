@@ -1,6 +1,5 @@
 import Sector from '@/types/Sector'
 import TextResources from '@/static/TextResources'
-import Theme from '@/Theme'
 import { sum } from '@/helpers/Collections'
 import { FULL_ANGLE } from '@/static/constants/Index'
 import { OTHER_KEY } from '@/render/pie/PieConstants'
@@ -40,7 +39,8 @@ export function toKeyedSectors(sectors: Sector[]): KeyedSector[] {
 export function getSectorsWithSmallGroupedIntoOther(
     sectors: Sector[],
     isDisabled: IsDisabled,
-    isSmall: (sector: Sector) => boolean
+    isSmall: (sector: Sector) => boolean,
+    otherColor: string
 ): KeyedSector[] {
     const keyedSectors = toKeyedSectors(sectors)
     const smallSectors = sectors.filter(sector => hasVisibleValue(sector, isDisabled) && isSmall(sector))
@@ -53,7 +53,7 @@ export function getSectorsWithSmallGroupedIntoOther(
     const otherSector = new Sector({
         label: TextResources.other,
         value: sum(smallSectors, sector => sector.value),
-        color: Theme.other
+        color: otherColor
     })
 
     return [

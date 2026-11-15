@@ -2,9 +2,9 @@ import RenderItemText from '@/types/RenderItemText'
 import RenderItemArc from '@/types/RenderItemArc'
 import CanvasWindow from '@/types/CanvasWindow'
 import { TextAlignment, TextBaseline } from '@/static/Enums'
-import Theme from '@/Theme'
+import { LIGHT_THEME } from '@/Theme'
 
-jest.mock('@/Theme', () => ({ text: '#123456' }))
+const THEME = { ...LIGHT_THEME, text: '#123456' }
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -38,7 +38,7 @@ const context = () => ({
 
 describe('Text color and font', () => {
     it('Should use the theme text color', () => {
-        expect(text().defaultColor)
+        expect(text().defaultColor(THEME))
             .toBe('#123456')
     })
 })

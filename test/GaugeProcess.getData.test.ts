@@ -1,3 +1,5 @@
+import { LIGHT_THEME } from '@/Theme'
+
 import GaugeProcess from '@/render/gauge/GaugeProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemArc from '@/types/RenderItemArc'
@@ -6,8 +8,9 @@ import GaugeData from '@/types/data/GaugeData'
 import Sector from '@/types/Sector'
 import ProcessSettings from '@/types/ProcessSettings'
 import { createState } from './ViewStateTestData'
-
-jest.mock('@/Theme', () => ({ canvasBackground: '#ffffff', text: '#000000' }))
+import { DARK_THEME } from './TestTheme'
+import { TRACK_ALPHA } from '@/render/gauge/GaugeConstants'
+import { withAlpha } from '@/helpers/Color'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -18,15 +21,15 @@ const PIXEL = { x: 5000 / 1000, y: 5000 / 400 }
 
 const TINY_PIXEL = { x: 5000 / 100, y: 5000 / 50 }
 
-const SETTINGS: ProcessSettings = { valuePostfix: undefined }
+const SETTINGS: ProcessSettings = { valuePostfix: undefined, theme: LIGHT_THEME }
 
 const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
     return new Sector({ id: label, label, value, color: '#ff0000', ...extra })
 }
 
-function getItems(data: Partial<GaugeData>, pixel = PIXEL) {
+function getItems(data: Partial<GaugeData>, pixel = PIXEL, settings = SETTINGS) {
     const gaugeData = { values: [], ...data } as GaugeData
-    const process = new GaugeProcess(gaugeData, pixel, SETTINGS, createState(gaugeData))
+    const process = new GaugeProcess(gaugeData, pixel, settings, createState(gaugeData))
 
     return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))
 }
@@ -108,6 +111,17 @@ describe('Getting gauge data', () => {
             .toBe(false)
         expect(getArc(getItems({ values: [sector('A', 1)], enableTrack: true }), 'gauge-track-0').endAngle)
             .toBeCloseTo(Math.PI * 2)
+    })
+
+    it('Should use the theme colour for the track', () => {
+        const items = getItems(
+            { values: [sector('A', 1)], enableTrack: true },
+            PIXEL,
+            { ...SETTINGS, theme: DARK_THEME }
+        )
+
+        expect(items.get('gauge-track-0')?.color)
+            .toBe(withAlpha(DARK_THEME.text, TRACK_ALPHA))
     })
 
     it('Should draw range and step labels unless steps are disabled', () => {

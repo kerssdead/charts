@@ -1,6 +1,7 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
 import RenderItem from '@/types/RenderItem'
+import { ThemePalette } from '@/Theme'
 
 export type Bounds = {
     left: number
@@ -18,7 +19,7 @@ export default abstract class RenderItemBase {
     animate(_item: RenderItem, _isBackward: boolean, _now: DOMHighResTimeStamp): void {
     }
 
-    animateHover(_point: Point | null, _now: DOMHighResTimeStamp): boolean {
+    animateHover(_point: Point | null, _now: DOMHighResTimeStamp, _isInstant: boolean = false): boolean {
         return false
     }
 
@@ -30,7 +31,7 @@ export default abstract class RenderItemBase {
         return null
     }
 
-    get defaultColor(): string | undefined {
+    defaultColor(_theme: ThemePalette): string | undefined {
         return undefined
     }
 

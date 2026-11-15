@@ -7,7 +7,7 @@ import { AnimationTiming, DEFAULT_LINE_WIDTH, Layer } from '@/static/constants/I
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { AREA_LAYER, BREAK_MARK_LAYER, LINE_LAYER } from '@/render/plot/PlotConstants'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { PlotType } from '@/static/Enums'
 
 const BREAK_MARK_WIDTH = 3
@@ -23,10 +23,18 @@ export default class PlotItemStyle {
 
     private readonly pointKeys = new Map<PlotSeries, string[]>()
 
-    constructor(layout: PlotLayout, seriesGroups: PlotSeriesGroups, getValueTooltip: ValueTooltip) {
+    private readonly theme: ThemePalette
+
+    constructor(
+        layout: PlotLayout,
+        seriesGroups: PlotSeriesGroups,
+        getValueTooltip: ValueTooltip,
+        theme: ThemePalette
+    ) {
         this.layout = layout
         this.seriesGroups = seriesGroups
         this.getValueTooltip = getValueTooltip
+        this.theme = theme
     }
 
     styleRect(rect: QueueRectangleItemBuilder, series: PlotSeries, slot: number, valueIndex: number) {
@@ -63,7 +71,7 @@ export default class PlotItemStyle {
 
     styleBreakMark(line: QueueLineItemBuilder, series: PlotSeries, slot: number, valueIndex: number) {
         line.width(BREAK_MARK_WIDTH)
-            .stroke(Theme.canvasBackground)
+            .stroke(this.theme.canvasBackground)
             .layer(BREAK_MARK_LAYER)
             .key(this.getKey(series, 'break', this.getPointKey(series, valueIndex)))
             .init(AnimationTiming.plotBreakInit, AnimationTiming.plotInit + slot * this.initStagger, true)

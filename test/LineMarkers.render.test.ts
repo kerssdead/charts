@@ -1,5 +1,4 @@
 import LineMarkers from '@/helpers/LineMarkers'
-import HoverProgress from '@/types/HoverProgress'
 
 const context = () => ({
     beginPath: jest.fn(),
@@ -8,11 +7,9 @@ const context = () => ({
 })
 
 const markersWithHover = (index: number) => {
-    jest.replaceProperty(HoverProgress, 'isInstant', true)
-
     const markers = new LineMarkers()
 
-    markers.animate(index, 0)
+    markers.animate(index, 0, true)
 
     return markers
 }
@@ -41,12 +38,10 @@ describe('Rendering line markers', () => {
     })
 
     it('Should skip markers that faded away', () => {
-        jest.replaceProperty(HoverProgress, 'isInstant', true)
-
         const markers = new LineMarkers()
 
-        markers.animate(1, 0)
-        markers.animate(-1, 0)
+        markers.animate(1, 0, true)
+        markers.animate(-1, 0, true)
 
         const ctx = context()
 

@@ -1,6 +1,6 @@
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import Units from '@/helpers/Units'
-import Theme from '@/Theme'
+import { ThemePalette } from '@/Theme'
 import { grayScale, withAlpha } from '@/helpers/Color'
 import { stringWidth } from '@/helpers/Text'
 import TextResources from '@/static/TextResources'
@@ -23,6 +23,7 @@ import {
 export type LegendButtonState = {
     hover: number
     onClick: () => void
+    theme: ThemePalette
 }
 
 export type LegendEntryState = LegendButtonState & {
@@ -33,20 +34,20 @@ export function addLegendEntry(
     items: QueueItemsBuilder,
     units: Units,
     entry: LegendEntry,
-    { hover, isDisabled, onClick }: LegendEntryState
+    { hover, isDisabled, onClick, theme }: LegendEntryState
 ) {
     const { value, label, x, y, width } = entry
     const centerY = y + ITEM_HEIGHT / 2
     const textX = x + TEXT_OFFSET_X
     const isMuted = isDisabled || value.isBlank
-    const textColor = isMuted ? withAlpha(Theme.text, DISABLED_TEXT_ALPHA) : Theme.text
+    const textColor = isMuted ? withAlpha(theme.text, DISABLED_TEXT_ALPHA) : theme.text
 
     const background = addButtonRect(items, units, {
         rect: { x, y, width, height: ITEM_HEIGHT },
         radius: ITEM_CORNER_RADIUS,
         hover,
         onClick
-    })
+    }, theme)
 
     items.arc()
          .position(units.x(x + MARKER_CENTER_X), units.y(centerY))
@@ -75,15 +76,25 @@ export function addLegendEntry(
     return background.build()
 }
 
-export function addResetButton(items: QueueItemsBuilder, units: Units, button: DOMRect, state: LegendButtonState) {
+export function addResetButton(
+    items: QueueItemsBuilder,
+    units: Units,
+    button: DOMRect,
+    state: LegendButtonState
+) {
     const background = addButtonRect(items, units, {
         rect: button,
         radius: BUTTON_CORNER_RADIUS,
         hover: state.hover,
         onClick: state.onClick
-    })
+    }, state.theme)
 
-    addButtonText(items, units, { rect: button, text: TextResources.reset, size: DEFAULT_FONT_SIZE })
+    addButtonText(
+        items,
+        units,
+        { rect: button, text: TextResources.reset, size: DEFAULT_FONT_SIZE },
+        state.theme
+    )
 
     return background.build()
 }

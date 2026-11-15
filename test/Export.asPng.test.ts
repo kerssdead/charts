@@ -1,11 +1,12 @@
 import Export from '@/export/Export'
+import { LIGHT_THEME } from '@/Theme'
 
-jest.mock('@/Theme', () => ({
-    update: () => {},
+const THEME = {
+    ...LIGHT_THEME,
     canvasBackground: '#000000',
     canvasBackgroundInt: 0,
     background: '#ffffff'
-}))
+}
 
 const createPixelData = (width: number, emptyRanges: [number, number][]) => {
     const bytes = new Uint8ClampedArray(width * 4).fill(255)
@@ -55,6 +56,7 @@ function exportAsPng(title: string = 'Chart') {
     Export.asPng(new FakeCanvas() as unknown as HTMLCanvasElement, {
         ratio: 1,
         title,
+        theme: THEME,
         exclude: { x: 1, y: 0, width: 2, height: 1 } as DOMRect
     })
 }

@@ -9,6 +9,7 @@ import ChartSettings from '@/types/ChartSettings'
 import RenderItem from '@/types/RenderItem'
 import HoverProgress from '@/types/HoverProgress'
 import CustomTooltip from '@/renderer/CustomTooltip'
+import { ThemePalette } from '@/Theme'
 import { Tooltip } from '@/static/constants/Index'
 import { copyRect, sameRect, samePoint } from '@/helpers/Geometry'
 
@@ -22,6 +23,8 @@ type TooltipScan = TooltipTarget & {
     version: number
     window: RectangleDimensions
 }
+
+type TextUpdate = Pick<Frame, 'now' | 'theme' | 'isInstant'>
 
 const NO_TARGET: TooltipTarget = { template: null, html: null }
 
@@ -67,7 +70,7 @@ export default class TooltipOverlay extends Overlay {
         this.fade = new HoverProgress()
     }
 
-    update({ queue, window, mouse, context, now }: Frame): boolean {
+    update({ queue, window, mouse, context, now, theme, isInstant }: Frame): boolean {
         if (context || !this.isEnabled) {
             this.clear(queue)
 
@@ -85,16 +88,16 @@ export default class TooltipOverlay extends Overlay {
             return false
         }
 
-        return this.updateText(mouse, target.template, now)
+        return this.updateText(mouse, target.template, { now, theme, isInstant })
     }
 
-    private updateText(mouse: Point | null, template: string | null, now: DOMHighResTimeStamp) {
+    private updateText(mouse: Point | null, template: string | null, { now, theme, isInstant }: TextUpdate) {
         const isVisible = mouse != null && template != null
 
         if (isVisible)
-            this.state = { point: mouse, html: CustomTooltip.fromText(template) }
+            this.state = { point: mouse, html: CustomTooltip.fromText(template, theme) }
 
-        this.fade.step(isVisible, now, Tooltip.fadeDuration)
+        this.fade.step(isVisible, now, Tooltip.fadeDuration, isInstant)
 
         if (!this.state || !isVisible && this.fade.isIdle) {
             this.custom.hide()
