@@ -42,4 +42,12 @@ describe('Building buttons from dropdown items', () => {
         expect(action)
             .toHaveBeenCalledWith(data)
     })
+
+    it('Should use a divider that does nothing when run', () => {
+        const [button] = fromDropdownItems([{ text: 'A', action: () => { } }, divider, { text: 'B', action: () => { } }])
+            .filter(item => item.isDivider)
+
+        expect(button.action())
+            .toBeUndefined()
+    })
 })

@@ -30,4 +30,12 @@ describe('Setting custom tooltip appear progress', () => {
         expect([style().opacity, style().transform])
             .toEqual(['1', 'scale(1)'])
     })
+
+    it('Should do nothing while the tooltip is hidden', () => {
+        const { canvas } = installCustomTooltipEnvironment()
+        const tooltip = new CustomTooltip(canvas)
+
+        expect(() => tooltip.setAppearProgress(.5))
+            .not.toThrow()
+    })
 })

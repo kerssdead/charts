@@ -40,4 +40,9 @@ describe('Adding shares to a table', () => {
         expect(shares([row(0), row(0)]))
             .toEqual([0, 0])
     })
+
+    it('Should treat rows without the column as zero', () => {
+        expect(shares([row(2), { name: 'empty', values: new Map() }]))
+            .toEqual([100, 0])
+    })
 })

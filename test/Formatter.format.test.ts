@@ -41,4 +41,9 @@ describe('Getting formatted values', () => {
         expect(Formatter.format('Test string', PlotAxisType.Number))
             .toBe('Test string')
     })
+
+    it('Missing date', () => {
+        expect(Formatter.format(undefined, PlotAxisType.Date))
+            .toBe(new Date('').toLocaleDateString())
+    })
 })

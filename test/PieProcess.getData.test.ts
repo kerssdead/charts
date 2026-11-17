@@ -193,4 +193,11 @@ describe('Getting pie data', () => {
         expect(getItems(create({ values, innerRadius: 60 })).has('inner-title'))
             .toBe(false)
     })
+
+    it('Should show zero percent in tooltip when all values are zero', () => {
+        const items = getItems(create({ values: [sector('A', 0)] }))
+
+        expect(items.get('sector-A')?.tooltipTemplate)
+            .toBe('A\n0.00 (0%)')
+    })
 })

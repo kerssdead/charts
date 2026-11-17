@@ -14,4 +14,14 @@ describe('Updating menu popup', () => {
         expect([element.style.opacity, element.style.transform, element.style.pointerEvents, buttons[0].disabled])
             .toEqual(['1', 'scale(1)', 'auto', false])
     })
+
+    it('Should leave buttons alone when interactivity did not change', () => {
+        const { popup, buttons } = installMenuPopup()
+
+        buttons[0].disabled = true
+        popup.update(1, true)
+
+        expect(buttons[0].disabled)
+            .toBe(true)
+    })
 })

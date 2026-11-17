@@ -108,4 +108,14 @@ describe('Checking whether pointer is over line', () => {
         expect(shape.animateHover({ x: 102, y: 51 }, 400))
             .toBe(false)
     })
+
+    it('Should not have a tooltip away from every stop', () => {
+        const line = createLine()
+
+        line.tooltips = ['a', 'b']
+        line.adjust(WINDOW)
+
+        expect(line.tooltipAt({ x: 150, y: 120 }))
+            .toBeNull()
+    })
 })

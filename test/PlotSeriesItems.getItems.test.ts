@@ -101,4 +101,9 @@ describe('Getting plot series items', () => {
         ]))
             .toEqual(['series-2-rect-C0-0'])
     })
+
+    it('Should draw nothing for a series of unknown type', () => {
+        expect(getKeys([createSeries('unknown' as PlotType, [1])]))
+            .toEqual([])
+    })
 })

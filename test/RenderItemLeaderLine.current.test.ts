@@ -31,4 +31,13 @@ describe('Getting current leader angles', () => {
         expect(next.current(1))
             .toEqual({ offset: .4, anchor: .2 })
     })
+
+    it('Should return own angles by default', () => {
+        const next = leader(.4, .2)
+
+        next.morphFrom(leader(0, 0), 1)
+
+        expect(next.current())
+            .toEqual({ offset: .4, anchor: .2 })
+    })
 })

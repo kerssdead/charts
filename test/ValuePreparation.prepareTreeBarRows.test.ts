@@ -45,4 +45,18 @@ describe('Preparing tree bar rows', () => {
         expect(prepare([], 'de-DE').numberLocale)
             .toBe('de-DE')
     })
+
+    it('Should keep rows and parts that are already prepared', () => {
+        const part = new Sector({ value: 1 })
+        const row = new TreeBarRow({ label: 'A', parts: [part] })
+        const [prepared] = prepare([row]).values
+
+        expect([prepared, prepared.parts[0]])
+            .toEqual([row, part])
+    })
+
+    it('Should prepare rows without parts', () => {
+        expect(prepare([{ label: 'A' }]).values[0].parts)
+            .toEqual([])
+    })
 })

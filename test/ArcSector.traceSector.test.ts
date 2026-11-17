@@ -47,4 +47,16 @@ describe('Tracing sector outline', () => {
         expect(ctx.lineTo)
             .toHaveBeenCalled()
     })
+
+    it('Should trace sectors that are half of the circle or larger', () => {
+        const ctx = context()
+
+        const rounded = { ...outline, cornerRadius: 2 }
+        const canvas = ctx as unknown as CanvasRenderingContext2D
+
+        expect(traceSector(canvas, shape(0, Math.PI), rounded))
+            .toBe(true)
+        expect(traceSector(canvas, shape(0, Math.PI * 1.5), rounded))
+            .toBe(true)
+    })
 })

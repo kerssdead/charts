@@ -44,4 +44,18 @@ describe('Preparing segmented bar', () => {
         expect(prepare({ values: [] }).stops)
             .toEqual([])
     })
+
+    it('Should keep values and stops that are already prepared', () => {
+        const sector = new Sector({ value: 1 })
+        const stop = new SegmentedBarStop({ value: 2 }, undefined)
+        const data = prepare({ values: [sector], stops: [stop] })
+
+        expect([data.values[0], data.stops[0]])
+            .toEqual([sector, stop])
+    })
+
+    it('Should prepare missing stops as empty', () => {
+        expect(prepare({ values: [{ value: 1 }] }).stops)
+            .toEqual([])
+    })
 })

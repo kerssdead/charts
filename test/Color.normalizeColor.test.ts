@@ -49,6 +49,28 @@ describe('Normalizing color', () => {
     })
 })
 
+describe('Normalizing unset variable', () => {
+    beforeEach(() => {
+        (globalThis as any).document = {
+            documentElement: {},
+            createElement: () => ({ getContext: () => context })
+        };
+        (globalThis as any).getComputedStyle = () => ({ getPropertyValue: () => '' })
+    })
+
+    afterEach(() => {
+        delete (globalThis as any).document
+        delete (globalThis as any).getComputedStyle
+    })
+
+    it('Should keep the variable as the color when it has no value and no fallback', () => {
+        expect(normalizeColor('var(--missing)'))
+            .toBe('#ff0000')
+        expect(style)
+            .toBe('var(--missing)')
+    })
+})
+
 describe('Normalizing named colors', () => {
     beforeEach(() => {
         (globalThis as any).document = {
@@ -78,6 +100,13 @@ describe('Normalizing named colors', () => {
             .toHaveBeenCalledWith(0, 0, 1, 1)
         expect(context.fillRect)
             .toHaveBeenCalledWith(0, 0, 1, 1)
+    })
+
+    it('Should keep alpha when the pixel is translucent', () => {
+        context.getImageData.mockReturnValueOnce({ data: [255, 0, 0, 128] })
+
+        expect(normalizeColor('red'))
+            .toBe('#ff000080')
     })
 
     it('Should return the browser style when it is already a hex color', () => {

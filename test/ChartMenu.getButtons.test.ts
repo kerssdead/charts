@@ -81,4 +81,84 @@ describe('Getting chart menu buttons', () => {
         expect(Modal)
             .toHaveBeenCalledWith('table', 'Chart', true)
     })
+
+    it('Should export PNG with the ratio, title and clean frame preparation after the menu fades', () => {
+        jest.useFakeTimers()
+
+        const drawClean = jest.fn()
+        const menu = new ChartMenu({} as HTMLCanvasElement, {} as Queue, jest.fn(), drawClean)
+
+        menu.ratio = 2
+        menu.apply(settings, () => false, DARK_THEME)
+        menu.getButtons()[0].action()
+
+        expect(Export.asPng)
+            .not.toHaveBeenCalled()
+
+        jest.runAllTimers()
+
+        expect(Export.asPng)
+            .toHaveBeenCalledWith(expect.anything(), {
+                ratio: 2,
+                title: 'Chart',
+                exclude: undefined,
+                theme: DARK_THEME,
+                prepare: drawClean
+            })
+    })
+
+    it('Should reuse buttons until settings are applied again', () => {
+        const menu = new ChartMenu({} as HTMLCanvasElement, {} as Queue, jest.fn(), jest.fn())
+
+        menu.apply(settings, () => false, DARK_THEME)
+
+        const buttons = menu.getButtons()
+
+        expect(menu.getButtons())
+            .toBe(buttons)
+
+        menu.apply(settings, () => false, DARK_THEME)
+
+        expect(menu.getButtons())
+            .not.toBe(buttons)
+    })
+
+    it('Should separate export actions from the table action with a divider', () => {
+        const menu = new ChartMenu({} as HTMLCanvasElement, {} as Queue, jest.fn(), jest.fn())
+
+        menu.apply(settings, () => false, DARK_THEME)
+
+        expect(menu.getButtons().map(button => button.isDivider === true))
+            .toEqual([false, false, true, false])
+    })
+
+    it('Should use the default table title and open the dialog', () => {
+        const open = jest.fn()
+
+        ;(Modal as unknown as jest.Mock).mockImplementationOnce(() => ({ open }))
+
+        const menu = new ChartMenu({} as HTMLCanvasElement, {} as Queue, jest.fn(), jest.fn())
+
+        menu.apply({ ...settings, title: undefined }, () => false, DARK_THEME)
+        menu.getButtons().find(item => item.text === TextResources.decomposeToTable)?.action()
+
+        expect(Modal)
+            .toHaveBeenCalledWith('table', TextResources.dataAsTable, true)
+        expect(open)
+            .toHaveBeenCalled()
+    })
+
+    it('Should export CSV from the table dialog', () => {
+        const menu = new ChartMenu({} as HTMLCanvasElement, {} as Queue, jest.fn(), jest.fn())
+
+        menu.apply(settings, () => false, DARK_THEME)
+        menu.getButtons().find(item => item.text === TextResources.decomposeToTable)?.action()
+
+        const exportCsv = (Decomposition.fromCharts as jest.Mock).mock.calls.at(-1)[2]
+
+        exportCsv()
+
+        expect(Export.asCsv)
+            .toHaveBeenCalledWith(settings.charts, 'Chart')
+    })
 })

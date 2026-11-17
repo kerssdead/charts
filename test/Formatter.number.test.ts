@@ -15,4 +15,9 @@ describe('Getting formatted number', () => {
         expect(Formatter.number(NaN))
             .toBe('NaN')
     })
+
+    it('String value', () => {
+        expect(Formatter.number('text' as unknown as number))
+            .toBe('text')
+    })
 })

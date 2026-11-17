@@ -78,4 +78,13 @@ describe('Reporting canvas host resize', () => {
         expect(events.onResize)
             .toHaveBeenLastCalledWith(100, 50, 3)
     })
+
+    it('Should fall back to a ratio of one when the browser reports none', () => {
+        const { environment, events } = create(0)
+
+        environment.resizeElement(100, 50)
+
+        expect(events.onResize)
+            .toHaveBeenCalledWith(100, 50, 1)
+    })
 })

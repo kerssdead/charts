@@ -40,6 +40,33 @@ function buildPanels(settings: Partial<ChartSettings>) {
     return panels.list
 }
 
+function buildQueue(settings: Partial<ChartSettings>, isInitialized: boolean) {
+    const layout = new Layout()
+
+    layout.width = 600
+    layout.height = 300
+    layout.update({ title: undefined })
+
+    const queue = new Queue({} as CanvasRenderingContext2D)
+    const chartSettings = {
+        valuePostfix: undefined,
+        charts: [{ type: ChartType.Pie, data: { values: [new Sector({ id: 'a', value: 1, color: '#ff0000' })] } }],
+        ...settings
+    } as ChartSettings
+    const viewState = new ViewState()
+
+    viewState.apply(chartSettings)
+    new ChartPanels(queue, layout).build({
+        settings: chartSettings,
+        viewState,
+        isInitialized,
+        onChange: () => {},
+        theme: LIGHT_THEME
+    })
+
+    return queue
+}
+
 describe('Building chart panels', () => {
     it('Should give panel the value axis of its chart', () => {
         const [plot, pie] = buildPanels({
@@ -135,5 +162,19 @@ describe('Building chart panels', () => {
 
         expect(empty)
             .toBeDefined()
+    })
+
+    it('Should not animate the first appearance in static mode', () => {
+        const queue = buildQueue({ staticMode: true }, false)
+
+        expect(queue.items.some(item => item.isInitializing))
+            .toBe(false)
+    })
+
+    it('Should animate the first appearance of items', () => {
+        const queue = buildQueue({}, false)
+
+        expect(queue.items.some(item => item.isInitializing))
+            .toBe(true)
     })
 })

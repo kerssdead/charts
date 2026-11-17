@@ -1,4 +1,4 @@
-import { getAllTreeBarRows } from '@/types/data/TreeBarData'
+import { flattenTreeBarRows, getAllTreeBarRows } from '@/types/data/TreeBarData'
 import TreeBarRow from '@/types/TreeBarRow'
 
 describe('Getting all tree bar rows', () => {
@@ -15,5 +15,12 @@ describe('Getting all tree bar rows', () => {
     it('Should get no rows without values', () => {
         expect(getAllTreeBarRows(undefined))
             .toEqual([])
+    })
+
+    it('Should skip children of rows that are not open', () => {
+        const rows = [new TreeBarRow({ id: 'a', children: [new TreeBarRow({ id: 'a1' })] })]
+
+        expect(flattenTreeBarRows(rows, () => false).map(({ node }) => node.id))
+            .toEqual(['a'])
     })
 })

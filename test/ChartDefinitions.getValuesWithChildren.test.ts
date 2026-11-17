@@ -24,4 +24,9 @@ describe('Getting values with children', () => {
         expect(getValuesWithChildren({ type: ChartType.Pie } as ChartItem))
             .toEqual([])
     })
+
+    it('Should get no values for chart data without values', () => {
+        expect(getValuesWithChildren({ type: ChartType.Pie, data: {} } as ChartItem))
+            .toEqual([])
+    })
 })

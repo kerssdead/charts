@@ -21,4 +21,9 @@ describe('Getting nice step', () => {
         expect(getNiceStep(3, [1, 2, 5, 10]))
             .toBe(5)
     })
+
+    it('Should fall back to ten magnitudes when no multiplier is large enough', () => {
+        expect(getNiceStep(7, [1, 2]))
+            .toBe(10)
+    })
 })

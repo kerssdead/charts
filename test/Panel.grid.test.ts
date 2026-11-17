@@ -46,4 +46,14 @@ describe('Building panels grid', () => {
         expect(second.rect.height)
             .toBe(1)
     })
+
+    it('Should fill the cells with full size when the area is empty', () => {
+        const panels = Panel.grid([0, 0], 0, 0, 2)
+
+        expect(panels.map(panel => panel.rect))
+            .toEqual([
+                { x: 0, y: 0, width: 1, height: 1 },
+                { x: 0, y: 0, width: 1, height: 1 }
+            ])
+    })
 })

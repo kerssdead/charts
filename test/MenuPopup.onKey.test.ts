@@ -125,4 +125,28 @@ describe('Handling menu popup keys', () => {
         expect(dismiss)
             .toHaveBeenCalledTimes(2)
     })
+
+    it('Should move focus to the previous button with the up key', () => {
+        const { element, buttons } = installMenuPopup([
+            { text: 'First', action: () => {} },
+            { text: 'Second', action: () => {} }
+        ])
+
+        setActiveElement(buttons[1])
+        element.dispatch(Events.KeyDown, keyEvent('ArrowUp'))
+
+        expect(buttons[0].focus)
+            .toHaveBeenCalled()
+    })
+
+    it('Should handle navigation keys without buttons', () => {
+        const { element } = installMenuPopup([])
+        const end = keyEvent('End')
+
+        setActiveElement(null)
+        element.dispatch(Events.KeyDown, end)
+
+        expect(end.preventDefault)
+            .toHaveBeenCalled()
+    })
 })

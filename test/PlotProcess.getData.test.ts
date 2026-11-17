@@ -7,6 +7,7 @@ import RenderItemRectangle from '@/types/RenderItemRectangle'
 import PlotData from '@/types/data/PlotData'
 import { PlotAxisType, PlotType } from '@/static/Enums'
 import ProcessSettings from '@/types/ProcessSettings'
+import { resolveTooltip } from '@/types/Tooltip'
 import { createState } from './ViewStateTestData'
 
 jest.mock('@/helpers/Text', () => ({
@@ -80,5 +81,35 @@ describe('Getting plot data', () => {
             expect(rects.get(`apples-rect-Day ${ i }-0`)?.absolute.height)
                 .toBeCloseTo(process.getAxisY(0) - process.getAxisY(Math.min(y, 250)))
         })
+    })
+
+    it('Should use the point label in tooltip when it has one', () => {
+        const data = {
+            xType: PlotAxisType.Text,
+            values: [{
+                type: PlotType.Column,
+                label: 'Orders',
+                values: [{ x: 'Day 1', y: 5, label: 'Special day' }]
+            }]
+        } as unknown as PlotData
+        const process = new PlotProcess(data, PIXEL, SETTINGS, createState(data))
+        const tooltips = QueueItemsBuilder.build(process.getData())
+            .map(item => resolveTooltip(item.tooltipTemplate ?? null))
+
+        expect(tooltips.some(tooltip => tooltip?.includes('Special day')))
+            .toBe(true)
+    })
+
+    it('Should use the formatted x in tooltip when the point has no label', () => {
+        const data = {
+            xType: PlotAxisType.Text,
+            values: [{ type: PlotType.Column, label: 'Orders', values: [{ x: 'Day 1', y: 5 }] }]
+        } as unknown as PlotData
+        const process = new PlotProcess(data, PIXEL, SETTINGS, createState(data))
+        const tooltips = QueueItemsBuilder.build(process.getData())
+            .map(item => resolveTooltip(item.tooltipTemplate ?? null))
+
+        expect(tooltips.some(tooltip => tooltip?.includes('Day 1')))
+            .toBe(true)
     })
 })

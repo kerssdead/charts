@@ -21,6 +21,8 @@ const createPixelData = (width: number, emptyRanges: [number, number][]) => {
 
 let pixels: Uint8ClampedArray
 
+let canvases: FakeCanvas[] = []
+
 let readError: Error | null = null
 
 const ctx = {
@@ -52,21 +54,31 @@ let warn: jest.SpyInstance
 
 let saveAs: jest.SpyInstance
 
-function exportAsPng(title: string = 'Chart') {
+function exportAsPng(title: string = 'Chart', prepare?: () => void) {
     Export.asPng(new FakeCanvas() as unknown as HTMLCanvasElement, {
         ratio: 1,
         title,
         theme: THEME,
-        exclude: { x: 1, y: 0, width: 2, height: 1 } as DOMRect
+        exclude: { x: 1, y: 0, width: 2, height: 1 } as DOMRect,
+        prepare
     })
 }
 
 beforeEach(() => {
     pixels = createPixelData(16, [[0, 6], [10, 16]])
     readError = null
+    canvases = []
 
     Object.assign(globalThis, {
-        document: { createElement: () => new FakeCanvas() },
+        document: {
+            createElement: () => {
+                const canvas = new FakeCanvas()
+
+                canvases.push(canvas)
+
+                return canvas
+            }
+        },
         requestAnimationFrame: (callback: FrameRequestCallback) => callback(0)
     })
 
@@ -115,5 +127,43 @@ describe('Saving a chart as PNG', () => {
 
         expect(() => exportAsPng())
             .toThrow('Broken')
+    })
+
+    it('Should keep a margin around content when trimming', () => {
+        exportAsPng()
+
+        expect(canvases.at(-1)?.width)
+            .toBe(12)
+    })
+
+    it('Should trim the whole empty edge when it is narrower than the margin', () => {
+        pixels = createPixelData(16, [[0, 3], [13, 16]])
+
+        exportAsPng()
+
+        expect(canvases.at(-1)?.width)
+            .toBe(10)
+    })
+
+    it('Should prepare the canvas before copying it', () => {
+        const prepare = jest.fn()
+
+        exportAsPng('Chart', prepare)
+
+        expect(prepare)
+            .toHaveBeenCalled()
+    })
+
+    it('Should not save when the image could not be created', () => {
+        const noBlob = (callback: (blob: Blob | null) => void) => callback(null)
+
+        Object.assign(globalThis, {
+            document: { createElement: () => Object.assign(new FakeCanvas(), { toBlob: noBlob }) }
+        })
+
+        exportAsPng()
+
+        expect(saveAs)
+            .not.toHaveBeenCalled()
     })
 })

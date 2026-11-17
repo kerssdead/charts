@@ -109,16 +109,26 @@ describe('Updating legend', () => {
             .toBe(true)
     })
 
-    it('Should update backgrounds when the hover changes', () => {
+    it('Should update backgrounds without rebuilding when the hover changes', () => {
         const queue = new Queue({} as CanvasRenderingContext2D)
         const legend = create()
+        const frame = (mouse: { x: number, y: number } | null, now: number) => {
+            return { queue, mouse, now, theme: LIGHT_THEME, isInstant: true } as unknown as Frame
+        }
+        const colors = () => queue.items.map(item => item.color)
 
-        update(legend, queue)
+        legend.update(frame(null, 0))
+        legend.update(frame(null, 10000))
 
-        const result = legend.update({ queue, mouse: { x: 170, y: 385 }, now: 1000 } as unknown as Frame)
+        const items = queue.items
+        const before = colors()
 
-        expect(typeof result)
-            .toBe('boolean')
+        legend.update(frame({ x: 170, y: 385 }, 10001))
+
+        expect(queue.items)
+            .toEqual(items)
+        expect(colors())
+            .not.toEqual(before)
     })
 
     it('Should keep leaving entries while moving between settings', () => {

@@ -49,4 +49,18 @@ describe('Normalizing plot series', () => {
         expect(normalize(undefined as unknown as object[]).values)
             .toBeUndefined()
     })
+
+    it('Should accept data without series', () => {
+        expect(() => normalizeSeries({ xType: PlotAxisType.Date } as PlotData, undefined))
+            .not.toThrow()
+    })
+
+    it('Should accept series without points', () => {
+        const data = { xType: PlotAxisType.Date, values: [new PlotSeries({ label: 'A' })] } as PlotData
+
+        normalizeSeries(data, undefined)
+
+        expect(data.values[0].values)
+            .toBeUndefined()
+    })
 })

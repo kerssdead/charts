@@ -170,4 +170,11 @@ describe('Getting gauge data', () => {
         expect(getItems({ values: [sector('A', 1)] }, TINY_PIXEL).size)
             .toBe(0)
     })
+
+    it('Should not draw a label below the ring for a single value without label', () => {
+        const items = getItems({ values: [new Sector({ id: 'A', value: 42, color: '#ff0000' })] })
+
+        expect(items.has('gauge-label'))
+            .toBe(false)
+    })
 })

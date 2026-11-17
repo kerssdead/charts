@@ -279,4 +279,13 @@ describe('Parsing string to number', () => {
         expect(elapsed)
             .toBeLessThanOrEqual(600)
     })
+
+    it('Locale without separators', () => {
+        jest.spyOn(Intl, 'NumberFormat').mockImplementation(() => {
+            return { formatToParts: () => [] } as unknown as Intl.NumberFormat
+        })
+
+        expect(parseNumber('12.5', 'no-separators'))
+            .toBe(12.5)
+    })
 })

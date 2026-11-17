@@ -4,6 +4,8 @@ import { Events } from '@/static/Enums'
 
 const listeners: [string, () => void][] = []
 
+const observerCallbacks: (() => void)[] = []
+
 let observer: { observe: jest.Mock, disconnect: jest.Mock, targets: unknown[] } | null = null
 
 const installEnvironment = (offset: number = 8) => {
@@ -59,6 +61,7 @@ const installEnvironment = (offset: number = 8) => {
 
             constructor(callback: () => void) {
                 this.callback = callback
+                observerCallbacks.push(callback)
             }
 
             observe = (target: unknown) => observer?.observe(target)
@@ -71,6 +74,9 @@ const installEnvironment = (offset: number = 8) => {
         body,
         canvas: canvas as unknown as HTMLCanvasElement,
         floating: new FloatingElement(canvas as unknown as HTMLCanvasElement, offset),
+        notifyElementResize() {
+            observerCallbacks.forEach(callback => callback())
+        },
         notifyResize() {
             for (const [type, listener] of listeners.splice(0))
                 if (type === Events.Resize)
@@ -84,6 +90,7 @@ afterEach(() => {
         delete (globalThis as Record<string, unknown>)[name]
 
     listeners.length = 0
+    observerCallbacks.length = 0
     observer = null
 })
 
@@ -150,6 +157,46 @@ describe('Showing floating element', () => {
 
         expect(floating.element.style.left)
             .toBe(before)
+    })
+})
+
+describe('Placing floating element', () => {
+    it('Should measure the element again when it changes size', () => {
+        const { floating, notifyElementResize } = installEnvironment()
+
+        floating.show({ x: 780, y: 10 })
+
+        const before = floating.element.style.left
+
+        Object.assign(floating.element, { offsetWidth: 100 })
+        notifyElementResize()
+
+        expect(floating.element.style.left)
+            .not.toBe(before)
+    })
+
+    it('Should place the element when the canvas has no client size', () => {
+        const { canvas, floating } = installEnvironment()
+
+        Object.assign(canvas, { clientWidth: 0, clientHeight: 0 })
+        floating.show({ x: 50, y: 50 })
+
+        expect(Number.isFinite(parseInt(floating.element.style.left, 10)))
+            .toBe(true)
+    })
+
+    it('Should place the element when the canvas has no size at all', () => {
+        const { canvas, floating } = installEnvironment()
+
+        Object.assign(canvas, {
+            clientWidth: 0,
+            clientHeight: 0,
+            getBoundingClientRect: () => ({ left: 0, top: 0, width: 0, height: 0 })
+        })
+        floating.show({ x: 50, y: 50 })
+
+        expect(Number.isFinite(parseInt(floating.element.style.left, 10)))
+            .toBe(true)
     })
 })
 

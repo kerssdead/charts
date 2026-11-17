@@ -46,4 +46,17 @@ describe('Getting unit vertical gradient', () => {
         expect([first.createLinearGradient.mock.calls.length, second.createLinearGradient.mock.calls.length])
             .toEqual([1, 1])
     })
+
+    it('Should drop cached gradients when the limit is reached', () => {
+        const { ctx, createLinearGradient } = context()
+
+        for (let i = 0; i < 256; i++)
+            unitVerticalGradient(ctx, `#${ i.toString(16).padStart(6, '0') }`)
+
+        unitVerticalGradient(ctx, '#ffffff')
+        unitVerticalGradient(ctx, '#000000')
+
+        expect(createLinearGradient)
+            .toHaveBeenCalledTimes(258)
+    })
 })

@@ -103,4 +103,15 @@ describe('Modal content', () => {
         expect(modal.elements.some(element => element.elements.includes(content)))
             .toBe(true)
     })
+
+    it('Should create the header without a title', () => {
+        const body = installFakeDocument()
+
+        new Modal(undefined, undefined)
+
+        const header = (body.elements[0] as FakeElement).elements.find(child => child.tagName === Tag.Div)
+
+        expect(header?.elements.find(child => child.tagName === Tag.Span)?.textContent)
+            .toBe('')
+    })
 })

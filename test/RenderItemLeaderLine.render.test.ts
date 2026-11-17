@@ -130,6 +130,11 @@ describe('Rendering leader line', () => {
             .not.toHaveBeenCalled()
     })
 
+    it('Should not draw without a target item', () => {
+        expect(draw(({ leader }) => leader.targetItem = null).stroke)
+            .not.toHaveBeenCalled()
+    })
+
     it('Should not draw while the target is hidden', () => {
         expect(draw(({ label }) => label.animation.visibility = 0).stroke)
             .not.toHaveBeenCalled()

@@ -54,4 +54,26 @@ describe('Laying out labels', () => {
         expect(placements)
             .toHaveLength(3)
     })
+
+    it('Should keep labels inside the bounds while spreading them', () => {
+        const top = Math.PI / 2
+        const placements = layoutLabels([
+            label(top, 3),
+            label(top + .05, 2),
+            label(top + .1, 1),
+            label(top + .15, 1)
+        ], DISTANCE, { x: 60, y: 46 })
+
+        expect(placements)
+            .toHaveLength(4)
+        expect(placements.some(placement => !placement.isVisible))
+            .toBe(true)
+    })
+
+    it('Should turn a label sideways when it sticks out of the horizontal bounds', () => {
+        const [placement] = layoutLabels([label(0, 1)], DISTANCE, { x: 50, y: 50 })
+
+        expect(placement.angle)
+            .not.toBe(0)
+    })
 })

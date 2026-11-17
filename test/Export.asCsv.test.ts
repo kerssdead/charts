@@ -45,4 +45,14 @@ describe('Saving charts as CSV', () => {
         expect(await getCsv([{ type: ChartType.Plot, data } as ChartItem]))
             .toContain('"He""ader"')
     })
+
+    it('Should use the default file name without a title', () => {
+        const saveAs = jest.spyOn(Export, 'saveAs').mockResolvedValue()
+
+        Export.asCsv([], '')
+
+        expect(saveAs.mock.calls[0][0])
+            .toMatch(/.+\.csv$/)
+        saveAs.mockRestore()
+    })
 })

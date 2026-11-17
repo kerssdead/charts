@@ -1,0 +1,37 @@
+import { getChartDefinition } from '@/charts/ChartDefinitions'
+import ChartViewState from '@/types/ChartViewState'
+import Data from '@/types/interfaces/Data'
+import { ChartType } from '@/static/Enums'
+
+const emptyData = {} as Data
+
+describe('Getting palette values from chart definitions', () => {
+    it('Should return no values for data without values', () => {
+        for (const type of Object.values(ChartType).filter(value => typeof value === 'number'))
+            expect(getChartDefinition(type as ChartType)?.getPaletteValues(emptyData))
+                .toEqual([])
+    })
+
+    it('Should return no ungrouped values for segmented bar without stops', () => {
+        expect(getChartDefinition(ChartType.SegmentedBar)?.getUngroupedPaletteValues?.(emptyData))
+            .toEqual([])
+    })
+
+    it('Should return stops as ungrouped values for segmented bar', () => {
+        const stops = [{ value: 1 }]
+
+        const data = { stops } as unknown as Data
+
+        expect(getChartDefinition(ChartType.SegmentedBar)?.getUngroupedPaletteValues?.(data))
+            .toBe(stops)
+    })
+
+    it('Should pin nothing for pie data without values', () => {
+        const state = { applyPinned: jest.fn() } as unknown as ChartViewState
+
+        getChartDefinition(ChartType.Pie)?.applyViewState?.(emptyData, state)
+
+        expect(state.applyPinned)
+            .toHaveBeenCalledWith([])
+    })
+})

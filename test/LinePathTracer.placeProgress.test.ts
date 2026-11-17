@@ -60,4 +60,14 @@ describe('Placing line progress', () => {
 
         hypot.mockRestore()
     })
+
+    it('Should place the start of a zero length segment for negative progress', () => {
+        const tracer = new LinePathTracer()
+        const stops = [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 10, y: 0 }]
+
+        expect(tracer.placeProgress(stops, -0.5))
+            .toBe(1)
+        expect(tracer.partialStop)
+            .toEqual({ x: 0, y: 0 })
+    })
 })

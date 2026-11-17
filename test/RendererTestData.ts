@@ -5,6 +5,7 @@ import TooltipOverlay from '@/renderer/TooltipOverlay'
 import ContextMenuOverlay from '@/renderer/ContextMenuOverlay'
 import InputRouter from '@/renderer/InputRouter'
 import Frames from '@/renderer/Frames'
+import Legend from '@/legend/Legend'
 import ViewState from '@/charts/ViewState'
 import ChartSettings from '@/types/ChartSettings'
 import { ChartType } from '@/static/Enums'
@@ -15,6 +16,9 @@ export let mockFramesScene: {
     getThemePalette: () => ThemePalette
     syncTheme: () => boolean
     rebuildForTheme: () => void
+    getLegend: () => unknown
+    getOverlays: () => unknown[]
+    getSettings: () => ChartSettings
 } | null = null
 
 jest.mock('@/helpers/Canvas', () => ({
@@ -23,7 +27,7 @@ jest.mock('@/helpers/Canvas', () => ({
 }))
 
 jest.mock('@/helpers/Images', () => ({
-    onImageLoad: () => () => {}
+    onImageLoad: jest.fn(() => () => {})
 }))
 
 jest.mock('@/renderer/ChartPanels', () => ({
@@ -81,6 +85,17 @@ jest.mock('@/renderer/InputRouter', () => ({
     }))
 }))
 
+jest.mock('@/legend/Legend', () => ({
+    __esModule: true,
+    default: jest.fn(() => ({
+        reservedPaddings: { left: 0, top: 0, right: 0, bottom: 0 },
+        resize: jest.fn(),
+        applySettings: jest.fn(),
+        destroy: jest.fn(),
+        clear: jest.fn()
+    }))
+}))
+
 jest.mock('@/renderer/Frames', () => ({
     __esModule: true,
     default: jest.fn((scene: typeof mockFramesScene) => {
@@ -104,9 +119,11 @@ const lastResult = (mock: unknown) => {
 
 export const mockMenu = () => lastResult(ChartMenu)
 export const mockPanels = () => lastResult(ChartPanels)
+export const mockPanelsQueue = () => (ChartPanels as unknown as jest.Mock).mock.calls.at(-1)[0]
 export const mockTooltip = () => lastResult(TooltipOverlay)
 export const mockContextMenu = () => lastResult(ContextMenuOverlay)
 export const mockInput = () => lastResult(InputRouter)
+export const mockLegend = () => lastResult(Legend)
 export const mockFrames = () => lastResult(Frames)
 
 export const createSettings = (overrides: Partial<ChartSettings> = {}) => {
@@ -127,12 +144,13 @@ export const createRenderer = (theme: ThemePalette = DARK_THEME) => {
     mockFramesScene = null
 
     const viewState = new ViewState()
+    const onError = jest.fn()
     const renderer = new Renderer(
         {} as HTMLCanvasElement,
         viewState,
         { getPalette: () => theme, sync: () => false },
-        jest.fn()
+        onError
     )
 
-    return { renderer, viewState, theme }
+    return { renderer, viewState, theme, onError }
 }

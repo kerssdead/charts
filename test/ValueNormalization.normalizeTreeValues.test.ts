@@ -22,4 +22,9 @@ describe('Normalizing tree values', () => {
         expect(data.values[0].value)
             .toBe(4)
     })
+
+    it('Should accept data without values', () => {
+        expect(() => normalizeTreeValues({} as TreeData, undefined))
+            .not.toThrow()
+    })
 })

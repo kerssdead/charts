@@ -132,4 +132,21 @@ describe('Creating menu popup', () => {
         expect([button?.style.background, button?.style.color])
             .toEqual([DARK_THEME.text, DARK_THEME.background])
     })
+
+    it('Should block the browser context menu over the popup', () => {
+        installFakeDocument()
+
+        const popup = new MenuPopup({} as HTMLCanvasElement, {
+            options: [{ text: 'Run', action: () => {} }],
+            theme: DARK_THEME,
+            select: jest.fn(),
+            dismiss: jest.fn()
+        })
+        const event = { preventDefault: jest.fn() }
+
+        popupElement(popup).dispatch(Events.ContextMenu, event)
+
+        expect(event.preventDefault)
+            .toHaveBeenCalled()
+    })
 })

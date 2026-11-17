@@ -74,4 +74,25 @@ describe('Rendering queue', () => {
         expect(queue.render(0, WINDOW, WINDOW, LIGHT_THEME))
             .toBe(true)
     })
+
+    it('Should render fixed items in the screen window', () => {
+        const queue = new Queue(context())
+        const fixed = new RenderItem(new RenderItemRectangle())
+        const scrolled = new RenderItem(new RenderItemRectangle())
+        const windows: CanvasWindow[] = []
+        const screen = new CanvasWindow(200, 200)
+
+        fixed.set(f.Fixed, true)
+
+        for (const result of [fixed, scrolled])
+            result.render = (_ctx, frame) => {
+                windows.push(frame.window)
+            }
+
+        queue.add([fixed, scrolled])
+        queue.render(0, WINDOW, screen, LIGHT_THEME)
+
+        expect(windows)
+            .toEqual([screen, WINDOW])
+    })
 })
