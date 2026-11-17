@@ -4,6 +4,7 @@ import RenderItemRectangle from '@/types/RenderItemRectangle'
 import CanvasWindow from '@/types/CanvasWindow'
 import { LIGHT_THEME } from '@/Theme'
 import { DARK_THEME } from './TestTheme'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 const WINDOW = new CanvasWindow(100, 100)
 
@@ -39,7 +40,7 @@ describe('Rendering queue', () => {
         const queue = new Queue(context())
         const temp = item('temp', 0, rendered)
 
-        temp.isTemp = true
+        temp.set(f.Removable, true)
 
         queue.add([temp, item('kept', 0, rendered)])
         queue.render(0, WINDOW, WINDOW, LIGHT_THEME)

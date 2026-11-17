@@ -2,6 +2,7 @@ import RenderItem from '@/types/RenderItem'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import CanvasWindow from '@/types/CanvasWindow'
 import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 const INSIDE = { x: 50, y: 50 }
 
@@ -16,7 +17,7 @@ const hoverable = () => {
     shape.adjust(new CanvasWindow(500, 500))
 
     item.hoverGroup = 'group'
-    item.isInteractive = true
+    item.set(f.Interactive, true)
 
     return item
 }
@@ -39,7 +40,7 @@ describe('Checking hover group at point', () => {
     it('Should not hover non-interactive item', () => {
         const item = hoverable()
 
-        item.isInteractive = false
+        item.set(f.Interactive, false)
 
         expect(item.canHoverGroupAt(INSIDE))
             .toBe(false)

@@ -12,9 +12,10 @@ import { createProcess } from '@/charts/ChartDefinitions'
 import Queue from '@/render/Queue'
 import QueueItemsBuilder, { QueueAction } from '@/builders/QueueItemsBuilder'
 import { Layer } from '@/static/constants/Index'
-import { contains } from '@/helpers/Geometry'
+import Rectangle from '@/helpers/Rectangle'
 import ViewState from '@/charts/ViewState'
 import { ThemePalette } from '@/Theme'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 export type PanelBuildRequest = {
     settings: ChartSettings
@@ -85,7 +86,7 @@ export default class ChartPanels {
     }
 
     private getScrollablePanel(point: Point) {
-        return this.list.find(panel => panel.canScroll && contains(panel.window, point))
+        return this.list.find(panel => panel.canScroll && Rectangle.contains(panel.window, point))
     }
 
     private buildPanel(panel: Panel, index: number, build: PanelBuild) {
@@ -114,7 +115,7 @@ export default class ChartPanels {
         const content = this.add(data.content, build)
 
         for (const item of content)
-            item.isScrollable = panel.scroll != null
+            item.set(f.Scrollable, panel.scroll != null)
 
         ChartPanels.attachItems([...fixed, ...content], panel, build.settings.charts.length > 1 ? index : null)
 
@@ -142,7 +143,7 @@ export default class ChartPanels {
 
     private static attachItems(items: RenderItem[], panel: Panel, keyIndex: number | null) {
         for (const item of items) {
-            if (!item.isFixed)
+            if (!item.is(f.Fixed))
                 item.panel = panel
 
             if (keyIndex != null) {
@@ -155,7 +156,7 @@ export default class ChartPanels {
     private static getScrollbar(panel: Panel) {
         const item = new RenderItem(new RenderItemScrollbar(panel))
 
-        item.isFixed = true
+        item.set(f.Fixed, true)
         item.layer = Layer.Scrollbar
 
         return item

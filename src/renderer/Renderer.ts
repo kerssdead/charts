@@ -1,6 +1,6 @@
 import { getContext } from '@/helpers/Canvas'
 import ChartSettings from '@/types/ChartSettings'
-import Legend from '@/Legend'
+import Legend from '@/legend/Legend'
 import Queue from '@/render/Queue'
 import { hasFixedHeader } from '@/charts/ChartDefinitions'
 import Transition from '@/renderer/Transition'

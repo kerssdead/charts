@@ -3,6 +3,7 @@ import RenderItemRectangle from '@/types/RenderItemRectangle'
 import CanvasWindow from '@/types/CanvasWindow'
 import Panel from '@/types/Panel'
 import { HorizontalAlignment, LineJoin, VerticalAlignment } from '@/static/Enums'
+import { ItemFlag as f } from '@/static/ItemFlag'
 import { LIGHT_THEME } from '@/Theme'
 
 const context = () => ({
@@ -86,7 +87,7 @@ describe('Rendering item', () => {
     it('Should skip ghosts that are not morphing', () => {
         const target = item(0)
 
-        target.isGhost = true
+        target.set(f.Ghost, true)
 
         const ctx = render(target, new CanvasWindow(100, 100))
 
@@ -102,7 +103,7 @@ describe('Rendering item', () => {
         target.render(ctx as unknown as CanvasRenderingContext2D, frame(new CanvasWindow(100, 100)))
         target.render(ctx as unknown as CanvasRenderingContext2D, frame(new CanvasWindow(100, 100), 1000))
 
-        expect(target.isTemp)
+        expect(target.is(f.Removable))
             .toBe(true)
     })
 
@@ -141,7 +142,7 @@ describe('Rendering item', () => {
         panel.clip = { x: 0, y: 0, width: 100, height: 100 }
 
         target.panel = panel
-        target.isScrollable = true
+        target.set(f.Scrollable, true)
 
         const ctx = context()
 

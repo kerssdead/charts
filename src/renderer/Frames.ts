@@ -4,12 +4,12 @@ import Queue from '@/render/Queue'
 import Layout from '@/renderer/Layout'
 import ChartPanels from '@/renderer/ChartPanels'
 import Overlay from '@/renderer/Overlay'
-import Legend from '@/Legend'
+import Legend from '@/legend/Legend'
 import ChartSettings from '@/types/ChartSettings'
 import Frame from '@/renderer/Frame'
 import Panel from '@/types/Panel'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import { copyRect, sameRect } from '@/helpers/Geometry'
+import Rectangle from '@/helpers/Rectangle'
 import { ThemePalette } from '@/Theme'
 import { guard } from '@/helpers/Errors'
 import { prefersReducedMotion } from '@/helpers/Motion'
@@ -48,15 +48,11 @@ export default class Frames {
 
     private isClean: boolean = false
 
-    private suspended: boolean = false
+    isSuspended: boolean = false
 
     private wasAnimating: boolean = false
 
     private lastRender: FrameRenderState | null = null
-
-    get isSuspended() {
-        return this.suspended
-    }
 
     constructor(scene: FrameScene) {
         this.scene = scene
@@ -64,7 +60,7 @@ export default class Frames {
     }
 
     request() {
-        if (!this.suspended)
+        if (!this.isSuspended)
             this.animationFrame.request()
     }
 
@@ -73,7 +69,7 @@ export default class Frames {
     }
 
     drawNow() {
-        if (this.suspended)
+        if (this.isSuspended)
             return
 
         this.cancel()
@@ -94,13 +90,13 @@ export default class Frames {
     }
 
     suspend() {
-        this.suspended = true
+        this.isSuspended = true
 
         this.cancel()
     }
 
     resume() {
-        this.suspended = false
+        this.isSuspended = false
 
         this.request()
     }
@@ -145,8 +141,8 @@ export default class Frames {
             this.lastRender = {
                 version: queue.version,
                 theme,
-                window: copyRect(window),
-                screen: copyRect(screen),
+                window: Rectangle.copy(window),
+                screen: Rectangle.copy(screen),
                 panels: this.getPanelStates()
             }
         }
@@ -164,7 +160,7 @@ export default class Frames {
         isAnimating = this.updateOverlays(frame) || isAnimating
 
         if (movingLegend)
-            layout.fit(movingLegend.getCurrentReserved(frame.now))
+            layout.fit(movingLegend.getAnimatedReservedPaddings(frame.now))
 
         return panels.animate(frame.now, frame.window) || isAnimating
     }
@@ -183,15 +179,15 @@ export default class Frames {
         return last == null
                || last.version !== queue.version
                || last.theme !== theme
-               || !sameRect(last.window, layout.window)
-               || !sameRect(last.screen, layout.screen)
+               || !Rectangle.same(last.window, layout.window)
+               || !Rectangle.same(last.screen, layout.screen)
                || !Frames.samePanels(last.panels, this.scene.panels.list)
     }
 
     private getPanelStates(): PanelState[] {
         return this.scene.panels.list.map(panel => ({
-            window: copyRect(panel.window),
-            body: copyRect(panel.body)
+            window: Rectangle.copy(panel.window),
+            body: Rectangle.copy(panel.body)
         }))
     }
 
@@ -200,8 +196,8 @@ export default class Frames {
                && panels.every((panel, index) => {
                    const state = states[index]
 
-                   return sameRect(state.window, panel.window)
-                          && sameRect(state.body, panel.body)
+                   return Rectangle.same(state.window, panel.window)
+                          && Rectangle.same(state.body, panel.body)
                })
     }
 

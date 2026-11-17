@@ -4,6 +4,7 @@ import PlotSeries from '@/types/PlotSeries'
 import RenderItemLine from '@/types/RenderItemLine'
 import { AnimationTiming, DEFAULT_LINE_WIDTH, Layer } from '@/static/constants/Index'
 import { PlotType } from '@/static/Enums'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -34,7 +35,7 @@ describe('Styling plot line', () => {
             .toBe(series.color)
         expect(item.layer)
             .toBe(Layer.Data + 2)
-        expect(item.isInteractive)
+        expect(item.is(f.Interactive))
             .toBe(true)
         expect(item.animation.initDuration)
             .toBe(AnimationTiming.plotLineInit)

@@ -51,7 +51,7 @@ export function createFrames(settings: Partial<ChartSettings> = {}) {
     const panels = { animate: jest.fn(() => false), list: [] }
     const input = { position: POSITION as Point | null, context: null }
     const overlay = { update: jest.fn(() => false) }
-    const legend = { isMoving: false, getCurrentReserved: jest.fn(() => RESERVED) }
+    const legend = { isMoving: false, getAnimatedReservedPaddings: jest.fn(() => RESERVED) }
     const syncTheme = jest.fn(() => false)
     const rebuildForTheme = jest.fn()
     const onError = jest.fn()

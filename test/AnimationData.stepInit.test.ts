@@ -1,4 +1,5 @@
 import AnimationData from '@/animation/AnimationData'
+import { MorphFade } from '@/static/Enums'
 
 const create = () => new AnimationData()
 
@@ -132,10 +133,10 @@ describe('Starting morph', () => {
     it('Should fade in from invisible', () => {
         const animation = create()
 
-        animation.startMorph('in', 200, 50)
+        animation.startMorph(MorphFade.In, 200, 50)
 
         expect(animation.morphFade)
-            .toBe('in')
+            .toBe(MorphFade.In)
         expect(animation.morph)
             .toBe(0)
         expect(animation.morphDuration)
@@ -152,7 +153,7 @@ describe('Starting morph', () => {
         const animation = create()
 
         animation.visibility = .5
-        animation.startMorph('out', 200)
+        animation.startMorph(MorphFade.Out, 200)
 
         expect(animation.visibility)
             .toBe(.5)
@@ -168,7 +169,7 @@ describe('Stepping morph', () => {
     it('Should grow morph on progress', () => {
         const animation = create()
 
-        animation.startMorph('in', 200)
+        animation.startMorph(MorphFade.In, 200)
         animation.stepMorph(1000)
 
         expect(animation.stepMorph(1050))
@@ -184,7 +185,7 @@ describe('Stepping morph', () => {
     it('Should finish morph and clear the fade', () => {
         const animation = create()
 
-        animation.startMorph('out', 200)
+        animation.startMorph(MorphFade.Out, 200)
         animation.stepMorph(0)
 
         expect(animation.stepMorph(1000))
@@ -202,14 +203,14 @@ describe('Stepping morph', () => {
     it('Should keep fade when item is removed after morph', () => {
         const animation = create()
 
-        animation.startMorph('out', 200)
+        animation.startMorph(MorphFade.Out, 200)
         animation.removeAfterMorph = true
         animation.stepMorph(0)
 
         expect(animation.stepMorph(1000))
             .toBe(true)
         expect(animation.morphFade)
-            .toBe('out')
+            .toBe(MorphFade.Out)
     })
 })
 
@@ -239,7 +240,7 @@ describe('Updating visibility', () => {
     it('Should follow morph in fade', () => {
         const animation = create()
 
-        animation.morphFade = 'in'
+        animation.morphFade = MorphFade.In
         animation.morph = .6
         animation.updateVisibility(true)
 
@@ -250,7 +251,7 @@ describe('Updating visibility', () => {
     it('Should follow morph out fade', () => {
         const animation = create()
 
-        animation.morphFade = 'out'
+        animation.morphFade = MorphFade.Out
         animation.morph = .4
         animation.updateVisibility(true)
 

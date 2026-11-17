@@ -127,6 +127,18 @@ export default class MenuPopup {
         button.setAttribute('role', 'menuitem')
         button.tabIndex = -1
         button.textContent = option.text
+        this.styleButton(button)
+        this.trackHighlight(button)
+        button.addEventListener(Events.Click, () => {
+            if (this.isInteractive)
+                select(option.action)
+        })
+        this.buttons.push(button)
+
+        return button
+    }
+
+    private styleButton(button: HTMLButtonElement) {
         Object.assign(button.style, {
             display: 'block',
             width: '100%',
@@ -148,7 +160,9 @@ export default class MenuPopup {
             transition: HIGHLIGHT_TRANSITION
         })
         button.style.setProperty('-webkit-backdrop-filter', 'none')
+    }
 
+    private trackHighlight(button: HTMLButtonElement) {
         button.addEventListener(Events.PointerEnter, () => {
             this.hovered.add(button)
             this.refreshHighlights(document.activeElement)
@@ -159,13 +173,6 @@ export default class MenuPopup {
         })
         button.addEventListener(Events.Focus, () => this.refreshHighlights(document.activeElement))
         button.addEventListener(Events.Blur, () => this.refreshHighlights(document.activeElement))
-        button.addEventListener(Events.Click, () => {
-            if (this.isInteractive)
-                select(option.action)
-        })
-        this.buttons.push(button)
-
-        return button
     }
 
     private refreshHighlights(selected: Element | null) {

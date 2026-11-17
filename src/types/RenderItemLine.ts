@@ -3,7 +3,9 @@ import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, FULL_ANGLE } from '@/static/constants/Index'
-import { contains, copyRect, findClosestStop, lerp, lerpRect, sameRect } from '@/helpers/Geometry'
+import { lerp } from '@/helpers/Geometry'
+import PointHelper from '@/helpers/PointHelper'
+import Rectangle from '@/helpers/Rectangle'
 import { GradientCache } from '@/helpers/Canvas'
 import { LineJoin } from '@/static/Enums'
 import { Tooltip, resolveTooltip } from '@/types/Tooltip'
@@ -42,7 +44,7 @@ export default class RenderItemLine extends RenderItemBase {
 
     private fromClip: RectangleDimensions | null = null
 
-    private readonly canvasClip: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
+    private readonly canvasClip = Rectangle.empty()
 
     private isSortedX: boolean = true
 
@@ -74,7 +76,7 @@ export default class RenderItemLine extends RenderItemBase {
         if (!this.clip || !this.fromClip || morph >= 1)
             return this.clip
 
-        return lerpRect(this.fromClip, this.clip, morph)
+        return Rectangle.lerp(this.fromClip, this.clip, morph)
     }
 
     morphFrom(previous: RenderItemBase, morph: number): boolean {
@@ -127,12 +129,12 @@ export default class RenderItemLine extends RenderItemBase {
             this.canvasClip.height = clip.height / COORDS_MAX_Y * window.height
         }
 
-        this.adjustedWindow = morph >= 1 ? copyRect(window) : null
+        this.adjustedWindow = morph >= 1 ? Rectangle.copy(window) : null
         this.isBoundsCached = false
     }
 
     private isAdjusted(window: CanvasWindow) {
-        return this.adjustedWindow != null && sameRect(this.adjustedWindow, window)
+        return this.adjustedWindow != null && Rectangle.same(this.adjustedWindow, window)
     }
 
     private invalidateAdjust() {
@@ -242,7 +244,7 @@ export default class RenderItemLine extends RenderItemBase {
     }
 
     private stopAt(point: Point) {
-        return findClosestStop(
+        return PointHelper.findClosestStop(
             this.canvas,
             point,
             this.width / 2 + HIT_RADIUS,
@@ -251,7 +253,7 @@ export default class RenderItemLine extends RenderItemBase {
     }
 
     private isInsideClip(stop: Point) {
-        return !this.clip || contains(this.canvasClip, stop)
+        return !this.clip || Rectangle.contains(this.canvasClip, stop)
     }
 
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp): void {

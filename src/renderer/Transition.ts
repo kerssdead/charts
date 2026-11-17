@@ -4,6 +4,7 @@ import RenderItemArc from '@/types/RenderItemArc'
 import Panel from '@/types/Panel'
 import ValueAxis from '@/types/ValueAxis'
 import ArcNeighbours from '@/renderer/ArcNeighbours'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 type ArcChanges = {
     appeared: RenderItem[]
@@ -70,7 +71,7 @@ export default class Transition {
     }
 
     private enter(item: RenderItem, old: RenderItem | undefined): boolean {
-        if (old?.isGhost && item.isGhost)
+        if (old?.is(f.Ghost) && item.is(f.Ghost))
             return false
 
         const previousAxis = Transition.verticalAxis(this.previousPanels, item)
@@ -80,21 +81,21 @@ export default class Transition {
             item.morphFrom(old, this.duration)
         else if (item.axisValue != null && previousAxis)
             item.enterFromAxis(previousAxis.getAxisY(item.axisValue), this.duration)
-        else if (Transition.isArc(item) && !item.isGhost)
+        else if (Transition.isArc(item) && !item.is(f.Ghost))
             return true
-        else if (!item.isGhost)
+        else if (!item.is(f.Ghost))
             item.appear(this.duration, Transition.mapY(previousAxis, nextAxis))
 
         return false
     }
 
     private leave(item: RenderItem) {
-        if (item.isGhost || Transition.isArc(item))
+        if (item.is(f.Ghost) || Transition.isArc(item))
             return
 
         const nextAxis = Transition.verticalAxis(this.panels, item)
 
-        item.isFading ||= !nextAxis
+        item.set(f.Fading, item.is(f.Fading) || !nextAxis)
 
         if (item.axisValue != null && nextAxis)
             item.leaveToAxis(nextAxis.getAxisY(item.axisValue), this.duration)
@@ -116,7 +117,7 @@ export default class Transition {
 
         const appearAngles = appeared.map(item => neighbours.appearAngle(item))
         const removeAngles = removed.map(item => {
-            return Transition.isArc(item) && !item.isGhost ? neighbours.disappearAngle(item) : 0
+            return Transition.isArc(item) && !item.is(f.Ghost) ? neighbours.disappearAngle(item) : 0
         })
 
         appeared.forEach((item, i) => {
@@ -125,7 +126,7 @@ export default class Transition {
         })
 
         removed.forEach((item, i) => {
-            if (!Transition.isArc(item) || item.isGhost)
+            if (!Transition.isArc(item) || item.is(f.Ghost))
                 return
 
             arc(item).disappearToAngle(removeAngles[i], item.animation.morph)

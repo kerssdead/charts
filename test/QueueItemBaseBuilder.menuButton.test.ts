@@ -1,5 +1,6 @@
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 describe('Building queue item flags', () => {
     it('Should mark an item as a menu button', () => {
@@ -7,7 +8,7 @@ describe('Building queue item flags', () => {
 
         const item = items.rect().menuButton().build()
 
-        expect(item.isMenuButton)
+        expect(item.is(f.MenuButton))
             .toBe(true)
     })
 
@@ -16,7 +17,7 @@ describe('Building queue item flags', () => {
 
         const item = items.rect().monochrome().build()
 
-        expect(item.isMonochrome)
+        expect(item.is(f.Monochrome))
             .toBe(true)
     })
 
@@ -25,7 +26,7 @@ describe('Building queue item flags', () => {
 
         const item = items.rect().contextMenu().build()
 
-        expect(item.hasContextMenu)
+        expect(item.is(f.ContextMenu))
             .toBe(true)
     })
 

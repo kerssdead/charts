@@ -1,7 +1,7 @@
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
-import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
 
 const WINDOW = new CanvasWindow(500, 500)
 
@@ -77,7 +77,7 @@ describe('Rendering rectangle', () => {
 
         shape.absolute = { x: 1000, y: 2000, width: 500, height: 1000 }
         shape.align = { x: HorizontalAlignment.Left, y: VerticalAlignment.Top }
-        shape.growAxis = 'y'
+        shape.growAxis = Axis.Y
         shape.growOrigin = 3000
         item.animation.init = .5
         shape.adjust(WINDOW)
@@ -94,7 +94,7 @@ describe('Rendering rectangle', () => {
 
         shape.absolute = { x: 1000, y: 2000, width: 500, height: 1000 }
         shape.align = { x: HorizontalAlignment.Left, y: VerticalAlignment.Top }
-        shape.growAxis = 'x'
+        shape.growAxis = Axis.X
         shape.growOrigin = 0
         item.animation.init = .5
         shape.adjust(WINDOW)

@@ -1,7 +1,7 @@
 import PlotSeries from '@/types/PlotSeries'
 import { getY } from '@/types/PlotPoint'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
-import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotItemStyle from '@/render/plot/PlotItemStyle'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
@@ -60,7 +60,7 @@ export default class PlotColumnItems {
                      .size(width, isDisabled ? 0 : baseline - top)
                      .round([CORNER_RADIUS, CORNER_RADIUS, 0, 0])
                      .align(HorizontalAlignment.Center, VerticalAlignment.Bottom)
-                     .grow('y', baseline)
+                     .grow(Axis.Y, baseline)
 
                 this.style.styleRect(column, series, slot, valueIndex)
 

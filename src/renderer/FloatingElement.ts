@@ -1,7 +1,7 @@
 import Point from '@/types/Point'
 import Size from '@/types/Size'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import { placeNear } from '@/helpers/Geometry'
+import PointHelper from '@/helpers/PointHelper'
 import { Events } from '@/static/Enums'
 
 const VIEWPORT_PADDING = 8
@@ -143,7 +143,7 @@ export default class FloatingElement {
             y: canvas.top + this.point.y * scale.y
         }
         const size = this.size ??= { width: element.offsetWidth, height: element.offsetHeight }
-        const position = placeNear(point, size, this.offset, bounds)
+        const position = PointHelper.placeNear(point, size, this.offset, bounds)
 
         this.applyStyle('left', `${ Math.min(position.x, bounds.x + bounds.width - size.width) }px`)
         this.applyStyle('top', `${ Math.min(position.y, bounds.y + bounds.height - size.height) }px`)

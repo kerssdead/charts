@@ -5,6 +5,7 @@ import ChartSettings from '@/types/ChartSettings'
 import Sector from '@/types/Sector'
 import TreeBarRow from '@/types/TreeBarRow'
 import { ChartType, PlotType } from '@/static/Enums'
+import { ItemFlag as f } from '@/static/ItemFlag'
 import { createSeries } from './PlotTestData'
 import ViewState from '@/charts/ViewState'
 import { Layer } from '@/static/constants/Index'
@@ -92,7 +93,7 @@ describe('Building chart panels', () => {
 
         expect(scrollbar)
             .toBeDefined()
-        expect(scrollbar?.isFixed)
+        expect(scrollbar?.is(f.Fixed))
             .toBe(true)
     })
 

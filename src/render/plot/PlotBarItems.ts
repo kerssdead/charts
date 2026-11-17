@@ -1,7 +1,7 @@
 import PlotSeries from '@/types/PlotSeries'
 import { getY } from '@/types/PlotPoint'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
-import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotItemStyle from '@/render/plot/PlotItemStyle'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
@@ -54,7 +54,7 @@ export default class PlotBarItems {
                      .size(isDisabled ? 0 : end - baseline, height)
                      .round([0, CORNER_RADIUS, CORNER_RADIUS, 0])
                      .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                     .grow('x', baseline)
+                     .grow(Axis.X, baseline)
 
                 this.style.styleRect(bar, series, slot, valueIndex)
 

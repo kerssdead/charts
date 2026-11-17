@@ -1,5 +1,6 @@
 import ease from '@/animation/Animations'
 import { clamp } from '@/helpers/Geometry'
+import { MorphFade } from '@/static/Enums'
 
 function getProgress(now: DOMHighResTimeStamp, start: DOMHighResTimeStamp, delay: number, duration: number) {
     return clamp((now - start - delay) / duration, 0, 1)
@@ -8,7 +9,7 @@ function getProgress(now: DOMHighResTimeStamp, start: DOMHighResTimeStamp, delay
 export default class AnimationData {
     alpha: number = 1
 
-    mono: number = 0
+    grayscale: number = 0
 
     init: number = 1
 
@@ -30,7 +31,7 @@ export default class AnimationData {
 
     appearDelay: number = 0
 
-    morphFade: 'in' | 'out' | null = null
+    morphFade: MorphFade | null = null
 
     removeAfterMorph: boolean = false
 
@@ -57,14 +58,14 @@ export default class AnimationData {
         this.initStart = null
     }
 
-    startMorph(fade: 'in' | 'out' | null, duration: number, delay: number = 0) {
+    startMorph(fade: MorphFade | null, duration: number, delay: number = 0) {
         this.morphFade = fade
         this.morph = 0
         this.morphDuration = duration
         this.morphDelay = delay
         this.morphStart = null
 
-        if (fade === 'in')
+        if (fade === MorphFade.In)
             this.visibility = 0
     }
 
@@ -116,9 +117,9 @@ export default class AnimationData {
             this.visibility = 1
         else if (this.initFade)
             this.visibility = this.init
-        else if (this.morphFade === 'in')
+        else if (this.morphFade === MorphFade.In)
             this.visibility = this.morph
-        else if (this.morphFade === 'out')
+        else if (this.morphFade === MorphFade.Out)
             this.visibility = 1 - this.morph
         else
             this.visibility = 1

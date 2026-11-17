@@ -1,5 +1,5 @@
 import Value from '@/types/base/Value'
-import { contains } from '@/helpers/Geometry'
+import Rectangle from '@/helpers/Rectangle'
 import { stringWidth } from '@/helpers/Text'
 import Point from '@/types/Point'
 import Frame from '@/renderer/Frame'
@@ -59,11 +59,11 @@ export default class Legend extends Overlay {
         this.motion = new LegendMotion(value => this.values.getKey(value))
     }
 
-    get reserved(): Paddings {
+    get reservedPaddings(): Paddings {
         return this.getReserved(this.area)
     }
 
-    getCurrentReserved(now: DOMHighResTimeStamp): Paddings {
+    getAnimatedReservedPaddings(now: DOMHighResTimeStamp): Paddings {
         return this.getReserved(this.area && this.motion.getArea(this.area, this.motion.getProgress(now)))
     }
 
@@ -272,11 +272,11 @@ export default class Legend extends Overlay {
         const targets = this.entries.map((entry): [string, boolean] => {
             const { x, y, width } = this.motion.getCurrent(entry, progress)
 
-            return [entry.value.id, contains({ x, y, width, height: ITEM_HEIGHT }, mouse)]
+            return [entry.value.id, Rectangle.contains({ x, y, width, height: ITEM_HEIGHT }, mouse)]
         })
 
         if (this.button)
-            targets.push([RESET_KEY, contains(this.button, mouse)])
+            targets.push([RESET_KEY, Rectangle.contains(this.button, mouse)])
 
         return this.hover.update(targets, now, isInstant)
     }

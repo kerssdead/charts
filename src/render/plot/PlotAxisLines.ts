@@ -5,6 +5,7 @@ import { COORDS_MAX_X, Layer } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { AXIS_LAYER, GRID_DASH } from '@/render/plot/PlotConstants'
+import { Axis } from '@/static/Enums'
 
 export default class PlotAxisLines {
     private readonly layout: PlotLayout
@@ -26,7 +27,7 @@ export default class PlotAxisLines {
             const { band, valueScale } = layout.horizontal
             const { top, bottom } = band
 
-            this.addAxisLines(items, valueScale.values, 'x', value => {
+            this.addAxisLines(items, valueScale.values, Axis.X, value => {
                 const x = valueScale.getCoordinate(value)
 
                 return [{ x, y: top }, { x, y: bottom }]
@@ -41,7 +42,7 @@ export default class PlotAxisLines {
 
         const { valueScale } = layout.vertical
 
-        this.addAxisLines(items, valueScale.values, 'y', value => {
+        this.addAxisLines(items, valueScale.values, Axis.Y, value => {
             const y = valueScale.getCoordinate(value)
 
             return [{ x: x1, y }, { x: x2, y }]
@@ -51,7 +52,7 @@ export default class PlotAxisLines {
     private addAxisLines(
         items: QueueItemsBuilder,
         values: number[],
-        axis: 'x' | 'y',
+        axis: Axis,
         getLine: (value: number) => [Point, Point]
     ) {
         const [from, to] = getLine(values[0] ?? 0)
@@ -74,7 +75,7 @@ export default class PlotAxisLines {
                               .layer(Layer.Base)
                               .key(`grid-${ axis }-${ value }`)
 
-            if (axis === 'y')
+            if (axis === Axis.Y)
                 grid.axisValue(value)
         }
     }

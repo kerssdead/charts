@@ -3,7 +3,7 @@ import Point from '@/types/Point'
 type PointerContext = {
     point: Point
 
-    isMenu: boolean
+    isOpenedFromButton: boolean
 }
 
 export default PointerContext

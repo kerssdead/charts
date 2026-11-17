@@ -5,12 +5,22 @@ import ChartItem from '@/types/ChartItem'
 import { getTableRows } from '@/charts/ChartDefinitions'
 import { getTotals } from '@/export/TableTotals'
 import TextResources from '@/static/TextResources'
+import Size from '@/types/Size'
 
 const PNG_MARGIN = 4
 
 const REVOKE_DELAY = 1000
 
 const CSV_FORMULA = /^[=+\-@\t\r]/
+
+const escapeCsvValue = (value: unknown) => {
+    let text = String(value ?? '')
+
+    if (typeof value == 'string' && CSV_FORMULA.test(text) && isNaN(Number(text)))
+        text = '\'' + text
+
+    return '"' + text.replace(/"/g, '""') + '"'
+}
 
 type PngOptions = {
     ratio: number
@@ -20,69 +30,81 @@ type PngOptions = {
     prepare?: () => void
 }
 
+const copyCanvas = (canvas: HTMLCanvasElement, { ratio, exclude, theme }: PngOptions) => {
+    const source = document.createElement(Tag.Canvas)
+    source.width = canvas.width
+    source.height = canvas.height
+
+    const ctx = getContext(source, true)
+
+    ctx.drawImage(canvas, 0, 0)
+
+    if (exclude) {
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
+        ctx.fillStyle = theme.canvasBackground
+        ctx.fillRect(exclude.x, exclude.y, exclude.width, exclude.height)
+    }
+
+    return { source, ctx }
+}
+
+const isEmptyColumn = (pixels: Uint32Array, { width, height }: Size, background: number, x: number) => {
+    for (let y = 0; y < height; y++)
+        if (isPixelBusy(pixels[x + y * width], background))
+            return false
+
+    return true
+}
+
+const getEmptyEdgeWidth = (pixels: Uint32Array, size: Size, background: number) => {
+    const { width } = size
+
+    let left = 0
+
+    while (left < width && isEmptyColumn(pixels, size, background, left))
+        left++
+
+    let right = 0
+
+    while (right < width - left && isEmptyColumn(pixels, size, background, width - 1 - right))
+        right++
+
+    return Math.min(left, right)
+}
+
+const cropHorizontally = (source: HTMLCanvasElement, trim: number, background: string) => {
+    const destination = document.createElement(Tag.Canvas)
+    destination.width = source.width - trim * 2
+    destination.height = source.height
+
+    const ctx = getContext(destination)
+
+    ctx.fillStyle = background
+    ctx.fillRect(0, 0, destination.width, destination.height)
+
+    ctx.drawImage(source, -trim, 0)
+
+    return destination
+}
+
 export default class Export {
-    static asPng(canvas: HTMLCanvasElement, { ratio, title, exclude, theme, prepare }: PngOptions) {
+    static asPng(canvas: HTMLCanvasElement, options: PngOptions) {
+        const { ratio, title, theme, prepare } = options
+
         requestAnimationFrame(() => {
             prepare?.()
 
-            const { width, height } = canvas
+            const { source, ctx } = copyCanvas(canvas, options)
+            const pixels = Export.readPixels(ctx, canvas.width, canvas.height)
 
-            const source = document.createElement(Tag.Canvas)
-            source.width = width
-            source.height = height
-
-            const ctx = getContext(source, true)
-
-            ctx.drawImage(canvas, 0, 0)
-
-            if (exclude) {
-                ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
-                ctx.fillStyle = theme.canvasBackground
-                ctx.fillRect(exclude.x, exclude.y, exclude.width, exclude.height)
-            }
-
-            const imageData = Export.readPixels(ctx, width, height)
-
-            if (!imageData)
+            if (!pixels)
                 return
 
-            const isEmptyColumn = (x: number) => {
-                for (let y = 0; y < height; y++)
-                    if (isPixelBusy(imageData[x + y * width], theme.canvasBackgroundInt))
-                        return false
-
-                return true
-            }
-
-            let leftEmpty = 0
-
-            while (leftEmpty < width && isEmptyColumn(leftEmpty))
-                leftEmpty++
-
-            let rightEmpty = 0
-
-            while (rightEmpty < width - leftEmpty && isEmptyColumn(width - 1 - rightEmpty))
-                rightEmpty++
-
-            let trim = Math.min(leftEmpty, rightEmpty)
-
+            const emptyWidth = getEmptyEdgeWidth(pixels, canvas, theme.canvasBackgroundInt)
             const margin = Math.round(PNG_MARGIN * ratio)
+            const trim = emptyWidth > margin ? emptyWidth - margin : emptyWidth
 
-            if (trim > margin)
-                trim -= margin
-
-            const destination = document.createElement(Tag.Canvas)
-            destination.width = width - trim * 2
-            destination.height = height
-
-            const destCtx = getContext(destination)
-
-            destCtx.fillStyle = theme.background
-            destCtx.fillRect(0, 0, destination.width, destination.height)
-
-            destCtx.drawImage(source, -trim, 0)
-
-            destination.toBlob(blob => {
+            cropHorizontally(source, trim, theme.background).toBlob(blob => {
                 if (blob)
                     Export.saveAs(
                         (title || TextResources.defaultImageName) + '.png',
@@ -107,15 +129,6 @@ export default class Export {
     }
 
     static asCsv(charts: ChartItem[], title: string) {
-        const escape = (value: unknown) => {
-            let text = String(value ?? '')
-
-            if (typeof value == 'string' && CSV_FORMULA.test(text) && isNaN(Number(text)))
-                text = '\'' + text
-
-            return '"' + text.replace(/"/g, '""') + '"'
-        }
-
         const blocks = charts.map(chart => {
             const table = getTableRows(chart, () => false)
             const { headers, values } = table
@@ -125,7 +138,7 @@ export default class Export {
             const totalsRow = ['', ...getTotals(table)]
 
             return [headerRow, ...rows, totalsRow]
-                .map(row => row.map(escape).join(','))
+                .map(row => row.map(escapeCsvValue).join(','))
                 .join('\n')
         })
 

@@ -10,6 +10,7 @@ import Sector from '@/types/Sector'
 import PieProcessSettings from '@/render/pie/PieProcessSettings'
 import { createState } from './ViewStateTestData'
 import { DARK_THEME } from './TestTheme'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -86,9 +87,9 @@ describe('Getting pie data', () => {
 
         expect(items.has('sector-label-B'))
             .toBe(false)
-        expect(items.get('sector-C')?.isGhost)
+        expect(items.get('sector-C')?.is(f.Ghost))
             .toBe(true)
-        expect(items.get('sector-label-C')?.isGhost)
+        expect(items.get('sector-label-C')?.is(f.Ghost))
             .toBe(true)
     })
 
@@ -100,7 +101,7 @@ describe('Getting pie data', () => {
             .toBe(getArc(items, 'sector-A'))
         expect(leader.target)
             .toBe(getText(items, 'sector-label-A'))
-        expect(items.get('sector-leader-A')?.isFading)
+        expect(items.get('sector-leader-A')?.is(f.Fading))
             .toBe(false)
     })
 
@@ -114,9 +115,9 @@ describe('Getting pie data', () => {
     it('Should ghost leader line of disabled sector', () => {
         const items = getItems(create({ values: [sector('A', 1), sector('B', 2, { disabled: true })] }))
 
-        expect(items.get('sector-leader-B')?.isGhost)
+        expect(items.get('sector-leader-B')?.is(f.Ghost))
             .toBe(true)
-        expect(items.get('sector-leader-A')?.isGhost)
+        expect(items.get('sector-leader-A')?.is(f.Ghost))
             .toBe(false)
     })
 

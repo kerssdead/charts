@@ -1,11 +1,12 @@
 import Point from '@/types/Point'
 import { Events } from '@/static/Enums'
-import { ZOOM_DEFAULT_STEP } from '@/static/constants/Index'
 import Styles from '@/static/constants/Styles'
 import CanvasWindow from '@/types/CanvasWindow'
 import PointerContext from '@/types/PointerContext'
 import ScrollDrag from '@/types/ScrollDrag'
-import { clamp, copyRect, sameRect, samePoint } from '@/helpers/Geometry'
+import PointHelper from '@/helpers/PointHelper'
+import Rectangle from '@/helpers/Rectangle'
+import PointerWheel from '@/renderer/PointerWheel'
 
 type PointerHandlers = {
     onClick: (point: Point) => void
@@ -27,12 +28,6 @@ type DragState = {
 
 const DRAG_THRESHOLD = 3
 
-const WHEEL_NOTCH = 100
-
-const WHEEL_LINE_HEIGHT = 16
-
-const WHEEL_LATCH = 400
-
 export default class Pointer {
     position: Point | null = null
 
@@ -52,18 +47,24 @@ export default class Pointer {
 
     private isScrollable: boolean = false
 
-    private lastWheel: DOMHighResTimeStamp = -Infinity
-
     private readonly canvas: HTMLCanvasElement
 
     private readonly getWindow: () => CanvasWindow
 
     private readonly handlers: PointerHandlers
 
+    private readonly wheel: PointerWheel
+
     constructor(canvas: HTMLCanvasElement, getWindow: () => CanvasWindow, handlers: PointerHandlers) {
         this.canvas = canvas
         this.getWindow = getWindow
         this.handlers = handlers
+        this.wheel = new PointerWheel({
+            isZoomEnabled: () => this.isMoveEnabled,
+            zoom: (step, point) => this.updateWindow(view => view.zoom(step, point)),
+            scrollBy: (point, delta) => handlers.scrollBy(point, delta),
+            onChange: () => handlers.onChange()
+        })
     }
 
     attach(enableMove: boolean) {
@@ -80,15 +81,7 @@ export default class Pointer {
         this.listen(this.canvas, Events.PointerMove, event => this.onMove(event))
         this.listen(this.canvas, Events.PointerLeave, () => this.setPosition(null))
         this.listen(this.canvas, Events.ContextMenu, event => this.onContextMenu(event))
-        this.listen(this.canvas, Events.Click, event => {
-            const isOpen = this.context != null
-
-            if (!this.isDragged)
-                this.handlers.onClick(this.toPoint(event))
-
-            if (isOpen)
-                this.closeContext()
-        })
+        this.listen(this.canvas, Events.Click, event => this.onClick(event))
         this.listen(document, Events.Click, event => {
             if (event.target !== this.canvas)
                 this.closeContext()
@@ -137,11 +130,11 @@ export default class Pointer {
 
         this.listen(this.canvas, Events.PointerDown, event => this.onDragStart(event), signal)
         this.listen(this.canvas, Events.LostPointerCapture, () => this.drag = null, signal)
-        this.listen(this.canvas, Events.Wheel, event => this.onWheel(event), signal)
+        this.listen(this.canvas, Events.Wheel, event => this.wheel.handle(event, this.toPoint(event)), signal)
     }
 
     openMenu(point: Point) {
-        this.context = { point, isMenu: true }
+        this.context = { point, isOpenedFromButton: true }
 
         this.handlers.onChange()
     }
@@ -168,6 +161,16 @@ export default class Pointer {
         return { x: Math.round(event.offsetX), y: Math.round(event.offsetY) }
     }
 
+    private onClick(event: MouseEvent) {
+        const isOpen = this.context != null
+
+        if (!this.isDragged)
+            this.handlers.onClick(this.toPoint(event))
+
+        if (isOpen)
+            this.closeContext()
+    }
+
     private onMove(event: PointerEvent) {
         if (!event.isPrimary)
             return
@@ -177,7 +180,7 @@ export default class Pointer {
     }
 
     private setPosition(position: Point | null) {
-        if (samePoint(position, this.position))
+        if (PointHelper.same(position, this.position))
             return
 
         this.position = position
@@ -225,63 +228,39 @@ export default class Pointer {
 
         const { windowX, windowY, scroll } = this.drag
 
-        const isChanged = scroll
-                          ? scroll(dy)
-                          : this.updateWindow(view => view.moveTo(windowX + dx, windowY + dy))
-
-        if (isChanged) {
-            this.position = null
-            this.handlers.onChange()
-        } else if (!scroll) {
-            this.setPosition(null)
-        }
+        if (scroll)
+            this.dragScroll(scroll, dy)
+        else
+            this.dragWindow(windowX + dx, windowY + dy)
 
         return true
     }
 
-    private onWheel(event: WheelEvent) {
-        const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? WHEEL_LINE_HEIGHT : 1)
-
-        if (!event.ctrlKey && !event.metaKey) {
-            if (delta !== 0)
-                this.onWheelScroll(event, delta)
-
-            return
-        }
-
-        if (!this.isMoveEnabled)
-            return
-
-        event.preventDefault()
-
-        const step = clamp(-delta / WHEEL_NOTCH, -1, 1) * ZOOM_DEFAULT_STEP
-
-        if (this.updateWindow(view => view.zoom(step, this.toPoint(event))))
-            this.handlers.onChange()
+    private dragScroll(scroll: ScrollDrag, dy: number) {
+        if (scroll(dy))
+            this.clearPosition()
     }
 
-    private onWheelScroll(event: WheelEvent, delta: number) {
-        const isScrolled = this.handlers.scrollBy(this.toPoint(event), delta)
-        const isLatched = event.timeStamp - this.lastWheel <= WHEEL_LATCH
+    private dragWindow(x: number, y: number) {
+        if (this.updateWindow(view => view.moveTo(x, y)))
+            this.clearPosition()
+        else
+            this.setPosition(null)
+    }
 
-        if (isScrolled == null || !isScrolled && !isLatched)
-            return
+    private clearPosition() {
+        this.position = null
 
-        event.preventDefault()
-
-        this.lastWheel = event.timeStamp
-
-        if (isScrolled)
-            this.handlers.onChange()
+        this.handlers.onChange()
     }
 
     private updateWindow(update: (view: CanvasWindow) => void): boolean {
         const view = this.getWindow()
-        const previous = copyRect(view)
+        const previous = Rectangle.copy(view)
 
         update(view)
 
-        return !sameRect(view, previous)
+        return !Rectangle.same(view, previous)
     }
 
     private onContextMenu(event: MouseEvent) {
@@ -292,7 +271,7 @@ export default class Pointer {
 
         event.preventDefault()
 
-        this.context = { point, isMenu: false }
+        this.context = { point, isOpenedFromButton: false }
 
         this.handlers.onChange()
     }

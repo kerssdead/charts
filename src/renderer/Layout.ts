@@ -1,5 +1,5 @@
 import CanvasWindow from '@/types/CanvasWindow'
-import Legend from '@/Legend'
+import Legend from '@/legend/Legend'
 import { truncate } from '@/helpers/TextFit'
 import MenuButton from '@/renderer/MenuButton'
 import Paddings, { NO_PADDINGS } from '@/types/Paddings'
@@ -75,7 +75,7 @@ export default class Layout {
 
         this.screen = new CanvasWindow(this.width, this.height)
 
-        return this.fit(legend?.reserved ?? NO_PADDINGS)
+        return this.fit(legend?.reservedPaddings ?? NO_PADDINGS)
     }
 
     fit({ left, top, right, bottom }: Paddings): boolean {

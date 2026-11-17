@@ -74,12 +74,9 @@ export default class Chart {
         this.source = settings
 
         try {
-            this.settings = normalize(settings, element)
             this.viewState = new ViewState()
-            this.viewState.apply(this.settings)
 
-            this.bindMenuActions()
-            applyHostSize(element, this.settings)
+            this.normalizeAndApply(settings)
             applyFallbackHostSize(element, this.settings)
 
             this.host = new CanvasHost(element, {
@@ -165,16 +162,21 @@ export default class Chart {
 
     private update(settings: ChartSettings) {
         this.source = settings
-        this.settings = normalize(settings, this.element)
-        this.viewState.apply(this.settings)
 
-        this.bindMenuActions()
-        applyHostSize(this.element, this.settings)
+        this.normalizeAndApply(settings)
 
         this.theme.updatePalette(this.settings.isDarkThemeFunction)
         this.renderer.apply(this.settings)
 
         Debug.log(settings, this.settings, this.host.canvas, this.theme.colorTheme)
+    }
+
+    private normalizeAndApply(settings: ChartSettings) {
+        this.settings = normalize(settings, this.element)
+        this.viewState.apply(this.settings)
+
+        this.bindMenuActions()
+        applyHostSize(this.element, this.settings)
     }
 
     private bindMenuActions() {

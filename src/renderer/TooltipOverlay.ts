@@ -11,7 +11,8 @@ import HoverProgress from '@/types/HoverProgress'
 import CustomTooltip from '@/renderer/CustomTooltip'
 import { ThemePalette } from '@/Theme'
 import { Tooltip } from '@/static/constants/Index'
-import { copyRect, sameRect, samePoint } from '@/helpers/Geometry'
+import PointHelper from '@/helpers/PointHelper'
+import Rectangle from '@/helpers/Rectangle'
 
 type TooltipTarget = {
     template: string | null
@@ -123,7 +124,7 @@ export default class TooltipOverlay extends Overlay {
         this.scan = {
             point,
             version: queue.version,
-            window: copyRect(window),
+            window: Rectangle.copy(window),
             template: target?.tooltipAt(point) ?? null,
             html: target ? this.getTemplateHtml(target) : null
         }
@@ -134,8 +135,8 @@ export default class TooltipOverlay extends Overlay {
     private static isScanCurrent(scan: TooltipScan, queue: Queue, window: CanvasWindow, point: Point) {
         return !queue.isAnimating
                && scan.version === queue.version
-               && samePoint(scan.point, point)
-               && sameRect(scan.window, window)
+               && PointHelper.same(scan.point, point)
+               && Rectangle.same(scan.window, window)
     }
 
     private getTemplateHtml(target: RenderItem) {

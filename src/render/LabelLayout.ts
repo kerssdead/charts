@@ -1,5 +1,6 @@
 import { boxEdgeDistance, clamp } from '@/helpers/Geometry'
 import Point from '@/types/Point'
+import { Axis } from '@/static/Enums'
 
 const SPACING = 2
 
@@ -142,7 +143,7 @@ class LabelArranger {
         let enter = 0
         let exit = 1
 
-        for (const [axis, half] of [['x', other.halfWidth], ['y', other.halfHeight]] as const) {
+        for (const [axis, half] of [[Axis.X, other.halfWidth], [Axis.Y, other.halfHeight]] as const) {
             const delta = to[axis] - from[axis]
             const near = (other.center[axis] - half - SPACING - from[axis]) / delta
             const far = (other.center[axis] + half + SPACING - from[axis]) / delta

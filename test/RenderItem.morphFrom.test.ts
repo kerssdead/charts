@@ -1,5 +1,7 @@
 import RenderItem from '@/types/RenderItem'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import { MorphFade } from '@/static/Enums'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 const shape = (overrides: Partial<RenderItemBase> = {}) => {
     return {
@@ -49,24 +51,24 @@ describe('Morphing item from previous', () => {
     it('Should fade in when the previous item is a ghost', () => {
         const previous = createItem()
 
-        previous.isGhost = true
+        previous.set(f.Ghost, true)
 
         const item = createItem(shape({ morphFrom: jest.fn(() => true) }))
 
         item.morphFrom(previous, 100)
 
         expect(item.animation.morphFade)
-            .toBe('in')
+            .toBe(MorphFade.In)
     })
 
     it('Should fade out when the item itself is a ghost', () => {
         const item = createItem(shape({ morphFrom: jest.fn(() => true) }))
 
-        item.isGhost = true
+        item.set(f.Ghost, true)
         item.morphFrom(createItem(), 100)
 
         expect(item.animation.morphFade)
-            .toBe('out')
+            .toBe(MorphFade.Out)
     })
 })
 
@@ -90,7 +92,7 @@ describe('Appearing item', () => {
         expect(item.animation.isMorphing)
             .toBe(true)
         expect(item.animation.morphFade)
-            .toBe('in')
+            .toBe(MorphFade.In)
     })
 })
 
@@ -114,7 +116,7 @@ describe('Disappearing item', () => {
         expect(item.animation.isMorphing)
             .toBe(true)
         expect(item.animation.morphFade)
-            .toBe('out')
+            .toBe(MorphFade.Out)
         expect(item.animation.removeAfterMorph)
             .toBe(true)
     })
@@ -136,7 +138,7 @@ describe('Moving item along the axis', () => {
         item.enterFromAxis(50, 100)
 
         expect(item.animation.morphFade)
-            .toBe('in')
+            .toBe(MorphFade.In)
     })
 
     it('Should start leaving initialization when the shape cannot leave to axis', () => {
@@ -156,7 +158,7 @@ describe('Moving item along the axis', () => {
         item.leaveToAxis(50, 100)
 
         expect(item.animation.morphFade)
-            .toBe('out')
+            .toBe(MorphFade.Out)
         expect(item.animation.removeAfterMorph)
             .toBe(true)
     })

@@ -4,6 +4,7 @@ import RenderItemRectangle from '@/types/RenderItemRectangle'
 import RenderItemLine from '@/types/RenderItemLine'
 import PlotSeriesItems from '@/render/plot/PlotSeriesItems'
 import { PlotType } from '@/static/Enums'
+import { ItemFlag as f } from '@/static/ItemFlag'
 import { LIGHT_THEME } from '@/Theme'
 
 jest.mock('@/helpers/Text', () => ({
@@ -69,7 +70,7 @@ describe('Getting plot series items', () => {
             createSeries(PlotType.Line, [1])
         ]).getItems())
 
-        expect(items.filter(item => item.isGhost).map(item => item.key))
+        expect(items.filter(item => item.is(f.Ghost)).map(item => item.key))
             .toEqual(['series-2-rect-C0-0', 'series-4-rect-C0-0', 'series-3-rect-C0-0'])
     })
 

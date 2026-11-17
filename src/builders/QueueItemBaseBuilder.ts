@@ -2,6 +2,7 @@ import RenderItem from '@/types/RenderItem'
 import ItemData from '@/types/ItemData'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import { Tooltip } from '@/types/Tooltip'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemBase> {
     readonly shape: S
@@ -18,7 +19,7 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
     }
 
     interact(): this {
-        this.current.isInteractive = true
+        this.current.set(f.Interactive, true)
 
         return this
     }
@@ -75,7 +76,7 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
     }
 
     fixed(value: boolean = true): this {
-        this.current.isFixed = value
+        this.current.set(f.Fixed, value)
 
         return this
     }
@@ -87,13 +88,7 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
     }
 
     ghost(value: boolean = true): this {
-        this.current.isGhost = value
-
-        if (value) {
-            this.current.isInteractive = false
-            this.current.tooltipTemplate = ''
-            this.current.hasContextMenu = false
-        }
+        this.current.setGhost(value)
 
         return this
     }
@@ -105,25 +100,25 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
     }
 
     fade(value: boolean): this {
-        this.current.isFading = value
+        this.current.set(f.Fading, value)
 
         return this
     }
 
     menuButton() {
-        this.current.isMenuButton = true
+        this.current.set(f.MenuButton, true)
 
         return this
     }
 
     monochrome() {
-        this.current.isMonochrome = true
+        this.current.set(f.Monochrome, true)
 
         return this
     }
 
     contextMenu() {
-        this.current.hasContextMenu = true
+        this.current.set(f.ContextMenu, true)
 
         return this
     }

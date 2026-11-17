@@ -1,4 +1,4 @@
-import Legend from '@/Legend'
+import Legend from '@/legend/Legend'
 import { normalize } from '@/charts/Settings'
 import { ChartType, LegendPlace } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
@@ -32,7 +32,7 @@ const legend = () => {
 
 describe('Getting current legend reserved size', () => {
     it('Should reserve nothing before the legend is sized', () => {
-        expect(legend().getCurrentReserved(0))
+        expect(legend().getAnimatedReservedPaddings(0))
             .toEqual({ top: 0, right: 0, bottom: 0, left: 0 })
     })
 
@@ -41,7 +41,7 @@ describe('Getting current legend reserved size', () => {
 
         bottom.resize(400, 400)
 
-        expect(bottom.getCurrentReserved(0))
-            .toEqual(bottom.reserved)
+        expect(bottom.getAnimatedReservedPaddings(0))
+            .toEqual(bottom.reservedPaddings)
     })
 })

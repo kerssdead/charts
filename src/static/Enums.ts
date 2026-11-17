@@ -275,3 +275,15 @@ export const enum ImageCrossOrigin {
 
     None = 'none'
 }
+
+export const enum MorphFade {
+    In,
+
+    Out
+}
+
+export const enum Axis {
+    X = 'x',
+
+    Y = 'y'
+}

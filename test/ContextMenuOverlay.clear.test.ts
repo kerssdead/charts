@@ -19,7 +19,7 @@ describe('Clearing context menu overlay', () => {
         const queue = { findTop: jest.fn() } as unknown as Queue
         const frame = {
             queue,
-            context: { isMenu: true, point: { x: 10, y: 20 } },
+            context: { isOpenedFromButton: true, point: { x: 10, y: 20 } },
             now: 0,
             theme: DARK_THEME,
             isInstant: true

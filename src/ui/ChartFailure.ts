@@ -2,7 +2,7 @@ import { createErrorMessage } from '@/ui/ErrorMessage'
 import ChartSettings from '@/types/ChartSettings'
 
 export default class ChartFailure {
-    private active: boolean = false
+    isActive: boolean = false
 
     private message: HTMLElement | undefined
 
@@ -12,25 +12,21 @@ export default class ChartFailure {
         this.element = element
     }
 
-    get isActive() {
-        return this.active
-    }
-
     report(error: unknown, details: object, onError?: ChartSettings['onError']) {
-        this.active = true
+        this.isActive = true
 
         console.error('OCharts failed:', error, details)
 
         const isHandled = ChartFailure.isHandled(error, onError)
 
-        if (!isHandled && this.active) {
+        if (!isHandled && this.isActive) {
             this.message = createErrorMessage()
             this.element.appendChild(this.message)
         }
     }
 
     clear() {
-        this.active = false
+        this.isActive = false
 
         this.message?.remove()
         this.message = undefined

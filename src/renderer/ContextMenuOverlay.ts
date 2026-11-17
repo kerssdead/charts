@@ -84,7 +84,7 @@ export default class ContextMenuOverlay extends Overlay {
     }
 
     private findButtons(queue: Queue, context: PointerContext) {
-        if (context.isMenu)
+        if (context.isOpenedFromButton)
             return this.fixedButtons?.() ?? []
 
         const target = queue.findTop(item => item.hasContextMenuAt(context.point))

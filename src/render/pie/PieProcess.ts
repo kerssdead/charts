@@ -3,7 +3,8 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import Sector from '@/types/Sector'
 import { AnimationTiming, CANVAS_CENTER } from '@/static/constants/Index'
 import Point from '@/types/Point'
-import { clamp, normalizeAngle, toRadians } from '@/helpers/Geometry'
+import { clamp } from '@/helpers/Geometry'
+import Angle from '@/helpers/Angle'
 import layoutLabels, { LabelPlacement } from '@/render/LabelLayout'
 import { stringWidth } from '@/helpers/Text'
 import ChartProcess from '@/render/ChartProcess'
@@ -37,7 +38,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
         super(data, pixel, settings, state)
 
         this.sizing = new PieSizing(this.units, this.data.innerRadius)
-        this.startAngle = TOP_ANGLE + toRadians(this.data.startAngle ?? 0)
+        this.startAngle = TOP_ANGLE + Angle.toRadians(this.data.startAngle ?? 0)
     }
 
     getData() {
@@ -138,7 +139,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
     ) {
         const { sector, key, groupedSectors, startAngle, angle } = slice
         const endAngle = startAngle + angle
-        const labelAngleOffset = normalizeAngle(labelPlacement.angle - PieSlices.getMiddleAngle(slice))
+        const labelAngleOffset = Angle.normalize(labelPlacement.angle - PieSlices.getMiddleAngle(slice))
         const leaderAnchorRange = angle / 2 - Math.min(angle / 2, LEADER_ANCHOR_INSET_ANGLE)
         const isDisabled = this.state.isDisabled(sector)
 

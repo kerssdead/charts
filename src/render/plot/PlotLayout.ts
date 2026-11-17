@@ -58,17 +58,13 @@ export default class PlotLayout {
             this.getLeftLabels(horizontalAxis, horizontalSlots, yAxisValues)
         )
 
-        const left = this.margin.left
-        const width = COORDS_MAX_X - this.margin.left - this.margin.right
-        const top = this.margin.top
-        const bottom = COORDS_MAX_Y - this.margin.bottom
-        const barBottom = this.isMixed ? top + (bottom - top - this.bandGap) * BAR_BAND_RATIO : bottom
+        const { left, width, horizontalBand, verticalBand } = this.getArea()
 
         this.horizontal = new PlotSection({
             orientation: PlotOrientation.Horizontal,
             slots: horizontalSlots,
             axisValues: xAxisValues,
-            band: { top, bottom: barBottom },
+            band: horizontalBand,
             left,
             width,
             continuousAxis: horizontalAxis,
@@ -79,12 +75,27 @@ export default class PlotLayout {
             orientation: PlotOrientation.Vertical,
             slots: verticalSlots,
             axisValues: yAxisValues,
-            band: { top: this.isMixed ? barBottom + this.bandGap : top, bottom },
+            band: verticalBand,
             left,
             width,
             continuousAxis: verticalAxis,
             valueScaleType: yScale
         })
+    }
+
+    private getArea() {
+        const left = this.margin.left
+        const width = COORDS_MAX_X - this.margin.left - this.margin.right
+        const top = this.margin.top
+        const bottom = COORDS_MAX_Y - this.margin.bottom
+        const barBottom = this.isMixed ? top + (bottom - top - this.bandGap) * BAR_BAND_RATIO : bottom
+
+        return {
+            left,
+            width,
+            horizontalBand: { top, bottom: barBottom },
+            verticalBand: { top: this.isMixed ? barBottom + this.bandGap : top, bottom }
+        }
     }
 
     get leftTitle() {

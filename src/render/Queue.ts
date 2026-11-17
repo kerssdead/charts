@@ -2,6 +2,7 @@ import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
 import { ThemePalette } from '@/Theme'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 const OUTSIDE: Point = { x: -Infinity, y: -Infinity }
 
@@ -42,7 +43,7 @@ export default class Queue {
 
         let isAnimating = false
 
-        let hasTemp = false
+        let hasRemovable = false
 
         const steps = this.getSorted()
         const frame = { window, screen, now, theme }
@@ -51,18 +52,18 @@ export default class Queue {
             const step = steps[i]
 
             this.ctx.globalAlpha = step.animation.alpha
-            frame.window = step.isFixed ? screen : window
+            frame.window = step.is(f.Fixed) ? screen : window
 
             step.render(this.ctx, frame)
 
-            if (step.isTemp)
-                hasTemp = true
+            if (step.is(f.Removable))
+                hasRemovable = true
             else if (step.animation.isInitializing || step.animation.isMorphing)
                 isAnimating = true
         }
 
-        if (hasTemp)
-            this.removeWhere(item => item.isTemp)
+        if (hasRemovable)
+            this.removeWhere(item => item.is(f.Removable))
 
         this.isAnimating = isAnimating
 

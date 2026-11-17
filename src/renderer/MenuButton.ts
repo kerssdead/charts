@@ -1,4 +1,4 @@
-import { contains } from '@/helpers/Geometry'
+import Rectangle from '@/helpers/Rectangle'
 import Frame from '@/renderer/Frame'
 import Overlay from '@/renderer/Overlay'
 import { addButtonRect, addButtonText } from '@/renderer/OverlayButtons'
@@ -45,7 +45,12 @@ export default class MenuButton extends Overlay {
 
         const bounds = this.bounds
 
-        const isHoverChanged = this.hover.step(contains(bounds, mouse), now, AnimationTiming.button, isInstant)
+        const isHoverChanged = this.hover.step(
+            Rectangle.contains(bounds, mouse),
+            now,
+            AnimationTiming.button,
+            isInstant
+        )
 
         if (!this.isDirty && !isHoverChanged)
             return this.hover.isAnimating

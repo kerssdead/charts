@@ -7,38 +7,23 @@ import AnimationData from '@/animation/AnimationData'
 import ItemData from '@/types/ItemData'
 import HoverProgress from '@/types/HoverProgress'
 import Panel from '@/types/Panel'
-import { contains } from '@/helpers/Geometry'
+import Rectangle from '@/helpers/Rectangle'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { grayScale } from '@/helpers/Color'
-import { LineJoin } from '@/static/Enums'
+import { LineJoin, MorphFade } from '@/static/Enums'
+import { ItemFlag as f } from '@/static/ItemFlag'
 import { Tooltip, resolveTooltip } from '@/types/Tooltip'
 import { LIGHT_THEME, ThemePalette } from '@/Theme'
 import RenderFrame from '@/types/RenderFrame'
 
 const SOLID_LINE: number[] = []
 
-const SCREEN_AREA: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
+const SCREEN_AREA = Rectangle.empty()
 
 export default class RenderItem {
-    isInteractive: boolean = false
-
-    isTemp: boolean = false
-
-    isMenuButton: boolean = false
-
-    isFixed: boolean = false
-
-    isScrollable: boolean = false
-
     key: string | null = null
 
-    isGhost: boolean = false
-
     axisValue: number | null = null
-
-    isFading: boolean = true
-
-    isMonochrome: boolean = false
 
     isInstant: boolean = false
 
@@ -46,21 +31,7 @@ export default class RenderItem {
 
     panel: Panel | null = null
 
-    get isInitializing() {
-        return this.animation.isInitializing
-    }
-
     color?: string
-
-    private palette: ThemePalette = LIGHT_THEME
-
-    get fill(): string | undefined {
-        const color = this.color ?? this.shape.defaultColor(this.palette)
-
-        return color && grayScale(color, this.animation.mono)
-    }
-
-    animation: AnimationData = new AnimationData()
 
     stroke?: string
 
@@ -68,13 +39,17 @@ export default class RenderItem {
 
     data: ItemData | null = null
 
-    hasContextMenu: boolean = false
-
     layer: number = 0
 
     onClick?: () => void
 
+    animation: AnimationData = new AnimationData()
+
     readonly shape: RenderItemBase
+
+    private flags: number = f.Fading
+
+    private palette: ThemePalette = LIGHT_THEME
 
     private readonly hover = new HoverProgress()
 
@@ -82,6 +57,34 @@ export default class RenderItem {
 
     constructor(shape: RenderItemBase) {
         this.shape = shape
+    }
+
+    get isInitializing() {
+        return this.animation.isInitializing
+    }
+
+    get fill(): string | undefined {
+        const color = this.color ?? this.shape.defaultColor(this.palette)
+
+        return color && grayScale(color, this.animation.grayscale)
+    }
+
+    is(flag: f) {
+        return (this.flags & flag) !== 0
+    }
+
+    set(flag: f, value: boolean) {
+        this.flags = value ? this.flags | flag : this.flags & ~flag
+    }
+
+    setGhost(isGhost: boolean) {
+        this.set(f.Ghost, isGhost)
+
+        if (isGhost) {
+            this.set(f.Interactive, false)
+            this.set(f.ContextMenu, false)
+            this.tooltipTemplate = ''
+        }
     }
 
     render(ctx: CanvasRenderingContext2D, { window, screen, now, theme }: RenderFrame) {
@@ -110,12 +113,12 @@ export default class RenderItem {
         const isRemoved = this.animation.stepMorph(now)
 
         if (hasLeft || isRemoved)
-            this.isTemp = true
+            this.set(f.Removable, true)
 
-        if (this.isGhost && !this.animation.isMorphing)
+        if (this.is(f.Ghost) && !this.animation.isMorphing)
             return false
 
-        this.animation.updateVisibility(this.isFading)
+        this.animation.updateVisibility(this.is(f.Fading))
 
         return this.animation.init > 0
     }
@@ -165,14 +168,14 @@ export default class RenderItem {
     }
 
     animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>, isInstant = false): boolean {
-        if (!this.isInteractive || this.isInitializing)
+        if (!this.is(f.Interactive) || this.isInitializing)
             return false
 
         this.isInstant = isInstant
         this.hoverChanged = false
 
         const isOver = this.isOverAt(point, hoveredGroups)
-        const isHoverTarget = this.hoverGroup == null ? isOver : this.in(point)
+        const isHoverTarget = this.hoverGroup == null ? isOver : this.contains(point)
         const isShapeAnimating = this.shape.animateHover(isHoverTarget ? point : null, now, isInstant)
 
         if (!isOver && this.hover.isIdle)
@@ -182,8 +185,8 @@ export default class RenderItem {
     }
 
     private animateHoverProgress(isOver: boolean, now: DOMHighResTimeStamp) {
-        if (this.isMonochrome)
-            this.animation.mono = this.hoverFactor(!isOver, now, AnimationTiming.hover)
+        if (this.is(f.Monochrome))
+            this.animation.grayscale = this.hoverFactor(!isOver, now, AnimationTiming.hover)
         else
             this.shape.animate(this, !isOver, now)
 
@@ -192,16 +195,16 @@ export default class RenderItem {
 
     private isOverAt(point: Point, hoveredGroups: Set<string>) {
         return this.hoverGroup == null
-               ? this.in(point)
+               ? this.contains(point)
                : hoveredGroups.size > 0 && !hoveredGroups.has(this.hoverGroup)
     }
 
     canHoverGroupAt(point: Point) {
-        return this.hoverGroup != null && this.isInteractive && !this.isInitializing && this.in(point)
+        return this.hoverGroup != null && this.is(f.Interactive) && !this.isInitializing && this.contains(point)
     }
 
     hasTooltipAt(point: Point) {
-        return !this.isInitializing && this.in(point) && !!this.tooltipAt(point)
+        return !this.isInitializing && this.contains(point) && !!this.tooltipAt(point)
     }
 
     tooltipAt(point: Point) {
@@ -209,21 +212,24 @@ export default class RenderItem {
     }
 
     isClickableAt(point: Point, isContextOpen: boolean) {
-        return !!this.onClick && !this.isInitializing && (!isContextOpen || this.isMenuButton) && this.in(point)
+        return !!this.onClick
+               && !this.isInitializing
+               && (!isContextOpen || this.is(f.MenuButton))
+               && this.contains(point)
     }
 
     hasContextMenuAt(point: Point) {
-        return this.hasContextMenu && !this.isInitializing && this.in(point)
+        return this.is(f.ContextMenu) && !this.isInitializing && this.contains(point)
     }
 
-    in(point: Point) {
+    contains(point: Point) {
         const clip = this.scrollPanel?.clip
 
-        return (!clip || contains(clip, point)) && this.shape.isMouseOver(point)
+        return (!clip || Rectangle.contains(clip, point)) && this.shape.isMouseOver(point)
     }
 
     private get scrollPanel() {
-        return this.isScrollable && this.panel?.canScroll ? this.panel : null
+        return this.is(f.Scrollable) && this.panel?.canScroll ? this.panel : null
     }
 
     morphFrom(previous: RenderItem, duration: number) {
@@ -236,11 +242,11 @@ export default class RenderItem {
     }
 
     private getMorphFade(previous: RenderItem) {
-        if (previous.isGhost)
-            return 'in'
+        if (previous.is(f.Ghost))
+            return MorphFade.In
 
-        if (this.isGhost)
-            return 'out'
+        if (this.is(f.Ghost))
+            return MorphFade.Out
 
         return null
     }
@@ -274,13 +280,13 @@ export default class RenderItem {
     }
 
     morphIn(duration: number, delay: number = 0) {
-        this.animation.startMorph('in', duration, delay)
+        this.animation.startMorph(MorphFade.In, duration, delay)
     }
 
     morphOut(duration: number) {
         this.animation.removeAfterMorph = true
 
-        this.animation.startMorph('out', duration)
+        this.animation.startMorph(MorphFade.Out, duration)
     }
 
     hoverFactor(isBackward: boolean, now: DOMHighResTimeStamp, duration: number) {

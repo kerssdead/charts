@@ -87,4 +87,49 @@ describe('Creating menu popup', () => {
         expect(select)
             .toHaveBeenCalledWith(action)
     })
+
+    it('Should not select the button action while the popup is not interactive', () => {
+        installFakeDocument()
+
+        const select = jest.fn()
+        const popup = new MenuPopup({} as HTMLCanvasElement, {
+            options: [{ text: 'Run', action: () => {} }],
+            theme: DARK_THEME,
+            select,
+            dismiss: jest.fn()
+        })
+        const button = popupElement(popup).elements.find(child => child.tagName === 'button')
+
+        popup.update(.5, false)
+        button?.dispatch(Events.Click)
+
+        expect(select)
+            .not.toHaveBeenCalled()
+    })
+
+    it('Should highlight the focused button only after keyboard use', () => {
+        installFakeDocument()
+
+        const popup = new MenuPopup({} as HTMLCanvasElement, {
+            options: [{ text: 'Run', action: () => {} }],
+            theme: DARK_THEME,
+            select: jest.fn(),
+            dismiss: jest.fn()
+        })
+        const element = popupElement(popup)
+        const button = element.elements.find(child => child.tagName === 'button')
+
+        Object.assign(document, { activeElement: button })
+        button?.dispatch(Events.Focus)
+
+        expect(button?.style.background)
+            .toBe(DARK_THEME.contextMenuButton)
+
+        element.dispatch(Events.KeyDown, { key: 'ArrowDown', preventDefault: jest.fn(), stopPropagation: jest.fn() })
+        button?.dispatch(Events.Blur)
+        button?.dispatch(Events.Focus)
+
+        expect([button?.style.background, button?.style.color])
+            .toEqual([DARK_THEME.text, DARK_THEME.background])
+    })
 })

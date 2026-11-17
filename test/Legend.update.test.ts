@@ -1,4 +1,4 @@
-import Legend from '@/Legend'
+import Legend from '@/legend/Legend'
 import { normalize } from '@/charts/Settings'
 import { LIGHT_THEME, ThemePalette } from '@/Theme'
 import { DARK_THEME } from './TestTheme'

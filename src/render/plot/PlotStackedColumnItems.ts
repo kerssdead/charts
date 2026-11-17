@@ -1,13 +1,24 @@
 import PlotSeries from '@/types/PlotSeries'
 import { getY } from '@/types/PlotPoint'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
-import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotItemStyle from '@/render/plot/PlotItemStyle'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { ColumnGroup, getColumnGroup, getStackKey, getStackTops } from '@/render/plot/PlotColumnGroups'
 import { CORNER_RADIUS } from '@/render/plot/PlotConstants'
 import { addColumnBreakMark } from '@/render/plot/PlotBreakMarks'
+
+type StackedColumn = {
+    valueIndex: number
+    slot: number
+    x: number
+    y: number
+    width: number
+    height: number
+    isTop: boolean
+    hasBreakMark: boolean
+}
 
 export default class PlotStackedColumnItems {
     private readonly layout: PlotLayout
@@ -34,12 +45,18 @@ export default class PlotStackedColumnItems {
     }
 
     getItems(series: PlotSeries, stacks: Map<string, number>) {
+        const stacked = this.stackColumns(series, stacks)
+
+        return (items: QueueItemsBuilder) => this.addColumns(items, series, stacked)
+    }
+
+    private stackColumns(series: PlotSeries, stacks: Map<string, number>): StackedColumn[] {
         const { layout } = this
         const { categoryScale, valueScale, baseline } = layout.vertical
         const step = categoryScale.step
         const isDisabled = this.seriesGroups.isDisabled(series)
 
-        const stacked = series.values.flatMap((value, valueIndex) => {
+        return series.values.flatMap((value, valueIndex) => {
             const y = getY(value)
 
             if (!valueScale.canShow(y))
@@ -70,25 +87,32 @@ export default class PlotStackedColumnItems {
                 hasBreakMark: !isDisabled && layout.isAboveYMax(top) && !layout.isAboveYMax(stack)
             }]
         })
+    }
 
-        return (items: QueueItemsBuilder) => {
-            for (const { valueIndex, slot, x, y, width, height, isTop, hasBreakMark } of stacked) {
-                const column = items.rect()
-                     .position(x, y)
-                     .size(width, height)
-                     .collapse(false, true)
-                     .round(isTop ? [CORNER_RADIUS, CORNER_RADIUS, 0, 0] : [0, 0, 0, 0])
-                     .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
-                     .grow('y', baseline)
+    private addColumns(
+        items: QueueItemsBuilder,
+        series: PlotSeries,
+        stacked: StackedColumn[]
+    ) {
+        const { layout } = this
+        const { baseline } = layout.vertical
 
-                this.style.styleRect(column, series, slot, valueIndex)
-                    .fade(false)
+        for (const { valueIndex, slot, x, y, width, height, isTop, hasBreakMark } of stacked) {
+            const column = items.rect()
+                 .position(x, y)
+                 .size(width, height)
+                 .collapse(false, true)
+                 .round(isTop ? [CORNER_RADIUS, CORNER_RADIUS, 0, 0] : [0, 0, 0, 0])
+                 .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
+                 .grow(Axis.Y, baseline)
 
-                if (hasBreakMark) {
-                    const mark = addColumnBreakMark(items, layout.units, { start: x, end: x + width }, y - height)
+            this.style.styleRect(column, series, slot, valueIndex)
+                .fade(false)
 
-                    this.style.styleBreakMark(mark, series, slot, valueIndex)
-                }
+            if (hasBreakMark) {
+                const mark = addColumnBreakMark(items, layout.units, { start: x, end: x + width }, y - height)
+
+                this.style.styleBreakMark(mark, series, slot, valueIndex)
             }
         }
     }

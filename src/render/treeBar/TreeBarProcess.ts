@@ -1,4 +1,4 @@
-import TreeBarData, { flattenTreeBarRows, getTreeBarTotal } from '@/types/data/TreeBarData'
+import TreeBarData, { TreeBarEntry, flattenTreeBarRows, getTreeBarTotal } from '@/types/data/TreeBarData'
 import Point from '@/types/Point'
 import ProcessSettings from '@/types/ProcessSettings'
 import type { PanelScroll } from '@/types/Panel'
@@ -25,8 +25,23 @@ import {
 } from '@/render/treeBar/TreeBarConstants'
 import ChartViewState from '@/types/ChartViewState'
 
+const layoutRows = (data: TreeBarData, state: ChartViewState) => {
+    const rows: TreeBarRowEntry[] = []
+    let y = HEADER_HEIGHT
+
+    for (const entry of TreeBarSorting.getVisibleEntries(data.values, state, data.numberLocale)) {
+        const height = TreeBarRowText.getRowHeight(entry.node)
+
+        rows.push({ ...entry, y, height })
+
+        y += height
+    }
+
+    return { rows, height: y }
+}
+
 export default class TreeBarProcess extends ChartProcess<TreeBarData> {
-    private readonly rows: TreeBarRowEntry[] = []
+    private readonly rows: TreeBarRowEntry[]
 
     private readonly height: number
 
@@ -41,24 +56,8 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
 
         const allEntries = flattenTreeBarRows(data.values)
 
-        const width = this.units.toPxX(COORDS_MAX_X)
-        const contentRight = width - PADDING - SCROLLBAR_SPACE
-
-        const nameWidth = TreeBarLayout.getNameWidth(allEntries, width)
-        const columns = TreeBarLayout.getColumns(data.columns ?? [], allEntries, contentRight, width)
-        const barLabelWidth = Math.max(maxOf(allEntries, ({ node }) => {
-            return node.barLabel ? stringWidth(node.barLabel, BAR_LABEL_FONT_SIZE) + BAR_LABEL_GAP : 0
-        }), 0)
-
         this.ticks = getRoundedValues(allEntries.map(({ node }) => getTreeBarTotal(node)), TICKS)
-        this.geometry = {
-            width,
-            nameWidth,
-            columns,
-            barArea: TreeBarLayout.getBarArea(nameWidth, columns, contentRight, barLabelWidth),
-            barLabelWidth,
-            maxTickValue: this.ticks[this.ticks.length - 1] || 1
-        }
+        this.geometry = this.getGeometry(allEntries, this.ticks)
         this.rowItems = new TreeBarRowItems(this.units, this.geometry, {
             imageCrossOrigin: settings.imageCrossOrigin,
             theme: this.theme
@@ -72,17 +71,10 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
             }
         })
 
-        let y = HEADER_HEIGHT
+        const { rows, height } = layoutRows(data, state)
 
-        for (const entry of TreeBarSorting.getVisibleEntries(data.values, state, data.numberLocale)) {
-            const height = TreeBarRowText.getRowHeight(entry.node)
-
-            this.rows.push({ ...entry, y, height })
-
-            y += height
-        }
-
-        this.height = y
+        this.rows = rows
+        this.height = height
     }
 
     isEmpty() {
@@ -102,6 +94,26 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
 
         return this.rows.slice(range.start, range.end)
                         .map(row => (items: QueueItemsBuilder) => this.rowItems.add(items, row))
+    }
+
+    private getGeometry(entries: TreeBarEntry[], ticks: number[]): TreeBarGeometry {
+        const width = this.units.toPxX(COORDS_MAX_X)
+        const contentRight = width - PADDING - SCROLLBAR_SPACE
+
+        const nameWidth = TreeBarLayout.getNameWidth(entries, width)
+        const columns = TreeBarLayout.getColumns(this.data.columns ?? [], entries, contentRight, width)
+        const barLabelWidth = Math.max(maxOf(entries, ({ node }) => {
+            return node.barLabel ? stringWidth(node.barLabel, BAR_LABEL_FONT_SIZE) + BAR_LABEL_GAP : 0
+        }), 0)
+
+        return {
+            width,
+            nameWidth,
+            columns,
+            barArea: TreeBarLayout.getBarArea(nameWidth, columns, contentRight, barLabelWidth),
+            barLabelWidth,
+            maxTickValue: ticks[ticks.length - 1] || 1
+        }
     }
 
     private getVisibleRowRange() {
@@ -151,7 +163,19 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
     }
 
     private addHeader(items: QueueItemsBuilder) {
-        const { barArea, maxTickValue, columns, width } = this.geometry
+        this.addTicks(items)
+        this.addColumnHeaders(items)
+
+        items.line()
+             .stop(this.x(PADDING), this.y(HEADER_HEIGHT))
+             .stop(this.x(this.geometry.width - PADDING), this.y(HEADER_HEIGHT))
+             .color(this.theme.lineAxis)
+             .layer(Layer.Base)
+             .key('tree-bar-header-line')
+    }
+
+    private addTicks(items: QueueItemsBuilder) {
+        const { barArea, maxTickValue } = this.geometry
         const bodyBottom = this.y(Math.min(this.height, this.units.toPxY(COORDS_MAX_Y)))
 
         for (const tick of this.ticks) {
@@ -170,8 +194,10 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
                  .layer(Layer.Base)
                  .key(`tree-bar-tick-line-${ tick }`)
         }
+    }
 
-        for (const column of columns) {
+    private addColumnHeaders(items: QueueItemsBuilder) {
+        for (const column of this.geometry.columns) {
             const sortIndicator = TreeBarSorting.getSortIndicator(
                 column.key,
                 this.state.sortColumn,
@@ -192,13 +218,6 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
                 height: HEADER_HEIGHT
             }, () => this.sortBy(column.key)).key(`tree-bar-column-${ column.key }-area`)
         }
-
-        items.line()
-             .stop(this.x(PADDING), this.y(HEADER_HEIGHT))
-             .stop(this.x(width - PADDING), this.y(HEADER_HEIGHT))
-             .color(this.theme.lineAxis)
-             .layer(Layer.Base)
-             .key('tree-bar-header-line')
     }
 
     private sortBy(columnKey: string) {

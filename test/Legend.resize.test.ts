@@ -1,4 +1,4 @@
-import Legend from '@/Legend'
+import Legend from '@/legend/Legend'
 import { normalize } from '@/charts/Settings'
 import { ChartType, LegendPlace } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
@@ -36,7 +36,7 @@ describe('Resizing legend', () => {
 
         bottom.resize(200, 400)
 
-        expect(bottom.reserved.bottom)
+        expect(bottom.reservedPaddings.bottom)
             .toBe(100)
     })
 
@@ -45,7 +45,7 @@ describe('Resizing legend', () => {
 
         bottom.resize(200, 40)
 
-        expect(bottom.reserved.bottom)
+        expect(bottom.reservedPaddings.bottom)
             .toBe(28)
     })
 
@@ -54,7 +54,7 @@ describe('Resizing legend', () => {
 
         right.resize(1000, 400)
 
-        expect(right.reserved.right)
+        expect(right.reservedPaddings.right)
             .toBe(124)
     })
 
@@ -63,7 +63,7 @@ describe('Resizing legend', () => {
 
         right.resize(400, 400)
 
-        expect(right.reserved.right)
+        expect(right.reservedPaddings.right)
             .toBe(100)
     })
 
@@ -72,7 +72,7 @@ describe('Resizing legend', () => {
 
         right.resize(100, 400)
 
-        expect(right.reserved.right)
+        expect(right.reservedPaddings.right)
             .toBe(86)
     })
 })

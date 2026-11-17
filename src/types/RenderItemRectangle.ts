@@ -4,10 +4,11 @@ import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/
 import RenderItem from '@/types/RenderItem'
 import Point from '@/types/Point'
 import Alignment, { DEFAULT_ALIGNMENT } from '@/types/Alignment'
-import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { unitVerticalGradient } from '@/helpers/Canvas'
-import { containsRounded, lerp, lerpRect } from '@/helpers/Geometry'
+import { lerp } from '@/helpers/Geometry'
+import Rectangle from '@/helpers/Rectangle'
 
 const ALPHA_DELTA = 0.5
 
@@ -47,13 +48,13 @@ export default class RenderItemRectangle extends RenderItemBase {
 
     fromRadii: number[] | null = null
 
-    absolute: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
+    absolute: RectangleDimensions = Rectangle.empty()
 
-    canvas: RectangleCanvas = { x: 0, y: 0, width: 0, height: 0, radii: [0, 0, 0, 0] }
+    canvas: RectangleCanvas = { ...Rectangle.empty(), radii: [0, 0, 0, 0] }
 
     align: Alignment = DEFAULT_ALIGNMENT
 
-    growAxis: 'x' | 'y' | null = null
+    growAxis: Axis | null = null
 
     growOrigin: number = 0
 
@@ -65,11 +66,11 @@ export default class RenderItemRectangle extends RenderItemBase {
 
     fromClip: ClipBox | null = null
 
-    private readonly canvasClip: ClipBox = { x: 0, y: 0, width: 0, height: 0, radius: 0 }
+    private readonly canvasClip: ClipBox = { ...Rectangle.empty(), radius: 0 }
 
     private canvasGrowOrigin: number = 0
 
-    private readonly position: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
+    private readonly position = Rectangle.empty()
 
     private readonly area: CanvasBox = { left: 0, top: 0, width: 0, height: 0 }
 
@@ -79,7 +80,7 @@ export default class RenderItemRectangle extends RenderItemBase {
 
     current(
         morph: number = 1,
-        result: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
+        result: RectangleDimensions = Rectangle.empty()
     ): RectangleDimensions {
         const { absolute } = this
         const from = this.from && morph < 1 ? this.from : null
@@ -114,7 +115,7 @@ export default class RenderItemRectangle extends RenderItemBase {
             return this.clip
 
         return {
-            ...lerpRect(this.fromClip, this.clip, morph),
+            ...Rectangle.lerp(this.fromClip, this.clip, morph),
             radius: lerp(this.fromClip.radius, this.clip.radius, morph)
         }
     }
@@ -184,7 +185,7 @@ export default class RenderItemRectangle extends RenderItemBase {
             this.canvasClip.radius = clip.radius / COORDS_MAX_X * window.width
         }
 
-        this.canvasGrowOrigin = this.growAxis === 'x'
+        this.canvasGrowOrigin = this.growAxis === Axis.X
                                 ? window.mapX(this.growOrigin)
                                 : window.mapY(this.growOrigin)
     }
@@ -251,7 +252,7 @@ export default class RenderItemRectangle extends RenderItemBase {
 
         return left <= point.x && point.x <= right
                && top <= point.y && point.y <= bottom
-               && (!this.clip || containsRounded(this.canvasClip, this.canvasClip.radius, point))
+               && (!this.clip || Rectangle.containsRounded(this.canvasClip, this.canvasClip.radius, point))
     }
 
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp) {
@@ -272,7 +273,7 @@ export default class RenderItemRectangle extends RenderItemBase {
         const area = this.bounds(1, this.area)
         const grown = this.grownArea
         const origin = this.canvasGrowOrigin
-        const isX = this.growAxis === 'x'
+        const isX = this.growAxis === Axis.X
 
         grown.left = isX ? lerp(origin, area.left, progress) : area.left
         grown.top = isX ? area.top : lerp(origin, area.top, progress)

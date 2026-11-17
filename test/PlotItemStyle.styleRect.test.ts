@@ -3,6 +3,7 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import PlotSeries from '@/types/PlotSeries'
 import { AnimationTiming, Layer } from '@/static/constants/Index'
 import { PlotType } from '@/static/Enums'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 jest.mock('@/helpers/Text', () => ({
     ...jest.requireActual('@/helpers/Text'),
@@ -44,7 +45,7 @@ describe('Styling plot rectangle', () => {
         const series = createSeries(PlotType.Column, [5], { data: undefined })
         const item = styleRect([series], series, 0)
 
-        expect(item.isInteractive)
+        expect(item.is(f.Interactive))
             .toBe(true)
         expect(item.tooltipAt({ x: 0, y: 0 }))
             .toBe(`${ series.label }: 5`)
@@ -52,7 +53,7 @@ describe('Styling plot rectangle', () => {
             .toBe(Layer.Data)
         expect(item.color)
             .toBe(series.color)
-        expect(item.hasContextMenu)
+        expect(item.is(f.ContextMenu))
             .toBe(true)
     })
 
@@ -94,7 +95,7 @@ describe('Styling plot rectangle', () => {
         const series = createSeries(PlotType.Column, [1], { disabled: true })
         const item = styleRect([series], series, 0)
 
-        expect(item.isGhost)
+        expect(item.is(f.Ghost))
             .toBe(true)
         expect(item.tooltipTemplate)
             .toBe('')

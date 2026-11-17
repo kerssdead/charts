@@ -1,6 +1,7 @@
 import RenderItem from '@/types/RenderItem'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import Panel from '@/types/Panel'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 const POINT = { x: 50, y: 50 }
 
@@ -34,7 +35,7 @@ const scrollable = () => {
     const item = createItem(shape({ isMouseOver: jest.fn(() => true) }))
 
     item.panel = panel
-    item.isScrollable = true
+    item.set(f.Scrollable, true)
 
     return item
 }
@@ -77,7 +78,7 @@ describe('Clicking item at point', () => {
         const item = createItem(shape({ isMouseOver: jest.fn(() => true) }))
 
         item.onClick = () => undefined
-        item.isMenuButton = true
+        item.set(f.MenuButton, true)
 
         expect(item.isClickableAt(POINT, true))
             .toBe(true)
@@ -97,12 +98,12 @@ describe('Checking context menu at point', () => {
     it('Should hit items with a context menu', () => {
         const item = createItem(shape({ isMouseOver: jest.fn(() => true) }))
 
-        item.hasContextMenu = true
+        item.set(f.ContextMenu, true)
 
         expect(item.hasContextMenuAt(POINT))
             .toBe(true)
 
-        item.hasContextMenu = false
+        item.set(f.ContextMenu, false)
 
         expect(item.hasContextMenuAt(POINT))
             .toBe(false)
@@ -111,7 +112,7 @@ describe('Checking context menu at point', () => {
     it('Should not hit items while they are initializing', () => {
         const item = createItem(shape({ isMouseOver: jest.fn(() => true) }))
 
-        item.hasContextMenu = true
+        item.set(f.ContextMenu, true)
         item.animation.initDuration = 300
 
         expect(item.hasContextMenuAt(POINT))
@@ -123,9 +124,9 @@ describe('Checking item hit', () => {
     it('Should respect the scroll panel clip', () => {
         const item = scrollable()
 
-        expect(item.in({ x: 50, y: 50 }))
+        expect(item.contains({ x: 50, y: 50 }))
             .toBe(false)
-        expect(item.in({ x: 5, y: 5 }))
+        expect(item.contains({ x: 5, y: 5 }))
             .toBe(true)
     })
 })

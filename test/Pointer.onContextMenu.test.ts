@@ -18,7 +18,7 @@ describe('Pointer context menu', () => {
         expect(contextmenu.defaultPrevented)
             .toBe(true)
         expect(target.context)
-            .toEqual({ point: { x: 3, y: 4 }, isMenu: false })
+            .toEqual({ point: { x: 3, y: 4 }, isOpenedFromButton: false })
         expect(result.onChange)
             .toHaveBeenCalled()
     })

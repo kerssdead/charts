@@ -4,6 +4,7 @@ import PlotSeries from '@/types/PlotSeries'
 import RenderItemLine from '@/types/RenderItemLine'
 import { AnimationTiming, Layer } from '@/static/constants/Index'
 import { PlotType } from '@/static/Enums'
+import { ItemFlag as f } from '@/static/ItemFlag'
 import { LIGHT_THEME } from '@/Theme'
 import { DARK_THEME } from './TestTheme'
 
@@ -32,7 +33,7 @@ describe('Styling plot break mark', () => {
         const series = createSeries(PlotType.Column, [1])
         const item = styleBreakMark([series], series, 0, 0)
 
-        expect([(item.shape as RenderItemLine).width, item.stroke, item.layer, item.isInteractive])
+        expect([(item.shape as RenderItemLine).width, item.stroke, item.layer, item.is(f.Interactive)])
             .toEqual([3, '#ffffff', Layer.Data + 3, false])
     })
 

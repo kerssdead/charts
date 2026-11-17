@@ -3,7 +3,8 @@ import Point from '@/types/Point'
 import ValueAxis from '@/types/ValueAxis'
 import ScrollDrag from '@/types/ScrollDrag'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import { clamp, contains } from '@/helpers/Geometry'
+import { clamp } from '@/helpers/Geometry'
+import Rectangle from '@/helpers/Rectangle'
 
 const GAP = 16
 
@@ -46,7 +47,7 @@ export default class Panel {
 
     onContentChange: (() => void) | null = null
 
-    clip: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
+    clip: RectangleDimensions = Rectangle.empty()
 
     zoom: number = 1
 
@@ -174,7 +175,7 @@ export default class Panel {
             return dy => this.scrollTo(start + dy * ratio)
         }
 
-        return contains(this.clip, point)
+        return Rectangle.contains(this.clip, point)
                ? dy => this.scrollTo(start - dy / this.zoom)
                : null
     }
@@ -202,7 +203,7 @@ export default class Panel {
 
         const hitArea = { x: x + width - THUMB_HIT_WIDTH, y, width: THUMB_HIT_WIDTH, height }
 
-        return this.canScroll && contains(hitArea, point)
+        return this.canScroll && Rectangle.contains(hitArea, point)
     }
 
     private thumbRatio() {

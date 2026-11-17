@@ -1,5 +1,5 @@
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
-import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
+import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import Units from '@/helpers/Units'
@@ -65,7 +65,7 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<Rend
         return this
     }
 
-    grow(axis: 'x' | 'y', origin: number) {
+    grow(axis: Axis, origin: number) {
         this.shape.growAxis = axis
         this.shape.growOrigin = origin
 

@@ -1,5 +1,6 @@
 import RenderItem from '@/types/RenderItem'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import { ItemFlag as f } from '@/static/ItemFlag'
 
 const shape = (overrides: Partial<RenderItemBase> = {}) => {
     const animate = jest.fn((item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp) => {
@@ -43,7 +44,7 @@ describe('Animating item hover', () => {
     it('Should not animate items while they are initializing', () => {
         const item = createItem(shape({ isMouseOver: jest.fn(() => true) }))
 
-        item.isInteractive = true
+        item.set(f.Interactive, true)
         item.animation.initDuration = 300
 
         expect(item.animate(POINT, 100, new Set()))
@@ -54,7 +55,7 @@ describe('Animating item hover', () => {
         const target = shape({ isMouseOver: jest.fn(() => true) })
         const item = createItem(target)
 
-        item.isInteractive = true
+        item.set(f.Interactive, true)
 
         expect(item.animate(POINT, 100, new Set()))
             .toBe(true)
@@ -66,7 +67,7 @@ describe('Animating item hover', () => {
         const target = shape()
         const item = createItem(target)
 
-        item.isInteractive = true
+        item.set(f.Interactive, true)
 
         expect(item.animate(POINT, 100, new Set()))
             .toBe(false)
@@ -78,7 +79,7 @@ describe('Animating item hover', () => {
         const target = shape()
         const item = createItem(target)
 
-        item.isInteractive = true
+        item.set(f.Interactive, true)
         item.hoverGroup = 'group'
 
         expect(item.animate(POINT, 100, new Set(['group'])))
@@ -91,7 +92,7 @@ describe('Animating item hover', () => {
         const target = shape()
         const item = createItem(target)
 
-        item.isInteractive = true
+        item.set(f.Interactive, true)
         item.hoverGroup = 'group'
 
         expect(item.animate(POINT, 100, new Set(['other'])))
@@ -105,13 +106,13 @@ describe('Animating item hover', () => {
     it('Should keep animating the monochrome factor', () => {
         const item = createItem(shape({ isMouseOver: jest.fn(() => true) }))
 
-        item.isInteractive = true
-        item.isMonochrome = true
+        item.set(f.Interactive, true)
+        item.set(f.Monochrome, true)
 
         item.animate(POINT, 100, new Set())
         item.animate(POINT, 200, new Set())
 
-        expect(item.animation.mono)
+        expect(item.animation.grayscale)
             .toBeGreaterThan(0)
     })
 
@@ -119,7 +120,7 @@ describe('Animating item hover', () => {
         const target = shape({ animateHover: jest.fn(() => true) })
         const item = createItem(target)
 
-        item.isInteractive = true
+        item.set(f.Interactive, true)
 
         expect(item.animate(POINT, 100, new Set()))
             .toBe(true)
@@ -128,7 +129,7 @@ describe('Animating item hover', () => {
     it('Should report a change when the hover progress changes', () => {
         const item = createItem(shape({ isMouseOver: jest.fn(() => true) }))
 
-        item.isInteractive = true
+        item.set(f.Interactive, true)
 
         item.animate(POINT, 100, new Set())
 
