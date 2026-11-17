@@ -111,24 +111,31 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
     }
 
     adjust(window: CanvasWindow, morph: number = 1): void {
-        const geometry = this.current(morph)
+        const from = this.from
+        const isMorphing = from != null && morph < 1
+        const x = isMorphing ? lerp(from.x, this.absolute.x, morph) : this.absolute.x
+        const y = isMorphing ? lerp(from.y, this.absolute.y, morph) : this.absolute.y
+        const radius = isMorphing ? lerp(from.radius, this.radius, morph) : this.radius
+        const innerRadius = isMorphing ? lerp(from.innerRadius, this.innerRadius, morph) : this.innerRadius
+        const startAngle = isMorphing ? lerp(from.startAngle, this.startAngle, morph) : this.startAngle
+        const endAngle = isMorphing ? lerp(from.endAngle, this.endAngle, morph) : this.endAngle
+        const pull = isMorphing ? lerp(from.pull, this.pull, morph) : this.pull
         const scale = window.width / COORDS_MAX_X
+        const canvas = this.canvas
 
-        this.canvas = {
-            x: window.mapX(geometry.x),
-            y: window.mapY(geometry.y),
-            radius: geometry.radius * scale,
-            innerRadius: geometry.innerRadius * scale,
-            gap: this.gap * scale,
-            cornerRadius: this.cornerRadius * scale,
-            startAngle: geometry.startAngle,
-            endAngle: geometry.endAngle,
-            pull: geometry.pull * scale
-        }
+        canvas.x = window.mapX(x)
+        canvas.y = window.mapY(y)
+        canvas.radius = radius * scale
+        canvas.innerRadius = innerRadius * scale
+        canvas.gap = this.gap * scale
+        canvas.cornerRadius = this.cornerRadius * scale
+        canvas.startAngle = startAngle
+        canvas.endAngle = endAngle
+        canvas.pull = pull * scale
     }
 
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
-        const shape = this.drawnShape = this.shape(item.animation.init)
+        const shape = this.shape(item.animation.init)
         const fill = item.fill
 
         if (this.isGradient && fill)
@@ -166,7 +173,15 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
         this.pop.x = offset * Math.cos(middle)
         this.pop.y = offset * Math.sin(middle)
 
-        return { x: this.canvas.x + this.pop.x, y: this.canvas.y + this.pop.y, start, end, middle }
+        const drawn = this.drawnShape
+
+        drawn.x = this.canvas.x + this.pop.x
+        drawn.y = this.canvas.y + this.pop.y
+        drawn.start = start
+        drawn.end = end
+        drawn.middle = middle
+
+        return drawn
     }
 
     private circle(ctx: CanvasRenderingContext2D, shape: ArcShape) {

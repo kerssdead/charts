@@ -107,6 +107,7 @@
         <th>Create, ms</th>
         <th>Init frame avg / p95, ms</th>
         <th>Hover frame avg / p95, ms</th>
+        <th>Hover extra, ms/move</th>
         <th>Idle frames after no-op move</th>
         <th>Update, ms</th>
         <th>Update frame avg / p95, ms</th>
@@ -117,21 +118,29 @@
 </body>
 
 <script>
+    const params = new URLSearchParams(location.search)
+
+    const timing = (name, fallback) => {
+        const value = +(params.get(name) ?? fallback)
+
+        return Number.isFinite(value) && value >= 0 ? value : fallback
+    }
+
     const WIDTH = 900
 
     const HEIGHT = 500
 
-    const INIT_TIME = 1500
+    const INIT_TIME = timing('init', 1500)
 
-    const HOVER_MOVES = 120
+    const HOVER_MOVES = timing('moves', 120)
 
-    const MOVE_INTERVAL = 16
+    const MOVE_INTERVAL = timing('moveInterval', 16)
 
-    const SETTLE_TIME = 1500
+    const SETTLE_TIME = timing('settle', 1500)
 
-    const IDLE_TIME = 1500
+    const IDLE_TIME = timing('idle', 1500)
 
-    const UPDATE_TIME = 1000
+    const UPDATE_TIME = timing('update', 1000)
 
     let seed = 1
 
@@ -312,7 +321,11 @@
 
         const canvas = host.querySelector('canvas')
 
+        const hoverStart = performance.now()
+
         await hover(canvas)
+
+        const hoverExtra = Math.max(0, performance.now() - hoverStart - HOVER_MOVES * MOVE_INTERVAL) / HOVER_MOVES
 
         const hovered = summarize(takeFrames())
 
@@ -335,7 +348,7 @@
 
         chart.destroy()
 
-        return { name, scale, create, init, hover: hovered, idle, update, updated }
+        return { name, scale, create, init, hover: hovered, hoverExtra, idle, update, updated }
     }
 
     const format = value => value.toFixed(2)
@@ -350,6 +363,7 @@
             <td>${ format(result.create) }</td>
             <td>${ pair(result.init) }</td>
             <td>${ pair(result.hover) }</td>
+            <td>${ format(result.hoverExtra) }</td>
             <td>${ result.idle }</td>
             <td>${ format(result.update) }</td>
             <td>${ pair(result.updated) }</td>
@@ -366,6 +380,7 @@
 
         for (const name of Object.keys(scenarios)) {
             status.textContent = `Running ${ name }…`
+            console.log(`benchmark: running ${ name } (${ scale }×)`)
 
             const result = await measure(name, scale)
 
@@ -374,11 +389,23 @@
         }
 
         status.textContent = 'Done'
+        console.log(`benchmark: done (${ scale }×)`)
 
         return results
     }
 
-    window.benchmark = { runAll }
+    window.benchmark = {
+        runAll,
+        scenarios,
+        settings: (name, scale) => scenarios[name](scale),
+        create: (name, scale) => {
+            const host = document.getElementById('host')
+
+            host.innerHTML = ''
+
+            return OCharts.chart(host, scenarios[name](scale))
+        }
+    }
 
     document.getElementById('run').onclick = () => runAll(+document.getElementById('scale').value)
 </script>

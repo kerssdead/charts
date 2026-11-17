@@ -124,4 +124,17 @@ describe('Animating item hover', () => {
         expect(item.animate(POINT, 100, new Set()))
             .toBe(true)
     })
+
+    it('Should report a change when the hover progress changes', () => {
+        const item = createItem(shape({ isMouseOver: jest.fn(() => true) }))
+
+        item.isInteractive = true
+
+        item.animate(POINT, 100, new Set())
+
+        expect(item.animate(POINT, 1000, new Set()))
+            .toBe(true)
+        expect(item.animate(POINT, 1100, new Set()))
+            .toBe(false)
+    })
 })

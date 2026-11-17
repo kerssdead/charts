@@ -9,6 +9,8 @@ export const SCREEN = { name: 'screen' }
 
 export const POSITION: Point = { x: 10, y: 20 }
 
+export const theme = { current: LIGHT_THEME }
+
 export const RESERVED = { left: 1, top: 2, right: 3, bottom: 4 }
 
 const pendingFrames = new Map<number, FrameRequestCallback>()
@@ -42,9 +44,11 @@ export function runFrame(timestamp: DOMHighResTimeStamp) {
 }
 
 export function createFrames(settings: Partial<ChartSettings> = {}) {
-    const queue = { animate: jest.fn(() => false), render: jest.fn(() => false) }
+    theme.current = LIGHT_THEME
+
+    const queue = { animate: jest.fn(() => false), render: jest.fn(() => false), version: 0 }
     const layout = { window: WINDOW, screen: SCREEN, fit: jest.fn() }
-    const panels = { animate: jest.fn(() => false) }
+    const panels = { animate: jest.fn(() => false), list: [] }
     const input = { position: POSITION as Point | null, context: null }
     const overlay = { update: jest.fn(() => false) }
     const legend = { isMoving: false, getCurrentReserved: jest.fn(() => RESERVED) }
@@ -60,7 +64,7 @@ export function createFrames(settings: Partial<ChartSettings> = {}) {
         getLegend: () => legend,
         getOverlays: () => [overlay],
         getSettings: () => settings as ChartSettings,
-        getThemePalette: () => LIGHT_THEME,
+        getThemePalette: () => theme.current,
         syncTheme,
         rebuildForTheme,
         onError

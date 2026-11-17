@@ -36,4 +36,20 @@ describe('Getting line bounds', () => {
         expect(getBounds([]))
             .toBeNull()
     })
+
+    it('Should refresh bounds after the line is adjusted again', () => {
+        const shape = new RenderItemLine()
+
+        shape.absolute = STOPS
+        shape.width = 2
+        shape.adjust(WINDOW)
+
+        const before = shape.getBounds()
+
+        shape.leaveToAxis(0, 1)
+        shape.adjust(WINDOW)
+
+        expect(shape.getBounds())
+            .not.toEqual(before)
+    })
 })

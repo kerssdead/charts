@@ -92,4 +92,20 @@ describe('Checking whether pointer is over line', () => {
         expect(shape.animateHover(null, 700))
             .toBe(false)
     })
+
+    it('Should keep the hovered marker when other points are queried', () => {
+        const shape = new RenderItemLine()
+
+        shape.absolute = [{ x: 1000, y: 500 }, { x: 2000, y: 500 }]
+        shape.tooltips = ['first', 'second']
+        shape.adjust(WINDOW)
+
+        shape.animateHover({ x: 102, y: 51 }, 0)
+        shape.animateHover({ x: 102, y: 51 }, 200)
+        shape.isMouseOver({ x: 202, y: 51 })
+        shape.tooltipAt({ x: 202, y: 51 })
+
+        expect(shape.animateHover({ x: 102, y: 51 }, 400))
+            .toBe(false)
+    })
 })

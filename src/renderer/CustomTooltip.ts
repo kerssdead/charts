@@ -9,6 +9,8 @@ import ItemData from '@/types/ItemData'
 
 const PLACEHOLDER = /\$\{\s*([^}\s]+)\s*}/g
 
+const TEXT_STYLES = new WeakMap<ThemePalette, string>()
+
 export default class CustomTooltip {
     private readonly canvas: HTMLCanvasElement
 
@@ -40,7 +42,10 @@ export default class CustomTooltip {
     }
 
     static fromText(text: string, theme: ThemePalette) {
-        const style = `padding: ${ Tooltip.padding }px;
+        let style = TEXT_STYLES.get(theme)
+
+        if (style === undefined) {
+            style = `padding: ${ Tooltip.padding }px;
                        border: ${ DEFAULT_LINE_WIDTH }px solid ${ theme.dropdownBorder };
                        border-radius: ${ Tooltip.radius }px;
                        background: ${ theme.floatingBackground };
@@ -54,18 +59,26 @@ export default class CustomTooltip {
                        white-space: pre-wrap;
                        overflow-wrap: anywhere`
 
+            TEXT_STYLES.set(theme, style)
+        }
+
         return `<div style="${ style }">${ escapeHtml(text) }</div>`
     }
 
     show(html: string, point: Point) {
-        if (html !== this.html || !this.floating) {
-            this.hide()
+        if (!this.floating) {
+            const floating = new FloatingElement(this.canvas, Tooltip.offset)
 
-            this.floating = new FloatingElement(this.canvas, Tooltip.offset)
-            this.floating.element.setAttribute('role', 'tooltip')
-            this.floating.element.style.pointerEvents = 'none'
-            this.floating.element.style.transformOrigin = 'center'
-            this.floating.element.innerHTML = html
+            floating.element.setAttribute('role', 'tooltip')
+            floating.element.style.pointerEvents = 'none'
+            floating.element.style.transformOrigin = 'center'
+
+            this.floating = floating
+            this.html = null
+        }
+
+        if (html !== this.html) {
+            this.floating.setHtml(html)
             this.html = html
         }
 
@@ -76,8 +89,15 @@ export default class CustomTooltip {
         if (!this.floating)
             return
 
-        this.floating.element.style.opacity = String(progress)
-        this.floating.element.style.transform = `scale(${ appearScale(progress) })`
+        const { style } = this.floating.element
+        const opacity = String(progress)
+        const transform = `scale(${ appearScale(progress) })`
+
+        if (style.opacity !== opacity)
+            style.opacity = opacity
+
+        if (style.transform !== transform)
+            style.transform = transform
     }
 
     hide() {

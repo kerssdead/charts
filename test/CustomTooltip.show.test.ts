@@ -30,4 +30,20 @@ describe('Showing custom tooltip', () => {
             expect(body.elements.filter(element => element.getAttribute('role') === 'tooltip'))
                 .toHaveLength(1)
         })
+
+        it('Should reuse the element when the html changes', () => {
+            const { body, canvas } = installCustomTooltipEnvironment()
+
+            const tooltip = new CustomTooltip(canvas)
+
+            tooltip.show('<div>First</div>', { x: 10, y: 20 })
+            tooltip.show('<div>Second</div>', { x: 30, y: 40 })
+
+            const elements = body.elements.filter(element => element.getAttribute('role') === 'tooltip')
+
+            expect(elements)
+                .toHaveLength(1)
+            expect(elements[0].innerHTML)
+                .toBe('<div>Second</div>')
+        })
 })

@@ -34,8 +34,14 @@ export function firstMappedValue<K, V>(keys: K[], map: Map<K, V>): V | undefined
 }
 
 export function deepClone<T>(value: T): T {
-    if (Array.isArray(value))
-        return value.map(deepClone) as T
+    if (Array.isArray(value)) {
+        const copy = new Array(value.length)
+
+        for (let i = 0; i < value.length; i++)
+            copy[i] = deepClone(value[i])
+
+        return copy as T
+    }
 
     if (value instanceof Date)
         return new Date(value) as T
@@ -43,10 +49,11 @@ export function deepClone<T>(value: T): T {
     if (value == null || typeof value != 'object')
         return value
 
-    const copy = Object.create(Object.getPrototypeOf(value))
+    const copy = Object.create(Object.getPrototypeOf(value)) as Record<string, unknown>
+    const source = value as Record<string, unknown>
 
-    for (const [key, item] of Object.entries(value))
-        copy[key] = deepClone(item)
+    for (const key of Object.keys(source))
+        copy[key] = deepClone(source[key])
 
-    return copy
+    return copy as T
 }

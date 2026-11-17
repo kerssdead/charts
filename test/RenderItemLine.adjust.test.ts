@@ -45,4 +45,31 @@ describe('Adjusting line to window', () => {
         expect([middle[0].y === curveEnds(shape)[0].y, curveEnds(shape)])
             .toEqual([false, shape.canvas.slice(1)])
     })
+
+    it('Should keep canvas stops while the window and morph stay the same', () => {
+        const shape = smoothLine()
+        const mapX = jest.spyOn(WINDOW, 'mapX')
+
+        shape.adjust(WINDOW)
+
+        const calls = mapX.mock.calls.length
+
+        shape.adjust(WINDOW)
+
+        expect(mapX)
+            .toHaveBeenCalledTimes(calls)
+
+        mapX.mockRestore()
+    })
+
+    it('Should rebuild canvas stops after leaving to the axis', () => {
+        const shape = smoothLine()
+
+        shape.adjust(WINDOW)
+        shape.leaveToAxis(0, 1)
+        shape.adjust(WINDOW)
+
+        expect(shape.canvas.map(stop => stop.y))
+            .toEqual(shape.canvas.map(() => WINDOW.mapY(0)))
+    })
 })

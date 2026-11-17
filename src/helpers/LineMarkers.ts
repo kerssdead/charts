@@ -7,6 +7,8 @@ const MARKER_RADIUS = 4
 export default class LineMarkers {
     private readonly hovers = new HoverMap<number>()
 
+    private hovered: number = -1
+
     render(ctx: CanvasRenderingContext2D, stops: Point[], lineWidth: number) {
         for (const index of this.hovers.keys()) {
             const marker = stops[index]
@@ -22,7 +24,10 @@ export default class LineMarkers {
     }
 
     animate(hoveredIndex: number, now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
+        const isTargetChanged = hoveredIndex !== this.hovered
         const targets = new Map<number, boolean>()
+
+        this.hovered = hoveredIndex
 
         for (const [index, hover] of this.hovers.entries())
             if (!hover.isIdle)
@@ -33,6 +38,6 @@ export default class LineMarkers {
 
         this.hovers.update([...targets], now, isInstant)
 
-        return this.hovers.isAnimating
+        return isTargetChanged || this.hovers.isAnimating
     }
 }

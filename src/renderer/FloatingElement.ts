@@ -1,4 +1,6 @@
 import Point from '@/types/Point'
+import Size from '@/types/Size'
+import RectangleDimensions from '@/types/RectangleDimensions'
 import { placeNear } from '@/helpers/Geometry'
 import { Events } from '@/static/Enums'
 
@@ -7,13 +9,21 @@ const VIEWPORT_PADDING = 8
 export default class FloatingElement {
     readonly element = document.createElement('div')
 
+    minWidth = 0
+
     private readonly canvas: HTMLCanvasElement
 
     private readonly offset: number
 
-    minWidth = 0
-
     private point: Point = { x: 0, y: 0 }
+
+    private canvasRect: DOMRect | null = null
+
+    private canvasScale: Point | null = null
+
+    private viewport: RectangleDimensions | null = null
+
+    private size: Size | null = null
 
     private observer: ResizeObserver | null = null
 
@@ -57,26 +67,46 @@ export default class FloatingElement {
         this.place()
     }
 
+    setHtml(html: string) {
+        this.element.innerHTML = html
+        this.size = null
+    }
+
     remove() {
         this.abort?.abort()
         this.abort = null
         this.observer?.disconnect()
         this.observer = null
         this.element.remove()
+
+        this.invalidate()
+    }
+
+    private invalidate() {
+        this.canvasRect = null
+        this.canvasScale = null
+        this.viewport = null
+        this.size = null
     }
 
     private watchSize() {
         this.abort = new AbortController()
 
         const options = { signal: this.abort.signal }
-        const place = () => this.place()
+        const place = () => {
+            this.invalidate()
+            this.place()
+        }
 
         window.addEventListener(Events.Resize, place, options)
         window.addEventListener(Events.Scroll, place, { ...options, capture: true })
         window.visualViewport?.addEventListener(Events.Resize, place, options)
         window.visualViewport?.addEventListener(Events.Scroll, place, options)
 
-        this.observer = new ResizeObserver(place)
+        this.observer = new ResizeObserver(() => {
+            this.size = null
+            this.place()
+        })
         this.observer.observe(this.element)
     }
 
@@ -91,22 +121,36 @@ export default class FloatingElement {
         }
     }
 
+    private getCanvasScale(canvas: RectangleDimensions): Point {
+        return this.canvasScale ??= {
+            x: canvas.width / (this.canvas.clientWidth || canvas.width || 1),
+            y: canvas.height / (this.canvas.clientHeight || canvas.height || 1)
+        }
+    }
+
     private place() {
-        const canvas = this.canvas.getBoundingClientRect()
-        const bounds = this.getViewport()
+        const canvas = this.canvasRect ??= this.canvas.getBoundingClientRect()
+        const bounds = this.viewport ??= this.getViewport()
+        const scale = this.getCanvasScale(canvas)
         const { element } = this
 
-        element.style.minWidth = `${ Math.min(this.minWidth, bounds.width) }px`
-        element.style.maxWidth = `${ bounds.width }px`
-        element.style.maxHeight = `${ bounds.height }px`
+        this.applyStyle('minWidth', `${ Math.min(this.minWidth, bounds.width) }px`)
+        this.applyStyle('maxWidth', `${ bounds.width }px`)
+        this.applyStyle('maxHeight', `${ bounds.height }px`)
 
         const point = {
-            x: canvas.left + this.point.x * canvas.width / (this.canvas.clientWidth || canvas.width || 1),
-            y: canvas.top + this.point.y * canvas.height / (this.canvas.clientHeight || canvas.height || 1)
+            x: canvas.left + this.point.x * scale.x,
+            y: canvas.top + this.point.y * scale.y
         }
-        const position = placeNear(point, element.getBoundingClientRect(), this.offset, bounds)
+        const size = this.size ??= { width: element.offsetWidth, height: element.offsetHeight }
+        const position = placeNear(point, size, this.offset, bounds)
 
-        element.style.left = `${ Math.min(position.x, bounds.x + bounds.width - element.offsetWidth) }px`
-        element.style.top = `${ Math.min(position.y, bounds.y + bounds.height - element.offsetHeight) }px`
+        this.applyStyle('left', `${ Math.min(position.x, bounds.x + bounds.width - size.width) }px`)
+        this.applyStyle('top', `${ Math.min(position.y, bounds.y + bounds.height - size.height) }px`)
+    }
+
+    private applyStyle(name: 'minWidth' | 'maxWidth' | 'maxHeight' | 'left' | 'top', value: string) {
+        if (this.element.style[name] !== value)
+            this.element.style[name] = value
     }
 }

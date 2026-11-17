@@ -3,7 +3,7 @@ import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItem from '@/types/RenderItem'
 import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y, FULL_ANGLE } from '@/static/constants/Index'
-import { contains, findClosestStop, lerp, lerpRect } from '@/helpers/Geometry'
+import { contains, copyRect, findClosestStop, lerp, lerpRect, sameRect } from '@/helpers/Geometry'
 import { GradientCache } from '@/helpers/Canvas'
 import { LineJoin } from '@/static/Enums'
 import { Tooltip, resolveTooltip } from '@/types/Tooltip'
@@ -11,6 +11,7 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import LinePathTracer from '@/helpers/LinePathTracer'
 import LineArea, { LinePath } from '@/helpers/LineArea'
 import LineMarkers from '@/helpers/LineMarkers'
+import { getLineBounds, mapLineStops } from '@/helpers/LineGeometry'
 
 const ALPHA_DELTA = 0.5
 
@@ -43,9 +44,13 @@ export default class RenderItemLine extends RenderItemBase {
 
     private readonly canvasClip: RectangleDimensions = { x: 0, y: 0, width: 0, height: 0 }
 
-    private hovered: number = -1
-
     private isSortedX: boolean = true
+
+    private adjustedWindow: RectangleDimensions | null = null
+
+    private cachedBounds: Bounds | null = null
+
+    private isBoundsCached: boolean = false
 
     private readonly gradient = new GradientCache()
 
@@ -79,12 +84,14 @@ export default class RenderItemLine extends RenderItemBase {
         this.from = previous.current(morph)
         this.area.morphFrom(previous.area, morph)
         this.fromClip = previous.currentClip(morph)
+        this.invalidateAdjust()
 
         return true
     }
 
     enterFromAxis(y: number): boolean {
         this.from = this.absolute.map(stop => ({ x: stop.x, y }))
+        this.invalidateAdjust()
 
         return true
     }
@@ -92,27 +99,20 @@ export default class RenderItemLine extends RenderItemBase {
     leaveToAxis(y: number, morph: number): boolean {
         this.from = this.current(morph)
         this.absolute = this.absolute.map(stop => ({ x: stop.x, y }))
+        this.invalidateAdjust()
 
         return true
     }
 
     adjust(window: CanvasWindow, morph: number = 1): void {
+        if (morph >= 1 && this.isAdjusted(window))
+            return
+
         const stops = this.from && morph < 1 ? this.current(morph) : this.absolute
+        const { canvas, isSortedX } = mapLineStops(window, stops, this.canvas)
 
-        if (this.canvas.length !== stops.length)
-            this.canvas = stops.map(() => ({ x: 0, y: 0 }))
-
-        let isSorted = true
-
-        for (let i = 0; i < stops.length; i++) {
-            this.canvas[i].x = window.mapX(stops[i].x)
-            this.canvas[i].y = window.mapY(stops[i].y)
-
-            if (i > 0 && this.canvas[i].x < this.canvas[i - 1].x)
-                isSorted = false
-        }
-
-        this.isSortedX = isSorted
+        this.canvas = canvas
+        this.isSortedX = isSortedX
 
         this.pathTracer.updateCurve(this.canvas, morph < 1)
 
@@ -126,6 +126,18 @@ export default class RenderItemLine extends RenderItemBase {
             this.canvasClip.width = clip.width / COORDS_MAX_X * window.width
             this.canvasClip.height = clip.height / COORDS_MAX_Y * window.height
         }
+
+        this.adjustedWindow = morph >= 1 ? copyRect(window) : null
+        this.isBoundsCached = false
+    }
+
+    private isAdjusted(window: CanvasWindow) {
+        return this.adjustedWindow != null && sameRect(this.adjustedWindow, window)
+    }
+
+    private invalidateAdjust() {
+        this.adjustedWindow = null
+        this.isBoundsCached = false
     }
 
     render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
@@ -206,37 +218,16 @@ export default class RenderItemLine extends RenderItemBase {
     }
 
     getBounds() {
-        if (this.canvas.length === 0) {
-            return null
+        if (!this.isBoundsCached) {
+            this.cachedBounds = getLineBounds(
+                this.canvas,
+                this.width / 2,
+                this.area.baseline != null ? this.area.canvasBaseline : null
+            )
+            this.isBoundsCached = true
         }
 
-        let left = Infinity
-        let top = Infinity
-        let right = -Infinity
-        let bottom = -Infinity
-
-        for (let i = 0; i < this.canvas.length; i++) {
-            const stop = this.canvas[i]
-
-            left = Math.min(left, stop.x)
-            top = Math.min(top, stop.y)
-            right = Math.max(right, stop.x)
-            bottom = Math.max(bottom, stop.y)
-        }
-
-        if (this.area.baseline != null) {
-            top = Math.min(top, this.area.canvasBaseline)
-            bottom = Math.max(bottom, this.area.canvasBaseline)
-        }
-
-        const padding = this.width / 2
-
-        return {
-            left: left - padding,
-            top: top - padding,
-            right: right + padding,
-            bottom: bottom + padding
-        }
+        return this.cachedBounds
     }
 
     isMouseOver(point: Point): boolean {
@@ -271,9 +262,9 @@ export default class RenderItemLine extends RenderItemBase {
     }
 
     animateHover(point: Point | null, now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
-        this.hovered = point ? this.stopAt(point) : -1
+        const hovered = point ? this.stopAt(point) : -1
 
-        return this.markers.animate(this.hovered, now, isInstant)
+        return this.markers.animate(hovered, now, isInstant)
     }
 
     private clipToBox(ctx: CanvasRenderingContext2D) {

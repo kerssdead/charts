@@ -1,6 +1,7 @@
 import { AnimationTiming, DEFAULT_LINE_WIDTH } from '@/static/constants/Index'
 import CanvasWindow from '@/types/CanvasWindow'
-import RenderItemBase, { Bounds } from '@/types/interfaces/RenderItemBase'
+import RenderItemBase from '@/types/interfaces/RenderItemBase'
+import { boundsInside, boundsOverlap } from '@/helpers/Bounds'
 import Point from '@/types/Point'
 import AnimationData from '@/animation/AnimationData'
 import ItemData from '@/types/ItemData'
@@ -77,6 +78,8 @@ export default class RenderItem {
 
     private readonly hover = new HoverProgress()
 
+    private hoverChanged: boolean = false
+
     constructor(shape: RenderItemBase) {
         this.shape = shape
     }
@@ -88,10 +91,10 @@ export default class RenderItem {
         const clip = this.scrollPanel?.clip
         const bounds = this.adjustShape(window)
 
-        if (bounds && !RenderItem.overlaps(bounds, clip ?? RenderItem.getScreenArea(screen)))
+        if (bounds && !boundsOverlap(bounds, clip ?? RenderItem.getScreenArea(screen)))
             return
 
-        const isClipped = clip !== undefined && !(bounds && RenderItem.isInside(bounds, clip))
+        const isClipped = clip !== undefined && !(bounds && boundsInside(bounds, clip))
 
         if (isClipped)
             RenderItem.clipTo(ctx, clip)
@@ -166,22 +169,25 @@ export default class RenderItem {
             return false
 
         this.isInstant = isInstant
+        this.hoverChanged = false
 
         const isOver = this.isOverAt(point, hoveredGroups)
-
         const isHoverTarget = this.hoverGroup == null ? isOver : this.in(point)
-
         const isShapeAnimating = this.shape.animateHover(isHoverTarget ? point : null, now, isInstant)
 
         if (!isOver && this.hover.isIdle)
             return isShapeAnimating
 
+        return this.animateHoverProgress(isOver, now) || isShapeAnimating || this.hoverChanged
+    }
+
+    private animateHoverProgress(isOver: boolean, now: DOMHighResTimeStamp) {
         if (this.isMonochrome)
             this.animation.mono = this.hoverFactor(!isOver, now, AnimationTiming.hover)
         else
             this.shape.animate(this, !isOver, now)
 
-        return this.hover.isAnimating || isShapeAnimating
+        return this.hover.isAnimating
     }
 
     private isOverAt(point: Point, hoveredGroups: Set<string>) {
@@ -278,22 +284,8 @@ export default class RenderItem {
     }
 
     hoverFactor(isBackward: boolean, now: DOMHighResTimeStamp, duration: number) {
-        this.hover.step(!isBackward, now, duration, this.isInstant)
+        this.hoverChanged = this.hover.step(!isBackward, now, duration, this.isInstant) || this.hoverChanged
 
         return this.hover.value
-    }
-
-    private static overlaps(bounds: Bounds, area: RectangleDimensions): boolean {
-        const margin = DEFAULT_LINE_WIDTH
-
-        return bounds.right >= area.x - margin && bounds.left <= area.x + area.width + margin
-               && bounds.bottom >= area.y - margin && bounds.top <= area.y + area.height + margin
-    }
-
-    private static isInside(bounds: Bounds, area: RectangleDimensions): boolean {
-        const margin = DEFAULT_LINE_WIDTH
-
-        return bounds.left >= area.x + margin && bounds.right <= area.x + area.width - margin
-               && bounds.top >= area.y + margin && bounds.bottom <= area.y + area.height - margin
     }
 }

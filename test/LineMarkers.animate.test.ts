@@ -31,4 +31,14 @@ describe('Animating line markers', () => {
         expect(markers.animate(-1, 500))
             .toBe(false)
     })
+
+    it('Should report a change when the hovered marker changes', () => {
+        const markers = new LineMarkers()
+
+        markers.animate(2, 0)
+        markers.animate(2, 400)
+
+        expect(markers.animate(3, 2000))
+            .toBe(true)
+    })
 })
