@@ -13,8 +13,17 @@ export function lerp(from: number, to: number, t: number) {
 }
 
 export function boxEdgeDistance(angle: number, halfWidth: number, halfHeight: number, distance: number) {
-    const cos = Math.abs(Math.cos(angle))
-    const sin = Math.abs(Math.sin(angle))
+    return boxEdgeDistanceForDirection({ x: Math.cos(angle), y: Math.sin(angle) }, halfWidth, halfHeight, distance)
+}
+
+export function boxEdgeDistanceForDirection(
+    direction: Point,
+    halfWidth: number,
+    halfHeight: number,
+    distance: number
+) {
+    const cos = Math.abs(direction.x)
+    const sin = Math.abs(direction.y)
 
     if (sin > 1e-6) {
         const horizontalEdgeCenter = (distance + halfHeight) / sin

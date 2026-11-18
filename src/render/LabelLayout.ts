@@ -1,6 +1,5 @@
-import { boxEdgeDistance, clamp } from '@/helpers/Geometry'
+import { boxEdgeDistanceForDirection, clamp } from '@/helpers/Geometry'
 import Point from '@/types/Point'
-import { Axis } from '@/static/Enums'
 
 const SPACING = 2
 
@@ -27,6 +26,7 @@ type Box = LabelBox & {
     origin: number
     middle: number
     center: Point
+    direction: Point
 }
 
 export default function layoutLabels(labels: LabelBox[], distance: number, bounds: Point): LabelPlacement[] {
@@ -54,7 +54,8 @@ class LabelArranger {
             index,
             origin: label.angle,
             middle: label.angle,
-            center: { x: 0, y: 0 }
+            center: { x: 0, y: 0 },
+            direction: { x: 1, y: 0 }
         }))
 
         const maxVisibleCount = getMaxVisibleCount(labels, this.distance, this.bounds)
@@ -63,7 +64,7 @@ class LabelArranger {
                       : allBoxes
 
         for (const box of boxes) {
-            box.center = this.getCenter(box)
+            this.updatePosition(box)
 
             this.fit(box)
 
@@ -99,7 +100,7 @@ class LabelArranger {
     }
 
     private spreadOnce(boxes: Box[]) {
-        let isMoved = false
+        const previousAngles = boxes.map(box => box.angle)
 
         for (let i = 0; i < boxes.length; i++) {
             const isLast = i === boxes.length - 1
@@ -113,44 +114,43 @@ class LabelArranger {
             if (!this.shouldSeparate(current, next, isLast))
                 continue
 
-            isMoved = this.move(current, -STEP) || isMoved
-            isMoved = this.move(next, STEP) || isMoved
+            this.move(current, -STEP)
+            this.move(next, STEP)
         }
 
-        return isMoved
+        return boxes.some((box, i) => box.angle !== previousAngles[i])
     }
 
     private shouldSeparate(current: Box, next: Box, isLast: boolean) {
         return this.isOverlap(current, next) || !isLast && current.angle > next.angle
     }
 
-    private getCenter(box: Box) {
-        const push = this.distance + boxEdgeDistance(box.angle, box.halfWidth, box.halfHeight, this.distance)
+    private updatePosition(box: Box) {
+        const { direction, center } = box
 
-        return {
-            x: push * Math.cos(box.angle),
-            y: push * Math.sin(box.angle)
-        }
+        direction.x = Math.cos(box.angle)
+        direction.y = Math.sin(box.angle)
+
+        const edgeDistance = boxEdgeDistanceForDirection(direction, box.halfWidth, box.halfHeight, this.distance)
+        const push = this.distance + edgeDistance
+
+        center.x = push * direction.x
+        center.y = push * direction.y
     }
 
     private isCrossing(box: Box, other: Box) {
-        const from = { x: this.distance * Math.cos(box.angle), y: this.distance * Math.sin(box.angle) }
-        const to = {
-            x: clamp(from.x, box.center.x - box.halfWidth, box.center.x + box.halfWidth),
-            y: clamp(from.y, box.center.y - box.halfHeight, box.center.y + box.halfHeight)
-        }
+        const fromX = this.distance * box.direction.x
+        const fromY = this.distance * box.direction.y
+        const deltaX = clamp(fromX, box.center.x - box.halfWidth, box.center.x + box.halfWidth) - fromX
+        const deltaY = clamp(fromY, box.center.y - box.halfHeight, box.center.y + box.halfHeight) - fromY
 
-        let enter = 0
-        let exit = 1
+        const nearX = (other.center.x - other.halfWidth - SPACING - fromX) / deltaX
+        const farX = (other.center.x + other.halfWidth + SPACING - fromX) / deltaX
+        const nearY = (other.center.y - other.halfHeight - SPACING - fromY) / deltaY
+        const farY = (other.center.y + other.halfHeight + SPACING - fromY) / deltaY
 
-        for (const [axis, half] of [[Axis.X, other.halfWidth], [Axis.Y, other.halfHeight]] as const) {
-            const delta = to[axis] - from[axis]
-            const near = (other.center[axis] - half - SPACING - from[axis]) / delta
-            const far = (other.center[axis] + half + SPACING - from[axis]) / delta
-
-            enter = Math.max(enter, Math.min(near, far))
-            exit = Math.min(exit, Math.max(near, far))
-        }
+        const enter = Math.max(0, Math.min(nearX, farX), Math.min(nearY, farY))
+        const exit = Math.min(1, Math.max(nearX, farX), Math.max(nearY, farY))
 
         return enter < exit
     }
@@ -171,23 +171,30 @@ class LabelArranger {
             const sign = Math.sign(Math.sin(box.angle) * Math.cos(box.angle)) || 1
 
             box.angle += (Math.abs(box.center.y) + box.halfHeight > this.bounds.y ? -sign : sign) * STEP
-            box.center = this.getCenter(box)
+            this.updatePosition(box)
         }
     }
 
     private move(box: Box, step: number) {
-        const { angle, center } = box
+        const { angle, direction, center } = box
+        const { x: previousDirectionX, y: previousDirectionY } = direction
+        const { x: previousCenterX, y: previousCenterY } = center
 
         box.angle = clamp(angle + step, box.middle - MAX_DRIFT, box.middle + MAX_DRIFT)
-        box.center = this.getCenter(box)
+
+        if (box.angle === angle)
+            return
+
+        this.updatePosition(box)
 
         if (!this.isOutside(box))
-            return box.angle !== angle
+            return
 
         box.angle = angle
-        box.center = center
-
-        return false
+        direction.x = previousDirectionX
+        direction.y = previousDirectionY
+        center.x = previousCenterX
+        center.y = previousCenterY
     }
 }
 

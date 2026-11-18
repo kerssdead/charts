@@ -6,7 +6,7 @@ import Point from '@/types/Point'
 import Alignment, { DEFAULT_ALIGNMENT } from '@/types/Alignment'
 import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
-import { unitVerticalGradient } from '@/helpers/Canvas'
+import RectangleGradient from '@/helpers/RectangleGradient'
 import { lerp } from '@/helpers/Geometry'
 import Rectangle from '@/helpers/Rectangle'
 
@@ -77,6 +77,8 @@ export default class RenderItemRectangle extends RenderItemBase {
     private readonly grownArea: CanvasBox = { left: 0, top: 0, width: 0, height: 0 }
 
     private readonly edges: Bounds = { left: 0, top: 0, right: 0, bottom: 0 }
+
+    private readonly gradient = new RectangleGradient()
 
     current(
         morph: number = 1,
@@ -211,17 +213,8 @@ export default class RenderItemRectangle extends RenderItemBase {
 
         const gradientFill = this.isGradient ? item.fill : undefined
 
-        if (gradientFill) {
-            const scale = Math.abs(height)
-
-            ctx.save()
-
-            ctx.translate(0, Math.min(top, top + height))
-            ctx.scale(scale, scale)
-
-            ctx.lineWidth /= scale
-            ctx.fillStyle = ctx.strokeStyle = unitVerticalGradient(ctx, gradientFill)
-        }
+        if (gradientFill)
+            this.gradient.apply(ctx, gradientFill, top, height)
 
         if (this.isFill) {
             ctx.fill()
@@ -229,8 +222,7 @@ export default class RenderItemRectangle extends RenderItemBase {
 
         ctx.stroke()
 
-        if (gradientFill)
-            ctx.restore()
+        this.gradient.restore(ctx)
 
         if (this.clip)
             ctx.restore()

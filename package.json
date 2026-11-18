@@ -1,6 +1,6 @@
 {
   "name": "charts",
-  "version": "2.1.172",
+  "version": "2.1.176",
   "description": "Typescript Canvas Charts",
   "main": "./dist/ocharts.js",
   "types": "./dist/ocharts.d.ts",

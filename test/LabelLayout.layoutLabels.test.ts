@@ -70,6 +70,23 @@ describe('Laying out labels', () => {
             .toBe(true)
     })
 
+    it('Should settle labels that keep pushing each other back and forth', () => {
+        const placements = layoutLabels([
+            { angle: 1.732618541872417, value: 3, halfWidth: 12, halfHeight: 6 },
+            { angle: 1.9519072893131093, value: 4, halfWidth: 26, halfHeight: 6 },
+            { angle: 1.818054666546199, value: 3, halfWidth: 30, halfHeight: 6 },
+            { angle: 2.5407426751687856, value: 3, halfWidth: 29, halfHeight: 6 }
+        ], DISTANCE, { x: 120, y: 90 })
+
+        expect(placements)
+            .toEqual([
+                { angle: 1.209019766274118, isVisible: true },
+                { angle: 2.475506064911408, isVisible: true },
+                { angle: 1.818054666546199, isVisible: false },
+                { angle: 2.7807426751687805, isVisible: true }
+            ])
+    })
+
     it('Should turn a label sideways when it sticks out of the horizontal bounds', () => {
         const [placement] = layoutLabels([label(0, 1)], DISTANCE, { x: 50, y: 50 })
 

@@ -103,6 +103,7 @@ declare class Chart {
 	private recover;
 	applySettings(settings: ChartSettings): void;
 	private update;
+	private normalizeAndApply;
 	private bindMenuActions;
 	private resize;
 	private suspend;

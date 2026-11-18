@@ -70,6 +70,29 @@ describe('Rendering rectangle', () => {
             .toHaveBeenCalledTimes(1)
     })
 
+    it('Should draw an unchanged rectangle without transform on the next frame', () => {
+        const ctx = context()
+        const shape = new RenderItemRectangle()
+        const item = new RenderItem(shape)
+
+        item.color = '#336699'
+        shape.isGradient = true
+        shape.absolute = { x: 1000, y: 2000, width: 500, height: 1000 }
+        shape.align = { x: HorizontalAlignment.Left, y: VerticalAlignment.Top }
+        shape.adjust(WINDOW)
+
+        for (let frame = 0; frame < 2; frame++)
+            shape.render(ctx as unknown as CanvasRenderingContext2D, item)
+
+        expect([
+            ctx.save.mock.calls.length,
+            ctx.restore.mock.calls.length,
+            ctx.createLinearGradient.mock.calls.at(-1),
+            ctx.fillStyle
+        ])
+            .toEqual([1, 1, [0, 200, 0, 300], ctx.createLinearGradient.mock.results.at(-1)?.value])
+    })
+
     it('Should grow height from origin while initializing', () => {
         const ctx = context()
         const shape = new RenderItemRectangle()
