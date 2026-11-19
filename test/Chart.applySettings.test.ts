@@ -1,3 +1,4 @@
+import { getLocale, setLocalization } from '@/static/Localization'
 import Chart from '@/Chart'
 import ChartSettings from '@/types/ChartSettings'
 import TextResources from '@/static/TextResources'
@@ -64,6 +65,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+    setLocalization(undefined, undefined)
     jest.restoreAllMocks()
 })
 
@@ -149,5 +151,23 @@ describe('Applying settings', () => {
 
         expect(children())
             .toEqual([])
+    })
+
+    it('Should apply locale and custom strings', () => {
+        const chart = create(settings('Working'))
+
+        chart.applySettings({ ...settings('Working'), locale: 'fr', strings: { copy: 'Dupliquer' } })
+
+        expect([TextResources.reset, TextResources.copy, getLocale()])
+            .toEqual(['Réinitialiser', 'Dupliquer', 'fr'])
+    })
+
+    it('Should reset locale when it is removed from settings', () => {
+        const chart = create({ ...settings('Working'), locale: 'fr' })
+
+        chart.applySettings(settings('Working'))
+
+        expect([TextResources.reset, getLocale()])
+            .toEqual(['Reset', undefined])
     })
 })

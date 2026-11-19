@@ -1,45 +1,64 @@
-const enum TextResources {
-    exportPNG = 'Save as image...',
+const DEFAULT_TEXTS = {
+    exportPNG: 'Save as image...',
 
-    decomposeToTable = 'Show as table...',
+    decomposeToTable: 'Show as table...',
 
-    reset = 'Reset',
+    reset: 'Reset',
 
-    exportCSV = 'Save as table...',
+    exportCSV: 'Save as table...',
 
-    other = 'Other',
+    other: 'Other',
 
-    noLabel = '(No label)',
+    noLabel: '(No label)',
 
-    dataAsTable = 'Data as table',
+    dataAsTable: 'Data as table',
 
-    total = 'Total',
+    total: 'Total',
 
-    noData = 'No data',
+    noData: 'No data',
 
-    somethingWentWrong = 'Something went wrong',
+    somethingWentWrong: 'Something went wrong',
 
-    noValue = '(no value)',
+    noValue: '(no value)',
 
-    value = 'Value',
+    value: 'Value',
 
-    name = 'Name',
+    name: 'Name',
 
-    share = 'Share',
+    share: 'Share',
 
-    filter = 'Filter...',
+    filter: 'Filter...',
 
-    copy = 'Copy',
+    copy: 'Copy',
 
-    copied = 'Copied',
+    copied: 'Copied',
 
-    copyFailed = 'Copy failed',
+    copyFailed: 'Copy failed',
 
-    saveCsv = 'Save as CSV',
+    saveCsv: 'Save as CSV',
 
-    defaultImageName = 'chart',
+    defaultImageName: 'chart',
 
-    defaultTableName = 'table'
+    defaultTableName: 'table',
+
+    sortAscending: ' ▲',
+
+    sortDescending: ' ▼'
 }
+
+export type TextKey = keyof typeof DEFAULT_TEXTS
+
+export type TextOverrides = Partial<Record<TextKey, string>>
+
+let overrides: TextOverrides = {}
+
+export function setTextOverrides(value: TextOverrides | undefined) {
+    overrides = value ?? {}
+}
+
+const TextResources = {} as Readonly<Record<TextKey, string>>
+
+for (const key of Object.keys(DEFAULT_TEXTS) as TextKey[])
+    Object.defineProperty(TextResources, key, { get: () => overrides[key] ?? DEFAULT_TEXTS[key], enumerable: true })
 
 export default TextResources

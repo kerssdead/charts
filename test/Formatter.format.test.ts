@@ -1,7 +1,10 @@
+import { setLocalization } from '@/static/Localization'
 import { PlotAxisType } from '@/static/Enums'
 import Formatter from '@/helpers/Formatter'
 
 describe('Getting formatted values', () => {
+    afterEach(() => setLocalization(undefined, undefined))
+
     it('Number', () => {
         expect(Formatter.format(1000, PlotAxisType.Number))
             .toBe('1,000.00')
@@ -45,5 +48,12 @@ describe('Getting formatted values', () => {
     it('Missing date', () => {
         expect(Formatter.format(undefined, PlotAxisType.Date))
             .toBe(new Date('').toLocaleDateString())
+    })
+
+    it('Should format date with the chart locale', () => {
+        setLocalization('de', undefined)
+
+        expect(Formatter.format(new Date(2010, 0, 10), PlotAxisType.Date))
+            .toBe('10.1.2010')
     })
 })

@@ -3,7 +3,8 @@ import { getMatchingValues } from '@/export/TableQueries'
 import { getTotals } from '@/export/TableTotals'
 import TableValue from '@/types/TableValue'
 import TableHeaderValue from '@/types/TableHeaderValue'
-import Formatter from '@/helpers/Formatter'
+import Formatter, { DEFAULT_DECIMALS } from '@/helpers/Formatter'
+import { formatPercent } from '@/helpers/Percent'
 import TextResources from '@/static/TextResources'
 import { AriaRole, Attribute, TableClasses, Tag } from '@/static/Enums'
 import { asNumberCell, cell, div } from '@/export/TableElements'
@@ -13,7 +14,7 @@ import TableColumnHighlight from '@/export/TableColumnHighlight'
 function formatValue(value: number, header: TableHeaderValue, decimals: number | undefined) {
     const text = Formatter.number(value, decimals)
 
-    return header.percent ? `${ text }%` : text
+    return header.percent ? formatPercent(value / 100, decimals ?? DEFAULT_DECIMALS, decimals ?? DEFAULT_DECIMALS) : text
 }
 
 function nameCell(value: TableValue) {

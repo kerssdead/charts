@@ -238,4 +238,25 @@ describe('Normalizing settings', () => {
         expect([root.parts[0].color, child?.parts[0].color, child?.parts[1].color])
             .toEqual(['#336699', '#ff0000', '#00ff00'])
     })
+
+    it('Should parse numbers with locale when number locale is not set', () => {
+        const settings = normalize({
+            locale: 'de-DE',
+            charts: [{ type: ChartType.Pie, data: { values: [{ label: 'A', value: '1.234,5' }] } }]
+        } as unknown as ChartSettings)
+
+        expect((settings.charts[0].data as { values: { value: number }[] }).values[0].value)
+            .toBe(1234.5)
+    })
+
+    it('Should prefer number locale over locale for parsing', () => {
+        const settings = normalize({
+            locale: 'en-US',
+            numberLocale: 'de-DE',
+            charts: [{ type: ChartType.Pie, data: { values: [{ label: 'A', value: '1.234,5' }] } }]
+        } as unknown as ChartSettings)
+
+        expect((settings.charts[0].data as { values: { value: number }[] }).values[0].value)
+            .toBe(1234.5)
+    })
 })

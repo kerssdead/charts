@@ -2,6 +2,7 @@ import ChartSettings from '@/types/ChartSettings'
 import Theme, { ColorTheme } from '@/Theme'
 import Renderer from '@/renderer/Renderer'
 import Debug from '@/helpers/Debug'
+import { setLocalization } from '@/static/Localization'
 import { normalize } from '@/charts/Settings'
 import ViewState from '@/charts/ViewState'
 import ChartFailure from '@/ui/ChartFailure'
@@ -172,6 +173,8 @@ export default class Chart {
     }
 
     private normalizeAndApply(settings: ChartSettings) {
+        setLocalization(settings.locale, settings.strings)
+
         this.settings = normalize(settings, this.element)
         this.viewState.apply(this.settings)
 

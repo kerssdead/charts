@@ -1,6 +1,7 @@
 import { TreeBarColumn, TreeBarEntry } from '@/types/data/TreeBarData'
 import { maxOf } from '@/helpers/Collections'
 import { clamp } from '@/helpers/Geometry'
+import TextResources from '@/static/TextResources'
 import { stringWidth } from '@/helpers/Text'
 import * as TreeBarRowText from '@/render/treeBar/TreeBarRowText'
 import {
@@ -12,8 +13,7 @@ import {
     INDENT,
     NAME_MAX_SHARE,
     NAME_MIN_WIDTH,
-    PADDING,
-    SORT_ASCENDING
+    PADDING
 } from '@/render/treeBar/TreeBarConstants'
 
 export type Column = TreeBarColumn & {
@@ -52,7 +52,7 @@ export function getColumns(
 
     return [...columns].reverse().map(column => {
         const width = Math.min(Math.max(
-            stringWidth(column.title + SORT_ASCENDING, HEADER_FONT_SIZE),
+            stringWidth(column.title + TextResources.sortAscending, HEADER_FONT_SIZE),
             maxOf(entries, ({ node }) => {
                 return stringWidth(TreeBarRowText.formatCell(node.cells?.[column.key]), CELL_FONT_SIZE)
             })

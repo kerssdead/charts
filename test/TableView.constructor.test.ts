@@ -1,3 +1,4 @@
+import { setLocalization } from '@/static/Localization'
 import TableView from '@/export/TableView'
 import TableData from '@/types/TableData'
 import TextResources from '@/static/TextResources'
@@ -128,5 +129,16 @@ describe('Building table view', () => {
 
         expect(table.elements[1].children.length)
             .toBe(200000)
+    })
+
+    it('Should format percent columns with the chart locale', () => {
+        setLocalization('de', undefined)
+
+        const [, body] = build(data).elements
+
+        expect(texts(body.elements[0])[2])
+            .toBe('25,00\u00a0%')
+
+        setLocalization(undefined, undefined)
     })
 })

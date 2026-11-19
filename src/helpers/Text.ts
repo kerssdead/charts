@@ -1,3 +1,4 @@
+import { localeCached } from '@/static/Localization'
 import fail from '@/helpers/Errors'
 import { ErrorType, Tag } from '@/static/Enums'
 import { DEFAULT_FONT_SIZE, FONT_FAMILY } from '@/static/constants/Index'
@@ -61,33 +62,29 @@ const SHORT_THRESHOLD = 1e10
 
 const SCIENTIFIC_THRESHOLD = 1e15
 
-let shortFormat: Intl.NumberFormat | undefined
+const getShortFormat = localeCached(locale => new Intl.NumberFormat(locale, {
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: 1
+}))
 
-let fullFormat: Intl.NumberFormat | undefined
+const getFullFormat = localeCached(locale => new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }))
 
-let scientificFormat: Intl.NumberFormat | undefined
+const getScientificFormat = localeCached(locale => {
+    return new Intl.NumberFormat(locale, { notation: 'scientific', maximumFractionDigits: 1 })
+})
 
 export function short(value: number, isShort: boolean) {
     if (Math.abs(value) >= SCIENTIFIC_THRESHOLD)
         return scientific(value)
 
     if (!isShort && Math.abs(value) < SHORT_THRESHOLD) {
-        fullFormat ??= new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 })
-
-        return fullFormat.format(value)
+        return getFullFormat().format(value)
     }
 
-    shortFormat ??= new Intl.NumberFormat(undefined, {
-        notation: 'compact',
-        compactDisplay: 'short',
-        maximumFractionDigits: 1
-    })
-
-    return shortFormat.format(value)
+    return getShortFormat().format(value)
 }
 
 export function scientific(value: number) {
-    scientificFormat ??= new Intl.NumberFormat(undefined, { notation: 'scientific', maximumFractionDigits: 1 })
-
-    return value === 0 ? '0' : scientificFormat.format(value)
+    return value === 0 ? '0' : getScientificFormat().format(value)
 }

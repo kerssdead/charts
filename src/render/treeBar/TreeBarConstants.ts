@@ -67,8 +67,3 @@ export const TRANSPARENT = '#00000000'
 export const ROW_APPEAR_DELAY = AnimationTiming.rebuild / 2
 
 export const GRID_WIDTH = 1
-
-
-export const SORT_ASCENDING = ' ▲'
-
-export const SORT_DESCENDING = ' ▼'

@@ -1,7 +1,7 @@
 import TreeBarRow from '@/types/TreeBarRow'
 import { getCellNumber, TreeBarEntry } from '@/types/data/TreeBarData'
 import ChartViewState from '@/types/ChartViewState'
-import { SORT_ASCENDING, SORT_DESCENDING } from '@/render/treeBar/TreeBarConstants'
+import TextResources from '@/static/TextResources'
 
 function isMissing(value: string | number | undefined) {
     return String(value ?? '') === ''
@@ -60,5 +60,5 @@ export function getSortIndicator(
     if (sortColumn !== columnKey)
         return ''
 
-    return isDescending ? SORT_DESCENDING : SORT_ASCENDING
+    return isDescending ? TextResources.sortDescending : TextResources.sortAscending
 }

@@ -30,7 +30,7 @@ export function normalize(source: ChartSettings, scope?: Element): ChartSettings
     const settings = { ...clone, charts }
 
     for (const chart of charts)
-        normalizeChart(chart, settings.numberLocale, scope)
+        normalizeChart(chart, settings.numberLocale ?? settings.locale, scope)
 
     applyDefaultColors(settings, scope)
 

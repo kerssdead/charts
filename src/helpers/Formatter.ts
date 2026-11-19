@@ -1,20 +1,22 @@
 import { PlotAxisType } from '@/static/Enums'
+import { getLocale, localeCached } from '@/static/Localization'
 
-const DEFAULT_DECIMALS = 2
+export const DEFAULT_DECIMALS = 2
 
-const numberFormats = new Map<number, Intl.NumberFormat>()
+const getNumberFormats = localeCached(() => new Map<number, Intl.NumberFormat>())
 
-const dateFormats = new Map<string, Intl.DateTimeFormat>()
+const getDateFormats = localeCached(() => new Map<string, Intl.DateTimeFormat>())
 
 export default abstract class Formatter {
     static number(value: number | undefined, decimals: number = DEFAULT_DECIMALS) {
         if (typeof value != 'number')
             return value === undefined ? '' : String(value)
 
+        const numberFormats = getNumberFormats()
         let numberFormat = numberFormats.get(decimals)
 
         if (!numberFormat) {
-            numberFormat = new Intl.NumberFormat(undefined, {
+            numberFormat = new Intl.NumberFormat(getLocale(), {
                 minimumFractionDigits: decimals,
                 maximumFractionDigits: decimals
             })
@@ -56,7 +58,7 @@ export default abstract class Formatter {
         if (type === PlotAxisType.Number && !isNaN(Number(value)))
             result = Formatter.number(Number(value), decimals)
         else if (type === PlotAxisType.Date)
-            result = Formatter.toDate(value ?? '').toLocaleDateString()
+            result = Formatter.toDate(value ?? '').toLocaleDateString(getLocale())
 
         return result + (postfix ?? '')
     }
@@ -79,11 +81,12 @@ function hasSeconds(date: Date) {
 }
 
 function getDateFormat(withDay: boolean, withTime: boolean, withSeconds: boolean) {
+    const dateFormats = getDateFormats()
     const key = `${ withDay }-${ withTime }-${ withSeconds }`
     let format = dateFormats.get(key)
 
     if (!format) {
-        format = new Intl.DateTimeFormat(undefined, {
+        format = new Intl.DateTimeFormat(getLocale(), {
             ...(withDay ? { year: 'numeric', month: 'numeric', day: 'numeric' } : {}),
             ...(withTime
                 ? { hour: 'numeric', minute: '2-digit', second: withSeconds ? '2-digit' : undefined }

@@ -49,7 +49,7 @@ export default class TableToolbar {
         }
     }
 
-    private static showCopyResult(copyButton: HTMLElement, result: TextResources) {
+    private static showCopyResult(copyButton: HTMLElement, result: string) {
         copyButton.textContent = result
 
         clearTimeout(copyResultTimers.get(copyButton))

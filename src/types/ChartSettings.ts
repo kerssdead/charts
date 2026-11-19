@@ -1,6 +1,7 @@
 import Data from '@/types/interfaces/Data'
 import DropdownItem from '@/types/DropdownItem'
 import { ChartType, ImageCrossOrigin, LegendPlace } from '@/static/Enums'
+import { TextOverrides } from '@/static/TextResources'
 import ChartItem from '@/types/ChartItem'
 
 export default interface ChartSettings {
@@ -39,6 +40,10 @@ export default interface ChartSettings {
     charts: ChartItem[]
 
     columns?: number
+
+    locale?: string
+
+    strings?: TextOverrides
 
     numberLocale?: string
 

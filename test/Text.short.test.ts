@@ -1,6 +1,9 @@
+import { setLocalization } from '@/static/Localization'
 import { short } from '@/helpers/Text'
 
 describe('Getting short number', () => {
+    afterEach(() => setLocalization(undefined, undefined))
+
     it('Should use full format', () => {
         expect(short(1234.567, false))
             .toBe('1,234.57')
@@ -29,5 +32,12 @@ describe('Getting short number', () => {
     it('Should use scientific format for negative values', () => {
         expect(short(-2.5e20, true))
             .toBe('-2.5E20')
+    })
+
+    it('Should follow the chart locale', () => {
+        setLocalization('de', undefined)
+
+        expect([short(1234.567, false), short(1234567, true)])
+            .toEqual(['1.234,57', '1,2\u00a0Mio.'])
     })
 })

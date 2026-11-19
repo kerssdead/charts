@@ -47,6 +47,33 @@ declare const enum ImageCrossOrigin {
 	UseCredentials = "use-credentials",
 	None = "none"
 }
+declare const DEFAULT_TEXTS: {
+	exportPNG: string;
+	decomposeToTable: string;
+	reset: string;
+	exportCSV: string;
+	other: string;
+	noLabel: string;
+	dataAsTable: string;
+	total: string;
+	noData: string;
+	somethingWentWrong: string;
+	noValue: string;
+	value: string;
+	name: string;
+	share: string;
+	filter: string;
+	copy: string;
+	copied: string;
+	copyFailed: string;
+	saveCsv: string;
+	defaultImageName: string;
+	defaultTableName: string;
+	sortAscending: string;
+	sortDescending: string;
+};
+type TextKey = keyof typeof DEFAULT_TEXTS;
+type TextOverrides = Partial<Record<TextKey, string>>;
 interface ChartItem {
 	type: ChartType;
 	data: Data;
@@ -71,6 +98,8 @@ export interface ChartSettings {
 	type: ChartType;
 	charts: ChartItem[];
 	columns?: number;
+	locale?: string;
+	strings?: TextOverrides;
 	numberLocale?: string;
 	width?: string;
 	height?: string;

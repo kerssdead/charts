@@ -1,5 +1,6 @@
 import { QueueAction } from '@/builders/QueueItemsBuilder'
 import Formatter from '@/helpers/Formatter'
+import { formatPercent } from '@/helpers/Percent'
 import Units from '@/helpers/Units'
 import Point from '@/types/Point'
 import ProcessSettings from '@/types/ProcessSettings'
@@ -83,7 +84,7 @@ export default abstract class ChartProcess<
     }
 
     protected percent(ratio: number) {
-        return `${ +(ratio * 100).toFixed(1) }%`
+        return formatPercent(ratio)
     }
 
     protected share(value: number, ratio: number) {

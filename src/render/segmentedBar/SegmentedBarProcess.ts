@@ -1,6 +1,7 @@
 import SegmentedBarData from '@/types/data/SegmentedBarData'
 import SegmentedBarStop from '@/types/SegmentedBarStop'
 import Sector from '@/types/Sector'
+import { formatPercent } from '@/helpers/Percent'
 import Point from '@/types/Point'
 import ProcessSettings from '@/types/ProcessSettings'
 import RectangleDimensions from '@/types/RectangleDimensions'
@@ -206,6 +207,6 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
     }
 
     private static formatPercent(value: number) {
-        return `${ value }%`
+        return formatPercent(value / 100)
     }
 }
