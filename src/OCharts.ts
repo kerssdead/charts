@@ -1,16 +1,17 @@
 import Chart from '@/Chart'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 
 const OCharts = {
-    chart(context: HTMLElement, settings: ChartSettings) {
-        return new Chart(context, settings)
+    chart(context: HTMLElement, options: ChartOptions) {
+        return new Chart(context, options)
     }
 }
 
 Object.assign(window, { OCharts })
 
 export default OCharts
-export type { default as ChartSettings } from '@/types/ChartSettings'
+export type { default as ChartOptions } from '@/types/ChartOptions'
+export type { default as ChartSettings } from '@/types/ChartOptions'
 export {
     ChartType,
     LegendPlace,

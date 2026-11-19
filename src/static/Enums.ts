@@ -1,15 +1,15 @@
-export const enum ChartType {
-    Plot,
+export enum ChartType {
+    Plot = 'plot',
 
-    Pie,
+    Pie = 'pie',
 
-    Gauge,
+    Gauge = 'gauge',
 
-    TreeMap,
+    TreeMap = 'tree-map',
 
-    SegmentedBar,
+    SegmentedBar = 'segmented-bar',
 
-    TreeBar
+    TreeBar = 'tree-bar'
 }
 
 export const enum ErrorType {
@@ -58,42 +58,42 @@ export const enum FontEvents {
     LoadingDone = 'loadingdone'
 }
 
-export const enum LegendPlace {
-    Bottom,
+export enum LegendPlace {
+    Bottom = 'bottom',
 
-    Left,
+    Left = 'left',
 
-    Top,
+    Top = 'top',
 
-    Right
+    Right = 'right'
 }
 
-export const enum PlotAxisType {
-    Number,
+export enum PlotAxisType {
+    Number = 'number',
 
-    Date,
+    Date = 'date',
 
-    Text
+    Text = 'text'
 }
 
-export const enum PlotType {
-    Line,
+export enum PlotType {
+    Line = 'line',
 
-    AttentionLine,
+    AttentionLine = 'attention-line',
 
-    Column,
+    Column = 'column',
 
-    Bar,
+    Bar = 'bar',
 
-    StackingColumn,
+    StackingColumn = 'stacking-column',
 
-    Area
+    Area = 'area'
 }
 
-export const enum LineDrawMode {
-    Straight,
+export enum LineDrawMode {
+    Straight = 'straight',
 
-    Smooth
+    Smooth = 'smooth'
 }
 
 export const enum PlotOrientation {
@@ -102,12 +102,12 @@ export const enum PlotOrientation {
     Horizontal
 }
 
-export const enum PlotScaleType {
-    Category,
+export enum PlotScaleType {
+    Category = 'category',
 
-    Linear,
+    Linear = 'linear',
 
-    Log
+    Log = 'log'
 }
 
 export const enum TimeUnit {

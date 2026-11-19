@@ -1,8 +1,9 @@
 import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import { ColorTheme } from '@/Theme'
 
 export default class Debug {
-    static log(input: ChartSettings, settings: ChartSettings, canvas: HTMLCanvasElement, theme: ColorTheme) {
+    static log(input: ChartOptions, settings: ChartSettings, canvas: HTMLCanvasElement, theme: ColorTheme) {
         if (!settings.enableDebugMode)
             return
 

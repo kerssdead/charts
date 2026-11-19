@@ -1,5 +1,5 @@
 import { normalize } from '@/charts/Settings'
-import { ChartType, PlotAxisType } from '@/static/Enums'
+import { ChartType, LegendPlace, PlotAxisType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import PlotSeries from '@/types/PlotSeries'
 import Sector from '@/types/Sector'
@@ -9,6 +9,14 @@ import TreeBarData from '@/types/data/TreeBarData'
 import TreeBarRow from '@/types/TreeBarRow'
 
 describe('Normalizing settings', () => {
+    beforeEach(() => {
+        jest.spyOn(console, 'warn').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+        jest.restoreAllMocks()
+    })
+
     it('Should convert legacy type and data to charts', () => {
         const settings = normalize({ type: ChartType.Pie, data: { values: [] } } as unknown as ChartSettings)
 
@@ -258,5 +266,26 @@ describe('Normalizing settings', () => {
 
         expect((settings.charts[0].data as { values: { value: number }[] }).values[0].value)
             .toBe(1234.5)
+    })
+
+    it('Should convert legacy numeric chart type and legend place', () => {
+        const settings = normalize({
+            legendPlace: 2,
+            charts: [{ type: 1, data: { values: [] } }]
+        } as unknown as ChartSettings)
+
+        expect([settings.charts[0].type, settings.legendPlace])
+            .toEqual([ChartType.Pie, LegendPlace.Top])
+    })
+
+    it('Should accept string chart type and legend place', () => {
+        const settings = normalize({
+            legendPlace: 'right',
+            type: 'tree-bar',
+            data: { values: [] }
+        } as unknown as ChartSettings)
+
+        expect([settings.charts[0].type, settings.legendPlace])
+            .toEqual([ChartType.TreeBar, LegendPlace.Right])
     })
 })

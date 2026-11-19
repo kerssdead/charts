@@ -154,35 +154,35 @@
 
     const scenarios = {
         'Plot · lines': scale => ({
-            type: 0,
+            type: 'plot',
             title: 'Lines',
             enableLegend: true,
             enableTooltip: true,
-            data: { xType: 0, values: range(5).map(s => ({ type: 0, label: `Line ${ s }`, width: 2, values: points(100 * scale) })) }
+            data: { xType: 'number', values: range(5).map(s => ({ type: 'line', label: `Line ${ s }`, width: 2, values: points(100 * scale) })) }
         }),
         'Plot · columns': scale => ({
-            type: 0,
+            type: 'plot',
             title: 'Columns',
             enableLegend: true,
             enableTooltip: true,
-            data: { xType: 0, values: range(3).map(s => ({ type: 2, label: `Column ${ s }`, values: points(20 * scale) })) }
+            data: { xType: 'number', values: range(3).map(s => ({ type: 'column', label: `Column ${ s }`, values: points(20 * scale) })) }
         }),
         'Plot · stacked': scale => ({
-            type: 0,
+            type: 'plot',
             title: 'Stacked',
             enableLegend: true,
             enableTooltip: true,
-            data: { xType: 0, values: range(4).map(s => ({ type: 4, label: `Stack ${ s }`, values: points(20 * scale) })) }
+            data: { xType: 'number', values: range(4).map(s => ({ type: 'stacking-column', label: `Stack ${ s }`, values: points(20 * scale) })) }
         }),
         'Pie': scale => ({
-            type: 1,
+            type: 'pie',
             title: 'Pie',
             enableLegend: true,
             enableTooltip: true,
             data: { innerRadius: 50, values: range(10 * scale).map(i => ({ label: `Sector ${ i }`, value: 1 + Math.round(random() * 100) })) }
         }),
         'Treemap': scale => ({
-            type: 3,
+            type: 'tree-map',
             title: 'Treemap',
             enableTooltip: true,
             data: {
@@ -195,7 +195,7 @@
             }
         }),
         'Segmented bar': scale => ({
-            type: 4,
+            type: 'segmented-bar',
             title: 'Segmented bar',
             enableTooltip: true,
             data: {
@@ -212,7 +212,7 @@
             }
         }),
         'Tree bar': scale => ({
-            type: 5,
+            type: 'tree-bar',
             title: 'Tree bar',
             enableTooltip: true,
             data: {
@@ -241,10 +241,10 @@
             enableTooltip: true,
             columns: 3,
             charts: range(9).map(i => i % 3 == 0
-                                       ? { type: 0, title: `Plot ${ i }`, data: { xType: 0, values: range(2).map(s => ({ type: 2, label: `Series ${ s }`, values: points(4 * scale) })) } }
+                                       ? { type: 'plot', title: `Plot ${ i }`, data: { xType: 'number', values: range(2).map(s => ({ type: 'column', label: `Series ${ s }`, values: points(4 * scale) })) } }
                                        : i % 3 == 1
-                                         ? { type: 1, title: `Pie ${ i }`, data: { values: range(3 * scale).map(s => ({ label: `Series ${ s }`, value: 1 + Math.round(random() * 100) })) } }
-                                         : { type: 0, title: `Lines ${ i }`, data: { xType: 0, values: range(2).map(s => ({ type: 0, label: `Series ${ s }`, width: 2, values: points(20 * scale) })) } })
+                                         ? { type: 'pie', title: `Pie ${ i }`, data: { values: range(3 * scale).map(s => ({ label: `Series ${ s }`, value: 1 + Math.round(random() * 100) })) } }
+                                         : { type: 'plot', title: `Lines ${ i }`, data: { xType: 'number', values: range(2).map(s => ({ type: 'line', label: `Series ${ s }`, width: 2, values: points(20 * scale) })) } })
         })
     }
 

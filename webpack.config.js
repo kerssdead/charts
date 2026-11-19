@@ -1,12 +1,12 @@
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin')
 
-module.exports = {
+const base = {
     entry: './src/OCharts.ts',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'ocharts.js',
-        clean: true
+        clean: { keep: /ocharts\.esm\.js/ }
     },
     mode: 'production',
     devtool: 'source-map',
@@ -45,3 +45,16 @@ module.exports = {
         ]
     }
 }
+
+module.exports = [
+    base,
+    {
+        ...base,
+        output: {
+            path: path.resolve(__dirname, 'dist'),
+            filename: 'ocharts.esm.js',
+            library: { type: 'module' }
+        },
+        experiments: { outputModule: true }
+    }
+]

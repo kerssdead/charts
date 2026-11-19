@@ -27,41 +27,41 @@ type DropdownItem = {
 	text: string;
 	action?: (arg?: ItemData) => void;
 };
-export declare const enum ChartType {
-	Plot = 0,
-	Pie = 1,
-	Gauge = 2,
-	TreeMap = 3,
-	SegmentedBar = 4,
-	TreeBar = 5
+export declare enum ChartType {
+	Plot = "plot",
+	Pie = "pie",
+	Gauge = "gauge",
+	TreeMap = "tree-map",
+	SegmentedBar = "segmented-bar",
+	TreeBar = "tree-bar"
 }
-export declare const enum LegendPlace {
-	Bottom = 0,
-	Left = 1,
-	Top = 2,
-	Right = 3
+export declare enum LegendPlace {
+	Bottom = "bottom",
+	Left = "left",
+	Top = "top",
+	Right = "right"
 }
-export declare const enum PlotAxisType {
-	Number = 0,
-	Date = 1,
-	Text = 2
+export declare enum PlotAxisType {
+	Number = "number",
+	Date = "date",
+	Text = "text"
 }
-export declare const enum PlotType {
-	Line = 0,
-	AttentionLine = 1,
-	Column = 2,
-	Bar = 3,
-	StackingColumn = 4,
-	Area = 5
+export declare enum PlotType {
+	Line = "line",
+	AttentionLine = "attention-line",
+	Column = "column",
+	Bar = "bar",
+	StackingColumn = "stacking-column",
+	Area = "area"
 }
-export declare const enum LineDrawMode {
-	Straight = 0,
-	Smooth = 1
+export declare enum LineDrawMode {
+	Straight = "straight",
+	Smooth = "smooth"
 }
-export declare const enum PlotScaleType {
-	Category = 0,
-	Linear = 1,
-	Log = 2
+export declare enum PlotScaleType {
+	Category = "category",
+	Linear = "linear",
+	Log = "log"
 }
 declare const enum ImageCrossOrigin {
 	Auto = "auto",
@@ -101,25 +101,22 @@ interface ChartItem {
 	data: Data;
 	title?: string;
 }
-export interface ChartSettings {
-	enableLegend: boolean;
-	enableTooltip: boolean;
-	enableOther: boolean;
-	enableMove: boolean;
-	staticMode: boolean;
-	disableInteractions: boolean;
-	disableMenu: boolean;
-	enableDebugMode: boolean;
-	baseColor: string;
-	title: string;
-	templateId: string;
-	valuePostfix: string | undefined;
+type EnumInput<E extends string> = E | `${E}` | number;
+interface CommonOptions {
+	enableLegend?: boolean;
+	enableTooltip?: boolean;
+	enableOther?: boolean;
+	enableMove?: boolean;
+	staticMode?: boolean;
+	disableInteractions?: boolean;
+	disableMenu?: boolean;
+	enableDebugMode?: boolean;
+	baseColor?: string;
+	title?: string;
+	templateId?: string;
+	valuePostfix?: string;
 	decimals?: number;
-	legendPlace: LegendPlace;
-	data: Data;
-	type: ChartType;
-	charts: ChartItem[];
-	columns?: number;
+	legendPlace?: EnumInput<LegendPlace>;
 	fontFamily?: string;
 	locale?: string;
 	strings?: TextOverrides;
@@ -128,9 +125,25 @@ export interface ChartSettings {
 	height?: string;
 	contextMenu?: DropdownItem[];
 	imageCrossOrigin?: ImageCrossOrigin;
-	isDarkThemeFunction: (() => boolean) | undefined;
+	isDarkThemeFunction?: () => boolean;
 	onError?: (error: unknown) => boolean | void;
 }
+type ChartItemOptions = Omit<ChartItem, "type"> & {
+	type?: EnumInput<ChartType>;
+};
+type SingleChart = {
+	type?: EnumInput<ChartType>;
+	data: Data;
+	charts?: never;
+	columns?: never;
+};
+type MultipleCharts = {
+	charts: ChartItemOptions[];
+	columns?: number;
+	type?: never;
+	data?: never;
+};
+export type ChartOptions = (SingleChart | MultipleCharts) & CommonOptions;
 declare class Chart {
 	private isDestroyed;
 	private isSuspended;
@@ -146,7 +159,7 @@ declare class Chart {
 	private viewState;
 	private readonly onThemeChange;
 	private readonly onFontsLoaded;
-	constructor(element: HTMLElement, settings: ChartSettings);
+	constructor(element: HTMLElement, settings: ChartOptions);
 	render(): void;
 	destroy(): void;
 	private start;
@@ -154,7 +167,7 @@ declare class Chart {
 	private guard;
 	private handleError;
 	private recover;
-	applySettings(settings: ChartSettings): void;
+	applySettings(settings: ChartOptions): void;
 	private update;
 	private normalizeAndApply;
 	private bindMenuActions;
@@ -163,10 +176,11 @@ declare class Chart {
 	private resume;
 }
 declare const OCharts: {
-	chart(context: HTMLElement, settings: ChartSettings): Chart;
+	chart(context: HTMLElement, options: ChartOptions): Chart;
 };
 
 export {
+	ChartOptions as ChartSettings,
 	OCharts as default,
 };
 

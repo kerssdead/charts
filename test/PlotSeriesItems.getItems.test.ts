@@ -45,11 +45,11 @@ describe('Getting plot series items', () => {
             createSeries(PlotType.AttentionLine, [1])
         ]))
             .toEqual([
-                'series-0-line-0',
-                'series-2-rect-C0-0',
-                'series-4-rect-C0-0',
-                'series-3-rect-C0-0',
-                'series-1-attention'
+                `series-${ PlotType.Line }-line-0`,
+                `series-${ PlotType.Column }-rect-C0-0`,
+                `series-${ PlotType.StackingColumn }-rect-C0-0`,
+                `series-${ PlotType.Bar }-rect-C0-0`,
+                `series-${ PlotType.AttentionLine }-attention`
             ])
     })
 
@@ -59,7 +59,7 @@ describe('Getting plot series items', () => {
             createSeries(PlotType.AttentionLine, [1], { disabled: true }),
             createSeries(PlotType.Column, [1])
         ]))
-            .toEqual(['series-2-rect-C0-0'])
+            .toEqual([`series-${ PlotType.Column }-rect-C0-0`])
     })
 
     it('Should keep disabled columns, stacks and bars as ghosts', () => {
@@ -71,7 +71,11 @@ describe('Getting plot series items', () => {
         ]).getItems())
 
         expect(items.filter(item => item.is(f.Ghost)).map(item => item.key))
-            .toEqual(['series-2-rect-C0-0', 'series-4-rect-C0-0', 'series-3-rect-C0-0'])
+            .toEqual([
+                `series-${ PlotType.Column }-rect-C0-0`,
+                `series-${ PlotType.StackingColumn }-rect-C0-0`,
+                `series-${ PlotType.Bar }-rect-C0-0`
+            ])
     })
 
     it('Should restart stacks on every call', () => {
@@ -91,7 +95,7 @@ describe('Getting plot series items', () => {
         const items = buildItems(create([createSeries(PlotType.Area, [1])]).getItems())
 
         expect([items.map(item => item.key), (items[0].shape as RenderItemLine).area.baseline])
-            .toEqual([['series-5-line-0'], expect.any(Number)])
+            .toEqual([[`series-${ PlotType.Area }-line-0`], expect.any(Number)])
     })
 
     it('Should skip disabled areas', () => {
@@ -99,7 +103,7 @@ describe('Getting plot series items', () => {
             createSeries(PlotType.Area, [1], { disabled: true }),
             createSeries(PlotType.Column, [1])
         ]))
-            .toEqual(['series-2-rect-C0-0'])
+            .toEqual([`series-${ PlotType.Column }-rect-C0-0`])
     })
 
     it('Should draw nothing for a series of unknown type', () => {

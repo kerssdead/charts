@@ -1,4 +1,5 @@
-import { PlotType } from '@/static/Enums'
+import { LineDrawMode, PlotType } from '@/static/Enums'
+import { parseEnumInput } from '@/helpers/EnumInput'
 import Value from '@/types/base/Value'
 import PlotSeries from '@/types/PlotSeries'
 import Sector from '@/types/Sector'
@@ -41,7 +42,8 @@ export function prepareSeries(data: PlotData) {
     data.values = data.values.map(value => {
         const series = value instanceof Value ? value : new PlotSeries(value)
 
-        series.type ??= PlotType.Line
+        series.type = parseEnumInput(PlotType, series.type) ?? PlotType.Line
+        series.drawMode = parseEnumInput(LineDrawMode, series.drawMode)
 
         return prepare(series)
     })

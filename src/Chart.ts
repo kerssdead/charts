@@ -1,4 +1,5 @@
 import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import Theme, { ColorTheme } from '@/Theme'
 import Renderer from '@/renderer/Renderer'
 import Debug from '@/helpers/Debug'
@@ -27,7 +28,7 @@ export default class Chart {
         sync: () => this.theme.updatePalette(this.settings.isDarkThemeFunction)
     }
 
-    private source!: ChartSettings
+    private source!: ChartOptions
 
     private settings!: ChartSettings
 
@@ -54,7 +55,7 @@ export default class Chart {
         this.applySettings(this.source)
     }
 
-    constructor(element: HTMLElement, settings: ChartSettings) {
+    constructor(element: HTMLElement, settings: ChartOptions) {
         this.element = element
         this.failure = new ChartFailure(element)
 
@@ -83,7 +84,7 @@ export default class Chart {
         this.stop()
     }
 
-    private start(settings: ChartSettings) {
+    private start(settings: ChartOptions) {
         const element = this.element
 
         this.source = settings
@@ -157,7 +158,7 @@ export default class Chart {
         }, this.source.onError)
     }
 
-    private recover(settings: ChartSettings) {
+    private recover(settings: ChartOptions) {
         this.failure.clear()
 
         this.isSuspended = false
@@ -165,7 +166,7 @@ export default class Chart {
         this.start(settings)
     }
 
-    applySettings(settings: ChartSettings) {
+    applySettings(settings: ChartOptions) {
         if (this.isDestroyed)
             return
 
@@ -175,7 +176,7 @@ export default class Chart {
             this.guard(() => this.update(settings))
     }
 
-    private update(settings: ChartSettings) {
+    private update(settings: ChartOptions) {
         this.source = settings
 
         this.normalizeAndApply(settings)
@@ -186,7 +187,7 @@ export default class Chart {
         Debug.log(settings, this.settings, this.host.canvas, this.theme.colorTheme)
     }
 
-    private normalizeAndApply(settings: ChartSettings) {
+    private normalizeAndApply(settings: ChartOptions) {
         setLocalization(settings.locale, settings.strings)
         setFontFamily(settings.fontFamily || getComputedStyle(this.element).fontFamily)
 

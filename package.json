@@ -1,8 +1,18 @@
 {
   "name": "charts",
-  "version": "2.1.185",
+  "version": "2.1.189",
   "description": "Typescript Canvas Charts",
   "main": "./dist/ocharts.js",
+  "module": "./dist/ocharts.esm.js",
+  "exports": {
+    ".": {
+      "types": "./dist/ocharts.d.ts",
+      "import": "./dist/ocharts.esm.js",
+      "default": "./dist/ocharts.js"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
   "types": "./dist/ocharts.d.ts",
   "jsdelivr": "./dist/ocharts.js",
   "files": [

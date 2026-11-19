@@ -1,4 +1,5 @@
-import { PlotAxisType } from '@/static/Enums'
+import { PlotAxisType, PlotScaleType } from '@/static/Enums'
+import { parseEnumInput } from '@/helpers/EnumInput'
 import { normalizeColor } from '@/helpers/Color'
 import { parseNumber } from '@/helpers/Numbers'
 import Value from '@/types/base/Value'
@@ -28,6 +29,10 @@ export function normalizeValues(values: Value[] | undefined, numberLocale: strin
 }
 
 export function normalizeSeries(data: PlotData, numberLocale: string | undefined, scope?: Element) {
+    data.xType = parseEnumInput(PlotAxisType, data.xType) as PlotAxisType
+    data.xScale = parseEnumInput(PlotScaleType, data.xScale)
+    data.yScale = parseEnumInput(PlotScaleType, data.yScale)
+
     normalizeValues(data.values, numberLocale, scope)
 
     for (const series of data.values ?? []) {

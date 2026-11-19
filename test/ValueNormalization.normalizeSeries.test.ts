@@ -1,7 +1,7 @@
 import { normalizeSeries } from '@/helpers/ValueNormalization'
 import PlotData from '@/types/data/PlotData'
 import PlotSeries from '@/types/PlotSeries'
-import { PlotAxisType } from '@/static/Enums'
+import { PlotAxisType, PlotScaleType } from '@/static/Enums'
 import TextResources from '@/static/TextResources'
 
 const normalize = (points: object[], xType?: PlotAxisType, numberLocale?: string) => {
@@ -13,6 +13,14 @@ const normalize = (points: object[], xType?: PlotAxisType, numberLocale?: string
 }
 
 describe('Normalizing plot series', () => {
+    beforeEach(() => {
+        jest.spyOn(console, 'warn').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+        jest.restoreAllMocks()
+    })
+
     it('Should normalize series values', () => {
         expect(normalize([]).value)
             .toBe(5)
@@ -62,5 +70,14 @@ describe('Normalizing plot series', () => {
 
         expect(data.values[0].values)
             .toBeUndefined()
+    })
+
+    it('Should convert legacy numeric axis type and scales', () => {
+        const data = { xType: 1, xScale: 2, yScale: 1, values: [] } as unknown as PlotData
+
+        normalizeSeries(data)
+
+        expect([data.xType, data.xScale, data.yScale])
+            .toEqual([PlotAxisType.Date, PlotScaleType.Log, PlotScaleType.Linear])
     })
 })
