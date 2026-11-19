@@ -224,6 +224,10 @@ export const enum TextAlignment {
     Right = 'end'
 }
 
+export const enum TextDirection {
+    LeftToRight = 'ltr'
+}
+
 export const enum TextBaseline {
     Alphabetic = 'alphabetic',
 

@@ -1,7 +1,7 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import Point from '@/types/Point'
-import { TextAlignment, TextBaseline } from '@/static/Enums'
+import { TextAlignment, TextBaseline, TextDirection } from '@/static/Enums'
 import RenderItemArc from '@/types/RenderItemArc'
 import { boxEdgeDistance, clamp, lerp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
@@ -193,6 +193,7 @@ export default class RenderItemText extends RenderItemBase implements LeaderTarg
 
     render(ctx: CanvasRenderingContext2D): void {
         ctx.font = this.font
+        ctx.direction = TextDirection.LeftToRight
         ctx.textAlign = this.alignment
         ctx.textBaseline = this.baseline
 

@@ -1,7 +1,7 @@
 import RenderItemText from '@/types/RenderItemText'
 import RenderItemArc from '@/types/RenderItemArc'
 import CanvasWindow from '@/types/CanvasWindow'
-import { TextAlignment, TextBaseline } from '@/static/Enums'
+import { TextAlignment, TextBaseline, TextDirection } from '@/static/Enums'
 import { LIGHT_THEME } from '@/Theme'
 
 const THEME = { ...LIGHT_THEME, text: '#123456' }
@@ -25,6 +25,7 @@ const text = () => {
 
 const context = () => ({
     font: '',
+    direction: 'inherit',
     textAlign: '',
     textBaseline: '',
     save: jest.fn(),
@@ -200,5 +201,24 @@ describe('Rendering text', () => {
 
         expect(ctx.fillText)
             .toHaveBeenCalledWith('Label', 1100, 1950)
+    })
+
+    it.each([
+        ['plain', () => text()],
+        ['rotated', () => Object.assign(text(), { rotate: Math.PI / 2 })],
+        ['clipped', () => Object.assign(text(), { clipWidth: 2000 })],
+        ['orbit', () => Object.assign(text(), { orbit: { x: 2500, y: 2500, radiusX: 1000, radiusY: 1000 } })]
+    ])('Should draw %s text left-to-right even on a right-to-left page', (_, create) => {
+        const target = create()
+        const ctx = context()
+        const directions: string[] = []
+
+        ctx.fillText.mockImplementation(() => directions.push(ctx.direction))
+
+        target.adjust(WINDOW)
+        target.render(ctx as unknown as CanvasRenderingContext2D)
+
+        expect(directions)
+            .toEqual([TextDirection.LeftToRight])
     })
 })
