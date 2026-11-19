@@ -1,227 +1,280 @@
 import Transition from '@/renderer/Transition'
-import RenderItemArc from '@/types/RenderItemArc'
 import RenderItem from '@/types/RenderItem'
+import RenderItemArc from '@/types/RenderItemArc'
+import Panel from '@/types/Panel'
 import { ItemFlag as f } from '@/static/ItemFlag'
-import { MorphFade } from '@/static/Enums'
-import { axis, createItem, createQueue, DURATION, panel, panelsWithAxis } from './TransitionTestData'
+import {
+    createAxis,
+    createItem,
+    createPanel,
+    createQueue,
+    DURATION,
+    FakeShape
+} from './TransitionTestData'
 
-const run = (
+const shapeOf = (target: RenderItem) => target.shape as FakeShape
+
+const applyTransition = (
+    current: RenderItem[],
     previous: RenderItem[],
-    next: RenderItem[],
-    panels = { previous: [] as ReturnType<typeof panelsWithAxis>, next: [] as ReturnType<typeof panelsWithAxis> }
+    previousPanels: Panel[] = [],
+    panels: Panel[] = []
 ) => {
-    const queue = createQueue()
+    const queue = createQueue(current)
+    const snapshot = new Map(previous.map(target => [target.key as string, target]))
 
-    queue.add(previous)
-
-    const snapshot = Transition.snapshot(queue)
-
-    queue.clear()
-    queue.add(next)
-    new Transition(queue, panels.previous, panels.next, DURATION).apply(snapshot)
+    new Transition(queue, previousPanels, panels, DURATION).apply(snapshot)
 
     return queue
 }
 
-describe('Applying transition', () => {
-    it('Should morph item from the previous item with same key', () => {
-        const old = createItem('a')
-        const item = createItem('a')
-        const morphFrom = jest.spyOn(item, 'morphFrom')
+const createArc = (key: string, startAngle: number, endAngle: number) => {
+    const shape = new RenderItemArc()
 
-        run([old], [item])
+    shape.startAngle = startAngle
+    shape.endAngle = endAngle
 
-        expect(morphFrom)
-            .toHaveBeenCalledWith(old, DURATION)
-    })
+    return createItem(key, shape)
+}
 
-    it('Should not animate items without key', () => {
-        const item = createItem(null)
-        const appear = jest.spyOn(item, 'appear')
+describe('Applying a transition', () => {
+    it('Should morph an item from the previous item with the same key', () => {
+        const current = createItem('a')
 
-        run([], [item])
+        applyTransition([current], [createItem('a')])
 
-        expect(appear)
-            .not.toHaveBeenCalled()
-    })
-
-    it('Should not morph ghost into ghost', () => {
-        const old = createItem('a')
-        const item = createItem('a')
-        const morphFrom = jest.spyOn(item, 'morphFrom')
-
-        old.set(f.Ghost, true)
-        item.set(f.Ghost, true)
-        run([old], [item])
-
-        expect(morphFrom)
-            .not.toHaveBeenCalled()
-    })
-
-    it('Should appear new item', () => {
-        const item = createItem('a')
-        const appear = jest.spyOn(item, 'appear')
-
-        run([], [item])
-
-        expect(appear)
-            .toHaveBeenCalledWith(DURATION, undefined)
-    })
-
-    it('Should not appear new ghost', () => {
-        const item = createItem('a')
-        const appear = jest.spyOn(item, 'appear')
-
-        item.set(f.Ghost, true)
-        run([], [item])
-
-        expect(appear)
-            .not.toHaveBeenCalled()
-    })
-
-    it('Should enter new item from the previous value axis', () => {
-        const previous = axis()
-        const item = createItem('a', undefined, panel(0))
-        const enterFromAxis = jest.spyOn(item, 'enterFromAxis')
-
-        item.axisValue = 5
-        run([], [item], { previous: panelsWithAxis(previous), next: panelsWithAxis(axis()) })
-
-        expect(enterFromAxis)
-            .toHaveBeenCalledWith(50, DURATION)
-    })
-
-    it('Should ignore horizontal value axis', () => {
-        const item = createItem('a', undefined, panel(0))
-        const appear = jest.spyOn(item, 'appear')
-
-        item.axisValue = 5
-        run([], [item], { previous: panelsWithAxis(axis(true)), next: panelsWithAxis(axis(true)) })
-
-        expect(appear)
-            .toHaveBeenCalledWith(DURATION, undefined)
-    })
-
-    it('Should appear from the position mapped between value axes', () => {
-        const item = createItem('a', undefined, panel(0))
-        const appear = jest.spyOn(item, 'appear')
-
-        run([], [item], { previous: panelsWithAxis(axis(false, 10)), next: panelsWithAxis(axis(false, 5)) })
-
-        const mapY = appear.mock.calls[0][1] as (y: number) => number
-
-        expect(mapY(100))
-            .toBe(200)
-    })
-
-    it('Should disappear removed item and keep it in the queue', () => {
-        const old = createItem('a')
-        const disappear = jest.spyOn(old, 'disappear')
-
-        const queue = run([old], [])
-
-        expect(disappear)
-            .toHaveBeenCalledWith(DURATION, undefined)
-        expect(queue.items)
-            .toContain(old)
-        expect(old.is(f.Fading))
+        expect(shapeOf(current).calls)
+            .toEqual(['morphFrom'])
+        expect(current.animation.isMorphing)
             .toBe(true)
     })
 
-    it('Should move removed item to the new panel with same index', () => {
-        const previous = panel(0)
-        const old = createItem('a', undefined, previous)
-        const next = panel(0)
+    it('Should not morph when the shape cannot morph from the previous one', () => {
+        const current = createItem('a', new FakeShape(false))
 
-        run([old], [], { previous: [previous], next: [next] })
+        applyTransition([current], [createItem('a')])
 
-        expect(old.panel)
-            .toBe(next)
-    })
-
-    it('Should keep the old panel when the new one is missing', () => {
-        const previous = panel(1)
-        const old = createItem('a', undefined, previous)
-
-        run([old], [], { previous: [panel(0), previous], next: [panel(0)] })
-
-        expect(old.panel)
-            .toBe(previous)
-    })
-
-    it('Should leave removed item to the new value axis', () => {
-        const old = createItem('a', undefined, panel(0))
-        const leaveToAxis = jest.spyOn(old, 'leaveToAxis')
-
-        old.axisValue = 3
-        old.set(f.Fading, false)
-        run([old], [], { previous: panelsWithAxis(axis()), next: panelsWithAxis(axis()) })
-
-        expect(leaveToAxis)
-            .toHaveBeenCalledWith(30, DURATION)
-        expect(old.is(f.Fading))
+        expect(current.animation.isMorphing)
             .toBe(false)
     })
 
-    it('Should keep fading of removed item that was fading', () => {
-        const old = createItem('a', undefined, panel(0))
+    it('Should leave a ghost that stays a ghost untouched', () => {
+        const current = createItem('a')
+        const previous = createItem('a')
 
-        old.set(f.Fading, true)
-        run([old], [], { previous: panelsWithAxis(axis()), next: panelsWithAxis(axis()) })
+        current.setGhost(true)
+        previous.setGhost(true)
 
-        expect(old.is(f.Fading))
+        applyTransition([current], [previous])
+
+        expect(shapeOf(current).calls)
+            .toEqual([])
+    })
+
+    it('Should ignore items without a key', () => {
+        const current = createItem(null)
+
+        applyTransition([current], [])
+
+        expect(shapeOf(current).calls)
+            .toEqual([])
+    })
+
+    it('Should appear a new item', () => {
+        const current = createItem('a')
+
+        applyTransition([current], [])
+
+        expect(shapeOf(current).calls)
+            .toEqual(['appear'])
+        expect(current.animation.isMorphing)
             .toBe(true)
     })
 
-    it('Should not keep removed ghost', () => {
-        const old = createItem('a')
+    it('Should start the initial animation when the new shape cannot morph in', () => {
+        const current = createItem('a', new FakeShape(false))
 
-        old.set(f.Ghost, true)
+        applyTransition([current], [])
 
-        expect(run([old], []).items)
-            .not.toContain(old)
+        expect(current.animation.isInitializing)
+            .toBe(true)
     })
 
-    it('Should appear new arc from its neighbour angle', () => {
-        const item = createItem('a', new RenderItemArc())
-        const arc = item.shape as RenderItemArc
-        const appear = jest.spyOn(item, 'appear')
+    it('Should not animate a new ghost', () => {
+        const current = createItem('a')
 
-        arc.startAngle = 1
-        arc.endAngle = 2
-        run([], [item])
+        current.setGhost(true)
 
-        expect(appear)
-            .not.toHaveBeenCalled()
-        expect([arc.startAngle, arc.endAngle])
-            .toEqual([1, 2])
-        expect(item.animation.morphFade)
-            .toBe(MorphFade.In)
+        applyTransition([current], [])
+
+        expect(shapeOf(current).calls)
+            .toEqual([])
     })
 
-    it('Should collapse removed arc to the neighbour angle and keep it in the queue', () => {
-        const old = createItem('a', new RenderItemArc())
-        const arc = old.shape as RenderItemArc
+    it('Should enter a new item from the previous value axis', () => {
+        const current = createItem('a')
 
-        arc.startAngle = 1
-        arc.endAngle = 2
+        current.axisValue = 5
+        current.panel = createPanel(0)
 
-        const queue = run([old], [])
+        applyTransition([current], [], [createPanel(0, createAxis(10))], [createPanel(0, createAxis(10))])
+
+        expect(shapeOf(current).calls)
+            .toEqual(['enterFromAxis:50'])
+    })
+
+    it('Should ignore a horizontal previous axis when entering', () => {
+        const current = createItem('a')
+
+        current.axisValue = 5
+        current.panel = createPanel(0)
+
+        applyTransition([current], [], [createPanel(0, createAxis(10, true))], [])
+
+        expect(shapeOf(current).calls)
+            .toEqual(['appear'])
+    })
+
+    it('Should map the appear position between the previous and the next axis', () => {
+        const current = createItem('a')
+
+        current.panel = createPanel(0)
+
+        applyTransition([current], [], [createPanel(0, createAxis(10))], [createPanel(0, createAxis(2))])
+
+        expect(shapeOf(current).appearMapY?.(4))
+            .toBe(20)
+    })
+
+    it('Should appear without mapping when an axis is missing', () => {
+        const current = createItem('a')
+
+        current.panel = createPanel(0)
+
+        applyTransition([current], [], [createPanel(0, createAxis(10))], [createPanel(0)])
+
+        expect(shapeOf(current).appearMapY)
+            .toBeUndefined()
+    })
+
+    it('Should keep a removed item in the queue and disappear it', () => {
+        const previous = createItem('a')
+
+        const queue = applyTransition([], [previous])
 
         expect(queue.items)
-            .toContain(old)
-        expect(arc.endAngle)
-            .toBe(arc.startAngle)
-        expect(old.animation.morphFade)
-            .toBe(MorphFade.Out)
+            .toContain(previous)
+        expect(shapeOf(previous).calls)
+            .toEqual(['disappear'])
+        expect(previous.animation.removeAfterMorph)
+            .toBe(true)
     })
 
-    it('Should not collapse removed ghost arc', () => {
-        const old = createItem('a', new RenderItemArc())
+    it('Should not keep a removed ghost', () => {
+        const previous = createItem('a')
 
-        old.set(f.Ghost, true)
+        previous.setGhost(true)
 
-        expect(run([old], []).items)
-            .not.toContain(old)
+        const queue = applyTransition([], [previous])
+
+        expect(queue.items)
+            .toHaveLength(0)
+        expect(shapeOf(previous).calls)
+            .toEqual([])
+    })
+
+    it('Should leave a removed item to the next value axis', () => {
+        const previous = createItem('a')
+
+        previous.axisValue = 3
+        previous.panel = createPanel(0)
+
+        applyTransition([], [previous], [createPanel(0, createAxis(10))], [createPanel(0, createAxis(4))])
+
+        expect(shapeOf(previous).calls)
+            .toEqual(['leaveToAxis:12'])
+    })
+
+    it('Should fade a removed item when the next panel has no vertical axis', () => {
+        const previous = createItem('a')
+
+        previous.set(f.Fading, false)
+        previous.panel = createPanel(0)
+
+        applyTransition([], [previous], [createPanel(0, createAxis(10))], [createPanel(0)])
+
+        expect(previous.is(f.Fading))
+            .toBe(true)
+    })
+
+    it('Should keep a removed item unfaded when the next panel has a vertical axis', () => {
+        const previous = createItem('a')
+
+        previous.set(f.Fading, false)
+        previous.panel = createPanel(0)
+
+        applyTransition([], [previous], [createPanel(0, createAxis(10))], [createPanel(0, createAxis(10))])
+
+        expect(previous.is(f.Fading))
+            .toBe(false)
+    })
+
+    it('Should move a removed item to the panel with the same index', () => {
+        const previous = createItem('a')
+        const next = createPanel(0)
+
+        previous.panel = createPanel(0)
+
+        applyTransition([], [previous], [], [next])
+
+        expect(previous.panel)
+            .toBe(next)
+    })
+
+    it('Should keep the panel of a removed item without a panel at that index', () => {
+        const previous = createItem('a')
+        const old = createPanel(1)
+
+        previous.panel = old
+
+        applyTransition([], [previous], [], [createPanel(0)])
+
+        expect(previous.panel)
+            .toBe(old)
+    })
+
+    it('Should grow an appearing arc from its own start without neighbours', () => {
+        const current = createArc('a', .2, 1)
+
+        applyTransition([current], [])
+
+        expect(current.animation.isMorphing)
+            .toBe(true)
+        expect((current.shape as RenderItemArc).startAngle)
+            .toBe(.2)
+    })
+
+    it('Should collapse a removed arc and keep it until the morph ends', () => {
+        const previous = createArc('a', 0, 1)
+
+        const queue = applyTransition([], [previous])
+
+        expect(queue.items)
+            .toContain(previous)
+        expect(previous.animation.removeAfterMorph)
+            .toBe(true)
+        expect(previous.animation.isMorphing)
+            .toBe(true)
+    })
+
+    it('Should not collapse a removed ghost arc', () => {
+        const previous = createArc('a', 0, 1)
+
+        previous.setGhost(true)
+
+        const queue = applyTransition([], [previous])
+
+        expect(queue.items)
+            .toHaveLength(0)
     })
 })
