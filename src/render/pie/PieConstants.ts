@@ -6,7 +6,6 @@ export const PINNED_SECTOR_OFFSET = 12
 
 export const TOP_ANGLE = -Math.PI / 2
 
-
 export const ELONGATED_ASPECT_RATIO = 2.5
 
 export const LABEL_VERTICAL_SPACE = 36
@@ -17,7 +16,6 @@ export const RADIUS_SHARE_OF_LABEL_SIDE = .2
 
 export const SIDE_PADDING = 10
 
-
 export const LABEL_FONT_SIZE = 14
 
 export const LEADER_ANCHOR_INSET_ANGLE = .15
@@ -26,11 +24,9 @@ export const SECTOR_CORNER_RADIUS = 30
 
 export const SECTOR_GAP = 20
 
-
 export const MIN_SECTOR_ARC_LENGTH = SECTOR_GAP + SECTOR_CORNER_RADIUS * 2
 
 export const OTHER_KEY = 'other'
-
 
 export const INNER_TITLE_FONT_SIZE = 16
 

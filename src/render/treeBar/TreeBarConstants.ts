@@ -18,18 +18,15 @@ export const COLUMN_GAP = 16
 
 export const INDENT = 16
 
-
 export const TOGGLE_WIDTH = 16
 
 export const TOGGLE_SIZE = 3.5
 
 export const TOGGLE_LINE_WIDTH = 1.5
 
-
 export const IMAGE_SIZE = 24
 
 export const IMAGE_GAP = 8
-
 
 export const LABEL_FONT_SIZE = 12
 
@@ -41,13 +38,11 @@ export const CELL_FONT_SIZE = 12
 
 export const BAR_LABEL_FONT_SIZE = 11
 
-
 export const BAR_HEIGHT = 16
 
 export const BAR_RADIUS = 3
 
 export const BAR_LABEL_GAP = 6
-
 
 export const NAME_MIN_WIDTH = 80
 
@@ -56,7 +51,6 @@ export const NAME_MAX_SHARE = .35
 export const COLUMN_MAX_SHARE = .15
 
 export const TICKS = 5
-
 
 export const MUTED_ALPHA = .6
 
