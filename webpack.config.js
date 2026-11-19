@@ -36,7 +36,7 @@ module.exports = {
             new TerserPlugin({
                 // https://terser.org/docs/options/
                 terserOptions: {
-                    ecma: 2015,
+                    ecma: 2021,
                     compress: {
                         passes: 2
                     }

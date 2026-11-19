@@ -25,4 +25,13 @@ describe('Getting segmented bar box', () => {
         expect(box.width)
             .toBe(COORDS_MAX_X - UNITS.x(7 + 24 + 12) - UNITS.x(7 + 12 + 12))
     })
+
+    it('Should not produce negative size when paddings do not fit', () => {
+        const box = getBarBox(new Units({ x: 5, y: 1000 }), 'Lore ipsum dolor', 'Sit amet')
+
+        expect(box.height)
+            .toBe(0)
+        expect(getBarBox(new Units({ x: 1000, y: 1 }), 'Lore', 'Ip').width)
+            .toBe(0)
+    })
 })

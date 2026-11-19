@@ -1,0 +1,55 @@
+name: Fuzz Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: Duration in seconds
+        default: '300'
+      seed:
+        description: Seed (empty for random)
+        default: ''
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  fuzz:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [ chromium, firefox, webkit ]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browser
+      run: npx playwright install --with-deps ${{ matrix.browser }}
+
+    - name: Build
+      run: |
+        npx webpack
+        npm run sass
+
+    - name: Fuzz
+      run: npm run fuzz
+      env:
+        DURATION: ${{ inputs.duration || '300' }}
+        SEED: ${{ inputs.seed }}
+        BROWSER: ${{ matrix.browser }}
+
+    - uses: actions/upload-artifact@v4
+      if: ${{ failure() }}
+      with:
+        name: fuzz-results-${{ matrix.browser }}
+        path: fuzz/results.jsonl
+        retention-days: 30

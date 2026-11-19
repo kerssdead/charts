@@ -1,12 +1,18 @@
 {
   "name": "charts",
-  "version": "2.1.183",
+  "version": "2.1.184",
   "description": "Typescript Canvas Charts",
   "main": "./dist/ocharts.js",
   "types": "./dist/ocharts.d.ts",
   "jsdelivr": "./dist/ocharts.js",
   "files": [
     "dist"
+  ],
+  "browserslist": [
+    "chrome >= 99",
+    "edge >= 99",
+    "firefox >= 112",
+    "safari >= 16"
   ],
   "repository": "https://github.com/kerssdead/charts",
   "bugs": {
@@ -35,6 +41,8 @@
     "watch": "webpack --watch",
     "test": "jest",
     "lint": "eslint src test e2e",
+    "fuzz:build": "tsc -p fuzz",
+    "fuzz": "ts-node -P fuzz fuzz/fuzz.ts",
     "e2e": "playwright test",
     "e2e-baseline": "UPDATE_PERFORMANCE_BASELINE=1 playwright test",
     "sass": "sass --style=compressed src/styles/index.scss dist/main.css"

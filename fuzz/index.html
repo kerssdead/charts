@@ -87,7 +87,8 @@
     </style>
 
     <script src="instrument.js"></script>
-    <script src="generator.js"></script>
+    <script>var exports = {}</script>
+    <script src="build/fuzz/generator.js"></script>
     <script src="../dist/ocharts.js"></script>
 </head>
 
@@ -456,7 +457,7 @@
             $('start').disabled = true
             $('stop').disabled = false
 
-            const G = createGenerator(seed)
+            const G = exports.createGenerator(seed)
             const minutes = +$('duration').value
             const end = minutes > 0 ? Date.now() + minutes * 60000 : Infinity
 

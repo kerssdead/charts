@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags: [ "v*" ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+
+    - name: Check tag matches package version
+      run: test "${GITHUB_REF_NAME}" = "v$(node -p "require('./package.json').version")"
+
+    - name: Install
+      run: npm ci
+
+    - name: Test
+      run: npm run test
+
+    - name: Build
+      run: npm run build
+
+    - name: Publish GitHub release
+      run: gh release create "${GITHUB_REF_NAME}" dist/* --generate-notes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

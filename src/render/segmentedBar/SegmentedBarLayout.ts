@@ -33,7 +33,7 @@ export function getBarBox(
     return {
         x: left,
         y: top,
-        width: COORDS_MAX_X - left - right,
-        height: COORDS_MAX_Y - top * 2
+        width: Math.max(COORDS_MAX_X - left - right, 0),
+        height: Math.max(COORDS_MAX_Y - top * 2, 0)
     }
 }

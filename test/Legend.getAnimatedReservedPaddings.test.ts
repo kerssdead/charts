@@ -48,7 +48,7 @@ describe('Getting current legend reserved size', () => {
     it('Should reserve space at the bottom for an unknown legend place', () => {
         const unknown = legend()
 
-        unknown.settings.legendPlace = 'unknown' as LegendPlace
+        unknown.settings.legendPlace = 99 as LegendPlace
         unknown.resize(400, 400)
 
         expect(unknown.reservedPaddings.bottom)

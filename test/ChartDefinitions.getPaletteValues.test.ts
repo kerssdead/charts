@@ -5,10 +5,19 @@ import { ChartType } from '@/static/Enums'
 
 const emptyData = {} as Data
 
+const ALL_TYPES = [
+    ChartType.Plot,
+    ChartType.Pie,
+    ChartType.Gauge,
+    ChartType.TreeMap,
+    ChartType.SegmentedBar,
+    ChartType.TreeBar
+]
+
 describe('Getting palette values from chart definitions', () => {
     it('Should return no values for data without values', () => {
-        for (const type of Object.values(ChartType).filter(value => typeof value === 'number'))
-            expect(getChartDefinition(type as ChartType)?.getPaletteValues(emptyData))
+        for (const type of ALL_TYPES)
+            expect(getChartDefinition(type)?.getPaletteValues(emptyData))
                 .toEqual([])
     })
 

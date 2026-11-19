@@ -35,10 +35,12 @@ jest.mock('@/renderer/Renderer', () => ({
 
 const settings = { title: 'Chart', data: { values: [] } } as unknown as ChartSettings
 
+const listeners = new Set<() => void>()
+
 const fonts = {
-    listeners: new Set<() => void>(),
-    addEventListener: jest.fn((_type: string, listener: () => void) => fonts.listeners.add(listener)),
-    removeEventListener: jest.fn((_type: string, listener: () => void) => fonts.listeners.delete(listener))
+    listeners,
+    addEventListener: jest.fn((_type: string, listener: () => void) => listeners.add(listener)),
+    removeEventListener: jest.fn((_type: string, listener: () => void) => listeners.delete(listener))
 }
 
 const finishLoading = () => fonts.listeners.forEach(listener => listener())

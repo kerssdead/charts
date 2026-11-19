@@ -1,4 +1,5 @@
-import { DARK_THEME, LIGHT_THEME } from '@/Theme'
+import { LIGHT_THEME } from '@/Theme'
+import { DARK_THEME } from './TestTheme'
 import {
     createFrames,
     installAnimationFrames,

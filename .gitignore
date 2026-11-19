@@ -17,3 +17,4 @@ node_modules/
 
 # Fuzzer output
 /fuzz/results.jsonl
+/fuzz/build/

@@ -139,7 +139,7 @@ describe('Getting chart menu buttons', () => {
 
         const menu = new ChartMenu({} as HTMLCanvasElement, {} as Queue, jest.fn(), jest.fn())
 
-        menu.apply({ ...settings, title: undefined }, () => false, DARK_THEME)
+        menu.apply({ ...settings, title: '' }, () => false, DARK_THEME)
         menu.getButtons().find(item => item.text === TextResources.decomposeToTable)?.action()
 
         expect(Modal)
