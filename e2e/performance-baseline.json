@@ -1,0 +1,78 @@
+{
+    "scale": 1,
+    "cpuSlowdown": 20,
+    "scenarios": {
+        "Plot · lines": {
+            "create": 742.2000000029802,
+            "initFrameAvg": 17.649999998509884,
+            "hoverFrameAvg": 6.925000004470348,
+            "hoverExtra": 256.44999999552965,
+            "idleFrames": 1,
+            "update": 34,
+            "updateFrameAvg": 12.050000004470348
+        },
+        "Plot · columns": {
+            "create": 333.40000000596046,
+            "initFrameAvg": 8.650000005960464,
+            "hoverFrameAvg": 6.400000002235174,
+            "hoverExtra": 14.549999997019768,
+            "idleFrames": 6,
+            "update": 23.399999991059303,
+            "updateFrameAvg": 10.649999998509884
+        },
+        "Plot · stacked": {
+            "create": 335.00000001490116,
+            "initFrameAvg": 10.75,
+            "hoverFrameAvg": 9.574999999254942,
+            "hoverExtra": 18.799999997019768,
+            "idleFrames": 5,
+            "update": 27.399999991059303,
+            "updateFrameAvg": 11.466666663686434
+        },
+        "Pie": {
+            "create": 334.99999998509884,
+            "initFrameAvg": 8.799999997019768,
+            "hoverFrameAvg": 3.375,
+            "hoverExtra": 10.449999995529652,
+            "idleFrames": 6,
+            "update": 25.200000002980232,
+            "updateFrameAvg": 51.849999994039536
+        },
+        "Treemap": {
+            "create": 284.20000000298023,
+            "initFrameAvg": 8.300000004470348,
+            "hoverFrameAvg": 2.699999999254942,
+            "hoverExtra": 11.600000001490116,
+            "idleFrames": 5,
+            "update": 20.799999997019768,
+            "updateFrameAvg": 5.299999997019768
+        },
+        "Segmented bar": {
+            "create": 186.29999999701977,
+            "initFrameAvg": 7,
+            "hoverFrameAvg": 11.275000002235174,
+            "hoverExtra": 236.75,
+            "idleFrames": 2,
+            "update": 16.900000005960464,
+            "updateFrameAvg": 7.999999992549419
+        },
+        "Tree bar": {
+            "create": 357.59999999403954,
+            "initFrameAvg": 12.350000001490116,
+            "hoverFrameAvg": 8.075000002980232,
+            "hoverExtra": 18.5,
+            "idleFrames": 4,
+            "update": 19.399999991059303,
+            "updateFrameAvg": 6.925000000745058
+        },
+        "Grid · 9 charts": {
+            "create": 548.5000000149012,
+            "initFrameAvg": 30.69999999552965,
+            "hoverFrameAvg": 13.366666669646898,
+            "hoverExtra": 35.25,
+            "idleFrames": 4,
+            "update": 41.5,
+            "updateFrameAvg": 30.55000000447035
+        }
+    }
+}

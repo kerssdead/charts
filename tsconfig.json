@@ -12,8 +12,7 @@
     "removeComments": true,
     "isolatedModules": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@e2e/*": ["./e2e/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [

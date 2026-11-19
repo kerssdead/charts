@@ -1,5 +1,4 @@
 import Point from '@/types/Point'
-import CanvasWindow from '@/types/CanvasWindow'
 import { COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 
 export default class Units {
@@ -14,13 +13,6 @@ export default class Units {
 
     static fromSize(width: number, height: number) {
         return new Units({ x: COORDS_MAX_X / width, y: COORDS_MAX_Y / height })
-    }
-
-    static fromWindow(window: CanvasWindow) {
-        return new Units(
-            { x: COORDS_MAX_X / window.width, y: COORDS_MAX_Y / window.height },
-            { x: window.x, y: window.y }
-        )
     }
 
     x(px: number) {

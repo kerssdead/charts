@@ -3,21 +3,19 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
     testDir: './e2e',
     testMatch: /.*\.spec\.ts/,
-    fullyParallel: true,
+    fullyParallel: false,
     forbidOnly: !!process.env.CI,
-    retries: 1,
-    workers: process.env.CI ? 1 : undefined,
+    retries: 0,
+    workers: 1,
+    timeout: 180_000,
     reporter: 'list',
     use: {
         locale: 'en-US',
         timezoneId: 'UTC',
         colorScheme: 'light',
-        trace: 'on-first-retry',
-        screenshot: 'only-on-failure',
-        video: 'retain-on-failure',
         viewport: {
             width: 1280,
-            height: 720
+            height: 900
         }
     },
     projects: [

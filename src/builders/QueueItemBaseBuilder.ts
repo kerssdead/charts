@@ -105,12 +105,6 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         return this
     }
 
-    menuButton() {
-        this.current.set(f.MenuButton, true)
-
-        return this
-    }
-
     monochrome() {
         this.current.set(f.Monochrome, true)
 

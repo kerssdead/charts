@@ -68,7 +68,7 @@ export default class LinePathTracer {
 
         let total = 0
 
-        this.lengths = stops.map((stop, i) => {
+        this.lengths = stops.map((_, i) => {
             if (i === 0)
                 return 0
 

@@ -46,10 +46,6 @@ export default class PlotProcess extends ChartProcess<PlotData> {
         return this.layout.vertical.valueScale.getCoordinate(value)
     }
 
-    getAxisX(value: number) {
-        return this.layout.horizontal.valueScale.getCoordinate(value)
-    }
-
     getAxisValue(y: number) {
         return this.layout.vertical.valueScale.getValue(y)
     }
