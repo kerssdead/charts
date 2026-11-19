@@ -41,6 +41,28 @@ export declare const enum LegendPlace {
 	Top = 2,
 	Right = 3
 }
+export declare const enum PlotAxisType {
+	Number = 0,
+	Date = 1,
+	Text = 2
+}
+export declare const enum PlotType {
+	Line = 0,
+	AttentionLine = 1,
+	Column = 2,
+	Bar = 3,
+	StackingColumn = 4,
+	Area = 5
+}
+export declare const enum LineDrawMode {
+	Straight = 0,
+	Smooth = 1
+}
+export declare const enum PlotScaleType {
+	Category = 0,
+	Linear = 1,
+	Log = 2
+}
 declare const enum ImageCrossOrigin {
 	Auto = "auto",
 	Anonymous = "anonymous",
@@ -140,10 +162,9 @@ declare class Chart {
 	private suspend;
 	private resume;
 }
-declare function OCharts(): void;
-declare namespace OCharts {
-	var chart: (context: HTMLElement, settings: ChartSettings) => Chart;
-}
+declare const OCharts: {
+	chart(context: HTMLElement, settings: ChartSettings): Chart;
+};
 
 export {
 	OCharts as default,

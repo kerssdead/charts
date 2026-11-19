@@ -13,8 +13,6 @@ import CanvasHost from '@/renderer/CanvasHost'
 import { FontEvents } from '@/static/Enums'
 import RendererTheme from '@/renderer/RendererTheme'
 
-// todo: add public api
-
 export default class Chart {
     private isDestroyed: boolean = false
 

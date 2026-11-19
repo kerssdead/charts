@@ -1,5 +1,12 @@
 import ChartSettings from '@/types/ChartSettings'
-import { ChartType, LegendPlace } from '@/static/Enums'
+import {
+    ChartType,
+    LegendPlace,
+    LineDrawMode,
+    PlotAxisType,
+    PlotScaleType,
+    PlotType
+} from '@/static/Enums'
 
 const mockChart = jest.fn()
 
@@ -54,8 +61,19 @@ describe('Creating chart through OCharts', () => {
             .toEqual([ChartType.Plot, LegendPlace.Top])
     })
 
-    it('Should be callable as a plain function', () => {
-        expect(() => load()())
-            .not.toThrow()
+    it('Should expose plot enums', () => {
+        const module = require('@/OCharts')
+
+        expect([
+            module.PlotType.Line,
+            module.PlotAxisType.Linear,
+            module.PlotScaleType.Linear,
+            module.LineDrawMode.Straight
+        ]).toEqual([
+            PlotType.Line,
+            PlotAxisType.Linear,
+            PlotScaleType.Linear,
+            LineDrawMode.Straight
+        ])
     })
 })
