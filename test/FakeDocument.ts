@@ -136,7 +136,10 @@ export class FakeElement {
 export function installFakeDocument() {
     const body = new FakeElement('body')
 
-    Object.assign(globalThis, { document: { body, createElement: (tagName: string) => new FakeElement(tagName) } })
+    Object.assign(globalThis, {
+        document: { body, createElement: (tagName: string) => new FakeElement(tagName) },
+        getComputedStyle: () => ({ fontFamily: '' })
+    })
 
     return body
 }

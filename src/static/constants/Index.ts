@@ -12,10 +12,6 @@ export const FULL_ANGLE = Math.PI * 2
 
 export const DEFAULT_LINE_WIDTH = 1
 
-export const FONT_FAMILY = 'Arial'
-
-export const UI_FONT_FAMILY = 'system-ui, sans-serif'
-
 export const DEFAULT_FONT_SIZE = 14
 
 export const ZOOM_MIN = .5

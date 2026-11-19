@@ -41,6 +41,8 @@ export default interface ChartSettings {
 
     columns?: number
 
+    fontFamily?: string
+
     locale?: string
 
     strings?: TextOverrides

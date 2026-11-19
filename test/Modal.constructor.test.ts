@@ -1,6 +1,7 @@
 import Modal from '@/ui/Modal'
 import { FakeElement, installFakeDocument } from './FakeDocument'
 import { Tag } from '@/static/Enums'
+import { setFontFamily, SYSTEM_FONT_FAMILY } from '@/static/Typography'
 
 const create = (isDark?: boolean) => {
     const body = installFakeDocument()
@@ -22,6 +23,8 @@ const closeButton = (element: FakeElement) => {
 }
 
 describe('Creating modal', () => {
+    afterEach(() => setFontFamily(undefined))
+
     it('Should not use the dark theme by default', () => {
         expect([...create().element.classes])
             .toEqual(['o-modal'])
@@ -30,6 +33,18 @@ describe('Creating modal', () => {
     it('Should use the dark theme when requested', () => {
         expect([...create(true).element.classes])
             .toEqual(['o-modal', 'o-dark'])
+    })
+
+    it('Should use the system font family by default', () => {
+        expect(create().element.style.fontFamily)
+            .toBe(SYSTEM_FONT_FAMILY)
+    })
+
+    it('Should use the chart font family', () => {
+        setFontFamily('Georgia')
+
+        expect(create().element.style.fontFamily)
+            .toBe('Georgia')
     })
 })
 

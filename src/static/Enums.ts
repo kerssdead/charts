@@ -54,6 +54,10 @@ export const enum Events {
     Wheel = 'wheel'
 }
 
+export const enum FontEvents {
+    LoadingDone = 'loadingdone'
+}
+
 export const enum LegendPlace {
     Bottom,
 

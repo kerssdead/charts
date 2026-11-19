@@ -98,6 +98,7 @@ export interface ChartSettings {
 	type: ChartType;
 	charts: ChartItem[];
 	columns?: number;
+	fontFamily?: string;
 	locale?: string;
 	strings?: TextOverrides;
 	numberLocale?: string;
@@ -122,6 +123,7 @@ declare class Chart {
 	private renderer;
 	private viewState;
 	private readonly onThemeChange;
+	private readonly onFontsLoaded;
 	constructor(element: HTMLElement, settings: ChartSettings);
 	render(): void;
 	destroy(): void;

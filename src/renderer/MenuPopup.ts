@@ -2,7 +2,8 @@ import FloatingElement from '@/renderer/FloatingElement'
 import ButtonOptions from '@/types/ButtonOptions'
 import Point from '@/types/Point'
 import { ThemePalette } from '@/Theme'
-import { ContextMenu, UI_FONT_FAMILY } from '@/static/constants/Index'
+import { ContextMenu } from '@/static/constants/Index'
+import { getFontFamily } from '@/static/Typography'
 import { Events } from '@/static/Enums'
 import { appearScale } from '@/animation/Animations'
 import { FLOATING_PANEL_BLUR, floatingPanelShadow } from '@/helpers/FloatingStyle'
@@ -46,7 +47,7 @@ export default class MenuPopup {
             borderRadius: `${ ContextMenu.menuRadius }px`,
             background: theme.floatingBackground,
             color: theme.text,
-            font: `${ ContextMenu.fontSize }px ${ UI_FONT_FAMILY }`,
+            font: `${ ContextMenu.fontSize }px ${ getFontFamily() }`,
             overscrollBehavior: 'contain',
             userSelect: 'none',
             transformOrigin: 'center',

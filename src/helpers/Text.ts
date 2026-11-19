@@ -1,16 +1,24 @@
 import { localeCached } from '@/static/Localization'
 import fail from '@/helpers/Errors'
 import { ErrorType, Tag } from '@/static/Enums'
-import { DEFAULT_FONT_SIZE, FONT_FAMILY } from '@/static/constants/Index'
+import { DEFAULT_FONT_SIZE } from '@/static/constants/Index'
+import { getFontFamily } from '@/static/Typography'
 
 const MEASURE_FONT_SIZE = 100
 
 let scratch: CanvasRenderingContext2D | null = null
 
+let scratchFontFamily: string | undefined
+
 export function scratchContext() {
-    if (!scratch) {
+    if (!scratch)
         scratch = document.createElement(Tag.Canvas).getContext('2d') ?? fail(ErrorType.NullContext)
-        scratch.font = `${ MEASURE_FONT_SIZE }px ${ FONT_FAMILY }`
+
+    const fontFamily = getFontFamily()
+
+    if (fontFamily !== scratchFontFamily) {
+        scratchFontFamily = fontFamily
+        scratch.font = `${ MEASURE_FONT_SIZE }px ${ fontFamily }`
     }
 
     return scratch
@@ -20,9 +28,22 @@ const MEASURE_CACHE_LIMIT = 10000
 
 const textWidths = new Map<string, number>()
 
+let cachedFontFamily: string | undefined
+
+export function clearTextWidths() {
+    textWidths.clear()
+}
+
 export function stringWidth(text: string | undefined, font: number = DEFAULT_FONT_SIZE) {
     if (!text)
         return 0
+
+    const fontFamily = getFontFamily()
+
+    if (fontFamily !== cachedFontFamily) {
+        cachedFontFamily = fontFamily
+        clearTextWidths()
+    }
 
     let width = textWidths.get(text)
 

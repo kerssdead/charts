@@ -1,5 +1,6 @@
 import Point from '@/types/Point'
-import { DEFAULT_LINE_WIDTH, Tooltip, UI_FONT_FAMILY } from '@/static/constants/Index'
+import { DEFAULT_LINE_WIDTH, Tooltip } from '@/static/constants/Index'
+import { getFontFamily } from '@/static/Typography'
 import { ThemePalette } from '@/Theme'
 import { escapeHtml } from '@/helpers/Text'
 import FloatingElement from '@/renderer/FloatingElement'
@@ -53,7 +54,7 @@ export default class CustomTooltip {
                        backdrop-filter: ${ FLOATING_PANEL_BLUR };
                        -webkit-backdrop-filter: ${ FLOATING_PANEL_BLUR };
                        color: ${ theme.text };
-                       font: ${ Tooltip.fontSize }px/${ Tooltip.rowHeight }px ${ UI_FONT_FAMILY };
+                       font: ${ Tooltip.fontSize }px/${ Tooltip.rowHeight }px ${ getFontFamily() };
                        box-sizing: border-box;
                        user-select: none;
                        white-space: pre-wrap;

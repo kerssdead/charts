@@ -1,3 +1,4 @@
+import { SYSTEM_FONT_FAMILY } from '@/static/Typography'
 import CustomTooltip from '@/renderer/CustomTooltip'
 import { LIGHT_THEME } from '@/Theme'
 
@@ -9,7 +10,7 @@ describe('Building custom tooltip from text', () => {
 
     it('Should use the UI font family', () => {
         expect(CustomTooltip.fromText('Tip', LIGHT_THEME))
-            .toContain('system-ui, sans-serif')
+            .toContain(SYSTEM_FONT_FAMILY)
     })
 
     it('Should use the glass floating panel style', () => {

@@ -5,7 +5,8 @@ import { TextAlignment, TextBaseline, TextDirection } from '@/static/Enums'
 import RenderItemArc from '@/types/RenderItemArc'
 import { boxEdgeDistance, clamp, lerp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
-import { COORDS_MAX_X, FONT_FAMILY } from '@/static/constants/Index'
+import { COORDS_MAX_X } from '@/static/constants/Index'
+import { getFontFamily } from '@/static/Typography'
 import { ThemePalette } from '@/Theme'
 import LeaderTarget, { LeaderBox } from '@/types/interfaces/LeaderTarget'
 
@@ -44,7 +45,7 @@ export default class RenderItemText extends RenderItemBase implements LeaderTarg
     baseline: TextBaseline = TextBaseline.Alphabetic
 
     private get font(): string {
-        return `${this.fontSize}px ${FONT_FAMILY}`
+        return `${this.fontSize}px ${getFontFamily()}`
     }
 
     from: Point | null = null

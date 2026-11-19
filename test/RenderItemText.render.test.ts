@@ -1,3 +1,4 @@
+import { SYSTEM_FONT_FAMILY } from '@/static/Typography'
 import RenderItemText from '@/types/RenderItemText'
 import RenderItemArc from '@/types/RenderItemArc'
 import CanvasWindow from '@/types/CanvasWindow'
@@ -114,7 +115,7 @@ describe('Rendering text', () => {
         target.render(ctx as unknown as CanvasRenderingContext2D)
 
         expect(ctx.font)
-            .toBe('14px Arial')
+            .toBe(`14px ${ SYSTEM_FONT_FAMILY }`)
         expect(ctx.textAlign)
             .toBe(TextAlignment.Center)
         expect(ctx.textBaseline)

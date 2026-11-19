@@ -1,3 +1,4 @@
+import { getFontFamily, setFontFamily, SYSTEM_FONT_FAMILY } from '@/static/Typography'
 import { getLocale, setLocalization } from '@/static/Localization'
 import Chart from '@/Chart'
 import ChartSettings from '@/types/ChartSettings'
@@ -66,6 +67,7 @@ beforeEach(() => {
 
 afterEach(() => {
     setLocalization(undefined, undefined)
+    setFontFamily(undefined)
     jest.restoreAllMocks()
 })
 
@@ -169,5 +171,37 @@ describe('Applying settings', () => {
 
         expect([TextResources.reset, getLocale()])
             .toEqual(['Reset', undefined])
+    })
+
+    it('Should use the font family from settings', () => {
+        create({ ...settings('Working'), fontFamily: 'Georgia' })
+
+        expect(getFontFamily())
+            .toBe('Georgia')
+    })
+
+    it('Should inherit the host font family when settings have none', () => {
+        Object.assign(globalThis, { getComputedStyle: () => ({ fontFamily: '"Inter", sans-serif' }) })
+
+        create(settings('Working'))
+
+        expect(getFontFamily())
+            .toBe('"Inter", sans-serif')
+    })
+
+    it('Should prefer the font family from settings over the host font', () => {
+        Object.assign(globalThis, { getComputedStyle: () => ({ fontFamily: 'Inter' }) })
+
+        create({ ...settings('Working'), fontFamily: 'Georgia' })
+
+        expect(getFontFamily())
+            .toBe('Georgia')
+    })
+
+    it('Should use the system font family when the host has none', () => {
+        create(settings('Working'))
+
+        expect(getFontFamily())
+            .toBe(SYSTEM_FONT_FAMILY)
     })
 })

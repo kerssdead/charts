@@ -1,4 +1,5 @@
 import { Icon, Tag } from '@/static/Enums'
+import { getFontFamily } from '@/static/Typography'
 
 const enum ModalClasses {
     Modal = 'o-modal',
@@ -23,6 +24,7 @@ class Modal {
         this.modal = document.createElement(Tag.Dialog)
 
         this.modal.classList.add(ModalClasses.Modal)
+        this.modal.style.fontFamily = getFontFamily()
 
         if (isDark)
             this.modal.classList.add(ModalClasses.Dark)

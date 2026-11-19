@@ -2,12 +2,15 @@ import ChartSettings from '@/types/ChartSettings'
 import Theme, { ColorTheme } from '@/Theme'
 import Renderer from '@/renderer/Renderer'
 import Debug from '@/helpers/Debug'
+import { setFontFamily } from '@/static/Typography'
+import { clearTextWidths } from '@/helpers/Text'
 import { setLocalization } from '@/static/Localization'
 import { normalize } from '@/charts/Settings'
 import ViewState from '@/charts/ViewState'
 import ChartFailure from '@/ui/ChartFailure'
 import { applyFallbackHostSize, applyHostSize } from '@/helpers/HostSize'
 import CanvasHost from '@/renderer/CanvasHost'
+import { FontEvents } from '@/static/Enums'
 import RendererTheme from '@/renderer/RendererTheme'
 
 // todo: add public api
@@ -44,11 +47,22 @@ export default class Chart {
         this.applySettings(this.source)
     }
 
+    private readonly onFontsLoaded = () => {
+        if (this.isDestroyed || this.failure.isActive)
+            return
+
+        clearTextWidths()
+
+        this.applySettings(this.source)
+    }
+
     constructor(element: HTMLElement, settings: ChartSettings) {
         this.element = element
         this.failure = new ChartFailure(element)
 
         this.start(settings)
+
+        document.fonts?.addEventListener(FontEvents.LoadingDone, this.onFontsLoaded)
     }
 
     render() {
@@ -65,6 +79,8 @@ export default class Chart {
             return
 
         this.isDestroyed = true
+
+        document.fonts?.removeEventListener(FontEvents.LoadingDone, this.onFontsLoaded)
 
         this.stop()
     }
@@ -174,6 +190,7 @@ export default class Chart {
 
     private normalizeAndApply(settings: ChartSettings) {
         setLocalization(settings.locale, settings.strings)
+        setFontFamily(settings.fontFamily || getComputedStyle(this.element).fontFamily)
 
         this.settings = normalize(settings, this.element)
         this.viewState.apply(this.settings)

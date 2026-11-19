@@ -1,3 +1,4 @@
+import { SYSTEM_FONT_FAMILY } from '@/static/Typography'
 import MenuPopup from '@/renderer/MenuPopup'
 import { ContextMenu } from '@/static/constants/Index'
 import { FakeElement, installFakeDocument } from './FakeDocument'
@@ -34,7 +35,7 @@ describe('Creating menu popup', () => {
         expect(element.style.backdropFilter)
             .toBe('blur(12px)')
         expect(element.style.font)
-            .toContain('system-ui, sans-serif')
+            .toContain(SYSTEM_FONT_FAMILY)
         expect(button?.textContent)
             .toBe('Run')
         expect([button?.style.height, button?.style.minHeight])
