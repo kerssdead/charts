@@ -34,52 +34,50 @@ class FakeCanvas {
 
 (globalThis as unknown as { document: unknown }).document = { createElement: () => new FakeCanvas() }
 
-const chartContext = (width: number, height: number) => {
-    return { canvas: { width, height } } as unknown as CanvasRenderingContext2D
+const load = () => {
+    let canvas!: typeof import('@/helpers/Canvas')
+
+    jest.isolateModules(() => {
+        canvas = require('@/helpers/Canvas')
+    })
+
+    return canvas.offscreenLayer
 }
 
-const layerCanvas = (ctx: CanvasRenderingContext2D) => offscreenLayer(ctx).canvas as unknown as FakeCanvas
+const layerCanvas = (layer: CanvasRenderingContext2D) => layer.canvas as unknown as FakeCanvas
 
 describe('Getting offscreen layer', () => {
-    it('Should size layer to chart canvas', () => {
-        const canvas = layerCanvas(chartContext(200, 100))
+    it('Should size layer to the requested area', () => {
+        const canvas = layerCanvas(load()(200, 100))
 
         expect([canvas.width, canvas.height])
             .toEqual([200, 100])
     })
 
-    it('Should reuse layer for the same chart', () => {
-        const ctx = chartContext(200, 100)
+    it('Should share one layer between requests', () => {
+        const offscreenLayer = load()
 
-        expect(offscreenLayer(ctx))
-            .toBe(offscreenLayer(ctx))
+        expect(offscreenLayer(200, 100))
+            .toBe(offscreenLayer(50, 300))
     })
 
-    it('Should create separate layers for different charts', () => {
-        expect(offscreenLayer(chartContext(200, 100)))
-            .not.toBe(offscreenLayer(chartContext(200, 100)))
-    })
+    it('Should grow layer to fit a larger area', () => {
+        const offscreenLayer = load()
 
-    it('Should resize layer when chart canvas resizes', () => {
-        const ctx = chartContext(200, 100)
+        offscreenLayer(200, 100)
 
-        offscreenLayer(ctx)
-
-        ctx.canvas.width = 300
-        ctx.canvas.height = 150
-
-        const canvas = layerCanvas(ctx)
+        const canvas = layerCanvas(offscreenLayer(300, 50))
 
         expect([canvas.width, canvas.height])
-            .toEqual([300, 150])
+            .toEqual([300, 100])
     })
 
-    it('Should not resize layer when chart size is unchanged', () => {
-        const ctx = chartContext(200, 100)
-        const canvas = layerCanvas(ctx)
+    it('Should not resize layer for a smaller area', () => {
+        const offscreenLayer = load()
+        const canvas = layerCanvas(offscreenLayer(200, 100))
         const resizes = canvas.resizes
 
-        offscreenLayer(ctx)
+        offscreenLayer(150, 80)
 
         expect(canvas.resizes)
             .toBe(resizes)

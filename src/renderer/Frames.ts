@@ -25,6 +25,8 @@ type FrameScene = {
     getThemePalette: () => ThemePalette
     syncTheme: () => boolean
     rebuildForTheme: () => void
+    renewCanvas: () => void
+    releaseLayers: () => void
     onError: (error: unknown) => void
 }
 
@@ -42,6 +44,8 @@ type FrameRenderState = {
 }
 
 export default class Frames {
+    private static readonly SETTLE_DELAY = 2000
+
     private readonly scene: FrameScene
 
     private readonly animationFrame: AnimationFrame
@@ -53,6 +57,8 @@ export default class Frames {
     private wasAnimating: boolean = false
 
     private lastRender: FrameRenderState | null = null
+
+    private settleTimer: ReturnType<typeof setTimeout> | null = null
 
     constructor(scene: FrameScene) {
         this.scene = scene
@@ -66,13 +72,14 @@ export default class Frames {
 
     cancel() {
         this.animationFrame.cancel()
+        this.cancelSettle()
     }
 
     drawNow() {
         if (this.isSuspended)
             return
 
-        this.cancel()
+        this.animationFrame.cancel()
         this.lastRender = null
 
         this.draw(performance.now())
@@ -81,7 +88,7 @@ export default class Frames {
     drawClean() {
         this.isClean = true
 
-        this.cancel()
+        this.animationFrame.cancel()
         this.draw(performance.now())
 
         this.isClean = false
@@ -147,10 +154,37 @@ export default class Frames {
             }
         }
 
+        if (isAnimating)
+            this.cancelSettle()
+        else if (this.wasAnimating)
+            this.scheduleSettle()
+
         this.wasAnimating = isAnimating
 
         if (isAnimating)
             this.request()
+    }
+
+    private scheduleSettle() {
+        this.cancelSettle()
+
+        this.settleTimer = setTimeout(() => {
+            this.settleTimer = null
+
+            guard(() => {
+                this.scene.renewCanvas()
+                this.drawNow()
+                this.scene.releaseLayers()
+            }, this.scene.onError)
+        }, Frames.SETTLE_DELAY)
+    }
+
+    private cancelSettle() {
+        if (this.settleTimer == null)
+            return
+
+        clearTimeout(this.settleTimer)
+        this.settleTimer = null
     }
 
     private animateScene(frame: Frame, movingLegend?: Legend) {

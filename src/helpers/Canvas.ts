@@ -79,25 +79,28 @@ export function edgeFadeMask(ctx: CanvasRenderingContext2D, x1: number, x2: numb
     return gradient
 }
 
-const offscreenLayers = new WeakMap<CanvasRenderingContext2D, CanvasRenderingContext2D>()
+let sharedLayer: CanvasRenderingContext2D | null = null
 
-export function offscreenLayer(ctx: CanvasRenderingContext2D) {
-    let layer = offscreenLayers.get(ctx)
+export function offscreenLayer(width: number, height: number) {
+    sharedLayer ??= getContext(createCanvas())
 
-    if (!layer) {
-        layer = getContext(createCanvas())
-        offscreenLayers.set(ctx, layer)
-    }
+    const { canvas } = sharedLayer
 
-    const { width, height } = ctx.canvas
+    if (canvas.width < width)
+        canvas.width = width
 
-    if (layer.canvas.width !== width)
-        layer.canvas.width = width
+    if (canvas.height < height)
+        canvas.height = height
 
-    if (layer.canvas.height !== height)
-        layer.canvas.height = height
+    return sharedLayer
+}
 
-    return layer
+export function releaseOffscreenLayer() {
+    if (!sharedLayer)
+        return
+
+    sharedLayer.canvas.width = 0
+    sharedLayer.canvas.height = 0
 }
 
 const UNIT_GRADIENT_LIMIT = 256
@@ -135,6 +138,16 @@ export function getContext(
 
 export function isPixelBusy(pixel: number, canvasBackgroundInt: number) {
     return pixel !== undefined && pixel !== canvasBackgroundInt
+}
+
+export function renewBuffers(canvas: HTMLCanvasElement) {
+    const { width } = canvas
+
+    if (width === 0)
+        return
+
+    canvas.width = 0
+    canvas.width = width
 }
 
 export function createCanvas() {

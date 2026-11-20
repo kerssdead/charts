@@ -73,10 +73,21 @@ describe('Reporting canvas host resize', () => {
 
         environment.resizeElement(100, 50)
         environment.changeRatio(2)
-        environment.changeRatio(3)
+        environment.changeRatio(1.5)
 
         expect(events.onResize)
-            .toHaveBeenLastCalledWith(100, 50, 3)
+            .toHaveBeenLastCalledWith(100, 50, 1.5)
+    })
+
+    it('Should cap the pixel ratio at two', () => {
+        const { environment, events, host } = create(3)
+
+        environment.resizeElement(100, 50)
+
+        expect([host.canvas.width, host.canvas.height])
+            .toEqual([200, 100])
+        expect(events.onResize)
+            .toHaveBeenCalledWith(100, 50, 2)
     })
 
     it('Should fall back to a ratio of one when the browser reports none', () => {

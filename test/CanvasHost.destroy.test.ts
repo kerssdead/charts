@@ -1,4 +1,5 @@
 import CanvasHost from '@/renderer/CanvasHost'
+import { PrintEvents } from '@/static/Enums'
 import { installResizeEnvironment, removeResizeEnvironment } from './FakeResizeEnvironment'
 
 const create = (ratio: number = 1) => {
@@ -39,6 +40,21 @@ describe('Destroying canvas host', () => {
         environment.changeRatio(2)
 
         expect(events.onResize)
+            .not.toHaveBeenCalled()
+    })
+
+    it('Should stop observing viewport visibility and printing', () => {
+        const { environment, events, host } = create()
+
+        environment.resizeElement(100, 50)
+        environment.setInViewport(false)
+        host.destroy()
+        events.onAttach.mockClear()
+        environment.dispatchWindowEvent(PrintEvents.Before)
+
+        expect(environment.visibility.isDisconnected)
+            .toBe(true)
+        expect(events.onAttach)
             .not.toHaveBeenCalled()
     })
 })

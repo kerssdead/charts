@@ -1,11 +1,15 @@
 import LineArea from '@/helpers/LineArea'
 import { layerContext, WINDOW } from './RenderItemLineTestData'
 
-const mockLayer: { current: unknown } = { current: null }
+const mockLayer: { current: unknown, requests: number[][] } = { current: null, requests: [] }
 
 jest.mock('@/helpers/Canvas', () => ({
     ...jest.requireActual('@/helpers/Canvas'),
-    offscreenLayer: () => mockLayer.current
+    offscreenLayer: (...size: number[]) => {
+        mockLayer.requests.push(size)
+
+        return mockLayer.current
+    }
 }))
 
 const BOUNDS = { left: 9.5, top: 9.5, right: 50.5, bottom: 40.5 }
@@ -16,6 +20,7 @@ const fill = (left: number, right: number, ratio: number = 1) => {
     const area = new LineArea()
 
     mockLayer.current = layer
+    mockLayer.requests = []
 
     area.baseline = 400
     area.adjust(WINDOW, 1)
@@ -53,6 +58,13 @@ describe('Filling line area', () => {
                 [[1, 0, 0, 1, 0, 0], [2, 0, 0, 2, -20, -19]],
                 [[layer.canvas, 0, 0, 80, 62, 10, 9.5, 40, 31]]
             ])
+    })
+
+    it('Should request a layer only as large as the area in device pixels', () => {
+        fill(10, 50, 2)
+
+        expect(mockLayer.requests)
+            .toEqual([[80, 62]])
     })
 
     it('Should skip fill for area without width', () => {

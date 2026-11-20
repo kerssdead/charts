@@ -1,6 +1,6 @@
 import { createCanvas } from '@/helpers/Canvas'
 import { getPixelSize } from '@/helpers/HostSize'
-import { ChartClasses, Events } from '@/static/Enums'
+import { ChartClasses, Events, PrintEvents } from '@/static/Enums'
 import Size from '@/types/Size'
 
 type CanvasHostEvents = {
@@ -9,6 +9,12 @@ type CanvasHostEvents = {
     onAttach: () => void
 }
 
+const VISIBILITY_MARGIN = '0px'
+
+const MAX_PIXEL_RATIO = 2
+
+const RELEASED_SIZE: Size = { width: 0, height: 0 }
+
 export default class CanvasHost {
     readonly canvas: HTMLCanvasElement = createCanvas()
 
@@ -16,11 +22,21 @@ export default class CanvasHost {
 
     private readonly observer: ResizeObserver
 
+    private readonly visibility: IntersectionObserver | null
+
+    private readonly printWatcher = new AbortController()
+
     private ratioWatcher: AbortController | null = null
 
     private width: number = 0
 
     private height: number = 0
+
+    private pixelSize: Size = RELEASED_SIZE
+
+    private isInViewport: boolean = true
+
+    private isPrinting: boolean = false
 
     get size(): Size {
         return { width: this.width, height: this.height }
@@ -30,6 +46,10 @@ export default class CanvasHost {
         return this.canvas.isConnected
     }
 
+    private get isVisible() {
+        return this.isInViewport || this.isPrinting
+    }
+
     constructor(element: HTMLElement, events: CanvasHostEvents) {
         this.events = events
 
@@ -37,11 +57,14 @@ export default class CanvasHost {
         element.appendChild(this.canvas)
 
         this.observer = this.createObserver(element)
+        this.visibility = this.createVisibilityObserver(element)
         this.watchRatio()
     }
 
     destroy() {
         this.observer.disconnect()
+        this.visibility?.disconnect()
+        this.printWatcher.abort()
         this.stopWatchingRatio()
 
         this.canvas.remove()
@@ -54,25 +77,58 @@ export default class CanvasHost {
         if (width === 0 || height === 0)
             return
 
-        const { width: pixelWidth, height: pixelHeight } = getPixelSize(
+        const pixelSize = getPixelSize(
             { width, height },
-            window.devicePixelRatio || 1,
+            Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO),
             device
         )
 
         if (this.width === width && this.height === height
-            && this.canvas.width === pixelWidth && this.canvas.height === pixelHeight)
+            && this.pixelSize.width === pixelSize.width && this.pixelSize.height === pixelSize.height)
             return
 
         this.width = width
         this.height = height
+        this.pixelSize = pixelSize
 
-        this.canvas.width = pixelWidth
-        this.canvas.height = pixelHeight
+        this.applyPixelSize()
         this.canvas.style.width = `${ width }px`
         this.canvas.style.height = `${ height }px`
 
-        this.events.onResize(width, height, pixelWidth / width)
+        this.events.onResize(width, height, pixelSize.width / width)
+    }
+
+    private applyPixelSize() {
+        const { width, height } = this.isVisible ? this.pixelSize : RELEASED_SIZE
+
+        if (this.canvas.width !== width)
+            this.canvas.width = width
+
+        if (this.canvas.height !== height)
+            this.canvas.height = height
+    }
+
+    private updateVisibility(isInViewport: boolean, isPrinting: boolean) {
+        const wasVisible = this.isVisible
+
+        this.isInViewport = isInViewport
+        this.isPrinting = isPrinting
+
+        if (this.isVisible === wasVisible)
+            return
+
+        this.applyPixelSize()
+
+        if (!this.isAttached)
+            return
+
+        if (!this.isVisible)
+            return this.events.onDetach()
+
+        this.events.onAttach()
+
+        if (this.width > 0 && this.height > 0)
+            this.events.onResize(this.width, this.height, this.pixelSize.width / this.width)
     }
 
     private watchRatio() {
@@ -102,7 +158,8 @@ export default class CanvasHost {
             if (!this.ratioWatcher)
                 this.watchRatio()
 
-            this.events.onAttach()
+            if (this.isVisible)
+                this.events.onAttach()
 
             for (const entry of entries) {
                 if (entry.target === this.canvas)
@@ -121,5 +178,33 @@ export default class CanvasHost {
         }
 
         return observer
+    }
+
+    private createVisibilityObserver(node: HTMLElement) {
+        if (typeof IntersectionObserver === 'undefined')
+            return null
+
+        this.watchPrinting()
+
+        const observer = new IntersectionObserver(entries => {
+            const entry = entries[entries.length - 1]
+
+            this.updateVisibility(entry.isIntersecting, this.isPrinting)
+        }, { rootMargin: VISIBILITY_MARGIN })
+
+        observer.observe(node)
+
+        return observer
+    }
+
+    private watchPrinting() {
+        const { signal } = this.printWatcher
+
+        window.addEventListener(PrintEvents.Before, () => {
+            this.updateVisibility(this.isInViewport, true)
+        }, { signal })
+        window.addEventListener(PrintEvents.After, () => {
+            this.updateVisibility(this.isInViewport, false)
+        }, { signal })
     }
 }

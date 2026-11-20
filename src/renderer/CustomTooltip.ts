@@ -5,7 +5,7 @@ import { ThemePalette } from '@/Theme'
 import { escapeHtml } from '@/helpers/Text'
 import FloatingElement from '@/renderer/FloatingElement'
 import { appearScale } from '@/animation/Animations'
-import { FLOATING_PANEL_BLUR, floatingPanelShadow } from '@/helpers/FloatingStyle'
+import { floatingPanelShadow } from '@/helpers/FloatingStyle'
 import ItemData from '@/types/ItemData'
 
 const PLACEHOLDER = /\$\{\s*([^}\s]+)\s*}/g
@@ -49,10 +49,8 @@ export default class CustomTooltip {
             style = `padding: ${ Tooltip.padding }px;
                        border: ${ DEFAULT_LINE_WIDTH }px solid ${ theme.dropdownBorder };
                        border-radius: ${ Tooltip.radius }px;
-                       background: ${ theme.floatingBackground };
+                       background: ${ theme.background };
                        box-shadow: ${ floatingPanelShadow(theme.isDark) };
-                       backdrop-filter: ${ FLOATING_PANEL_BLUR };
-                       -webkit-backdrop-filter: ${ FLOATING_PANEL_BLUR };
                        color: ${ theme.text };
                        font: ${ Tooltip.fontSize }px/${ Tooltip.rowHeight }px ${ getFontFamily() };
                        box-sizing: border-box;

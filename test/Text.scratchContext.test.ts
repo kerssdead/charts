@@ -29,6 +29,17 @@ describe('Getting scratch context', () => {
             .toContain('100px')
     })
 
+    it('Should create a one pixel canvas', () => {
+        const canvas = { width: 300, height: 150, getContext: () => ({ font: '' }) }
+
+        Object.assign(globalThis, { document: { createElement: () => canvas } })
+
+        load().scratchContext()
+
+        expect([canvas.width, canvas.height])
+            .toEqual([1, 1])
+    })
+
     it('Should fail when the canvas has no context', () => {
         Object.assign(globalThis, { document: { createElement: () => ({ getContext: () => null }) } })
 

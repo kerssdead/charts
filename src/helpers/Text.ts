@@ -1,18 +1,26 @@
 import { localeCached } from '@/static/Localization'
-import fail from '@/helpers/Errors'
-import { ErrorType, Tag } from '@/static/Enums'
+import { getContext } from '@/helpers/Canvas'
+import { Tag } from '@/static/Enums'
 import { DEFAULT_FONT_SIZE } from '@/static/constants/Index'
 import { getFontFamily } from '@/static/Typography'
 
 const MEASURE_FONT_SIZE = 100
+
+const SCRATCH_SIZE = 1
 
 let scratch: CanvasRenderingContext2D | null = null
 
 let scratchFontFamily: string | undefined
 
 export function scratchContext() {
-    if (!scratch)
-        scratch = document.createElement(Tag.Canvas).getContext('2d') ?? fail(ErrorType.NullContext)
+    if (!scratch) {
+        const canvas = document.createElement(Tag.Canvas)
+
+        canvas.width = SCRATCH_SIZE
+        canvas.height = SCRATCH_SIZE
+
+        scratch = getContext(canvas)
+    }
 
     const fontFamily = getFontFamily()
 

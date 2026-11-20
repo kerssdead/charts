@@ -54,6 +54,8 @@ export function createFrames(settings: Partial<ChartSettings> = {}) {
     const legend = { isMoving: false, getAnimatedReservedPaddings: jest.fn(() => RESERVED) }
     const syncTheme = jest.fn(() => false)
     const rebuildForTheme = jest.fn()
+    const renewCanvas = jest.fn()
+    const releaseLayers = jest.fn()
     const onError = jest.fn()
 
     const frames = new Frames({
@@ -67,8 +69,23 @@ export function createFrames(settings: Partial<ChartSettings> = {}) {
         getThemePalette: () => theme.current,
         syncTheme,
         rebuildForTheme,
+        renewCanvas,
+        releaseLayers,
         onError
     } as unknown as ConstructorParameters<typeof Frames>[0])
 
-    return { frames, queue, layout, panels, input, overlay, legend, syncTheme, rebuildForTheme, onError }
+    return {
+        frames,
+        queue,
+        layout,
+        panels,
+        input,
+        overlay,
+        legend,
+        syncTheme,
+        rebuildForTheme,
+        renewCanvas,
+        releaseLayers,
+        onError
+    }
 }

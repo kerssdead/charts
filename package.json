@@ -1,6 +1,6 @@
 {
   "name": "charts",
-  "version": "2.1.198",
+  "version": "2.1.201",
   "description": "Typescript Canvas Charts",
   "main": "./dist/ocharts.js",
   "module": "./dist/ocharts.esm.js",

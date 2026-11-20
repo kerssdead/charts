@@ -169,4 +169,94 @@ describe('Drawing frames', () => {
         expect(queue.render)
             .toHaveBeenCalledTimes(2)
     })
+
+    describe('Settling after animation', () => {
+        beforeEach(() => jest.useFakeTimers())
+
+        afterEach(() => jest.useRealTimers())
+
+        const animateOnce = () => {
+            const scene = createFrames()
+
+            scene.queue.render.mockReturnValueOnce(true)
+            scene.frames.request()
+            runFrame(100)
+            runFrame(116)
+
+            return scene
+        }
+
+        it('Should renew canvas buffers, redraw and release layers two seconds after animation ends', () => {
+            const { queue, renewCanvas, releaseLayers } = animateOnce()
+            const calls: string[] = []
+
+            renewCanvas.mockImplementation(() => calls.push('renew'))
+            releaseLayers.mockImplementation(() => calls.push('release'))
+            queue.render.mockImplementation(() => {
+                calls.push('render')
+
+                return false
+            })
+            jest.advanceTimersByTime(2000)
+
+            expect(calls)
+                .toEqual(['renew', 'render', 'release'])
+        })
+
+        it('Should wait two full seconds before renewing', () => {
+            const { renewCanvas } = animateOnce()
+
+            jest.advanceTimersByTime(1999)
+
+            expect(renewCanvas)
+                .not.toHaveBeenCalled()
+        })
+
+        it('Should not renew canvas buffers while animating', () => {
+            const { frames, queue, renewCanvas } = createFrames()
+
+            queue.render.mockReturnValue(true)
+            frames.request()
+            runFrame(100)
+            runFrame(116)
+            jest.advanceTimersByTime(2000)
+
+            expect(renewCanvas)
+                .not.toHaveBeenCalled()
+        })
+
+        it('Should not renew canvas buffers without a previous animation', () => {
+            const { frames, renewCanvas } = createFrames()
+
+            frames.request()
+            runFrame(100)
+            jest.advanceTimersByTime(2000)
+
+            expect(renewCanvas)
+                .not.toHaveBeenCalled()
+        })
+
+        it('Should not renew canvas buffers after suspending', () => {
+            const { frames, renewCanvas } = animateOnce()
+
+            frames.suspend()
+            jest.advanceTimersByTime(2000)
+
+            expect(renewCanvas)
+                .not.toHaveBeenCalled()
+        })
+
+        it('Should report a failed renewal', () => {
+            const { renewCanvas, onError } = animateOnce()
+            const error = new Error('renew')
+
+            renewCanvas.mockImplementation(() => {
+                throw error
+            })
+            jest.advanceTimersByTime(2000)
+
+            expect(onError)
+                .toHaveBeenCalledWith(error)
+        })
+    })
 })

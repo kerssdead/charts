@@ -1,4 +1,4 @@
-import { getContext } from '@/helpers/Canvas'
+import { getContext, releaseOffscreenLayer, renewBuffers } from '@/helpers/Canvas'
 import ChartSettings from '@/types/ChartSettings'
 import Legend from '@/legend/Legend'
 import Queue from '@/render/Queue'
@@ -98,6 +98,8 @@ export default class Renderer {
             getThemePalette: () => this.theme.getPalette(),
             syncTheme: () => this.theme.sync(),
             rebuildForTheme: () => this.rebuildAnimated(),
+            renewCanvas: () => renewBuffers(canvas),
+            releaseLayers: releaseOffscreenLayer,
             onError
         })
     }

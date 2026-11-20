@@ -13,15 +13,15 @@ describe('Building custom tooltip from text', () => {
             .toContain(SYSTEM_FONT_FAMILY)
     })
 
-    it('Should use the glass floating panel style', () => {
+    it('Should use an opaque floating panel style without backdrop blur', () => {
         const html = CustomTooltip.fromText('Tip', LIGHT_THEME)
 
         expect(html)
-            .toContain(LIGHT_THEME.floatingBackground)
+            .toContain(`background: ${ LIGHT_THEME.background }`)
         expect(html)
             .toContain('border-radius: 12px')
         expect(html)
-            .toContain('backdrop-filter: blur(12px)')
+            .not.toContain('backdrop-filter')
         expect(html)
             .toContain('0 8px 32px')
     })

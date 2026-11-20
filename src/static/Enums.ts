@@ -56,6 +56,12 @@ export const enum Events {
     Wheel = 'wheel'
 }
 
+export const enum PrintEvents {
+    Before = 'beforeprint',
+
+    After = 'afterprint'
+}
+
 export const enum FontEvents {
     LoadingDone = 'loadingdone'
 }

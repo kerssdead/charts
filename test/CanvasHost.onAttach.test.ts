@@ -1,4 +1,5 @@
 import CanvasHost from '@/renderer/CanvasHost'
+import { PrintEvents } from '@/static/Enums'
 import { installResizeEnvironment, removeResizeEnvironment } from './FakeResizeEnvironment'
 
 const create = (ratio: number = 1) => {
@@ -47,5 +48,49 @@ describe('Reporting canvas host attach', () => {
 
         expect(events.onDetach)
             .not.toHaveBeenCalled()
+    })
+
+    it('Should report attach and redraw at the kept size when the chart returns to the viewport', () => {
+        const { environment, events, host } = create(2)
+        const calls: string[] = []
+
+        environment.resizeElement(100, 50)
+        environment.setInViewport(false)
+        events.onAttach.mockImplementation(() => calls.push('attach'))
+        events.onResize.mockImplementation((...args: number[]) => calls.push(`resize ${ args.join(' ') }`))
+        environment.setInViewport(true)
+
+        expect(calls)
+            .toEqual(['attach', 'resize 100 50 2'])
+        expect([host.canvas.width, host.canvas.height])
+            .toEqual([200, 100])
+    })
+
+    it('Should not report attach or allocate pixels when resized out of the viewport', () => {
+        const { environment, events, host } = create()
+
+        environment.resizeElement(100, 50)
+        environment.setInViewport(false)
+        events.onAttach.mockClear()
+        environment.resizeElement(120, 60)
+
+        expect(events.onAttach)
+            .not.toHaveBeenCalled()
+        expect([host.canvas.width, host.canvas.height, host.canvas.style.width])
+            .toEqual([0, 0, '120px'])
+    })
+
+    it('Should restore canvas pixels before printing an out-of-viewport chart', () => {
+        const { environment, events, host } = create()
+
+        environment.resizeElement(100, 50)
+        environment.setInViewport(false)
+        events.onAttach.mockClear()
+        environment.dispatchWindowEvent(PrintEvents.Before)
+
+        expect(events.onAttach)
+            .toHaveBeenCalledTimes(1)
+        expect([host.canvas.width, host.canvas.height])
+            .toEqual([100, 50])
     })
 })

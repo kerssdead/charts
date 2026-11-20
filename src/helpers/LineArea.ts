@@ -50,7 +50,7 @@ export default class LineArea {
         if (pixelWidth <= 0 || pixelHeight <= 0)
             return
 
-        const layer = offscreenLayer(ctx)
+        const layer = offscreenLayer(pixelWidth, pixelHeight)
 
         layer.setTransform(1, 0, 0, 1, 0, 0)
         layer.clearRect(0, 0, pixelWidth, pixelHeight)

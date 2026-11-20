@@ -1,4 +1,5 @@
 import CanvasHost from '@/renderer/CanvasHost'
+import { PrintEvents } from '@/static/Enums'
 import { installResizeEnvironment, removeResizeEnvironment } from './FakeResizeEnvironment'
 
 const create = (ratio: number = 1) => {
@@ -45,5 +46,29 @@ describe('Reporting canvas host detach', () => {
             .not.toHaveBeenCalled()
         expect(events.onAttach)
             .not.toHaveBeenCalled()
+    })
+
+    it('Should report detach and release canvas pixels when the chart leaves the viewport', () => {
+        const { environment, events, host } = create()
+
+        environment.resizeElement(100, 50)
+        environment.setInViewport(false)
+
+        expect(events.onDetach)
+            .toHaveBeenCalledTimes(1)
+        expect([host.canvas.width, host.canvas.height, host.canvas.style.width])
+            .toEqual([0, 0, '100px'])
+    })
+
+    it('Should release canvas pixels after printing an out-of-viewport chart', () => {
+        const { environment, host } = create()
+
+        environment.resizeElement(100, 50)
+        environment.setInViewport(false)
+        environment.dispatchWindowEvent(PrintEvents.Before)
+        environment.dispatchWindowEvent(PrintEvents.After)
+
+        expect([host.canvas.width, host.canvas.height])
+            .toEqual([0, 0])
     })
 })
