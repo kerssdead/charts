@@ -8,6 +8,8 @@ import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { ColumnGroup, getColumnGroup, getStackKey, getStackTops } from '@/render/plot/PlotColumnGroups'
 import { CORNER_RADIUS } from '@/render/plot/PlotConstants'
 import { addColumnCapMarks } from '@/render/plot/PlotCapMarks'
+import { getStackOutlines, StackOutline } from '@/render/plot/PlotStackOutlines'
+import RectangleDimensions from '@/types/RectangleDimensions'
 
 type StackedColumn = {
     valueIndex: number
@@ -19,6 +21,7 @@ type StackedColumn = {
     isTop: boolean
     isCapped: boolean
     total: number
+    clip: RectangleDimensions | null
 }
 
 export default class PlotStackedColumnItems {
@@ -32,6 +35,8 @@ export default class PlotStackedColumnItems {
 
     private readonly stackTops: Map<string, PlotSeries>
 
+    private readonly outlines: Map<string, StackOutline>
+
     constructor(
         layout: PlotLayout,
         style: PlotItemStyle,
@@ -43,6 +48,7 @@ export default class PlotStackedColumnItems {
         this.seriesGroups = seriesGroups
         this.columnGroups = columnGroups
         this.stackTops = getStackTops(seriesGroups.enabledSeries, layout.yMax)
+        this.outlines = getStackOutlines(layout, seriesGroups.enabledSeries)
     }
 
     getItems(series: PlotSeries, stacks: Map<string, number>) {
@@ -77,18 +83,37 @@ export default class PlotStackedColumnItems {
 
             stacks.set(key, top)
 
+            const x = categoryScale.getSlotStart(slot) + offset
+
             return [{
                 valueIndex,
                 slot,
-                x: categoryScale.getSlotStart(slot) + offset,
+                x,
                 y: bottomY,
                 width,
                 height: bottomY - topY,
                 isTop: this.stackTops.get(key) === series,
                 isCapped: !isDisabled && layout.isAboveYMax(top) && !layout.isAboveYMax(stack),
-                total: top
+                total: top,
+                clip: this.getClip(key, x, width)
             }]
         })
+    }
+
+    private getClip(key: string, x: number, width: number): RectangleDimensions | null {
+        const outline = this.outlines.get(key)
+
+        if (!outline?.needsClip)
+            return null
+
+        const { baseline } = this.layout.vertical
+        const { units } = this.layout
+        const overshoot = units.y(units.toPxX(CORNER_RADIUS))
+        const isNegative = outline.far > baseline
+        const start = isNegative ? baseline - overshoot : outline.far
+        const end = isNegative ? outline.far : baseline + overshoot
+
+        return { x, y: start, width, height: end - start }
     }
 
     private addColumns(
@@ -99,7 +124,7 @@ export default class PlotStackedColumnItems {
         const { layout } = this
         const { baseline } = layout.vertical
 
-        for (const { valueIndex, slot, x, y, width, height, isTop, isCapped, total } of stacked) {
+        for (const { valueIndex, slot, x, y, width, height, isTop, isCapped, total, clip } of stacked) {
             const column = items.rect()
                  .position(x, y)
                  .size(width, height)
@@ -107,6 +132,9 @@ export default class PlotStackedColumnItems {
                  .round(isTop ? [CORNER_RADIUS, CORNER_RADIUS, 0, 0] : [0, 0, 0, 0])
                  .align(HorizontalAlignment.Left, VerticalAlignment.Bottom)
                  .grow(Axis.Y, baseline)
+
+            if (clip)
+                column.clip(clip, CORNER_RADIUS)
 
             this.style.styleRect(column, series, slot, valueIndex)
                 .fade(false)

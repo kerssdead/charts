@@ -211,4 +211,49 @@ describe('Getting plot stacked column items', () => {
         expect(rects[0][0].absolute.height)
             .toBe(0)
     })
+
+    it('Should clip every segment of a stack with a thin top to one rounded outline', () => {
+        const { layout, rects } = getStacks(
+            [createSeries(PlotType.StackingColumn, [99], { id: 'a' }), createSeries(PlotType.StackingColumn, [10], { id: 'b' })],
+            { yMax: 100 }
+        )
+        const { baseline, valueScale } = layout.vertical
+        const { x, width } = rects[0][0].absolute
+        const top = valueScale.getCoordinate(100)
+
+        expect(rects.map(seriesRects => seriesRects[0].clip))
+            .toEqual(Array(2).fill({ x, y: top, width, height: baseline - top + 80, radius: 80 }))
+    })
+
+    it('Should extend the clip below the baseline so the stack bottom stays square', () => {
+        const { layout, rects } = getStacks(
+            [createSeries(PlotType.StackingColumn, [99], { id: 'a' }), createSeries(PlotType.StackingColumn, [10], { id: 'b' })],
+            { yMax: 100 }
+        )
+        const clip = rects[0][0].clip
+
+        expect((clip?.y ?? 0) + (clip?.height ?? 0))
+            .toBe(layout.vertical.baseline + 80)
+    })
+
+    it('Should extend the clip above the baseline for negative stacks', () => {
+        const { layout, rects } = getStacks([
+            createSeries(PlotType.StackingColumn, [-1000], { id: 'a' }),
+            createSeries(PlotType.StackingColumn, [-1], { id: 'b' })
+        ])
+        const clip = rects[0][0].clip
+
+        expect(clip?.y)
+            .toBe(layout.vertical.baseline - 80)
+    })
+
+    it('Should not clip stacks whose top segment shows its own rounded corners', () => {
+        const { rects } = getStacks(
+            [createSeries(PlotType.StackingColumn, [40], { id: 'a' }), createSeries(PlotType.StackingColumn, [60], { id: 'b' })],
+            { yMax: 100 }
+        )
+
+        expect(rects.flat().map(rect => rect.clip))
+            .toEqual([null, null])
+    })
 })
