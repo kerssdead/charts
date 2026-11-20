@@ -1,7 +1,7 @@
 import Legend from '@/legend/Legend'
 import { normalize } from '@/charts/Settings'
 import { ChartType, LegendPlace } from '@/static/Enums'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import ViewState from '@/charts/ViewState'
 
 jest.mock('@/helpers/Text', () => ({
@@ -21,7 +21,7 @@ const legend = (legendPlace: LegendPlace, disableInteractions: boolean = true) =
         disableInteractions,
         enableLegend: true,
         data: { values: [1, 2, 3, 4, 5].map(index => ({ label: `Label ${ index }`, value: index })) }
-    } as unknown as ChartSettings)
+    } as unknown as ChartOptions)
 
     const viewState = new ViewState()
 

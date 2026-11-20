@@ -24,7 +24,7 @@ describe('Checking chart legend support', () => {
     })
 
     it('Should not support legend for unknown chart type', () => {
-        expect(hasLegend(chart(-1 as ChartType)))
+        expect(hasLegend(chart(-1 as unknown as ChartType)))
             .toBe(false)
     })
 })

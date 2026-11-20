@@ -75,7 +75,7 @@ describe('Normalizing plot series', () => {
     it('Should convert legacy numeric axis type and scales', () => {
         const data = { xType: 1, xScale: 2, yScale: 1, values: [] } as unknown as PlotData
 
-        normalizeSeries(data)
+        normalizeSeries(data, undefined)
 
         expect([data.xType, data.xScale, data.yScale])
             .toEqual([PlotAxisType.Date, PlotScaleType.Log, PlotScaleType.Linear])

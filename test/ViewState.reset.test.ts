@@ -1,7 +1,7 @@
 import ViewState from '@/charts/ViewState'
 import { normalize } from '@/charts/Settings'
 import { ChartType } from '@/static/Enums'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import Sector from '@/types/Sector'
 import TreeBarRow from '@/types/TreeBarRow'
 
@@ -10,7 +10,7 @@ describe('Resetting view state', () => {
         const settings = normalize({
             type: ChartType.Pie,
             data: { values: [{ id: 'a', label: 'A', value: 1, disabled: true }, { id: 'b', label: 'B', value: 1, pinned: true }] }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
         const viewState = new ViewState()
         const [first, second] = settings.charts[0].data.values as Sector[]
 
@@ -25,7 +25,7 @@ describe('Resetting view state', () => {
         const settings = normalize({
             type: ChartType.TreeBar,
             data: { values: [{ id: 'a', label: 'A', expanded: true }], sortColumn: 'amount' }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
         const viewState = new ViewState()
 
         viewState.apply(settings)

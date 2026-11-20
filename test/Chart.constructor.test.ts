@@ -1,5 +1,5 @@
 import Chart from '@/Chart'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import { Tag } from '@/static/Enums'
 import { FakeElement, installFakeDocument } from './FakeDocument'
 
@@ -36,7 +36,7 @@ const settings = (isDarkThemeFunction: () => boolean = () => false) => {
         title: 'Chart',
         data: { values: [] },
         isDarkThemeFunction
-    } as unknown as ChartSettings
+    } as unknown as ChartOptions
 }
 
 let host: FakeElement

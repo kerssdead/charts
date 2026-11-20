@@ -1,6 +1,6 @@
 import { normalize } from '@/charts/Settings'
 import { ChartType, LegendPlace, PlotAxisType } from '@/static/Enums'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import PlotSeries from '@/types/PlotSeries'
 import Sector from '@/types/Sector'
 import TextResources from '@/static/TextResources'
@@ -18,25 +18,25 @@ describe('Normalizing settings', () => {
     })
 
     it('Should convert legacy type and data to charts', () => {
-        const settings = normalize({ type: ChartType.Pie, data: { values: [] } } as unknown as ChartSettings)
+        const settings = normalize({ type: ChartType.Pie, data: { values: [] } } as unknown as ChartOptions)
 
         expect(settings.charts.map(chart => chart.type))
             .toEqual([ChartType.Pie])
     })
 
     it('Should default chart type to plot', () => {
-        const settings = normalize({ charts: [{ data: { values: [] } }] } as unknown as ChartSettings)
+        const settings = normalize({ charts: [{ data: { values: [] } }] } as unknown as ChartOptions)
 
         expect(settings.charts[0].type)
             .toBe(ChartType.Plot)
     })
 
     it('Should not mutate source', () => {
-        const source = { type: ChartType.Pie, data: { values: [{ value: '5' }] } } as unknown as ChartSettings
+        const source = { type: ChartType.Pie, data: { values: [{ value: '5' }] } } as unknown as ChartOptions
 
         normalize(source)
 
-        expect(source.data.values[0].value)
+        expect(source.data?.values[0].value)
             .toBe('5')
     })
 
@@ -46,7 +46,7 @@ describe('Normalizing settings', () => {
                 { type: ChartType.Pie, data: { values: [{ value: 1 }, { value: 2 }], enableMerging: false } },
                 { type: ChartType.Plot, data: { values: [{ values: [] }] } }
             ]
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         const [pie, plot] = settings.charts.map(chart => chart.data.values)
 
@@ -62,7 +62,7 @@ describe('Normalizing settings', () => {
         const settings = normalize({
             type: ChartType.Pie,
             data: { values: [{ label: 'A', value: '1' }, { label: 'A', value: '2' }] }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect(settings.charts[0].data.values.map(value => value.value))
             .toEqual([3])
@@ -84,7 +84,7 @@ describe('Normalizing settings', () => {
                 },
                 { type: ChartType.Plot, data: { values: [{ label: 'E', values: [{ x: 1, y: '3.5' }] }] } }
             ]
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         const [pie, plot] = settings.charts.map(chart => chart.data.values)
 
@@ -102,7 +102,7 @@ describe('Normalizing settings', () => {
                 { type: ChartType.Plot, data: { values: [{ label: 'B', values: [{ x: 1, y: '2.000' }] }] } },
                 { type: ChartType.SegmentedBar, data: { values: [{ value: 1 }], stops: [{ value: '12,5%' }] } }
             ]
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         const [pie, plot, segmentedBar] = settings.charts.map(chart => chart.data)
 
@@ -119,7 +119,7 @@ describe('Normalizing settings', () => {
         const settings = normalize({
             type: ChartType.Plot,
             data: { values: [{ label: 'A', values: ys.map((y, x) => ({ x, y })) }] }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect((settings.charts[0].data.values[0] as PlotSeries).values.map(point => point.y))
             .toEqual([null, null, null, null, null, null, null, 1000, 0])
@@ -129,7 +129,7 @@ describe('Normalizing settings', () => {
         const settings = normalize({
             type: ChartType.Plot,
             data: { values: [{ label: 'A', values: [{ x: 1 }] }] }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect((settings.charts[0].data.values[0] as PlotSeries).values[0].y)
             .toBeNull()
@@ -142,7 +142,7 @@ describe('Normalizing settings', () => {
             enableTooltip: true,
             enableLegend: true,
             disableInteractions: true
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect([settings.enableTooltip, settings.enableLegend])
             .toEqual([false, false])
@@ -164,7 +164,7 @@ describe('Normalizing settings', () => {
                     }
                 ]
             }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect((settings.charts[0].data.values[0] as PlotSeries).values.map(point => point.x))
             .toEqual(['2024-01-02T03:04:05.000Z', '2024-01-02T03:04:05.000Z', '2024-01-02T03:04:05.001Z'])
@@ -173,7 +173,7 @@ describe('Normalizing settings', () => {
     it('Should keep values of unknown chart type untouched', () => {
         const settings = normalize({
             charts: [{ type: -1, data: { values: [{ label: 'A', value: '5' }, { label: 'A', value: '1' }] } }]
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect(settings.charts[0].data.values)
             .toEqual([{ label: 'A', value: '5' }, { label: 'A', value: '1' }])
@@ -183,7 +183,7 @@ describe('Normalizing settings', () => {
         const settings = normalize({
             type: ChartType.SegmentedBar,
             data: { values: [{ label: 'A', value: 1 }, { label: 'A', value: 3 }] }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect(settings.charts[0].data.values.map(value => value.value))
             .toEqual([1, 3])
@@ -192,7 +192,7 @@ describe('Normalizing settings', () => {
     it('Should skip charts without data or values', () => {
         expect(() => normalize({
             charts: [{ type: ChartType.Pie }, { type: ChartType.SegmentedBar, data: { stops: [{ value: '1' }] } }]
-        } as unknown as ChartSettings))
+        } as unknown as ChartOptions))
             .not
             .toThrow()
     })
@@ -203,7 +203,7 @@ describe('Normalizing settings', () => {
             data: {
                 values: [{ label: 'Lorem', parts: [{ value: '5' }], children: [{ label: 'Ipsum', parts: [{ value: 2 }] }] }]
             }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         const [root] = (settings.charts[0].data as TreeBarData).values
         const child = root.children?.[0]
@@ -219,7 +219,7 @@ describe('Normalizing settings', () => {
             type: ChartType.TreeBar,
             numberLocale: 'de-DE',
             data: { values: [{ label: 'Lorem', parts: [{ value: '1.500' }] }] }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         const data = settings.charts[0].data as TreeBarData
 
@@ -238,7 +238,7 @@ describe('Normalizing settings', () => {
                     children: [{ label: 'Ipsum', color: '#ff0000', parts: [{ value: 1 }, { value: 1, color: '#00ff00' }] }]
                 }]
             }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         const [root] = (settings.charts[0].data as TreeBarData).values
         const child = root.children?.[0]
@@ -251,7 +251,7 @@ describe('Normalizing settings', () => {
         const settings = normalize({
             locale: 'de-DE',
             charts: [{ type: ChartType.Pie, data: { values: [{ label: 'A', value: '1.234,5' }] } }]
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect((settings.charts[0].data as { values: { value: number }[] }).values[0].value)
             .toBe(1234.5)
@@ -262,7 +262,7 @@ describe('Normalizing settings', () => {
             locale: 'en-US',
             numberLocale: 'de-DE',
             charts: [{ type: ChartType.Pie, data: { values: [{ label: 'A', value: '1.234,5' }] } }]
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect((settings.charts[0].data as { values: { value: number }[] }).values[0].value)
             .toBe(1234.5)
@@ -272,7 +272,7 @@ describe('Normalizing settings', () => {
         const settings = normalize({
             legendPlace: 2,
             charts: [{ type: 1, data: { values: [] } }]
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect([settings.charts[0].type, settings.legendPlace])
             .toEqual([ChartType.Pie, LegendPlace.Top])
@@ -283,7 +283,7 @@ describe('Normalizing settings', () => {
             legendPlace: 'right',
             type: 'tree-bar',
             data: { values: [] }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect([settings.charts[0].type, settings.legendPlace])
             .toEqual([ChartType.TreeBar, LegendPlace.Right])
@@ -297,7 +297,7 @@ describe('Normalizing settings', () => {
         Object.assign(globalThis, { matchMedia: () => ({ matches: reducedMotion }) })
 
         try {
-            const settings = normalize({ staticMode, charts: [] } as unknown as ChartSettings)
+            const settings = normalize({ staticMode, charts: [] } as unknown as ChartOptions)
 
             expect(settings.staticMode)
                 .toBe(expected)

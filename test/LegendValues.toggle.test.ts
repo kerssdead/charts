@@ -2,14 +2,14 @@ import LegendValues from '@/legend/LegendValues'
 import ViewState from '@/charts/ViewState'
 import { normalize } from '@/charts/Settings'
 import { ChartType } from '@/static/Enums'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 
 const create = (staticMode: boolean = false) => {
     const settings = normalize({
         type: ChartType.Pie,
         staticMode,
         data: { values: [{ label: 'A', value: 1 }, { label: 'B', value: 0 }] }
-    } as unknown as ChartSettings)
+    } as unknown as ChartOptions)
     const viewState = new ViewState()
 
     viewState.apply(settings)

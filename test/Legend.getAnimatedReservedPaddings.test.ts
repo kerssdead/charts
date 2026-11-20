@@ -1,7 +1,7 @@
 import Legend from '@/legend/Legend'
 import { normalize } from '@/charts/Settings'
 import { ChartType, LegendPlace } from '@/static/Enums'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import ViewState from '@/charts/ViewState'
 
 jest.mock('@/helpers/Text', () => ({
@@ -21,7 +21,7 @@ const legend = () => {
         disableInteractions: true,
         enableLegend: true,
         data: { values: [1, 2, 3].map(index => ({ label: `Label ${ index }`, value: index })) }
-    } as unknown as ChartSettings)
+    } as unknown as ChartOptions)
 
     const viewState = new ViewState()
 
@@ -48,7 +48,7 @@ describe('Getting current legend reserved size', () => {
     it('Should reserve space at the bottom for an unknown legend place', () => {
         const unknown = legend()
 
-        unknown.settings.legendPlace = 99 as LegendPlace
+        unknown.settings.legendPlace = 99 as unknown as LegendPlace
         unknown.resize(400, 400)
 
         expect(unknown.reservedPaddings.bottom)

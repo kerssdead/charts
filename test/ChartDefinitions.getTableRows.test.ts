@@ -51,7 +51,7 @@ describe('Getting chart table rows', () => {
     })
 
     it('Should get empty table for unknown chart type', () => {
-        expect(getTableRows({ type: -1 as ChartType, data: { values: sectors() } }, isDisabledByFlag))
+        expect(getTableRows({ type: -1 as unknown as ChartType, data: { values: sectors() } }, isDisabledByFlag))
             .toEqual({ headers: [], values: [] })
     })
 })

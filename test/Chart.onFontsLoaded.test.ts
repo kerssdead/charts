@@ -1,5 +1,5 @@
 import Chart from '@/Chart'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import { Tag } from '@/static/Enums'
 import { clearTextWidths } from '@/helpers/Text'
 import { FakeElement, installFakeDocument } from './FakeDocument'
@@ -33,7 +33,7 @@ jest.mock('@/renderer/Renderer', () => ({
     }
 }))
 
-const settings = { title: 'Chart', data: { values: [] } } as unknown as ChartSettings
+const settings = { title: 'Chart', data: { values: [] } } as unknown as ChartOptions
 
 const listeners = new Set<() => void>()
 

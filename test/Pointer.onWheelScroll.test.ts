@@ -30,7 +30,10 @@ function create(enableMove: boolean | undefined) {
         canDrag: () => false,
         hasContextMenuAt: () => false,
         scrollBy,
-        getScrollDrag: () => null
+        getScrollDrag: () => null,
+        onKeyDown: () => false,
+        onPointerMove: () => {},
+        onBlur: () => {}
     })
 
     pointer.attach(enableMove as boolean)

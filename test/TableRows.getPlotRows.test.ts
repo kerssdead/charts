@@ -153,7 +153,7 @@ describe('Getting plot rows for decomposition', () => {
                     label: 'Series 2'
                 }
             ]
-        } as PlotData
+        } as unknown as PlotData
 
         expect(getPlotRows(data, isDisabledByFlag).headers.length)
             .toBe(6)

@@ -1,13 +1,13 @@
 import Chart from '@/Chart'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import { Tag } from '@/static/Enums'
 import { FakeElement, installFakeDocument } from './FakeDocument'
 import { rendererCalls, rendererErrorHandlers, rendererFailures, rendererSettings } from './ChartRendererMock'
 
 type Listener = () => void
 
-export const chartSettings = (overrides: Partial<ChartSettings> = {}) => {
-    return { title: 'Chart', data: { values: [] }, ...overrides } as unknown as ChartSettings
+export const chartSettings = (overrides: Partial<ChartOptions> = {}) => {
+    return { title: 'Chart', data: { values: [] }, ...overrides } as unknown as ChartOptions
 }
 
 export const installChartEnvironment = () => {
@@ -54,7 +54,7 @@ export const installChartEnvironment = () => {
             mediaListeners.forEach(listener => listener())
         },
         canvas: () => host.elements.find(element => element.tagName === Tag.Canvas) as FakeElement,
-        create: (settings: ChartSettings = chartSettings()) => new Chart(host as unknown as HTMLElement, settings)
+        create: (settings: ChartOptions = chartSettings()) => new Chart(host as unknown as HTMLElement, settings)
     }
 }
 

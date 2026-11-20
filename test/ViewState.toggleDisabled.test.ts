@@ -1,10 +1,10 @@
 import ViewState from '@/charts/ViewState'
 import { normalize } from '@/charts/Settings'
 import { ChartType } from '@/static/Enums'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 
 const create = (charts: object[]) => {
-    const settings = normalize({ charts } as unknown as ChartSettings)
+    const settings = normalize({ charts } as unknown as ChartOptions)
     const viewState = new ViewState()
 
     viewState.apply(settings)

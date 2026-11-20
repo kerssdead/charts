@@ -42,7 +42,7 @@ describe('Summarizing chart tables', () => {
     it('Should keep table of unknown chart type unchanged', () => {
         const table = { headers: [{ value: 'a', display: 'a' }], values: [] }
 
-        expect(summarizeTable(valueChart(-1 as ChartType), table))
+        expect(summarizeTable(valueChart(-1 as unknown as ChartType), table))
             .toBe(table)
     })
 })

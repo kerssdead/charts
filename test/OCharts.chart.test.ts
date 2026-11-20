@@ -66,12 +66,12 @@ describe('Creating chart through OCharts', () => {
 
         expect([
             module.PlotType.Line,
-            module.PlotAxisType.Linear,
+            module.PlotAxisType.Number,
             module.PlotScaleType.Linear,
             module.LineDrawMode.Straight
         ]).toEqual([
             PlotType.Line,
-            PlotAxisType.Linear,
+            PlotAxisType.Number,
             PlotScaleType.Linear,
             LineDrawMode.Straight
         ])

@@ -15,7 +15,7 @@ describe('Getting chart definitions', () => {
     })
 
     it('Should not define unknown chart type', () => {
-        expect(getChartDefinition(-1 as ChartType))
+        expect(getChartDefinition(-1 as unknown as ChartType))
             .toBeUndefined()
     })
 })

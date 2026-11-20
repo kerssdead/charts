@@ -2,12 +2,13 @@ import ViewState from '@/charts/ViewState'
 import { normalize } from '@/charts/Settings'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import TreeBarData from '@/types/data/TreeBarData'
 import Sector from '@/types/Sector'
 
-const pie = (values: object[]) => normalize({ type: ChartType.Pie, data: { values } } as unknown as ChartSettings)
+const pie = (values: object[]) => normalize({ type: ChartType.Pie, data: { values } } as unknown as ChartOptions)
 
-const treeBar = (data: object) => normalize({ type: ChartType.TreeBar, data } as unknown as ChartSettings)
+const treeBar = (data: object) => normalize({ type: ChartType.TreeBar, data } as unknown as ChartOptions)
 
 const rows = (settings: ChartSettings) => (settings.charts[0].data as TreeBarData).values
 
@@ -73,7 +74,7 @@ describe('Applying view state', () => {
                 { type: ChartType.Pie, data: { values: [{ label: 'A', value: 1, disabled: true }] } },
                 { type: ChartType.Pie, data: { values: [{ label: 'A', value: 2 }] } }
             ]
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         viewState.apply(settings)
 

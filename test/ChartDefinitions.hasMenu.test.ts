@@ -22,7 +22,7 @@ describe('Checking chart menu support', () => {
     })
 
     it('Should not have menu for unknown chart type', () => {
-        expect(hasMenu(chart(-1 as ChartType)))
+        expect(hasMenu(chart(-1 as unknown as ChartType)))
             .toBe(false)
     })
 })

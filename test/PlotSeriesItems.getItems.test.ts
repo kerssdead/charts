@@ -107,7 +107,7 @@ describe('Getting plot series items', () => {
     })
 
     it('Should draw nothing for a series of unknown type', () => {
-        expect(getKeys([createSeries(99 as PlotType, [1])]))
+        expect(getKeys([createSeries(99 as unknown as PlotType, [1])]))
             .toEqual([])
     })
 })

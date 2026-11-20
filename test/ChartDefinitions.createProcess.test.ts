@@ -41,7 +41,7 @@ describe('Checking process creation', () => {
     })
 
     it('Should return undefined for unknown chart type', () => {
-        expect(createProcess({ type: -1 as ChartType, data }, pixel, {
+        expect(createProcess({ type: -1 as unknown as ChartType, data }, pixel, {
             ...settings,
             theme: LIGHT_THEME
         }, state))

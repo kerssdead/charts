@@ -4,7 +4,7 @@ import { LIGHT_THEME, ThemePalette } from '@/Theme'
 import { DARK_THEME } from './TestTheme'
 import { Layer } from '@/static/constants/Index'
 import { ChartType, LegendPlace } from '@/static/Enums'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import ViewState from '@/charts/ViewState'
 import Queue from '@/render/Queue'
 import Frame from '@/renderer/Frame'
@@ -31,7 +31,7 @@ const create = (legendPlace: LegendPlace = LegendPlace.Bottom) => {
                 { id: 'b', label: 'B', value: 2, color: '#00ff00' }
             ]
         }
-    } as unknown as ChartSettings)
+    } as unknown as ChartOptions)
 
     const viewState = new ViewState()
 
@@ -84,7 +84,7 @@ describe('Updating legend', () => {
             legendPlace: LegendPlace.Bottom,
             enableLegend: true,
             data: { values: [{ id: 'a', label: 'A', value: 1, color: '#ff0000' }] }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
         const viewState = new ViewState()
 
         viewState.apply(settings)
@@ -143,7 +143,7 @@ describe('Updating legend', () => {
             enableLegend: true,
             disableInteractions: false,
             data: { values: [{ id: 'a', label: 'A', value: 1, color: '#ff0000' }] }
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         legend.applySettings(next)
 

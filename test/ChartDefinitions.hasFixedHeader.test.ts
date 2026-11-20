@@ -22,7 +22,7 @@ describe('Checking fixed header chart types', () => {
     })
 
     it('Should not have fixed header for unknown chart type', () => {
-        expect(hasFixedHeader(chart(-1 as ChartType)))
+        expect(hasFixedHeader(chart(-1 as unknown as ChartType)))
             .toBe(false)
     })
 })

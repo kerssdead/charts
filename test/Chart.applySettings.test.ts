@@ -1,7 +1,7 @@
 import { getFontFamily, setFontFamily, SYSTEM_FONT_FAMILY } from '@/static/Typography'
 import { getLocale, setLocalization } from '@/static/Localization'
 import Chart from '@/Chart'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import TextResources from '@/static/TextResources'
 import { Tag } from '@/static/Enums'
 import { FakeElement, installFakeDocument } from './FakeDocument'
@@ -38,8 +38,8 @@ jest.mock('@/renderer/Renderer', () => ({
     }
 }))
 
-const settings = (title: string, onError?: ChartSettings['onError']) => {
-    return { title, data: { values: [] }, onError } as unknown as ChartSettings
+const settings = (title: string, onError?: ChartOptions['onError']) => {
+    return { title, data: { values: [] }, onError } as unknown as ChartOptions
 }
 
 let host: FakeElement
@@ -71,7 +71,7 @@ afterEach(() => {
     jest.restoreAllMocks()
 })
 
-const create = (initial: ChartSettings) => {
+const create = (initial: ChartOptions) => {
     return new Chart(host as unknown as HTMLElement, initial)
 }
 
@@ -132,14 +132,14 @@ describe('Applying settings', () => {
             title: 'Working',
             data: { values: [] },
             isDarkThemeFunction: () => isDark
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         isDark = true
         chart.applySettings({
             title: 'Working',
             data: { values: [] },
             isDarkThemeFunction: () => isDark
-        } as unknown as ChartSettings)
+        } as unknown as ChartOptions)
 
         expect(mockThemeGetters.at(-1)?.().isDark)
             .toBe(true)

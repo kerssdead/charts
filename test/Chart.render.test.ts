@@ -1,5 +1,5 @@
 import Chart from '@/Chart'
-import ChartSettings from '@/types/ChartSettings'
+import ChartOptions from '@/types/ChartOptions'
 import { Tag } from '@/static/Enums'
 import { FakeElement, installFakeDocument } from './FakeDocument'
 
@@ -42,8 +42,8 @@ type FakeObserver = {
 
 let observer: FakeObserver | null = null
 
-const settings = (contextMenu?: ChartSettings['contextMenu']) => {
-    return { title: 'Working', data: { values: [] }, contextMenu } as unknown as ChartSettings
+const settings = (contextMenu?: ChartOptions['contextMenu']) => {
+    return { title: 'Working', data: { values: [] }, contextMenu } as unknown as ChartOptions
 }
 
 let host: FakeElement
@@ -82,7 +82,7 @@ afterEach(() => {
     jest.restoreAllMocks()
 })
 
-const create = (initial: ChartSettings) => {
+const create = (initial: ChartOptions) => {
     return new Chart(host as unknown as HTMLElement, initial)
 }
 
