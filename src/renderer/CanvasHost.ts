@@ -16,7 +16,7 @@ export default class CanvasHost {
 
     private readonly observer: ResizeObserver
 
-    private readonly ratioWatcher = new AbortController()
+    private ratioWatcher: AbortController | null = null
 
     private width: number = 0
 
@@ -42,7 +42,7 @@ export default class CanvasHost {
 
     destroy() {
         this.observer.disconnect()
-        this.ratioWatcher.abort()
+        this.stopWatchingRatio()
 
         this.canvas.remove()
     }
@@ -76,19 +76,31 @@ export default class CanvasHost {
     }
 
     private watchRatio() {
+        this.stopWatchingRatio()
+        this.ratioWatcher = new AbortController()
+
         matchMedia(`(resolution: ${ window.devicePixelRatio }dppx)`).addEventListener(Events.Change, () => {
             this.resize(this.width, this.height)
             this.watchRatio()
         }, { once: true, signal: this.ratioWatcher.signal })
     }
 
+    private stopWatchingRatio() {
+        this.ratioWatcher?.abort()
+        this.ratioWatcher = null
+    }
+
     private createObserver(node: HTMLElement) {
         const observer = new ResizeObserver(entries => {
             if (!this.isAttached) {
+                this.stopWatchingRatio()
                 this.events.onDetach()
 
                 return
             }
+
+            if (!this.ratioWatcher)
+                this.watchRatio()
 
             this.events.onAttach()
 

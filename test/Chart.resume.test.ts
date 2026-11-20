@@ -1,6 +1,7 @@
 import {
     chartSettings,
     installChartEnvironment,
+    installEnvironmentListeners,
     removeChartEnvironment
 } from './ChartTestData'
 import { rendererCalls } from './ChartRendererMock'
@@ -65,6 +66,20 @@ describe('Resuming chart', () => {
 
         expect(rendererCalls)
             .toEqual(['resume'])
+    })
+
+    it('Should react to font loading again after reattaching', () => {
+        const environment = installChartEnvironment()
+        const listeners = installEnvironmentListeners()
+
+        environment.create()
+        detachAndAttach(environment)
+        environment.observer().callback([])
+        rendererCalls.length = 0
+        listeners.finishFontLoading()
+
+        expect(rendererCalls)
+            .toEqual(['apply'])
     })
 
     it('Should start suspended when the canvas is not attached', () => {

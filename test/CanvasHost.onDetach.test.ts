@@ -22,6 +22,19 @@ describe('Reporting canvas host detach', () => {
             .toHaveBeenCalledTimes(1)
     })
 
+    it('Should stop watching pixel ratio while detached', () => {
+        const { environment, events, host } = create()
+
+        environment.resizeElement(100, 50)
+        host.canvas.remove()
+        environment.resizeElement(100, 50)
+        events.onResize.mockClear()
+        environment.changeRatio(2)
+
+        expect(events.onResize)
+            .not.toHaveBeenCalled()
+    })
+
     it('Should not resize a detached canvas', () => {
         const { environment, events, host } = create()
 

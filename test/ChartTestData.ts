@@ -58,6 +58,32 @@ export const installChartEnvironment = () => {
     }
 }
 
+export const installEnvironmentListeners = () => {
+    const fontListeners = new Set<Listener>()
+    const motionListeners = new Set<Listener>()
+    const theme = { matches: false, addEventListener() {}, removeEventListener() {} }
+    const motion = {
+        matches: false,
+        addEventListener: (_type: string, listener: Listener) => motionListeners.add(listener),
+        removeEventListener: (_type: string, listener: Listener) => motionListeners.delete(listener)
+    }
+
+    Object.assign(document, {
+        fonts: {
+            addEventListener: (_type: string, listener: Listener) => fontListeners.add(listener),
+            removeEventListener: (_type: string, listener: Listener) => fontListeners.delete(listener)
+        }
+    })
+    Object.assign(globalThis, {
+        matchMedia: (query: string) => query.includes('reduced-motion') ? motion : theme
+    })
+
+    return {
+        count: () => fontListeners.size + motionListeners.size,
+        finishFontLoading: () => fontListeners.forEach(listener => listener())
+    }
+}
+
 export const removeChartEnvironment = () => {
     for (const name of ['document', 'window', 'matchMedia', 'ResizeObserver'])
         delete (globalThis as Record<string, unknown>)[name]

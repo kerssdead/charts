@@ -1,4 +1,4 @@
-import { installChartEnvironment, removeChartEnvironment } from './ChartTestData'
+import { installChartEnvironment, installEnvironmentListeners, removeChartEnvironment } from './ChartTestData'
 import { rendererCalls } from './ChartRendererMock'
 
 jest.mock('@/renderer/Renderer', () => jest.requireActual('./ChartRendererMock').mockRendererModule)
@@ -17,6 +17,18 @@ describe('Suspending chart', () => {
 
         expect(rendererCalls)
             .toContain('suspend')
+    })
+
+    it('Should release font and motion listeners when the canvas is detached', () => {
+        const { canvas, observer, create } = installChartEnvironment()
+        const listeners = installEnvironmentListeners()
+
+        create()
+        canvas().remove()
+        observer().callback([])
+
+        expect(listeners.count())
+            .toBe(0)
     })
 
     it('Should not suspend while the canvas stays attached', () => {

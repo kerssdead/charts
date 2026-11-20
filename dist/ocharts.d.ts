@@ -163,10 +163,12 @@ declare class Chart {
 	private readonly onThemeChange;
 	private readonly onFontsLoaded;
 	private readonly onMotionPreferenceChange;
-	private stopListeningToMotionPreference;
+	private removeEnvironmentListeners;
 	constructor(element: HTMLElement, settings: ChartOptions);
 	render(): void;
 	destroy(): void;
+	private listenToEnvironment;
+	private stopListeningToEnvironment;
 	private start;
 	private stop;
 	private guard;

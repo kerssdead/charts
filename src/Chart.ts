@@ -68,16 +68,14 @@ export default class Chart {
         this.applySettings(this.source)
     }
 
-    private stopListeningToMotionPreference = () => {}
+    private removeEnvironmentListeners: (() => void) | null = null
 
     constructor(element: HTMLElement, settings: ChartOptions) {
         this.element = element
         this.failure = new ChartFailure(element)
 
+        this.listenToEnvironment()
         this.start(settings)
-
-        document.fonts?.addEventListener(FontEvents.LoadingDone, this.onFontsLoaded)
-        this.stopListeningToMotionPreference = onReducedMotionChange(this.onMotionPreferenceChange)
     }
 
     render() {
@@ -95,10 +93,27 @@ export default class Chart {
 
         this.isDestroyed = true
 
-        document.fonts?.removeEventListener(FontEvents.LoadingDone, this.onFontsLoaded)
-        this.stopListeningToMotionPreference()
-
         this.stop()
+    }
+
+    private listenToEnvironment() {
+        if (this.removeEnvironmentListeners)
+            return
+
+        const fonts = document.fonts
+        const stopListeningToMotionPreference = onReducedMotionChange(this.onMotionPreferenceChange)
+
+        fonts?.addEventListener(FontEvents.LoadingDone, this.onFontsLoaded)
+
+        this.removeEnvironmentListeners = () => {
+            fonts?.removeEventListener(FontEvents.LoadingDone, this.onFontsLoaded)
+            stopListeningToMotionPreference()
+        }
+    }
+
+    private stopListeningToEnvironment() {
+        this.removeEnvironmentListeners?.()
+        this.removeEnvironmentListeners = null
     }
 
     private start(settings: ChartOptions) {
@@ -141,6 +156,7 @@ export default class Chart {
     }
 
     private stop() {
+        this.stopListeningToEnvironment()
         this.tableHint?.remove()
         this.host?.destroy()
 
@@ -184,6 +200,7 @@ export default class Chart {
 
         this.isSuspended = false
 
+        this.listenToEnvironment()
         this.start(settings)
     }
 
@@ -262,6 +279,7 @@ export default class Chart {
         this.theme.updatePalette(this.settings.isDarkThemeFunction)
         this.suspendedTheme = this.theme.colorTheme
 
+        this.stopListeningToEnvironment()
         this.theme.detach()
         this.renderer.suspend()
     }
@@ -272,6 +290,7 @@ export default class Chart {
 
         this.isSuspended = false
 
+        this.listenToEnvironment()
         this.theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
         this.renderer.resume()
 

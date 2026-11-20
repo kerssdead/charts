@@ -25,6 +25,21 @@ describe('Reporting canvas host attach', () => {
             .toEqual(['attach', 'resize'])
     })
 
+    it('Should watch pixel ratio again after reattaching', () => {
+        const { environment, events, host } = create()
+
+        environment.resizeElement(100, 50)
+        host.canvas.remove()
+        environment.resizeElement(100, 50)
+        environment.element.appendChild(host.canvas as never)
+        environment.resizeElement(100, 50)
+        events.onResize.mockClear()
+        environment.changeRatio(2)
+
+        expect(events.onResize)
+            .toHaveBeenCalledWith(100, 50, 2)
+    })
+
     it('Should not report detach for a connected canvas', () => {
         const { environment, events } = create()
 

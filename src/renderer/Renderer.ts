@@ -50,7 +50,7 @@ export default class Renderer {
 
     private settings!: ChartSettings
 
-    private readonly detachImages: () => void
+    private removeImageListener: (() => void) | null = null
 
     private readonly viewState: ViewState
 
@@ -74,7 +74,7 @@ export default class Renderer {
             guard(() => action(), onError)
         })
         this.contextMenu.fixedButtons = () => this.menu.getButtons()
-        this.detachImages = onImageLoad(() => this.render())
+        this.listenToImages()
 
         this.input = new InputRouter(canvas, {
             queue: this.queue,
@@ -211,7 +211,7 @@ export default class Renderer {
         this.cancelPendingRebuild()
 
         this.input.detach()
-        this.detachImages()
+        this.stopListeningToImages()
 
         this.removeLegend()
         this.menu.remove()
@@ -233,6 +233,7 @@ export default class Renderer {
         this.frames.suspend()
 
         this.input.detach()
+        this.stopListeningToImages()
         this.tooltip.clear(this.queue)
         this.contextMenu.clear(this.queue)
         this.focusRing.clear(this.queue)
@@ -240,8 +241,18 @@ export default class Renderer {
 
     resume() {
         this.input.attach(this.settings.enableMove)
+        this.listenToImages()
 
         this.frames.resume()
+    }
+
+    private listenToImages() {
+        this.removeImageListener ??= onImageLoad(() => this.render())
+    }
+
+    private stopListeningToImages() {
+        this.removeImageListener?.()
+        this.removeImageListener = null
     }
 
     private syncLegend() {
