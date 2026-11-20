@@ -89,6 +89,7 @@ declare const DEFAULT_TEXTS: {
 	copied: string;
 	copyFailed: string;
 	saveCsv: string;
+	close: string;
 	defaultImageName: string;
 	defaultTableName: string;
 	sortAscending: string;
@@ -113,6 +114,7 @@ interface CommonOptions {
 	enableDebugMode?: boolean;
 	baseColor?: string;
 	title?: string;
+	ariaLabel?: string;
 	templateId?: string;
 	valuePostfix?: string;
 	decimals?: number;
@@ -155,10 +157,13 @@ declare class Chart {
 	private readonly element;
 	private readonly failure;
 	private host;
+	private tableHint;
 	private renderer;
 	private viewState;
 	private readonly onThemeChange;
 	private readonly onFontsLoaded;
+	private readonly onMotionPreferenceChange;
+	private stopListeningToMotionPreference;
 	constructor(element: HTMLElement, settings: ChartOptions);
 	render(): void;
 	destroy(): void;
@@ -170,6 +175,8 @@ declare class Chart {
 	applySettings(settings: ChartOptions): void;
 	private update;
 	private normalizeAndApply;
+	private applyAccessibleName;
+	private applyKeyboardFocus;
 	private bindMenuActions;
 	private resize;
 	private suspend;

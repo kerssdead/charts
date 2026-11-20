@@ -1,7 +1,7 @@
 import TableData from '@/types/TableData'
 import { sortTableValues } from '@/export/TableQueries'
 import TableValue from '@/types/TableValue'
-import { Attribute, Events, SortDirection, TableClasses } from '@/static/Enums'
+import { Attribute, Events, SortDirection, TableClasses, Tag } from '@/static/Enums'
 
 export function getNextSortDirection(direction: SortDirection) {
     switch (direction) {
@@ -31,7 +31,15 @@ export default class TableSorting {
             cell.classList.add(TableClasses.Sortable)
             cell.setAttribute(Attribute.AriaSort, SortDirection.None)
 
-            cell.addEventListener(Events.Click, () => {
+            const button = document.createElement(Tag.Button)
+
+            button.type = 'button'
+            button.classList.add(TableClasses.SortButton)
+            button.textContent = cell.textContent
+            cell.textContent = ''
+            cell.append(button)
+
+            button.addEventListener(Events.Click, () => {
                 direction = cell === sortedCell ? getNextSortDirection(direction) : SortDirection.Ascending
                 sortedCell = cell
 

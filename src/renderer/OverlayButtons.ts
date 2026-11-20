@@ -3,12 +3,13 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import Units from '@/helpers/Units'
 import { hoverBackground, ThemePalette } from '@/Theme'
 import { Layer } from '@/static/constants/Index'
-import { TextAlignment } from '@/static/Enums'
+import { FocusOrder, TextAlignment } from '@/static/Enums'
 
 export type ButtonRect = {
     rect: RectangleDimensions
     radius: number
     hover: number
+    focusOrder: FocusOrder
     onClick: () => void
 }
 
@@ -31,6 +32,7 @@ export function addButtonRect(
                 .color(hoverBackground(theme, button.hover))
                 .layer(Layer.Legend + 1)
                 .fixed()
+                .focusable(button.focusOrder)
                 .onClick(button.onClick)
 }
 

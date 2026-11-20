@@ -8,6 +8,7 @@ import ChartPanels from '@/renderer/ChartPanels'
 import Overlay from '@/renderer/Overlay'
 import TooltipOverlay from '@/renderer/TooltipOverlay'
 import ContextMenuOverlay from '@/renderer/ContextMenuOverlay'
+import FocusRing from '@/renderer/FocusRing'
 import Layout from '@/renderer/Layout'
 import ChartMenu from '@/renderer/ChartMenu'
 import { AnimationTiming } from '@/static/constants/Index'
@@ -30,6 +31,8 @@ export default class Renderer {
     private readonly tooltip: TooltipOverlay
 
     private readonly contextMenu: ContextMenuOverlay
+
+    private readonly focusRing: FocusRing
 
     private readonly layout = new Layout()
 
@@ -78,9 +81,11 @@ export default class Renderer {
             layout: this.layout,
             panels: this.panels,
             getSettings: () => this.settings,
+            openChartMenu: () => this.menu.open(),
             onChange: () => this.render(),
             onError
         })
+        this.focusRing = new FocusRing(() => this.input.focusBounds)
 
         this.frames = new Frames({
             queue: this.queue,
@@ -213,6 +218,7 @@ export default class Renderer {
 
         this.tooltip.reset(this.queue)
         this.contextMenu.clear(this.queue)
+        this.focusRing.clear(this.queue)
         this.queue.clear()
 
         this.frames.cancel()
@@ -229,6 +235,7 @@ export default class Renderer {
         this.input.detach()
         this.tooltip.clear(this.queue)
         this.contextMenu.clear(this.queue)
+        this.focusRing.clear(this.queue)
     }
 
     resume() {
@@ -258,7 +265,7 @@ export default class Renderer {
     }
 
     private get overlays(): Overlay[] {
-        return [this.tooltip, this.contextMenu, this.legend, this.menu.button]
+        return [this.tooltip, this.contextMenu, this.legend, this.menu.button, this.focusRing]
             .filter(overlay => overlay !== undefined)
     }
 

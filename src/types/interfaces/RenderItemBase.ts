@@ -39,6 +39,16 @@ export default abstract class RenderItemBase {
         return null
     }
 
+    getFocusBounds(): Bounds | null {
+        return this.getBounds()
+    }
+
+    getFocusPoint(): Point | null {
+        const bounds = this.getBounds()
+
+        return bounds && { x: (bounds.left + bounds.right) / 2, y: (bounds.top + bounds.bottom) / 2 }
+    }
+
     morphFrom(_previous: RenderItemBase, _morph: number): boolean {
         return false
     }

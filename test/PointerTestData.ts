@@ -13,6 +13,9 @@ export let canvas: Canvas
 export const handlers = () => {
     const onChange = jest.fn()
     const onClick = jest.fn()
+    const onKeyDown = jest.fn(() => false)
+    const onPointerMove = jest.fn()
+    const onBlur = jest.fn()
     const canDrag = jest.fn(() => false)
     const hasContextMenuAt = jest.fn(() => false)
     const scrollBy: jest.Mock = jest.fn(() => null)
@@ -21,6 +24,9 @@ export const handlers = () => {
     return {
         onChange,
         onClick,
+        onKeyDown,
+        onPointerMove,
+        onBlur,
         canDrag,
         hasContextMenuAt,
         scrollBy,

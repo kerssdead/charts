@@ -29,7 +29,8 @@ export function createRouter(items: FakeItem[] = [], settings: Partial<ChartSett
         detach: jest.fn(),
         setScrollable: jest.fn(),
         openMenu: jest.fn(),
-        closeContext: jest.fn()
+        closeContext: jest.fn(),
+        openContextMenuAt: jest.fn((_point: Point) => true)
     }
 
     let handlers!: PointerHandlers
@@ -44,9 +45,11 @@ export function createRouter(items: FakeItem[] = [], settings: Partial<ChartSett
 
     const queue = {
         items,
+        version: 1,
         findTop: (predicate: (item: FakeItem) => boolean) => [...items].reverse().find(predicate)
     }
     const panels = { scrollBy: jest.fn(() => true), getScrollDrag: jest.fn(() => null) }
+    const openChartMenu = jest.fn(() => false)
     const onChange = jest.fn()
     const onError = jest.fn()
 
@@ -55,9 +58,10 @@ export function createRouter(items: FakeItem[] = [], settings: Partial<ChartSett
         layout: { window: WINDOW },
         panels,
         getSettings: () => settings as ChartSettings,
+        openChartMenu,
         onChange,
         onError
     } as unknown as ConstructorParameters<typeof InputRouter>[1])
 
-    return { router, pointer, handlers, getWindow, panels, onChange, onError }
+    return { router, pointer, handlers, getWindow, panels, onChange, onError, openChartMenu }
 }

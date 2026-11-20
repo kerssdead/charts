@@ -3,6 +3,7 @@ import ItemData from '@/types/ItemData'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import { Tooltip } from '@/types/Tooltip'
 import { ItemFlag as f } from '@/static/ItemFlag'
+import { FocusOrder } from '@/static/Enums'
 
 export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemBase> {
     readonly shape: S
@@ -113,6 +114,12 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
 
     contextMenu() {
         this.current.set(f.ContextMenu, true)
+
+        return this
+    }
+
+    focusable(order: FocusOrder = FocusOrder.Chart) {
+        this.current.focusOrder = order
 
         return this
     }

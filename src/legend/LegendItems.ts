@@ -5,7 +5,7 @@ import { grayScale, withAlpha } from '@/helpers/Color'
 import { stringWidth } from '@/helpers/Text'
 import TextResources from '@/static/TextResources'
 import { DEFAULT_FONT_SIZE } from '@/static/constants/Index'
-import { TextAlignment } from '@/static/Enums'
+import { FocusOrder, TextAlignment } from '@/static/Enums'
 import { addButtonRect, addButtonText } from '@/renderer/OverlayButtons'
 import { LegendEntry } from '@/legend/LegendLayout'
 import {
@@ -46,6 +46,7 @@ export function addLegendEntry(
         rect: { x, y, width, height: ITEM_HEIGHT },
         radius: ITEM_CORNER_RADIUS,
         hover,
+        focusOrder: FocusOrder.Legend,
         onClick
     }, theme)
 
@@ -86,6 +87,7 @@ export function addResetButton(
         rect: button,
         radius: BUTTON_CORNER_RADIUS,
         hover: state.hover,
+        focusOrder: FocusOrder.Legend,
         onClick: state.onClick
     }, state.theme)
 

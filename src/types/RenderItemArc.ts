@@ -221,6 +221,18 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
         }
     }
 
+    getFocusBounds() {
+        return null
+    }
+
+    getFocusPoint() {
+        const { x, y, radius, innerRadius, startAngle, endAngle, pull } = this.canvas
+        const middle = (startAngle + endAngle) / 2
+        const distance = pull + (radius + innerRadius) / 2
+
+        return { x: x + distance * Math.cos(middle), y: y + distance * Math.sin(middle) }
+    }
+
     animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp): void {
         const k = item.hoverFactor(isBackward, now, AnimationTiming.hover)
 

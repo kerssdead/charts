@@ -7,11 +7,15 @@ import { setFontFamily } from '@/static/Typography'
 import { clearTextWidths } from '@/helpers/Text'
 import { setLocalization } from '@/static/Localization'
 import { normalize } from '@/charts/Settings'
+import TableHint from '@/ui/TableHint'
+import { isMenuEnabled } from '@/renderer/ChartMenu'
+import { getAccessibleName } from '@/charts/AccessibleName'
 import ViewState from '@/charts/ViewState'
 import ChartFailure from '@/ui/ChartFailure'
 import { applyFallbackHostSize, applyHostSize } from '@/helpers/HostSize'
 import CanvasHost from '@/renderer/CanvasHost'
-import { FontEvents } from '@/static/Enums'
+import { Attribute, FontEvents } from '@/static/Enums'
+import { onReducedMotionChange } from '@/helpers/Motion'
 import RendererTheme from '@/renderer/RendererTheme'
 
 export default class Chart {
@@ -38,6 +42,8 @@ export default class Chart {
 
     private host!: CanvasHost
 
+    private tableHint!: TableHint
+
     private renderer!: Renderer
 
     private viewState!: ViewState
@@ -55,6 +61,15 @@ export default class Chart {
         this.applySettings(this.source)
     }
 
+    private readonly onMotionPreferenceChange = () => {
+        if (this.isDestroyed || this.failure.isActive)
+            return
+
+        this.applySettings(this.source)
+    }
+
+    private stopListeningToMotionPreference = () => {}
+
     constructor(element: HTMLElement, settings: ChartOptions) {
         this.element = element
         this.failure = new ChartFailure(element)
@@ -62,6 +77,7 @@ export default class Chart {
         this.start(settings)
 
         document.fonts?.addEventListener(FontEvents.LoadingDone, this.onFontsLoaded)
+        this.stopListeningToMotionPreference = onReducedMotionChange(this.onMotionPreferenceChange)
     }
 
     render() {
@@ -80,6 +96,7 @@ export default class Chart {
         this.isDestroyed = true
 
         document.fonts?.removeEventListener(FontEvents.LoadingDone, this.onFontsLoaded)
+        this.stopListeningToMotionPreference()
 
         this.stop()
     }
@@ -101,6 +118,9 @@ export default class Chart {
                 onAttach: () => this.resume()
             })
 
+            this.tableHint = new TableHint(element, this.host.canvas)
+            this.applyAccessibleName()
+
             this.theme.initialize(this.onThemeChange, this.settings.isDarkThemeFunction)
 
             this.renderer = new Renderer(
@@ -121,6 +141,7 @@ export default class Chart {
     }
 
     private stop() {
+        this.tableHint?.remove()
         this.host?.destroy()
 
         this.theme.detach()
@@ -180,6 +201,7 @@ export default class Chart {
         this.source = settings
 
         this.normalizeAndApply(settings)
+        this.applyAccessibleName()
 
         this.theme.updatePalette(this.settings.isDarkThemeFunction)
         this.renderer.apply(this.settings)
@@ -196,6 +218,19 @@ export default class Chart {
 
         this.bindMenuActions()
         applyHostSize(this.element, this.settings)
+    }
+
+    private applyAccessibleName() {
+        this.host.canvas.setAttribute(Attribute.AriaLabel, getAccessibleName(this.settings))
+        this.tableHint.apply(isMenuEnabled(this.settings))
+        this.applyKeyboardFocus()
+    }
+
+    private applyKeyboardFocus() {
+        if (this.settings.disableInteractions)
+            this.host.canvas.removeAttribute(Attribute.TabIndex)
+        else
+            this.host.canvas.setAttribute(Attribute.TabIndex, '0')
     }
 
     private bindMenuActions() {

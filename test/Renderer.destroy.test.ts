@@ -1,4 +1,4 @@
-import { createRenderer, createSettings, mockContextMenu, mockFrames, mockInput, mockMenu, mockPanels, mockTooltip } from './RendererTestData'
+import { createRenderer, createSettings, mockContextMenu, mockFocusRing, mockFrames, mockInput, mockMenu, mockPanels, mockTooltip } from './RendererTestData'
 
 describe('Destroying renderer', () => {
     it('Should clear every render dependency', () => {
@@ -12,6 +12,7 @@ describe('Destroying renderer', () => {
             mockMenu().remove,
             mockTooltip().reset,
             mockContextMenu().clear,
+            mockFocusRing().clear,
             mockFrames().cancel,
             mockPanels().clear
         ].every(mock => mock.mock.calls.length > 0))

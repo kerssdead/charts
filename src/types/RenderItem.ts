@@ -43,6 +43,8 @@ export default class RenderItem {
 
     onClick?: () => void
 
+    focusOrder: number | null = null
+
     animation: AnimationData = new AnimationData()
 
     readonly shape: RenderItemBase
@@ -220,6 +222,14 @@ export default class RenderItem {
 
     hasContextMenuAt(point: Point) {
         return this.is(f.ContextMenu) && !this.isInitializing && this.contains(point)
+    }
+
+    get focusPoint() {
+        return this.shape.getFocusPoint()
+    }
+
+    get focusBounds() {
+        return this.shape.getFocusBounds()
     }
 
     contains(point: Point) {

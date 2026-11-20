@@ -12,6 +12,10 @@ import { hasMenu } from '@/charts/ChartDefinitions'
 import { ThemePalette } from '@/Theme'
 import { IsDisabled } from '@/types/ChartViewState'
 
+export function isMenuEnabled(settings: ChartSettings) {
+    return !settings.disableInteractions && !settings.disableMenu && settings.charts.some(hasMenu)
+}
+
 export default class ChartMenu {
     ratio: number = 1
 
@@ -46,8 +50,7 @@ export default class ChartMenu {
         this.theme = theme
         this.buttons = undefined
 
-        if (settings.disableInteractions || settings.disableMenu
-            || !settings.charts.some(hasMenu)) {
+        if (!isMenuEnabled(settings)) {
             this.remove()
         } else if (!this.button) {
             this.button = new MenuButton()
@@ -58,6 +61,14 @@ export default class ChartMenu {
                     this.onOpen({ x: bounds.right, y: bounds.bottom })
             }
         }
+    }
+
+    open() {
+        const onClick = this.button?.onClick
+
+        onClick?.()
+
+        return !!onClick
     }
 
     remove() {

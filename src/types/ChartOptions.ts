@@ -26,6 +26,8 @@ export interface CommonOptions {
 
     title?: string
 
+    ariaLabel?: string
+
     templateId?: string
 
     valuePostfix?: string

@@ -11,6 +11,9 @@ import PointerWheel from '@/renderer/PointerWheel'
 type PointerHandlers = {
     onClick: (point: Point) => void
     onChange: () => void
+    onKeyDown: (event: KeyboardEvent) => boolean
+    onPointerMove: () => void
+    onBlur: () => void
     canDrag: (point: Point) => boolean
     hasContextMenuAt: (point: Point) => boolean
     scrollBy: (point: Point, delta: number) => boolean | null
@@ -82,6 +85,8 @@ export default class Pointer {
         this.listen(this.canvas, Events.PointerLeave, () => this.setPosition(null))
         this.listen(this.canvas, Events.ContextMenu, event => this.onContextMenu(event))
         this.listen(this.canvas, Events.Click, event => this.onClick(event))
+        this.listen(this.canvas, Events.KeyDown, event => this.onKeyDown(event))
+        this.listen(this.canvas, Events.FocusOut, () => this.handlers.onBlur())
         this.listen(document, Events.Click, event => {
             if (event.target !== this.canvas)
                 this.closeContext()
@@ -161,6 +166,11 @@ export default class Pointer {
         return { x: Math.round(event.offsetX), y: Math.round(event.offsetY) }
     }
 
+    private onKeyDown(event: KeyboardEvent) {
+        if (this.handlers.onKeyDown(event))
+            event.preventDefault()
+    }
+
     private onClick(event: MouseEvent) {
         const isOpen = this.context != null
 
@@ -174,6 +184,8 @@ export default class Pointer {
     private onMove(event: PointerEvent) {
         if (!event.isPrimary)
             return
+
+        this.handlers.onPointerMove()
 
         if (!this.onDrag(event))
             this.setPosition(this.toPoint(event))
@@ -263,16 +275,19 @@ export default class Pointer {
         return !Rectangle.same(view, previous)
     }
 
-    private onContextMenu(event: MouseEvent) {
-        const point = this.toPoint(event)
-
+    openContextMenuAt(point: Point) {
         if (!this.handlers.hasContextMenuAt(point))
-            return
-
-        event.preventDefault()
+            return false
 
         this.context = { point, isOpenedFromButton: false }
 
         this.handlers.onChange()
+
+        return true
+    }
+
+    private onContextMenu(event: MouseEvent) {
+        if (this.openContextMenuAt(this.toPoint(event)))
+            event.preventDefault()
     }
 }

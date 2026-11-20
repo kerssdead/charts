@@ -4,6 +4,7 @@ import ChartItem from '@/types/ChartItem'
 import { ChartType, LegendPlace } from '@/static/Enums'
 import { deepClone } from '@/helpers/Collections'
 import { getChartDefinition, hasLegend } from '@/charts/ChartDefinitions'
+import { prefersReducedMotion } from '@/helpers/Motion'
 import { parseEnumInput } from '@/helpers/EnumInput'
 import { applyDefaultColors } from '@/charts/DefaultColors'
 
@@ -44,6 +45,7 @@ export function normalize(source: ChartOptions, scope?: Element): ChartSettings 
 
     return {
         ...settings,
+        staticMode: settings.staticMode || prefersReducedMotion(),
         enableTooltip: !settings.disableInteractions && settings.enableTooltip,
         enableLegend: charts.some(hasLegend) && settings.enableLegend
     }

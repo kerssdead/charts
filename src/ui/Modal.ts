@@ -1,4 +1,5 @@
-import { Icon, Tag } from '@/static/Enums'
+import { Attribute, Icon, Tag } from '@/static/Enums'
+import TextResources from '@/static/TextResources'
 import { getFontFamily } from '@/static/Typography'
 
 const enum ModalClasses {
@@ -14,6 +15,8 @@ const enum ModalClasses {
 
     Dark = 'o-dark'
 }
+
+let titleCount = 0
 
 class Modal {
     private readonly modal: HTMLDialogElement
@@ -59,10 +62,16 @@ class Modal {
         titleSpan.classList.add(ModalClasses.Title)
         titleSpan.textContent = title ?? ''
 
+        if (title) {
+            titleSpan.id = `${ ModalClasses.Title }-${ ++titleCount }`
+            this.modal.setAttribute(Attribute.AriaLabelledBy, titleSpan.id)
+        }
+
         const closeButton = document.createElement(Tag.Button)
 
         closeButton.classList.add(ModalClasses.Close)
         closeButton.textContent = Icon.Close
+        closeButton.setAttribute(Attribute.AriaLabel, TextResources.close)
 
         const header = document.createElement(Tag.Div)
 

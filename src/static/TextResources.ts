@@ -37,6 +37,8 @@ const DEFAULT_TEXTS = {
 
     saveCsv: 'Save as CSV',
 
+    close: 'Close',
+
     defaultImageName: 'chart',
 
     defaultTableName: 'table',

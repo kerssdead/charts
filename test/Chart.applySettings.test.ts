@@ -84,7 +84,7 @@ describe('Applying settings', () => {
         chart.applySettings(settings('Fixed'))
 
         expect(children())
-            .toEqual([Tag.Canvas])
+            .toEqual([Tag.Canvas, Tag.Span])
     })
 
     it('Should recover when previous settings failed', () => {
@@ -94,7 +94,7 @@ describe('Applying settings', () => {
         chart.applySettings(settings('Fixed'))
 
         expect(children())
-            .toEqual([Tag.Canvas])
+            .toEqual([Tag.Canvas, Tag.Span])
     })
 
     it('Should show one error message when recovery fails again', () => {
@@ -114,7 +114,7 @@ describe('Applying settings', () => {
         chart.applySettings(settings(BROKEN_TITLE, () => chart.applySettings(settings('Fixed'))))
 
         expect(children())
-            .toEqual([Tag.Canvas])
+            .toEqual([Tag.Canvas, Tag.Span])
     })
 
     it('Should not show an error message when onError destroys the chart', () => {

@@ -7,7 +7,7 @@ import Queue from '@/render/Queue'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import HoverProgress from '@/types/HoverProgress'
 import { AnimationTiming } from '@/static/constants/Index'
-import { Icon } from '@/static/Enums'
+import { FocusOrder, Icon } from '@/static/Enums'
 
 const WIDTH = 28
 
@@ -62,6 +62,7 @@ export default class MenuButton extends Overlay {
                 rect: bounds,
                 radius: 4,
                 hover: this.hover.value,
+                focusOrder: FocusOrder.Menu,
                 onClick: () => this.onClick?.()
             }, theme)
             addButtonText(items, units, { rect: bounds, text: Icon.ThreeDots, size: FONT_SIZE }, theme)

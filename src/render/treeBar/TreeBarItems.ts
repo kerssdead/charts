@@ -21,5 +21,6 @@ export function addClickArea(
                 .fill()
                 .color(TRANSPARENT)
                 .layer(Layer.Base)
+                .focusable()
                 .onClick(action)
 }

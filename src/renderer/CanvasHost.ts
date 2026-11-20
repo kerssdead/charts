@@ -1,6 +1,6 @@
 import { createCanvas } from '@/helpers/Canvas'
 import { getPixelSize } from '@/helpers/HostSize'
-import { Events } from '@/static/Enums'
+import { ChartClasses, Events } from '@/static/Enums'
 import Size from '@/types/Size'
 
 type CanvasHostEvents = {
@@ -33,6 +33,7 @@ export default class CanvasHost {
     constructor(element: HTMLElement, events: CanvasHostEvents) {
         this.events = events
 
+        this.canvas.classList.add(ChartClasses.Canvas)
         element.appendChild(this.canvas)
 
         this.observer = this.createObserver(element)

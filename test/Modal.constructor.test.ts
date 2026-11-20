@@ -1,6 +1,7 @@
 import Modal from '@/ui/Modal'
 import { FakeElement, installFakeDocument } from './FakeDocument'
-import { Tag } from '@/static/Enums'
+import { Attribute, Tag } from '@/static/Enums'
+import TextResources from '@/static/TextResources'
 import { setFontFamily, SYSTEM_FONT_FAMILY } from '@/static/Typography'
 
 const create = (isDark?: boolean) => {
@@ -128,5 +129,37 @@ describe('Modal content', () => {
 
         expect(header?.elements.find(child => child.tagName === Tag.Span)?.textContent)
             .toBe('')
+    })
+
+    it('Should name the close button', () => {
+        const { element } = create()
+
+        expect(closeButton(element).getAttribute(Attribute.AriaLabel))
+            .toBe(TextResources.close)
+    })
+
+    it('Should label the dialog with its title', () => {
+        const { element } = create()
+
+        const title = element.elements[0].elements.find(child => child.tagName === Tag.Span) as FakeElement
+
+        expect([title.id !== '', element.getAttribute(Attribute.AriaLabelledBy)])
+            .toEqual([true, title.id])
+    })
+
+    it('Should give every dialog title its own id', () => {
+        const ids = [create(), create()].map(({ element }) => element.getAttribute(Attribute.AriaLabelledBy))
+
+        expect(ids[0])
+            .not.toBe(ids[1])
+    })
+
+    it('Should not label the dialog without a title', () => {
+        const body = installFakeDocument()
+
+        new Modal(undefined, undefined)
+
+        expect((body.elements[0] as FakeElement).getAttribute(Attribute.AriaLabelledBy))
+            .toBeNull()
     })
 })

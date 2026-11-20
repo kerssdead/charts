@@ -288,4 +288,21 @@ describe('Normalizing settings', () => {
         expect([settings.charts[0].type, settings.legendPlace])
             .toEqual([ChartType.TreeBar, LegendPlace.Right])
     })
+
+    it.each([
+        [false, false, false],
+        [true, false, true],
+        [false, true, true]
+    ])('Should resolve static mode %s with reduced motion %s to %s', (staticMode, reducedMotion, expected) => {
+        Object.assign(globalThis, { matchMedia: () => ({ matches: reducedMotion }) })
+
+        try {
+            const settings = normalize({ staticMode, charts: [] } as unknown as ChartSettings)
+
+            expect(settings.staticMode)
+                .toBe(expected)
+        } finally {
+            delete (globalThis as Record<string, unknown>).matchMedia
+        }
+    })
 })

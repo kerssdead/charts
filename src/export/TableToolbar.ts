@@ -1,5 +1,5 @@
 import TextResources from '@/static/TextResources'
-import { Events, TableClasses, Tag } from '@/static/Enums'
+import { Attribute, Events, TableClasses, Tag } from '@/static/Enums'
 import { button, div } from '@/export/TableElements'
 
 const COPY_FEEDBACK_DURATION = 1500
@@ -26,6 +26,7 @@ export default class TableToolbar {
             filter.classList.add(TableClasses.Filter)
             filter.type = 'search'
             filter.placeholder = TextResources.filter
+            filter.setAttribute(Attribute.AriaLabel, TextResources.filter)
             filter.addEventListener(Events.Input, () => options.onFilter(filter.value))
 
             toolbar.append(filter)

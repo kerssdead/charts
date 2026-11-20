@@ -33,6 +33,8 @@ export const enum Events {
 
     Focus = 'focus',
 
+    FocusOut = 'focusout',
+
     KeyDown = 'keydown',
 
     PointerDown = 'pointerdown',
@@ -175,6 +177,8 @@ export const enum TableClasses {
 
     Sortable = 'o-table-sortable',
 
+    SortButton = 'o-table-sort-button',
+
     ColumnHighlight = 'o-table-column-highlight'
 }
 
@@ -183,7 +187,27 @@ export const enum Attribute {
 
     AriaSort = 'aria-sort',
 
-    AriaHidden = 'aria-hidden'
+    AriaLabel = 'aria-label',
+
+    AriaLabelledBy = 'aria-labelledby',
+
+    AriaDescribedBy = 'aria-describedby',
+
+    AriaHidden = 'aria-hidden',
+
+    TabIndex = 'tabindex'
+}
+
+export const enum FocusOrder {
+    Chart = 0,
+
+    Legend = 1,
+
+    Menu = 2
+}
+
+export const enum ChartClasses {
+    Canvas = 'o-canvas'
 }
 
 export const enum TableColumnKey {
@@ -193,6 +217,8 @@ export const enum TableColumnKey {
 }
 
 export const enum AriaRole {
+    Img = 'img',
+
     Table = 'table',
 
     RowGroup = 'rowgroup',

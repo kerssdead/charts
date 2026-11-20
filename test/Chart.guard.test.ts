@@ -12,7 +12,7 @@ jest.mock('@/renderer/Renderer', () => jest.requireActual('./ChartRendererMock')
 jest.mock('@/renderer/CanvasHost', () => ({
     __esModule: true,
     default: class {
-        canvas = { isConnected: true }
+        canvas = { isConnected: true, setAttribute() {}, removeAttribute() {} }
 
         isAttached = true
 

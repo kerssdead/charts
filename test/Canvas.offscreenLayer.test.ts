@@ -3,6 +3,8 @@ import { offscreenLayer } from '@/helpers/Canvas'
 class FakeCanvas {
     style = {}
 
+    setAttribute() {}
+
     resizes = 0
 
     private size = { width: 0, height: 0 }

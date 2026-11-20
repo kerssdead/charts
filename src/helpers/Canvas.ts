@@ -1,5 +1,5 @@
 import fail from '@/helpers/Errors'
-import { ErrorType, Tag } from '@/static/Enums'
+import { AriaRole, Attribute, ErrorType, Tag } from '@/static/Enums'
 import { adjustColor, withAlpha } from '@/helpers/Color'
 import Styles from '@/static/constants/Styles'
 
@@ -142,6 +142,7 @@ export function createCanvas() {
     canvas.width = 0
     canvas.height = 0
     canvas.style.display = Styles.Display.Block
+    canvas.setAttribute(Attribute.Role, AriaRole.Img)
 
     return canvas
 }

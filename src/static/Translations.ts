@@ -20,6 +20,7 @@ const TraditionalChinese: TextOverrides = {
     copied: '已複製',
     copyFailed: '複製失敗',
     saveCsv: '儲存為 CSV',
+    close: '關閉',
     defaultImageName: '圖表',
     defaultTableName: '表格'
 }
@@ -45,6 +46,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'Copié',
         copyFailed: 'Échec de la copie',
         saveCsv: 'Enregistrer en CSV',
+        close: 'Fermer',
         defaultImageName: 'graphique',
         defaultTableName: 'tableau'
     },
@@ -69,6 +71,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'Kopiert',
         copyFailed: 'Kopieren fehlgeschlagen',
         saveCsv: 'Als CSV speichern',
+        close: 'Schließen',
         defaultImageName: 'diagramm',
         defaultTableName: 'tabelle'
     },
@@ -93,6 +96,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'Copiado',
         copyFailed: 'Error al copiar',
         saveCsv: 'Guardar como CSV',
+        close: 'Cerrar',
         defaultImageName: 'grafico',
         defaultTableName: 'tabla'
     },
@@ -117,6 +121,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'Copiado',
         copyFailed: 'Falha ao copiar',
         saveCsv: 'Salvar como CSV',
+        close: 'Fechar',
         defaultImageName: 'grafico',
         defaultTableName: 'tabela'
     },
@@ -141,6 +146,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: '已复制',
         copyFailed: '复制失败',
         saveCsv: '另存为 CSV',
+        close: '关闭',
         defaultImageName: '图表',
         defaultTableName: '表格'
     },
@@ -173,6 +179,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'コピーしました',
         copyFailed: 'コピーに失敗しました',
         saveCsv: 'CSV として保存',
+        close: '閉じる',
         defaultImageName: 'グラフ',
         defaultTableName: '表'
     },
@@ -197,6 +204,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'Скопировано',
         copyFailed: 'Не удалось скопировать',
         saveCsv: 'Сохранить как CSV',
+        close: 'Закрыть',
         defaultImageName: 'диаграмма',
         defaultTableName: 'таблица'
     },
@@ -221,6 +229,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: '복사됨',
         copyFailed: '복사 실패',
         saveCsv: 'CSV로 저장',
+        close: '닫기',
         defaultImageName: '차트',
         defaultTableName: '표'
     },
@@ -245,6 +254,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'Copiato',
         copyFailed: 'Copia non riuscita',
         saveCsv: 'Salva come CSV',
+        close: 'Chiudi',
         defaultImageName: 'grafico',
         defaultTableName: 'tabella'
     },
@@ -269,6 +279,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'Gekopieerd',
         copyFailed: 'Kopiëren mislukt',
         saveCsv: 'Opslaan als CSV',
+        close: 'Sluiten',
         defaultImageName: 'grafiek',
         defaultTableName: 'tabel'
     },
@@ -293,6 +304,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'Kopyalandı',
         copyFailed: 'Kopyalanamadı',
         saveCsv: 'CSV olarak kaydet',
+        close: 'Kapat',
         defaultImageName: 'grafik',
         defaultTableName: 'tablo'
     },
@@ -317,6 +329,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'تم النسخ',
         copyFailed: 'فشل النسخ',
         saveCsv: 'حفظ بصيغة CSV',
+        close: 'إغلاق',
         defaultImageName: 'مخطط',
         defaultTableName: 'جدول'
     },
@@ -341,6 +354,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'कॉपी हो गया',
         copyFailed: 'कॉपी विफल रहा',
         saveCsv: 'CSV के रूप में सहेजें',
+        close: 'बंद करें',
         defaultImageName: 'चार्ट',
         defaultTableName: 'तालिका'
     },
@@ -365,6 +379,7 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         copied: 'Skopiowano',
         copyFailed: 'Nie udało się skopiować',
         saveCsv: 'Zapisz jako CSV',
+        close: 'Zamknij',
         defaultImageName: 'wykres',
         defaultTableName: 'tabela'
     }

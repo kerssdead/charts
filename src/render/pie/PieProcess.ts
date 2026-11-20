@@ -175,7 +175,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
         if (isDisabled)
             arc.ghost()
         else if (!groupedSectors)
-            arc.onClick(() => {
+            arc.focusable().onClick(() => {
                 this.state.togglePinned(sector)
                 this.onChange?.()
             })

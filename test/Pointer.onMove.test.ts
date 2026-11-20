@@ -21,6 +21,17 @@ describe('Pointer move', () => {
             .toEqual({ x: 10, y: 20 })
     })
 
+    it('Should report primary pointer moves to the handler', () => {
+        const result = handlers()
+
+        pointer(result, true)
+        canvas.dispatchEvent(event(Events.PointerMove, { isPrimary: true, pointerId: 1, offsetX: 1, offsetY: 2 }))
+        canvas.dispatchEvent(event(Events.PointerMove, { isPrimary: false, offsetX: 1, offsetY: 2 }))
+
+        expect(result.onPointerMove)
+            .toHaveBeenCalledTimes(1)
+    })
+
     it('Should ignore non-primary pointers', () => {
         const result = handlers()
         const target = pointer(result, true)

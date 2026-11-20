@@ -18,7 +18,12 @@ function attach() {
     const header = new FakeElement('div')
     const body = new FakeElement('div')
 
-    header.append(new FakeElement('div'), new FakeElement('div'))
+    const nameCell = new FakeElement('div')
+    const amountCell = new FakeElement('div')
+
+    nameCell.textContent = 'Name'
+    amountCell.textContent = 'Amount'
+    header.append(nameCell, amountCell)
 
     const rows = data.values.map(value => {
         const row = new FakeElement('div')
@@ -56,7 +61,7 @@ describe('Attaching table sorting', () => {
     it('Should sort by value ascending on first click', () => {
         const { amountHeader, order, sorts } = attach()
 
-        amountHeader.click()
+        amountHeader.elements[0].click()
 
         expect([order(), sorts()])
             .toEqual(['bac', [SortDirection.None, SortDirection.Ascending]])
@@ -65,8 +70,8 @@ describe('Attaching table sorting', () => {
     it('Should sort descending on second click', () => {
         const { amountHeader, order, sorts } = attach()
 
-        amountHeader.click()
-        amountHeader.click()
+        amountHeader.elements[0].click()
+        amountHeader.elements[0].click()
 
         expect([order(), sorts()])
             .toEqual(['cab', [SortDirection.None, SortDirection.Descending]])
@@ -75,9 +80,9 @@ describe('Attaching table sorting', () => {
     it('Should restore the original order on third click', () => {
         const { amountHeader, order, sorts } = attach()
 
-        amountHeader.click()
-        amountHeader.click()
-        amountHeader.click()
+        amountHeader.elements[0].click()
+        amountHeader.elements[0].click()
+        amountHeader.elements[0].click()
 
         expect([order(), sorts()])
             .toEqual(['bca', [SortDirection.None, SortDirection.None]])
@@ -86,7 +91,7 @@ describe('Attaching table sorting', () => {
     it('Should sort by name from the first header cell', () => {
         const { nameHeader, order } = attach()
 
-        nameHeader.click()
+        nameHeader.elements[0].click()
 
         expect(order())
             .toBe('abc')
@@ -95,11 +100,37 @@ describe('Attaching table sorting', () => {
     it('Should start ascending and reset the other cell when switching columns', () => {
         const { nameHeader, amountHeader, order, sorts } = attach()
 
-        amountHeader.click()
-        amountHeader.click()
-        nameHeader.click()
+        amountHeader.elements[0].click()
+        amountHeader.elements[0].click()
+        nameHeader.elements[0].click()
 
         expect([order(), sorts()])
             .toEqual(['abc', [SortDirection.Ascending, SortDirection.None]])
+    })
+
+    it('Should wrap every header text into a button', () => {
+        const { nameHeader, amountHeader } = attach()
+
+        const buttons = [nameHeader, amountHeader].map(cell => cell.elements[0])
+
+        expect([
+            buttons.map(button => [button.tagName, button.type, button.text]),
+            [nameHeader, amountHeader].map(cell => cell.textContent)
+        ]).toEqual([
+            [['button', 'button', 'Name'], ['button', 'button', 'Amount']],
+            ['', '']
+        ])
+    })
+
+    it('Should keep the sort state on the header cell and style the button', () => {
+        const { amountHeader } = attach()
+
+        amountHeader.elements[0].click()
+
+        expect([
+            amountHeader.getAttribute(Attribute.AriaSort),
+            amountHeader.elements[0].classList.contains(TableClasses.SortButton),
+            amountHeader.elements[0].getAttribute(Attribute.AriaSort)
+        ]).toEqual([SortDirection.Ascending, true, null])
     })
 })

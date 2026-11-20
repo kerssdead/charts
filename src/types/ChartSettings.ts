@@ -25,6 +25,8 @@ export default interface ChartSettings {
 
     title: string
 
+    ariaLabel?: string
+
     templateId: string
 
     valuePostfix: string | undefined

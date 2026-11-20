@@ -1,3 +1,4 @@
+import { ChartClasses } from '@/static/Enums'
 import CanvasHost from '@/renderer/CanvasHost'
 import { FakeResizeObserver, installResizeEnvironment, removeResizeEnvironment } from './FakeResizeEnvironment'
 
@@ -36,5 +37,12 @@ describe('Creating canvas host', () => {
             .not.toThrow()
         expect(environment.observer.targets)
             .toEqual([environment.element])
+    })
+
+    it('Should mark the canvas for styling', () => {
+        const { host } = create()
+
+        expect(host.canvas.classList.contains(ChartClasses.Canvas))
+            .toBe(true)
     })
 })

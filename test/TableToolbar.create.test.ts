@@ -1,6 +1,6 @@
 import TableToolbar, { TableToolbarOptions } from '@/export/TableToolbar'
 import TextResources from '@/static/TextResources'
-import { Events, TableClasses, Tag } from '@/static/Enums'
+import { Attribute, Events, TableClasses, Tag } from '@/static/Enums'
 import { FakeElement, installFakeDocument } from './FakeDocument'
 
 function installClipboard(clipboard: Partial<Clipboard> | undefined) {
@@ -141,5 +141,12 @@ describe('Creating table toolbar', () => {
 
         expect([feedback, copy.textContent])
             .toEqual([TextResources.copied, TextResources.copy])
+    })
+
+    it('Should label the filter input', () => {
+        const { toolbar } = create()
+
+        expect(toolbar.findByClass(TableClasses.Filter)[0].getAttribute(Attribute.AriaLabel))
+            .toBe(TextResources.filter)
     })
 })

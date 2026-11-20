@@ -5,6 +5,7 @@ import TooltipOverlay from '@/renderer/TooltipOverlay'
 import ContextMenuOverlay from '@/renderer/ContextMenuOverlay'
 import InputRouter from '@/renderer/InputRouter'
 import Frames from '@/renderer/Frames'
+import FocusRing from '@/renderer/FocusRing'
 import Legend from '@/legend/Legend'
 import ViewState from '@/charts/ViewState'
 import ChartSettings from '@/types/ChartSettings'
@@ -48,7 +49,8 @@ jest.mock('@/renderer/ChartMenu', () => ({
         ratio: 1,
         apply: jest.fn(),
         remove: jest.fn(),
-        getButtons: jest.fn(() => [])
+        getButtons: jest.fn(() => []),
+        open: jest.fn(() => false)
     }))
 }))
 
@@ -67,6 +69,14 @@ jest.mock('@/renderer/ContextMenuOverlay', () => ({
     default: jest.fn(() => ({
         menu: undefined,
         fixedButtons: undefined,
+        clear: jest.fn(),
+        update: jest.fn(() => false)
+    }))
+}))
+
+jest.mock('@/renderer/FocusRing', () => ({
+    __esModule: true,
+    default: jest.fn(() => ({
         clear: jest.fn(),
         update: jest.fn(() => false)
     }))
@@ -121,6 +131,7 @@ export const mockMenu = () => lastResult(ChartMenu)
 export const mockPanels = () => lastResult(ChartPanels)
 export const mockPanelsQueue = () => (ChartPanels as unknown as jest.Mock).mock.calls.at(-1)[0]
 export const mockTooltip = () => lastResult(TooltipOverlay)
+export const mockFocusRing = () => lastResult(FocusRing)
 export const mockContextMenu = () => lastResult(ContextMenuOverlay)
 export const mockInput = () => lastResult(InputRouter)
 export const mockLegend = () => lastResult(Legend)

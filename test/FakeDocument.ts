@@ -19,6 +19,8 @@ export class FakeElement {
 
     title = ''
 
+    id = ''
+
     hidden = false
 
     type = ''
@@ -86,6 +88,10 @@ export class FakeElement {
 
     setAttribute(name: string, value: string) {
         this.attributes.set(name, value)
+    }
+
+    removeAttribute(name: string) {
+        this.attributes.delete(name)
     }
 
     getAttribute(name: string) {

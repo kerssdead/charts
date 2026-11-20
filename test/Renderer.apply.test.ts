@@ -2,6 +2,7 @@ import {
     createRenderer,
     createSettings,
     mockContextMenu,
+    mockFocusRing,
     mockFrames,
     mockFramesScene,
     mockInput,
@@ -148,6 +149,6 @@ describe('Applying renderer settings', () => {
         renderer.apply(createSettings())
 
         expect(mockFramesScene?.getOverlays())
-            .toEqual([mockTooltip(), mockContextMenu()])
+            .toEqual([mockTooltip(), mockContextMenu(), mockFocusRing()])
     })
 })
