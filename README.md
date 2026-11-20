@@ -1,3 +1,5 @@
+<p align="center"><img src="logo.svg" width="256" alt="OCharts"></p>
+
 # OCharts
 
 TypeScript canvas charts: plot, pie, gauge, treemap, segmented bar and tree bar.

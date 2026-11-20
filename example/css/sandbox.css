@@ -156,11 +156,18 @@ button {
 }
 
 .toolbar h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     flex-grow: 1;
     margin: 0;
     font-size: 20px;
     font-weight: 700;
     letter-spacing: -.01em;
+}
+
+.toolbar h1 img {
+    height: 28px;
 }
 
 .toolbar-actions {
