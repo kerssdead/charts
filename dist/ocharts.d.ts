@@ -92,6 +92,7 @@ declare const DEFAULT_TEXTS: {
 	close: string;
 	defaultImageName: string;
 	defaultTableName: string;
+	max: string;
 	sortAscending: string;
 	sortDescending: string;
 };

@@ -1,5 +1,6 @@
 import { buildItems, createPlot, createSeries } from './PlotTestData'
 import PlotSeries from '@/types/PlotSeries'
+import PlotData from '@/types/data/PlotData'
 import RenderItemLine from '@/types/RenderItemLine'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import PlotAxisLines from '@/render/plot/PlotAxisLines'
@@ -13,8 +14,8 @@ jest.mock('@/helpers/Text', () => ({
     stringWidth: (text: string | undefined, font: number = 14) => (text?.length ?? 0) * font / 2
 }))
 
-const getLines = (all: PlotSeries[], theme: ThemePalette = LIGHT_THEME) => {
-    const plot = createPlot(all)
+const getLines = (all: PlotSeries[], theme: ThemePalette = LIGHT_THEME, data: Partial<PlotData> = {}) => {
+    const plot = createPlot(all, data)
     const lines = new PlotAxisLines(plot.layout, plot.seriesGroups, theme)
     const items = buildItems((builder: QueueItemsBuilder) => lines.addItems(builder))
 
@@ -102,5 +103,20 @@ describe('Adding plot axis lines', () => {
 
         expect(lines.has('axis-y'))
             .toBe(true)
+    })
+
+    it('Should draw the y max grid line dashed above data', () => {
+        const { lines } = getLines([createSeries(PlotType.Column, [400])], DARK_THEME, { yMax: 100 })
+        const max = lines.get('grid-y-100')
+
+        expect([(max?.shape as RenderItemLine).dash, max?.stroke, max?.layer])
+            .toEqual([[6, 4], DARK_THEME.line, Layer.Data + 50])
+    })
+
+    it('Should draw the y max line of bar only plots on the horizontal axis', () => {
+        const { lines } = getLines([createSeries(PlotType.Bar, [400])], LIGHT_THEME, { yMax: 100 })
+
+        expect((lines.get('grid-x-100')?.shape as RenderItemLine).dash)
+            .toEqual([6, 4])
     })
 })

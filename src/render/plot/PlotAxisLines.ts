@@ -4,7 +4,7 @@ import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import { COORDS_MAX_X, Layer } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
-import { AXIS_LAYER, GRID_DASH } from '@/render/plot/PlotConstants'
+import { AXIS_LAYER, GRID_DASH, MAX_LINE_DASH } from '@/render/plot/PlotConstants'
 import { Axis } from '@/static/Enums'
 
 export default class PlotAxisLines {
@@ -66,17 +66,22 @@ export default class PlotAxisLines {
 
         for (const value of values.slice(1)) {
             const [from, to] = getLine(value)
+            const isMax = this.isMaxLine(value, axis)
 
             const grid = items.line()
                               .stop(from.x, from.y)
                               .stop(to.x, to.y)
-                              .dash(GRID_DASH)
-                              .stroke(this.theme.lineAxis)
-                              .layer(Layer.Base)
+                              .dash(isMax ? MAX_LINE_DASH : GRID_DASH)
+                              .stroke(isMax ? this.theme.line : this.theme.lineAxis)
+                              .layer(isMax ? AXIS_LAYER : Layer.Base)
                               .key(`grid-${ axis }-${ value }`)
 
             if (axis === Axis.Y)
                 grid.axisValue(value)
         }
+    }
+
+    private isMaxLine(value: number, axis: Axis) {
+        return value === this.layout.yMax && (axis === Axis.Y || this.seriesGroups.hasOnlyBarSeries)
     }
 }

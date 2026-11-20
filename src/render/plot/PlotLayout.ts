@@ -4,6 +4,7 @@ import Paddings from '@/types/Paddings'
 import Units from '@/helpers/Units'
 import Formatter from '@/helpers/Formatter'
 import { short } from '@/helpers/Text'
+import TextResources from '@/static/TextResources'
 import { COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 import { PlotOrientation, PlotScaleType } from '@/static/Enums'
 import PlotSection from '@/render/plot/PlotSection'
@@ -12,6 +13,7 @@ import PlotContinuousAxis from '@/render/plot/PlotContinuousAxis'
 import { getAxisValues } from '@/render/plot/PlotAxisValues'
 import { getSlots, Slots } from '@/render/plot/PlotSlots'
 import { getMargin } from '@/render/plot/PlotMargins'
+import { getCapRoom } from '@/render/plot/PlotCapMarks'
 import { BAND_SPACING, BAR_BAND_RATIO, X_LABEL_HEIGHT } from '@/render/plot/PlotConstants'
 
 export default class PlotLayout {
@@ -34,7 +36,9 @@ export default class PlotLayout {
         this.units = units
         this.seriesGroups = seriesGroups
 
-        this.yMax = data.yMax === 0 ? undefined : data.yMax
+        const yMax = Number(data.yMax)
+
+        this.yMax = yMax > 0 && Number.isFinite(yMax) ? yMax : undefined
 
         const verticalSlots = getSlots(seriesGroups.verticalSeries, data.xType)
         const horizontalSlots = getSlots(seriesGroups.barSeries, data.xType)
@@ -51,12 +55,15 @@ export default class PlotLayout {
             yScale
         )
 
-        this.margin = getMargin(
+        const margin = getMargin(
             units,
             data.simple,
             { left: this.leftTitle, bottom: this.bottomTitle },
             this.getLeftLabels(horizontalAxis, horizontalSlots, yAxisValues)
         )
+        const capRoom = getCapRoom(units, seriesGroups.enabledSeries, this.yMax, seriesGroups.hasOnlyBarSeries)
+
+        this.margin = { ...margin, top: margin.top + capRoom.top, right: margin.right + capRoom.right }
 
         const { left, width, horizontalBand, verticalBand } = this.getArea()
 
@@ -116,6 +123,12 @@ export default class PlotLayout {
         return Formatter.axis(x, this.data.xType)
     }
 
+    formatValueLabel(value: number) {
+        const label = short(value, this.data.shortLabels)
+
+        return value === this.yMax ? `${ TextResources.max } ${ label }` : label
+    }
+
     capToYMax(y: number) {
         return this.yMax === undefined ? y : Math.min(y, this.yMax)
     }
@@ -156,7 +169,7 @@ export default class PlotLayout {
                                : []
         const valueLabels = this.seriesGroups.isHorizontal
                             ? []
-                            : yAxisValues.map(value => short(value, this.data.shortLabels))
+                            : yAxisValues.map(value => this.formatValueLabel(value))
 
         return [...categoryLabels, ...valueLabels]
     }

@@ -15,7 +15,7 @@ const enum AnimationTiming {
 
     plotInitStaggerTotal = 600,
 
-    plotBreakInit = 250,
+    plotCapInit = 250,
 
     hover = 300,
 

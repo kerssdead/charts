@@ -49,7 +49,9 @@ export const AREA_LAYER = Layer.Data + 1
 
 export const LINE_LAYER = Layer.Data + 2
 
-export const BREAK_MARK_LAYER = Layer.Data + 3
+export const CAP_LAYER = Layer.Data + 3
+
+export const MAX_LINE_DASH = [6, 4]
 
 export const AXIS_LAYER = Layer.Data + 50
 

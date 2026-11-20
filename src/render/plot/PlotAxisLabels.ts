@@ -75,7 +75,7 @@ export default class PlotAxisLabels {
         for (const value of valueScale.values)
             this.leftLabel(
                 items,
-                short(value, this.data.shortLabels),
+                layout.formatValueLabel(value),
                 valueScale.getCoordinate(value),
                 `y-label-${ value }`
             ).axisValue(value)

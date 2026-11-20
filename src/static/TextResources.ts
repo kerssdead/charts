@@ -43,6 +43,8 @@ const DEFAULT_TEXTS = {
 
     defaultTableName: 'table',
 
+    max: 'Max',
+
     sortAscending: ' ▲',
 
     sortDescending: ' ▼'

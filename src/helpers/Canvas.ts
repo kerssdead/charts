@@ -1,5 +1,6 @@
 import fail from '@/helpers/Errors'
-import { AriaRole, Attribute, ErrorType, Tag } from '@/static/Enums'
+import { AriaRole, Attribute, ErrorType, FadeEdge, Tag } from '@/static/Enums'
+import RectangleDimensions from '@/types/RectangleDimensions'
 import { adjustColor, withAlpha } from '@/helpers/Color'
 import Styles from '@/static/constants/Styles'
 
@@ -54,6 +55,23 @@ export function verticalGradient(ctx: CanvasRenderingContext2D, color: string, y
 
 export function fadingGradient(ctx: CanvasRenderingContext2D, color: string, y1: number, y2: number) {
     const gradient = ctx.createLinearGradient(0, Math.min(y1, y2), 0, Math.max(y1, y2))
+
+    gradient.addColorStop(0, color)
+    gradient.addColorStop(1, withAlpha(color, 0))
+
+    return gradient
+}
+
+export function capFadeGradient(
+    ctx: CanvasRenderingContext2D,
+    color: string,
+    edge: FadeEdge,
+    box: RectangleDimensions
+) {
+    const { x, y, width, height } = box
+    const gradient = edge === FadeEdge.Top
+                     ? ctx.createLinearGradient(0, y, 0, y + height)
+                     : ctx.createLinearGradient(x + width, 0, x, 0)
 
     gradient.addColorStop(0, color)
     gradient.addColorStop(1, withAlpha(color, 0))

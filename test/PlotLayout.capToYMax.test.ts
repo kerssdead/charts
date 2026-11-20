@@ -20,4 +20,18 @@ describe('Capping plot value to y max', () => {
         expect(createPlot([]).layout.capToYMax(150))
             .toBe(150)
     })
+
+    it.each([0, '', null, undefined, NaN, -5, 'abc'])('Should ignore unusable y max %p', yMax => {
+        const { layout } = createPlot([], { yMax: yMax as unknown as number })
+
+        expect([layout.yMax, layout.capToYMax(150), layout.isAboveYMax(150)])
+            .toEqual([undefined, 150, false])
+    })
+
+    it('Should read numeric y max given as text', () => {
+        const { layout } = createPlot([], { yMax: '100' as unknown as number })
+
+        expect([layout.yMax, layout.capToYMax(150)])
+            .toEqual([100, 100])
+    })
 })

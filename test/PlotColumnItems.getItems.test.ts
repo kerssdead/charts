@@ -2,7 +2,6 @@ import { buildItems, createPlot, createSeries } from './PlotTestData'
 import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
-import RenderItemLine from '@/types/RenderItemLine'
 import PlotColumnItems from '@/render/plot/PlotColumnItems'
 import { getColumnGroups } from '@/render/plot/PlotColumnGroups'
 import { PlotScaleType, PlotType } from '@/static/Enums'
@@ -26,9 +25,9 @@ const getColumns = (all: PlotSeries[], series: PlotSeries, data: Partial<PlotDat
     return {
         ...plot,
         rects: items
-            .filter(item => item.shape instanceof RenderItemRectangle)
+            .filter(item => item.shape instanceof RenderItemRectangle && !(item.key ?? '').includes('-cap-'))
             .map(item => item.shape as RenderItemRectangle),
-        marks: items.filter(item => item.shape instanceof RenderItemLine)
+        marks: items.filter(item => (item.key ?? '').includes('-cap-'))
     }
 }
 
@@ -88,19 +87,20 @@ describe('Getting plot column items', () => {
             .toEqual([categoryScale.getSlotCenter(0), categoryScale.getSlotCenter(2)])
     })
 
-    it('Should mark column cut by y max', () => {
+    it('Should fade and mark column cut by y max', () => {
         const series = createSeries(PlotType.Column, [10, 400])
         const { layout, rects, marks } = getColumns([series], series, { yMax: 100 })
-        const { valueScale } = layout.vertical
         const { x, width } = rects[1].absolute
+        const fade = marks[0].shape as RenderItemRectangle
 
         expect(marks.map(mark => mark.key))
-            .toEqual([`series-${ PlotType.Column }-break-C1-0`])
-        expect((marks[0].shape as RenderItemLine).absolute)
             .toEqual([
-                { x: x - width / 2, y: valueScale.getCoordinate(100) + 11 },
-                { x: x + width / 2, y: valueScale.getCoordinate(100) + 5 }
+                `series-${ PlotType.Column }-cap-fade-C1-0`,
+                `series-${ PlotType.Column }-cap-caret-C1-0`,
+                `series-${ PlotType.Column }-cap-value-C1-0`
             ])
+        expect([fade.absolute.x, fade.absolute.y, fade.absolute.width])
+            .toEqual([x - width / 2, layout.vertical.valueScale.getCoordinate(100), width])
     })
 
     it('Should not mark column equal to y max', () => {

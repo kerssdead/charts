@@ -1,7 +1,7 @@
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import RenderItem from '@/types/RenderItem'
 import CanvasWindow from '@/types/CanvasWindow'
-import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
+import { HorizontalAlignment, VerticalAlignment, Axis, FadeEdge } from '@/static/Enums'
 
 const WINDOW = new CanvasWindow(500, 500)
 
@@ -196,4 +196,20 @@ describe('Rendering rectangle', () => {
             .toHaveBeenCalled()
     })
 
+    it('Should fill a faded edge without stroking', () => {
+        const ctx = context()
+        const shape = new RenderItemRectangle()
+        const item = new RenderItem(shape)
+
+        item.color = '#ffffff'
+        shape.isFill = true
+        shape.fadeEdge = FadeEdge.Top
+        shape.absolute = { x: 1000, y: 2000, width: 500, height: 1000 }
+        shape.align = { x: HorizontalAlignment.Left, y: VerticalAlignment.Top }
+        shape.adjust(WINDOW)
+        shape.render(ctx as unknown as CanvasRenderingContext2D, item)
+
+        expect([ctx.createLinearGradient.mock.calls[0], ctx.fill.mock.calls.length, ctx.stroke.mock.calls.length])
+            .toEqual([[0, 200, 0, 300], 1, 0])
+    })
 })

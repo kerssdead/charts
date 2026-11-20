@@ -4,11 +4,12 @@ import { AnimationTiming, COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/
 import RenderItem from '@/types/RenderItem'
 import Point from '@/types/Point'
 import Alignment, { DEFAULT_ALIGNMENT } from '@/types/Alignment'
-import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
+import { HorizontalAlignment, VerticalAlignment, Axis, FadeEdge } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import RectangleGradient from '@/helpers/RectangleGradient'
 import { lerp } from '@/helpers/Geometry'
 import Rectangle from '@/helpers/Rectangle'
+import { capFadeGradient } from '@/helpers/Canvas'
 
 const ALPHA_DELTA = 0.5
 
@@ -43,6 +44,8 @@ export default class RenderItemRectangle extends RenderItemBase {
     isFill: boolean = false
 
     isGradient: boolean = false
+
+    fadeEdge: FadeEdge | null = null
 
     radii: number[] = [0, 0, 0, 0]
 
@@ -211,21 +214,29 @@ export default class RenderItemRectangle extends RenderItemBase {
 
         ctx.roundRect(left, top, width, height, this.canvas.radii)
 
+        if (this.fadeEdge && item.fill) {
+            ctx.fillStyle = capFadeGradient(ctx, item.fill, this.fadeEdge, { x: left, y: top, width, height })
+            ctx.fill()
+        } else {
+            this.paint(ctx, item, top, height)
+        }
+
+        if (this.clip)
+            ctx.restore()
+    }
+
+    private paint(ctx: CanvasRenderingContext2D, item: RenderItem, top: number, height: number) {
         const gradientFill = this.isGradient ? item.fill : undefined
 
         if (gradientFill)
             this.gradient.apply(ctx, gradientFill, top, height)
 
-        if (this.isFill) {
+        if (this.isFill)
             ctx.fill()
-        }
 
         ctx.stroke()
 
         this.gradient.restore(ctx)
-
-        if (this.clip)
-            ctx.restore()
     }
 
     getBounds() {

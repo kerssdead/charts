@@ -2,7 +2,7 @@ import { buildItems, createPlot, createSeries } from './PlotTestData'
 import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
-import RenderItemLine from '@/types/RenderItemLine'
+import RenderItemText from '@/types/RenderItemText'
 import PlotStackedColumnItems from '@/render/plot/PlotStackedColumnItems'
 import { getColumnGroups } from '@/render/plot/PlotColumnGroups'
 import { PlotScaleType, PlotType } from '@/static/Enums'
@@ -24,10 +24,10 @@ const getStacks = (all: PlotSeries[], data: Partial<PlotData> = {}) => {
     const items = all.filter(series => series.type === PlotType.StackingColumn)
                      .map(series => buildItems(stackedColumns.getItems(series, stacks)))
     const rects = items.map(seriesItems => {
-        return seriesItems.filter(item => item.shape instanceof RenderItemRectangle)
+        return seriesItems.filter(item => item.shape instanceof RenderItemRectangle && !(item.key ?? '').includes('-cap-'))
                           .map(item => item.shape as RenderItemRectangle)
     })
-    const marks = items.map(seriesItems => seriesItems.filter(item => item.shape instanceof RenderItemLine))
+    const marks = items.map(seriesItems => seriesItems.filter(item => (item.key ?? '').includes('-cap-')))
 
     return { ...plot, rects, marks }
 }
@@ -115,7 +115,7 @@ describe('Getting plot stacked column items', () => {
             .toMatchObject({ y: baseline, height: baseline - valueScale.getCoordinate(30) })
     })
 
-    it('Should mark only stack part cut by y max', () => {
+    it('Should fade and mark only stack part cut by y max', () => {
         const { layout, rects, marks } = getStacks(
             [
                 createSeries(PlotType.StackingColumn, [60], { id: 'a' }),
@@ -128,9 +128,19 @@ describe('Getting plot stacked column items', () => {
         const { x, width } = rects[1][0].absolute
 
         expect(marks.map(seriesMarks => seriesMarks.map(mark => mark.key)))
-            .toEqual([[], ['b-break-C0-0'], []])
-        expect((marks[1][0].shape as RenderItemLine).absolute)
-            .toEqual([{ x, y: top + 11 }, { x: x + width, y: top + 5 }])
+            .toEqual([[], ['b-cap-fade-C0-0', 'b-cap-caret-C0-0', 'b-cap-value-C0-0'], []])
+        expect((marks[1][0].shape as RenderItemRectangle).absolute)
+            .toMatchObject({ x, y: top, width })
+    })
+
+    it('Should label capped stack with its total', () => {
+        const { marks } = getStacks(
+            [createSeries(PlotType.StackingColumn, [60]), createSeries(PlotType.StackingColumn, [70])],
+            { yMax: 100 }
+        )
+
+        expect((marks[1][2].shape as RenderItemText).value)
+            .toBe('130')
     })
 
     it('Should not mark stack that fits y max', () => {

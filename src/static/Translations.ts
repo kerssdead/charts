@@ -22,7 +22,8 @@ const TraditionalChinese: TextOverrides = {
     saveCsv: '儲存為 CSV',
     close: '關閉',
     defaultImageName: '圖表',
-    defaultTableName: '表格'
+    defaultTableName: '表格',
+    max: '最大'
 }
 
 const Translations: Readonly<Record<string, TextOverrides>> = {
@@ -48,7 +49,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'Enregistrer en CSV',
         close: 'Fermer',
         defaultImageName: 'graphique',
-        defaultTableName: 'tableau'
+        defaultTableName: 'tableau',
+        max: 'Max'
     },
 
     de: {
@@ -73,7 +75,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'Als CSV speichern',
         close: 'Schließen',
         defaultImageName: 'diagramm',
-        defaultTableName: 'tabelle'
+        defaultTableName: 'tabelle',
+        max: 'Max'
     },
 
     es: {
@@ -98,7 +101,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'Guardar como CSV',
         close: 'Cerrar',
         defaultImageName: 'grafico',
-        defaultTableName: 'tabla'
+        defaultTableName: 'tabla',
+        max: 'Máx.'
     },
 
     pt: {
@@ -123,7 +127,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'Salvar como CSV',
         close: 'Fechar',
         defaultImageName: 'grafico',
-        defaultTableName: 'tabela'
+        defaultTableName: 'tabela',
+        max: 'Máx.'
     },
 
     zh: {
@@ -148,7 +153,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: '另存为 CSV',
         close: '关闭',
         defaultImageName: '图表',
-        defaultTableName: '表格'
+        defaultTableName: '表格',
+        max: '最大'
     },
 
     'zh-hant': TraditionalChinese,
@@ -181,7 +187,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'CSV として保存',
         close: '閉じる',
         defaultImageName: 'グラフ',
-        defaultTableName: '表'
+        defaultTableName: '表',
+        max: '最大'
     },
 
     ru: {
@@ -206,7 +213,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'Сохранить как CSV',
         close: 'Закрыть',
         defaultImageName: 'диаграмма',
-        defaultTableName: 'таблица'
+        defaultTableName: 'таблица',
+        max: 'Макс.'
     },
 
     ko: {
@@ -231,7 +239,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'CSV로 저장',
         close: '닫기',
         defaultImageName: '차트',
-        defaultTableName: '표'
+        defaultTableName: '표',
+        max: '최대'
     },
 
     it: {
@@ -256,7 +265,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'Salva come CSV',
         close: 'Chiudi',
         defaultImageName: 'grafico',
-        defaultTableName: 'tabella'
+        defaultTableName: 'tabella',
+        max: 'Max'
     },
 
     nl: {
@@ -281,7 +291,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'Opslaan als CSV',
         close: 'Sluiten',
         defaultImageName: 'grafiek',
-        defaultTableName: 'tabel'
+        defaultTableName: 'tabel',
+        max: 'Max'
     },
 
     tr: {
@@ -306,7 +317,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'CSV olarak kaydet',
         close: 'Kapat',
         defaultImageName: 'grafik',
-        defaultTableName: 'tablo'
+        defaultTableName: 'tablo',
+        max: 'Maks.'
     },
 
     ar: {
@@ -331,7 +343,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'حفظ بصيغة CSV',
         close: 'إغلاق',
         defaultImageName: 'مخطط',
-        defaultTableName: 'جدول'
+        defaultTableName: 'جدول',
+        max: 'الحد الأقصى'
     },
 
     hi: {
@@ -356,7 +369,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'CSV के रूप में सहेजें',
         close: 'बंद करें',
         defaultImageName: 'चार्ट',
-        defaultTableName: 'तालिका'
+        defaultTableName: 'तालिका',
+        max: 'अधिकतम'
     },
 
     pl: {
@@ -381,7 +395,8 @@ const Translations: Readonly<Record<string, TextOverrides>> = {
         saveCsv: 'Zapisz jako CSV',
         close: 'Zamknij',
         defaultImageName: 'wykres',
-        defaultTableName: 'tabela'
+        defaultTableName: 'tabela',
+        max: 'Maks.'
     }
 }
 

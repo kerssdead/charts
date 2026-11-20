@@ -7,7 +7,7 @@ import PlotItemStyle from '@/render/plot/PlotItemStyle'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { ColumnGroup, getColumnGroup } from '@/render/plot/PlotColumnGroups'
 import { CORNER_RADIUS } from '@/render/plot/PlotConstants'
-import { addColumnBreakMark } from '@/render/plot/PlotBreakMarks'
+import { addColumnCapMarks } from '@/render/plot/PlotCapMarks'
 
 export default class PlotColumnItems {
     private readonly layout: PlotLayout
@@ -65,9 +65,13 @@ export default class PlotColumnItems {
                 this.style.styleRect(column, series, slot, valueIndex)
 
                 if (!isDisabled && layout.isAboveYMax(y)) {
-                    const mark = addColumnBreakMark(items, layout.units, { start: left, end: left + width }, top)
+                    const marks = addColumnCapMarks(items, layout.units, {
+                        span: { start: left, end: left + width },
+                        edge: top,
+                        value: y
+                    })
 
-                    this.style.styleBreakMark(mark, series, slot, valueIndex)
+                    this.style.styleCapMarks(marks, series, slot, valueIndex)
                 }
             })
         }

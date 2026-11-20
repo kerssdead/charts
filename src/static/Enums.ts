@@ -264,6 +264,12 @@ export const enum TextDirection {
     LeftToRight = 'ltr'
 }
 
+export const enum FadeEdge {
+    Top = 'top',
+
+    Right = 'right'
+}
+
 export const enum TextBaseline {
     Alphabetic = 'alphabetic',
 

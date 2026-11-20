@@ -1,5 +1,5 @@
 import QueueItemBaseBuilder from '@/builders/QueueItemBaseBuilder'
-import { HorizontalAlignment, VerticalAlignment, Axis } from '@/static/Enums'
+import { HorizontalAlignment, VerticalAlignment, Axis, FadeEdge } from '@/static/Enums'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import Units from '@/helpers/Units'
@@ -37,6 +37,12 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<Rend
 
     gradient() {
         this.shape.isGradient = true
+
+        return this
+    }
+
+    fadeEdge(edge: FadeEdge) {
+        this.shape.fadeEdge = edge
 
         return this
     }

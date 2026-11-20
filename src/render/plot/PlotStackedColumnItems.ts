@@ -7,7 +7,7 @@ import PlotItemStyle from '@/render/plot/PlotItemStyle'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { ColumnGroup, getColumnGroup, getStackKey, getStackTops } from '@/render/plot/PlotColumnGroups'
 import { CORNER_RADIUS } from '@/render/plot/PlotConstants'
-import { addColumnBreakMark } from '@/render/plot/PlotBreakMarks'
+import { addColumnCapMarks } from '@/render/plot/PlotCapMarks'
 
 type StackedColumn = {
     valueIndex: number
@@ -17,7 +17,8 @@ type StackedColumn = {
     width: number
     height: number
     isTop: boolean
-    hasBreakMark: boolean
+    isCapped: boolean
+    total: number
 }
 
 export default class PlotStackedColumnItems {
@@ -84,7 +85,8 @@ export default class PlotStackedColumnItems {
                 width,
                 height: bottomY - topY,
                 isTop: this.stackTops.get(key) === series,
-                hasBreakMark: !isDisabled && layout.isAboveYMax(top) && !layout.isAboveYMax(stack)
+                isCapped: !isDisabled && layout.isAboveYMax(top) && !layout.isAboveYMax(stack),
+                total: top
             }]
         })
     }
@@ -97,7 +99,7 @@ export default class PlotStackedColumnItems {
         const { layout } = this
         const { baseline } = layout.vertical
 
-        for (const { valueIndex, slot, x, y, width, height, isTop, hasBreakMark } of stacked) {
+        for (const { valueIndex, slot, x, y, width, height, isTop, isCapped, total } of stacked) {
             const column = items.rect()
                  .position(x, y)
                  .size(width, height)
@@ -109,10 +111,14 @@ export default class PlotStackedColumnItems {
             this.style.styleRect(column, series, slot, valueIndex)
                 .fade(false)
 
-            if (hasBreakMark) {
-                const mark = addColumnBreakMark(items, layout.units, { start: x, end: x + width }, y - height)
+            if (isCapped) {
+                const marks = addColumnCapMarks(items, layout.units, {
+                    span: { start: x, end: x + width },
+                    edge: y - height,
+                    value: total
+                })
 
-                this.style.styleBreakMark(mark, series, slot, valueIndex)
+                this.style.styleCapMarks(marks, series, slot, valueIndex)
             }
         }
     }

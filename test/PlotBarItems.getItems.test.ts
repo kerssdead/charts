@@ -2,7 +2,6 @@ import { buildItems, createPlot, createSeries } from './PlotTestData'
 import PlotSeries from '@/types/PlotSeries'
 import PlotData from '@/types/data/PlotData'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
-import RenderItemLine from '@/types/RenderItemLine'
 import PlotBarItems from '@/render/plot/PlotBarItems'
 import { PlotScaleType, PlotType } from '@/static/Enums'
 
@@ -20,9 +19,9 @@ const getBars = (all: PlotSeries[], series: PlotSeries, data: Partial<PlotData> 
     return {
         ...plot,
         rects: items
-            .filter(item => item.shape instanceof RenderItemRectangle)
+            .filter(item => item.shape instanceof RenderItemRectangle && !(item.key ?? '').includes('-cap-'))
             .map(item => item.shape as RenderItemRectangle),
-        marks: items.filter(item => item.shape instanceof RenderItemLine)
+        marks: items.filter(item => (item.key ?? '').includes('-cap-'))
     }
 }
 
@@ -107,16 +106,17 @@ describe('Getting plot bar items', () => {
             .toEqual([valueScale.getCoordinate(10) - baseline, valueScale.getCoordinate(40) - baseline])
     })
 
-    it('Should mark bar cut by y max', () => {
+    it('Should fade and mark bar cut by y max', () => {
         const bar = createSeries(PlotType.Bar, [10, 400])
         const { layout, rects, marks } = getBars([bar], bar, { yMax: 100 })
         const end = layout.horizontal.valueScale.getCoordinate(100)
         const { y, height } = rects[1].absolute
+        const fade = marks[0].shape as RenderItemRectangle
 
-        expect(marks.map(mark => mark.key))
-            .toEqual([`series-${ PlotType.Bar }-break-C1-0`])
-        expect((marks[0].shape as RenderItemLine).absolute)
-            .toEqual([{ x: end - 11, y }, { x: end - 5, y: y - height }])
+        expect(marks.map(mark => mark.key).slice(0, 2))
+            .toEqual([`series-${ PlotType.Bar }-cap-fade-C1-0`, `series-${ PlotType.Bar }-cap-caret-C1-0`])
+        expect([fade.absolute.x + fade.absolute.width, fade.absolute.y, fade.absolute.height])
+            .toEqual([end, y - height, height])
     })
 
     it('Should not mark bar above y max when mixed with other series', () => {

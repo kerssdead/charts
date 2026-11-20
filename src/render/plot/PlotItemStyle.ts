@@ -6,11 +6,12 @@ import QueueLineItemBuilder from '@/builders/QueueLineItemBuilder'
 import { AnimationTiming, DEFAULT_LINE_WIDTH, Layer } from '@/static/constants/Index'
 import PlotLayout from '@/render/plot/PlotLayout'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
-import { AREA_LAYER, BREAK_MARK_LAYER, LINE_LAYER } from '@/render/plot/PlotConstants'
+import { AREA_LAYER, CAP_LAYER, LINE_LAYER } from '@/render/plot/PlotConstants'
+import { CapMarks } from '@/render/plot/PlotCapMarks'
 import { ThemePalette } from '@/Theme'
 import { PlotType } from '@/static/Enums'
 
-const BREAK_MARK_WIDTH = 3
+const CAP_CARET_WIDTH = 2
 
 export type ValueTooltip = (series: PlotSeries, value: PlotPoint) => string
 
@@ -69,12 +70,24 @@ export default class PlotItemStyle {
         this.groupHover(line, series)
     }
 
-    styleBreakMark(line: QueueLineItemBuilder, series: PlotSeries, slot: number, valueIndex: number) {
-        line.width(BREAK_MARK_WIDTH)
-            .stroke(this.theme.canvasBackground)
-            .layer(BREAK_MARK_LAYER)
-            .key(this.getKey(series, 'break', this.getPointKey(series, valueIndex)))
-            .init(AnimationTiming.plotBreakInit, AnimationTiming.plotInit + slot * this.initStagger, true)
+    styleCapMarks({ fade, caret, value }: CapMarks, series: PlotSeries, slot: number, valueIndex: number) {
+        const pointKey = this.getPointKey(series, valueIndex)
+        const delay = AnimationTiming.plotInit + slot * this.initStagger
+
+        fade.color(this.theme.canvasBackground)
+            .layer(CAP_LAYER)
+            .key(this.getKey(series, 'cap-fade', pointKey))
+            .init(AnimationTiming.plotCapInit, delay, true)
+
+        caret.width(CAP_CARET_WIDTH)
+             .color(series.color)
+             .layer(CAP_LAYER)
+             .key(this.getKey(series, 'cap-caret', pointKey))
+             .init(AnimationTiming.plotCapInit, delay, true)
+
+        value?.layer(CAP_LAYER)
+              .key(this.getKey(series, 'cap-value', pointKey))
+              .init(AnimationTiming.plotCapInit, delay, true)
     }
 
     private get initStagger() {

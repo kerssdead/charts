@@ -6,7 +6,7 @@ import PlotLayout from '@/render/plot/PlotLayout'
 import PlotItemStyle from '@/render/plot/PlotItemStyle'
 import PlotSeriesGroups from '@/render/plot/PlotSeriesGroups'
 import { CORNER_RADIUS } from '@/render/plot/PlotConstants'
-import { addBarBreakMark } from '@/render/plot/PlotBreakMarks'
+import { addBarCapMarks } from '@/render/plot/PlotCapMarks'
 
 export default class PlotBarItems {
     private readonly layout: PlotLayout
@@ -59,9 +59,13 @@ export default class PlotBarItems {
                 this.style.styleRect(bar, series, slot, valueIndex)
 
                 if (!isDisabled && seriesGroups.hasOnlyBarSeries && layout.isAboveYMax(y)) {
-                    const mark = addBarBreakMark(items, layout.units, { start: bottom - height, end: bottom }, end)
+                    const marks = addBarCapMarks(items, layout.units, {
+                        span: { start: bottom - height, end: bottom },
+                        edge: end,
+                        value: y
+                    })
 
-                    this.style.styleBreakMark(mark, series, slot, valueIndex)
+                    this.style.styleCapMarks(marks, series, slot, valueIndex)
                 }
             })
         }
