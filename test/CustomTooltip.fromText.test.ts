@@ -13,7 +13,7 @@ describe('Building custom tooltip from text', () => {
             .toContain(SYSTEM_FONT_FAMILY)
     })
 
-    it('Should use an opaque floating panel style without backdrop blur', () => {
+    it('Should use an opaque panel without backdrop blur or clipped drop shadow', () => {
         const html = CustomTooltip.fromText('Tip', LIGHT_THEME)
 
         expect(html)
@@ -23,6 +23,6 @@ describe('Building custom tooltip from text', () => {
         expect(html)
             .not.toContain('backdrop-filter')
         expect(html)
-            .toContain('0 8px 32px')
+            .not.toContain('0 8px 32px')
     })
 })
