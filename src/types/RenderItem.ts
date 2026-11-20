@@ -209,6 +209,10 @@ export default class RenderItem {
         return !this.isInitializing && this.contains(point) && !!this.tooltipAt(point)
     }
 
+    tooltipDistanceAt(point: Point) {
+        return this.shape.tooltipDistanceAt(point)
+    }
+
     tooltipAt(point: Point) {
         return this.shape.tooltipAt(point) ?? resolveTooltip(this.tooltipTemplate ?? null)
     }

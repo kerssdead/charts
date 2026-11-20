@@ -102,6 +102,32 @@ export default class Queue {
         return undefined
     }
 
+    findTooltip(point: Point) {
+        const items = this.getSorted()
+
+        let best: RenderItem | undefined
+        let bestDistance = Infinity
+
+        for (let i = items.length - 1; i >= 0; i--) {
+            const item = items[i]
+
+            if (!item.hasTooltipAt(point))
+                continue
+
+            const distance = item.tooltipDistanceAt(point)
+
+            if (distance == null)
+                return best ?? item
+
+            if (distance < bestDistance) {
+                best = item
+                bestDistance = distance
+            }
+        }
+
+        return best
+    }
+
     add(items: RenderItem[]) {
         if (items.length === 0)
             return

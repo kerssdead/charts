@@ -31,6 +31,10 @@ export default abstract class RenderItemBase {
         return null
     }
 
+    tooltipDistanceAt(_point: Point): number | null {
+        return null
+    }
+
     defaultColor(_theme: ThemePalette): string | undefined {
         return undefined
     }

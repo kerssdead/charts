@@ -179,7 +179,7 @@ describe('Updating tooltip overlay', () => {
 
         target.isEnabled = true
 
-        const findTop = jest.spyOn(queue, 'findTop')
+        const findTop = jest.spyOn(queue, 'findTooltip')
 
         target.update(frame(queue, { x: 75, y: 75 }))
         target.update(frame(queue, { x: 75, y: 75 }))

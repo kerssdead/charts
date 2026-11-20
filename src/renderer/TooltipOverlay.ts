@@ -119,7 +119,7 @@ export default class TooltipOverlay extends Overlay {
         if (scan != null && TooltipOverlay.isScanCurrent(scan, queue, window, point))
             return scan
 
-        const target = queue.findTop(item => item.hasTooltipAt(point))
+        const target = queue.findTooltip(point)
 
         this.scan = {
             point,

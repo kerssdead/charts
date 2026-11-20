@@ -243,6 +243,12 @@ export default class RenderItemLine extends RenderItemBase {
         return resolveTooltip(this.tooltips[this.stopAt(point)] ?? null)
     }
 
+    tooltipDistanceAt(point: Point): number | null {
+        const stop = this.canvas[this.stopAt(point)]
+
+        return stop ? Math.hypot(point.x - stop.x, point.y - stop.y) : null
+    }
+
     private stopAt(point: Point) {
         return PointHelper.findClosestStop(
             this.canvas,
