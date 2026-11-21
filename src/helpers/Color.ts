@@ -15,6 +15,8 @@ const WHITE_LUMINANCE = 1
 
 const CONTRAST_FLARE = .05
 
+const WHITE_TEXT_BIAS = 1.5
+
 const PALETTE_ROUND_SHIFT = 40
 
 const CSS_VARIABLE = /^(?:var\(\s*)?(--[\w-]+)\s*(?:,\s*([^)]+))?\)?$/
@@ -119,7 +121,7 @@ export function paletteColor(index: number) {
 export function contrastTextColor(background: string) {
     const value = luminance(background)
 
-    return contrastRatio(value, BLACK_LUMINANCE) > contrastRatio(WHITE_LUMINANCE, value) ? BLACK : WHITE
+    return contrastRatio(value, BLACK_LUMINANCE) > contrastRatio(WHITE_LUMINANCE, value) * WHITE_TEXT_BIAS ? BLACK : WHITE
 }
 
 function contrastRatio(lighter: number, darker: number) {

@@ -6,14 +6,15 @@ describe('Getting contrast text color', () => {
         expect(contrastTextColor('#ffffff')).toBe('#000000')
     })
 
-    it('Should switch to black just above WCAG crossover luminance', () => {
-        expect(contrastTextColor('#757575')).toBe('#ffffff')
-        expect(contrastTextColor('#767676')).toBe('#000000')
+    it('Should prefer white over the WCAG crossover luminance', () => {
+        expect(contrastTextColor('#767676')).toBe('#ffffff')
+        expect(contrastTextColor('#ff0000')).toBe('#ffffff')
+        expect(contrastTextColor('#c8465a')).toBe('#ffffff')
     })
 
-    it('Should use black on mid-luminance colors', () => {
-        expect(contrastTextColor('#ff0000')).toBe('#000000')
+    it('Should switch to black on light colors', () => {
         expect(contrastTextColor('#959595')).toBe('#000000')
+        expect(contrastTextColor('#00ff00')).toBe('#000000')
     })
 
     it('Should use white on dark saturated colors', () => {
