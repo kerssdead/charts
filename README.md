@@ -11,8 +11,8 @@ TypeScript canvas charts: plot, pie, gauge, treemap, segmented bar and tree bar.
 Add the styles and the script via [jsDelivr](https://www.jsdelivr.com/). The script defines the global `OCharts`.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kerssdead/charts@2.1.185/dist/main.css">
-<script src="https://cdn.jsdelivr.net/gh/kerssdead/charts@2.1.185/dist/ocharts.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kerssdead/charts@2.1.203/dist/main.css">
+<script src="https://cdn.jsdelivr.net/gh/kerssdead/charts@2.1.203/dist/ocharts.js"></script>
 ```
 
 ### Bundler
