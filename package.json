@@ -51,6 +51,7 @@
     "watch": "webpack --watch",
     "test": "jest",
     "lint": "eslint src test e2e",
+    "fuzz:report": "ts-node -P fuzz fuzz/report.ts",
     "fuzz:build": "tsc -p fuzz",
     "fuzz": "ts-node -P fuzz fuzz/fuzz.ts",
     "e2e": "playwright test",

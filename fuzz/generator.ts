@@ -8,9 +8,16 @@ export type FuzzCase = {
     size: [number, number]
 }
 
-const CHART_TYPE_COUNT = ChartType.TreeBar + 1
+const CHART_TYPES = [
+    ChartType.Plot,
+    ChartType.Pie,
+    ChartType.Gauge,
+    ChartType.TreeMap,
+    ChartType.SegmentedBar,
+    ChartType.TreeBar
+]
 
-const PLOT_TYPE_COUNT = PlotType.Area + 1
+const PLOT_TYPES = Object.values(PlotType)
 
 export function createGenerator(initialSeed: number) {
     let seed = initialSeed
@@ -73,19 +80,19 @@ export function createGenerator(initialSeed: number) {
             hideInLegend: chance(0.05),
             data: { Id: i, Name: 's' + i, Value: i }
         })
-        const type: ChartType = forcedType ?? ri(0, CHART_TYPE_COUNT - 1)
+        const type: ChartType = forcedType ?? pick(CHART_TYPES)
         const data: Json = {}
 
         switch (type) {
             case ChartType.Plot: {
-                const xType = ri(PlotAxisType.Number, PlotAxisType.Text)
+                const xType = pick(Object.values(PlotAxisType))
                 const points = pick([0, 1, 2, 5, 12, 40, 150, 1000])
                 const plotType = pick([PlotType.Line, PlotType.Line, PlotType.AttentionLine, PlotType.Column, PlotType.Bar, PlotType.StackingColumn])
                 const mixed = chance(0.3)
                 const order = pick(['sorted', 'sorted', 'shuffled', 'duplicates'])
 
                 data.values = Array.from({ length: count }, (_, i) => ({
-                    type: mixed ? ri(0, PLOT_TYPE_COUNT - 1) : plotType,
+                    type: mixed ? pick(PLOT_TYPES) : plotType,
                     hideInLegend: chance(0.05),
                     disabled: chance(0.05),
                     label: labelFn(i),
@@ -227,7 +234,7 @@ export function createGenerator(initialSeed: number) {
             baseColor: chance(0.2) ? pick(['#ff0000', '#000000', '#ffffff', '#3366cc']) : null,
             templateId: chance(0.15) ? 'tpl' : null,
             valuePostfix: chance(0.2) ? pick(['%', ' kg', ' very long postfix', '']) : undefined,
-            legendPlace: chance(0.5) ? ri(LegendPlace.Bottom, LegendPlace.Right) : undefined,
+            legendPlace: chance(0.5) ? pick(Object.values(LegendPlace)) : undefined,
             contextMenu: chance(0.2) ? [{ text: 'Button 1' }, { text: 'Button 2' }] : undefined,
             width: chance(0.05) ? pick(['400', '300px', '50%']) : undefined,
             height: chance(0.05) ? pick(['250', '200px', '50%']) : undefined,
@@ -236,7 +243,7 @@ export function createGenerator(initialSeed: number) {
 
         if (multi) {
             settings.charts = Array.from({ length: pick([2, 3, 4, 5, 9]) }, (_, i) => {
-                const chartType = (type + i) % CHART_TYPE_COUNT
+                const chartType = CHART_TYPES[(CHART_TYPES.indexOf(type) + i) % CHART_TYPES.length]
 
                 return { type: chartType, title: `Chart ${ i }`, data: gen(chartType).settings.data }
             })

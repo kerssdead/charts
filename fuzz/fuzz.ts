@@ -2,7 +2,7 @@ import { BrowserContext, BrowserType, chromium, firefox, Page, webkit } from 'pl
 import * as fs from 'fs'
 import * as path from 'path'
 import { createGenerator } from './generator'
-import { ErrorType } from '../src/static/Enums'
+import { isFailure, isNoiseMessage } from './failures'
 
 declare global {
     interface Window {
@@ -24,19 +24,9 @@ const STRICT = !!process.env.STRICT
 const BROWSERS: Record<string, BrowserType> = { chromium, firefox, webkit }
 const BROWSER = process.env.BROWSER || 'chromium'
 
-const HEURISTIC_KINDS = ['textoverlap', 'textoutside']
-const NOISE = ['setPointerCapture', 'user gesture', 'User activation', 'ResizeObserver loop', ErrorType.InvalidGaugeRange]
-
 const seed = +(process.env.SEED || Date.now() % 1e9)
 const G = createGenerator(seed)
 const { gen, rnd, ri, pick, chance } = G
-
-const isFailure = (issue: { kind: string, msg: string }) => {
-    if (NOISE.some(noise => issue.msg.includes(noise)))
-        return false
-
-    return STRICT || !HEURISTIC_KINDS.includes(issue.kind)
-}
 
 async function main() {
     const browser = await BROWSERS[BROWSER].launch()
@@ -291,7 +281,7 @@ async function main() {
                 g2
             }) + '\n')
 
-            if (fatal || dt > 20000 || issues.some(isFailure) || consoleMessages.some(m => !NOISE.some(n => m.includes(n))))
+            if (fatal || dt > 20000 || issues.some(issue => isFailure(issue, STRICT)) || consoleMessages.some(message => !isNoiseMessage(message)))
                 failures++
         }
 

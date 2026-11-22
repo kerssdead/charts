@@ -53,3 +53,32 @@ jobs:
         name: fuzz-results-${{ matrix.browser }}
         path: fuzz/results.jsonl
         retention-days: 30
+
+  report:
+    needs: fuzz
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+
+    - name: Install dependencies
+      run: npm ci
+
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: fuzz-results-*
+        path: fuzz/results
+
+    - name: Create issues
+      run: npm run fuzz:report
+      env:
+        GH_TOKEN: ${{ github.token }}
