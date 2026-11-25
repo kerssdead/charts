@@ -40,6 +40,12 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         return this
     }
 
+    appearDuration(duration: number): this {
+        this.current.animation.appearDuration = duration
+
+        return this
+    }
+
     hoverGroup(group: string): this {
         this.current.hoverGroup = group
 

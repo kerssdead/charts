@@ -10,7 +10,8 @@ describe('Checking chart menu support', () => {
         ChartType.Pie,
         ChartType.TreeMap,
         ChartType.Gauge,
-        ChartType.TreeBar
+        ChartType.TreeBar,
+        ChartType.HeatMap
     ])('Should have menu for chart type %s', type => {
         expect(hasMenu(chart(type)))
             .toBe(true)

@@ -152,6 +152,30 @@
 
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+    const labels = count => range(count).map(String)
+
+    const heatCells = (columns, rows) => labels(rows).flatMap(y => labels(columns).map(x => ({
+        x,
+        y,
+        value: Math.round(50 + 30 * Math.sin(x * .35 + y * .2) + random() * 20)
+    })))
+
+    const heatPoints = count => range(count).map(() => ({
+        x: 600 + (random() + random() + random() - 1.5) * 500,
+        y: 400 + (random() + random() + random() - 1.5) * 300,
+        value: 1
+    }))
+
+    const heatPointsData = (count, extra) => ({
+        width: 1200,
+        height: 800,
+        resolution: 80,
+        radius: 40,
+        colors: ['#0000ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'],
+        values: heatPoints(count),
+        ...extra
+    })
+
     const scenarios = {
         'Plot · lines': scale => ({
             type: 'plot',
@@ -234,6 +258,30 @@
                     })) : []
                 }))
             }
+        }),
+        'Heat map · cells': scale => ({
+            type: 'heat-map',
+            title: 'Heat map cells',
+            enableTooltip: true,
+            data: { xLabels: labels(30), yLabels: labels(15 * scale), values: heatCells(30, 15 * scale) }
+        }),
+        'Heat map · bins': scale => ({
+            type: 'heat-map',
+            title: 'Heat map bins',
+            enableTooltip: true,
+            data: heatPointsData(2000 * scale, {})
+        }),
+        'Heat map · smooth': scale => ({
+            type: 'heat-map',
+            title: 'Heat map smooth',
+            enableTooltip: true,
+            data: heatPointsData(2000 * scale, { smooth: true })
+        }),
+        'Heat map · alive': scale => ({
+            type: 'heat-map',
+            title: 'Heat map alive',
+            enableTooltip: true,
+            data: heatPointsData(2000 * scale, { smooth: true, alive: true })
         }),
         'Grid · 9 charts': scale => ({
             title: 'Grid',

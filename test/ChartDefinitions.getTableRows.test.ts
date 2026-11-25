@@ -1,5 +1,5 @@
 import { getTableRows } from '@/charts/ChartDefinitions'
-import { getPlotRows, getTreeBarRows, getValueRows } from '@/export/TableRows'
+import { getHeatMapRows, getPlotRows, getTreeBarRows, getValueRows } from '@/export/TableRows'
 import { ChartType } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import PlotData from '@/types/data/PlotData'
@@ -8,6 +8,7 @@ import Sector from '@/types/Sector'
 import PlotSeries from '@/types/PlotSeries'
 import TreeBarRow from '@/types/TreeBarRow'
 import { isDisabledByFlag } from './ViewStateTestData'
+import { heatMapData } from './HeatMapTestData'
 
 const sectors = () => [new Sector({ label: 'a', value: 1 }), new Sector({ label: 'b', value: 3 })]
 
@@ -41,6 +42,13 @@ describe('Getting chart table rows', () => {
 
         expect(getTableRows({ type: ChartType.TreeBar, data }, isDisabledByFlag))
             .toEqual(getTreeBarRows(data, isDisabledByFlag))
+    })
+
+    it('Should get grid rows for heat map', () => {
+        const data = heatMapData({ values: [{ x: 'a', y: 'p', value: 1 }, { x: 'b', y: 'p', value: 2 }] })
+
+        expect(getTableRows({ type: ChartType.HeatMap, data }, isDisabledByFlag))
+            .toEqual(getHeatMapRows(data, isDisabledByFlag))
     })
 
     it('Should mark rows disabled by the given check', () => {

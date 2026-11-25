@@ -33,7 +33,8 @@ export declare enum ChartType {
 	Gauge = "gauge",
 	TreeMap = "tree-map",
 	SegmentedBar = "segmented-bar",
-	TreeBar = "tree-bar"
+	TreeBar = "tree-bar",
+	HeatMap = "heat-map"
 }
 export declare enum LegendPlace {
 	Bottom = "bottom",

@@ -5,6 +5,7 @@ import GaugeDefinition from '@/charts/GaugeDefinition'
 import TreeMapDefinition from '@/charts/TreeMapDefinition'
 import SegmentedBarDefinition from '@/charts/SegmentedBarDefinition'
 import TreeBarDefinition from '@/charts/TreeBarDefinition'
+import HeatMapDefinition from '@/charts/HeatMapDefinition'
 import { ChartType } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import ChartSettings from '@/types/ChartSettings'
@@ -17,6 +18,7 @@ import GaugeData from '@/types/data/GaugeData'
 import TreeData from '@/types/data/TreeData'
 import SegmentedBarData from '@/types/data/SegmentedBarData'
 import TreeBarData from '@/types/data/TreeBarData'
+import HeatMapData from '@/types/data/HeatMapData'
 import ChartViewState, { IsDisabled } from '@/types/ChartViewState'
 import Value from '@/types/base/Value'
 import { ThemePalette } from '@/Theme'
@@ -28,6 +30,7 @@ type ChartDataByType = {
     [ChartType.TreeMap]: TreeData
     [ChartType.SegmentedBar]: SegmentedBarData
     [ChartType.TreeBar]: TreeBarData
+    [ChartType.HeatMap]: HeatMapData
 }
 
 const definitions: { [Type in ChartType]: ChartDefinition<ChartDataByType[Type]> } = {
@@ -36,7 +39,8 @@ const definitions: { [Type in ChartType]: ChartDefinition<ChartDataByType[Type]>
     [ChartType.Gauge]: GaugeDefinition,
     [ChartType.TreeMap]: TreeMapDefinition,
     [ChartType.SegmentedBar]: SegmentedBarDefinition,
-    [ChartType.TreeBar]: TreeBarDefinition
+    [ChartType.TreeBar]: TreeBarDefinition,
+    [ChartType.HeatMap]: HeatMapDefinition
 }
 
 export function getChartDefinition(type: ChartType): ChartDefinition<Data> | undefined {

@@ -80,7 +80,8 @@ buildSettingsGroups([
                 { text: 'Gauge', value: 2, settingsId: 'gauge-settings' },
                 { text: 'Tree Map', value: 3, settingsId: 'tree-settings' },
                 { text: 'Segmented Bar', value: 4, settingsId: 'segmented-bar-settings' },
-                { text: 'Tree Bar', value: 5, settingsId: 'tree-settings' }
+                { text: 'Tree Bar', value: 5, settingsId: 'tree-settings' },
+                { text: 'Heat Map', value: 6, settingsId: 'heat-map-settings' }
             ]),
             createInputSetting('number', 'charts-count', 'Charts Count', { min: 1, value: 1 }),
             createInputSetting('number', 'columns', 'Columns', { min: 0 }),
@@ -169,6 +170,22 @@ buildSettingsGroups([
             createInputSetting('text', 'right-label', 'Right label', { value: '03/23/2013' }),
             createInputSetting('number', 'stops-count', 'Stops count', { min: 0, value: 2 }),
             createInputSetting('checkbox', 'percentage-mode', 'Percentage mode')
+        ]
+    },
+    {
+        id: 'heat-map-settings',
+        title: 'Heat Map',
+        controls: [
+            createSelectSetting('heat-mode', 'Data', indexedOptions('Cells', 'Points')),
+            createInputSetting('number', 'heat-columns', 'Columns', { min: 1, value: 12 }),
+            createInputSetting('number', 'heat-rows', 'Rows', { min: 1, value: 7 }),
+            createInputSetting('number', 'heat-points-count', 'Points count', { min: 0, value: 1000 }),
+            createInputSetting('range', 'heat-resolution', 'Resolution', { min: 10, max: 120, value: 60 }),
+            createInputSetting('range', 'heat-radius', 'Radius', { min: 0, max: 200, value: 0 }),
+            createSelectSetting('heat-colors', 'Colors', indexedOptions('Base color', 'Rainbow', 'Heat', 'Cool to warm')),
+            createInputSetting('checkbox', 'heat-smooth', 'Smooth'),
+            createInputSetting('checkbox', 'heat-alive', 'Alive'),
+            createInputSetting('checkbox', 'heat-disable-axes', 'Hide axes')
         ]
     }
 ])

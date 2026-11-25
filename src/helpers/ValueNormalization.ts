@@ -8,10 +8,14 @@ import SegmentedBarData from '@/types/data/SegmentedBarData'
 import TreeBarRow from '@/types/TreeBarRow'
 import PlotData from '@/types/data/PlotData'
 import TreeData from '@/types/data/TreeData'
+import HeatMapData, { isPointData } from '@/types/data/HeatMapData'
 import Formatter from '@/helpers/Formatter'
 
 function toNumber<T>(value: T, numberLocale: string | undefined) {
-    if (typeof value != 'string' && typeof value != 'number')
+    if (typeof value == 'number')
+        return Number.isFinite(value) ? value : null
+
+    if (typeof value != 'string')
         return value
 
     const number = String(value) === '' ? NaN : parseNumber(value, numberLocale)
@@ -87,4 +91,42 @@ export function normalizeTreeBarRows(
         normalizeValues(row.parts, numberLocale, scope)
         normalizeTreeBarRows(row.children, numberLocale, scope)
     }
+}
+
+export function normalizeHeatMap(data: HeatMapData, numberLocale: string | undefined, scope?: Element) {
+    normalizeValues(data.values, numberLocale, scope)
+
+    if (data.color)
+        data.color = normalizeColor(data.color, scope)
+
+    if (data.colors)
+        data.colors = data.colors.map(color => normalizeColor(color, scope))
+
+    data.radius = toNumber(data.radius, numberLocale) as number
+    data.width = toNumber(data.width, numberLocale) as number
+    data.height = toNumber(data.height, numberLocale) as number
+    data.opacity = toNumber(data.opacity, numberLocale) as number
+
+    if (isPointData(data))
+        return normalizeHeatMapPoints(data, numberLocale)
+
+    const cells = new Map(data.values.filter(cell => Number.isFinite(cell.value))
+                                     .map(cell => [JSON.stringify([cell.x, cell.y]), cell]))
+
+    data.xLabels = [...new Set(data.xLabels?.map(String) ?? [...cells.values()].map(cell => String(cell.x)))]
+    data.yLabels = [...new Set(data.yLabels?.map(String) ?? [...cells.values()].map(cell => String(cell.y)))]
+
+    const xs = new Set(data.xLabels)
+    const ys = new Set(data.yLabels)
+
+    data.values = [...cells.values()].filter(cell => xs.has(String(cell.x)) && ys.has(String(cell.y)))
+}
+
+function normalizeHeatMapPoints(data: HeatMapData, numberLocale: string | undefined) {
+    for (const point of data.values) {
+        point.x = toNumber(point.x, numberLocale) as number
+        point.y = toNumber(point.y, numberLocale) as number
+    }
+
+    data.values = data.values.filter(point => [point.value, point.x, point.y].every(Number.isFinite))
 }

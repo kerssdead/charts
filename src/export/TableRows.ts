@@ -2,6 +2,7 @@ import TableData from '@/types/TableData'
 import TableHeaderValue from '@/types/TableHeaderValue'
 import Value from '@/types/base/Value'
 import PlotData from '@/types/data/PlotData'
+import HeatMapData, { isPointData } from '@/types/data/HeatMapData'
 import { getY } from '@/types/PlotPoint'
 import TreeBarData, { flattenTreeBarRows, getCellNumber, getTreeBarTotal } from '@/types/data/TreeBarData'
 import TreeBarRow from '@/types/TreeBarRow'
@@ -83,4 +84,19 @@ export function getTreeBarRows(data: TreeBarData, isDisabled: IsDisabled): Table
     }
 
     return table
+}
+
+export function getHeatMapRows(data: HeatMapData, isDisabled: IsDisabled): TableData {
+    if (isPointData(data))
+        return getValueRows(data.values, isDisabled)
+
+    const rows = new Map(data.yLabels.map(label => [label, new Map<string, number>()]))
+
+    for (const cell of data.values)
+        rows.get(String(cell.y))?.set(String(cell.x), cell.value)
+
+    return {
+        headers: data.xLabels.map(label => ({ value: label, display: label })),
+        values: [...rows].map(([name, values]) => ({ name, color: data.color, disabled: false, values }))
+    }
 }

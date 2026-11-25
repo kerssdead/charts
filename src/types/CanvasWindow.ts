@@ -2,6 +2,7 @@ import { COORDS_MAX_X, COORDS_MAX_Y, PAN_MIN_VISIBLE, ZOOM_MAX, ZOOM_MIN } from 
 import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { clamp } from '@/helpers/Geometry'
+import Rectangle from '@/helpers/Rectangle'
 
 export default class CanvasWindow {
     x: number = 0
@@ -43,6 +44,15 @@ export default class CanvasWindow {
 
     mapY(y: number) {
         return Math.round(y / COORDS_MAX_Y * this.height + this.y)
+    }
+
+    mapBox(box: RectangleDimensions, result: RectangleDimensions = Rectangle.empty()) {
+        result.x = this.mapX(box.x)
+        result.y = this.mapY(box.y)
+        result.width = box.width / COORDS_MAX_X * this.width
+        result.height = box.height / COORDS_MAX_Y * this.height
+
+        return result
     }
 
     fit(x: number, y: number, width: number, height: number): boolean {

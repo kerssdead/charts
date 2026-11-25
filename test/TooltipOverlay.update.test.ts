@@ -216,9 +216,12 @@ class Template {
 
 let template: Template
 
-const getShownHtml = (data: ItemData | null, tooltipText: string, templateId?: string) => {
+const getShownHtml = (data: ItemData | null, tooltipText: string, templateId?: string, shapeData?: ItemData) => {
     const queue = new Queue({} as CanvasRenderingContext2D)
     const shape = new RenderItemRectangle()
+
+    if (shapeData)
+        shape.dataAt = () => shapeData
 
     shape.canvas = { x: 50, y: 50, width: 100, height: 100, radii: [0, 0, 0, 0] }
 
@@ -255,6 +258,11 @@ describe('Showing custom tooltip', () => {
     it('Should fill user template with item data', () => {
         expect(getShownHtml({ Name: 'First' }, 'Built-in', 'template'))
             .toBe('<b>First</b>')
+    })
+
+    it('Should fill user template with the data the shape has under the pointer', () => {
+        expect(getShownHtml({ Name: 'Item' }, 'Built-in', 'template', { Name: 'Cell' }))
+            .toBe('<b>Cell</b>')
     })
 
     it('Should show escaped built-in text without user template', () => {

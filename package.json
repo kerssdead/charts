@@ -1,6 +1,6 @@
 {
   "name": "charts",
-  "version": "2.1.204",
+  "version": "2.1.222",
   "description": "Typescript Canvas Charts",
   "main": "./dist/ocharts.js",
   "module": "./dist/ocharts.esm.js",
@@ -51,9 +51,9 @@
     "watch": "webpack --watch",
     "test": "jest",
     "lint": "eslint src test e2e",
-    "fuzz:report": "ts-node -P fuzz fuzz/report.ts",
     "fuzz:build": "tsc -p fuzz",
     "fuzz": "ts-node -P fuzz fuzz/fuzz.ts",
+    "fuzz:report": "ts-node -P fuzz fuzz/report.ts",
     "e2e": "playwright test",
     "e2e-baseline": "UPDATE_PERFORMANCE_BASELINE=1 playwright test",
     "sass": "sass --style=compressed src/styles/index.scss dist/main.css"

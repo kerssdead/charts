@@ -29,7 +29,11 @@ const enum AnimationTiming {
 
     treeInit = 400,
 
-    treeInitStagger = 30
+    treeInitStagger = 30,
+
+    heatMapInit = 400,
+
+    heatMapRipple = 1000
 }
 
 export default AnimationTiming

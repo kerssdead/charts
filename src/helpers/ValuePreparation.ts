@@ -9,6 +9,8 @@ import SegmentedBarData from '@/types/data/SegmentedBarData'
 import TreeBarRow from '@/types/TreeBarRow'
 import TreeBarData from '@/types/data/TreeBarData'
 import PlotData from '@/types/data/PlotData'
+import HeatMapCell from '@/types/HeatMapCell'
+import HeatMapData, { isPointData } from '@/types/data/HeatMapData'
 import Data from '@/types/interfaces/Data'
 
 function createValuePreparer() {
@@ -76,4 +78,20 @@ export function prepareTreeBarRows(data: TreeBarData, numberLocale: string | und
 
     data.values = data.values.map(prepareRow)
     data.numberLocale = numberLocale
+}
+
+export function prepareHeatMapCells(data: HeatMapData) {
+    data.values = data.values.map(value => {
+        const cell = value instanceof Value ? value : new HeatMapCell(value)
+
+        if (!isPointData(data)) {
+            cell.x = String(cell.x)
+            cell.y = String(cell.y)
+        }
+
+        cell.label ??= isPointData(data) ? `x ${ cell.x }, y ${ cell.y }` : `${ cell.y } / ${ cell.x }`
+        cell.id ??= `${ cell.x }|${ cell.y }`
+
+        return cell
+    })
 }

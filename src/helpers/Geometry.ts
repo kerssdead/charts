@@ -8,6 +8,10 @@ export function getInnerRadiusRatio(innerRadiusPercent: number, defaultPercent: 
     return clamp(Number.isFinite(innerRadiusPercent) ? innerRadiusPercent : defaultPercent, 0, 100) / 100
 }
 
+export function smoothstep(t: number) {
+    return t * t * (3 - 2 * t)
+}
+
 export function lerp(from: number, to: number, t: number) {
     return from + (to - from) * t
 }

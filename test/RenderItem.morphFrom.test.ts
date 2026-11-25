@@ -84,6 +84,35 @@ describe('Appearing item', () => {
             .toBe(false)
     })
 
+    it('Should use the duration of the item when it has its own', () => {
+        const item = createItem()
+
+        item.animation.appearDuration = 900
+        item.appear(100)
+
+        expect(item.animation.initDuration)
+            .toBe(900)
+    })
+
+    it('Should use the own duration of the item when morphing in', () => {
+        const item = createItem(shape({ appear: jest.fn(() => true) }))
+
+        item.animation.appearDuration = 900
+        item.appear(100)
+
+        expect(item.animation.morphDuration)
+            .toBe(900)
+    })
+
+    it('Should use the transition duration without an own one', () => {
+        const item = createItem()
+
+        item.appear(100)
+
+        expect(item.animation.initDuration)
+            .toBe(100)
+    })
+
     it('Should morph in when the shape can appear', () => {
         const item = createItem(shape({ appear: jest.fn(() => true) }))
 

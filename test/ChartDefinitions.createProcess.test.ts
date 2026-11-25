@@ -5,6 +5,7 @@ import PlotProcess from '@/render/plot/PlotProcess'
 import TreeMapProcess from '@/render/tree/TreeMapProcess'
 import SegmentedBarProcess from '@/render/segmentedBar/SegmentedBarProcess'
 import TreeBarProcess from '@/render/treeBar/TreeBarProcess'
+import HeatMapProcess from '@/render/heatMap/HeatMapProcess'
 import { ChartType } from '@/static/Enums'
 import ChartSettings from '@/types/ChartSettings'
 import Data from '@/types/interfaces/Data'
@@ -17,6 +18,7 @@ jest.mock('@/render/plot/PlotProcess')
 jest.mock('@/render/tree/TreeMapProcess')
 jest.mock('@/render/segmentedBar/SegmentedBarProcess')
 jest.mock('@/render/treeBar/TreeBarProcess')
+jest.mock('@/render/heatMap/HeatMapProcess')
 
 const data = {} as Data
 const pixel = { x: 5, y: 12.5 }
@@ -30,7 +32,8 @@ describe('Checking process creation', () => {
         [ChartType.TreeMap, TreeMapProcess],
         [ChartType.Gauge, GaugeProcess],
         [ChartType.SegmentedBar, SegmentedBarProcess],
-        [ChartType.TreeBar, TreeBarProcess]
+        [ChartType.TreeBar, TreeBarProcess],
+        [ChartType.HeatMap, HeatMapProcess]
     ])('Should create matching process for chart type %s', (type, Process) => {
         const processSettings = { ...settings, theme: LIGHT_THEME }
 

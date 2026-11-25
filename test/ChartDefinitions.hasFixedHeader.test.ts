@@ -15,7 +15,8 @@ describe('Checking fixed header chart types', () => {
         ChartType.Pie,
         ChartType.TreeMap,
         ChartType.Gauge,
-        ChartType.SegmentedBar
+        ChartType.SegmentedBar,
+        ChartType.HeatMap
     ])('Should not have fixed header for chart type %s', type => {
         expect(hasFixedHeader(chart(type)))
             .toBe(false)

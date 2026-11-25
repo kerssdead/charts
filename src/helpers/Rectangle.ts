@@ -1,6 +1,7 @@
 import Point from '@/types/Point'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { clamp, lerp } from '@/helpers/Geometry'
+import { Bounds } from '@/types/interfaces/RenderItemBase'
 
 export default abstract class Rectangle {
     static empty(): RectangleDimensions {
@@ -22,6 +23,10 @@ export default abstract class Rectangle {
             width: lerp(from.width, to.width, t),
             height: lerp(from.height, to.height, t)
         }
+    }
+
+    static toBounds({ x, y, width, height }: RectangleDimensions): Bounds {
+        return { left: x, top: y, right: x + width, bottom: y + height }
     }
 
     static contains(rect: RectangleDimensions, point: Point | null) {

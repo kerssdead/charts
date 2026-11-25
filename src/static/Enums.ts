@@ -9,7 +9,9 @@ export enum ChartType {
 
     SegmentedBar = 'segmented-bar',
 
-    TreeBar = 'tree-bar'
+    TreeBar = 'tree-bar',
+
+    HeatMap = 'heat-map'
 }
 
 export const enum ErrorType {

@@ -20,6 +20,13 @@ describe('Getting values with children', () => {
             .toEqual([parent, child])
     })
 
+    it('Should get no values for heat map cells', () => {
+        const values = [{ x: 'a', y: 'p', value: 1 }]
+
+        expect(getValuesWithChildren({ type: ChartType.HeatMap, data: { values } as ChartItem['data'] }))
+            .toEqual([])
+    })
+
     it('Should get no values for chart without data', () => {
         expect(getValuesWithChildren({ type: ChartType.Pie } as ChartItem))
             .toEqual([])

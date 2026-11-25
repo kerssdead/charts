@@ -2,6 +2,7 @@ import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
 import RenderItem from '@/types/RenderItem'
 import { ThemePalette } from '@/Theme'
+import ItemData from '@/types/ItemData'
 
 export type Bounds = {
     left: number
@@ -28,6 +29,10 @@ export default abstract class RenderItemBase {
     }
 
     tooltipAt(_point: Point): string | null {
+        return null
+    }
+
+    dataAt(_point: Point): ItemData | null {
         return null
     }
 

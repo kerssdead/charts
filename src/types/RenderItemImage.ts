@@ -5,6 +5,8 @@ import { COORDS_MAX_X, FULL_ANGLE } from '@/static/constants/Index'
 import { getImage } from '@/helpers/Images'
 import { ImageCrossOrigin } from '@/static/Enums'
 import { lerp } from '@/helpers/Geometry'
+import RectangleDimensions from '@/types/RectangleDimensions'
+import Rectangle from '@/helpers/Rectangle'
 
 type ImageCanvas = Point & {
     size: number
@@ -21,7 +23,11 @@ export default class RenderItemImage extends RenderItemBase {
 
     from: Point | null = null
 
+    box: RectangleDimensions | null = null
+
     private canvas: ImageCanvas = { x: 0, y: 0, size: 0 }
+
+    private readonly canvasBox = Rectangle.empty()
 
     constructor(url: string) {
         super()
@@ -54,9 +60,18 @@ export default class RenderItemImage extends RenderItemBase {
         this.canvas.x = window.mapX(position.x)
         this.canvas.y = window.mapY(position.y)
         this.canvas.size = this.size / COORDS_MAX_X * window.width
+
+        if (this.box)
+            window.mapBox(this.box, this.canvasBox)
     }
 
     render(ctx: CanvasRenderingContext2D): void {
+        if (this.box) {
+            this.renderBox(ctx)
+
+            return
+        }
+
         const { x, y, size } = this.canvas
 
         ctx.arc(x, y, size / 2, 0, FULL_ANGLE)
@@ -79,7 +94,17 @@ export default class RenderItemImage extends RenderItemBase {
         ctx.restore()
     }
 
+    private renderBox(ctx: CanvasRenderingContext2D) {
+        const image = getImage(this.url, this.crossOrigin)
+
+        if (image)
+            ctx.drawImage(image, this.canvasBox.x, this.canvasBox.y, this.canvasBox.width, this.canvasBox.height)
+    }
+
     getBounds() {
+        if (this.box)
+            return Rectangle.toBounds(this.canvasBox)
+
         const { x, y, size } = this.canvas
 
         return { left: x - size / 2, top: y - size / 2, right: x + size / 2, bottom: y + size / 2 }

@@ -43,6 +43,26 @@ export function spreadColor(base: string, index: number, count: number, range: n
     return adjustColor(base, Math.round((index / (count - 1) * 2 - 1) * range) + shift) + expandHex(base).slice(7)
 }
 
+export function blendColors(from: string, to: string, ratio: number) {
+    const start = hexToRgb(from)
+    const end = hexToRgb(to)
+
+    if (!start || !end)
+        return to
+
+    const channels = [[start.r, end.r], [start.g, end.g], [start.b, end.b]]
+    const alpha = lerp(getAlpha(from), getAlpha(to), ratio)
+    const hasAlpha = expandHex(from).length > 7 || expandHex(to).length > 7
+
+    return '#' + channels.map(([a, b]) => toHex(lerp(a, b, ratio))).join('') + (hasAlpha ? toHex(alpha) : '')
+}
+
+function getAlpha(color: string) {
+    const hex = expandHex(color)
+
+    return hex.length > 7 ? parseInt(hex.slice(7, 9), 16) : 255
+}
+
 function toHex(channel: number) {
     return Math.round(clamp(channel, 0, 255)).toString(16).padStart(2, '0')
 }

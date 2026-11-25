@@ -73,6 +73,42 @@
             "idleFrames": 4,
             "update": 41.5,
             "updateFrameAvg": 30.55000000447035
+        },
+        "Heat map · cells": {
+            "create": 723.7000000029802,
+            "initFrameAvg": 41.04999999701977,
+            "hoverFrameAvg": 10.433333337306976,
+            "hoverExtra": 31.350000001490116,
+            "idleFrames": 5,
+            "update": 61.599999994039536,
+            "updateFrameAvg": 20.600000001490116
+        },
+        "Heat map · bins": {
+            "create": 562.7999999970198,
+            "initFrameAvg": 24.80000000447035,
+            "hoverFrameAvg": 5.525000002235174,
+            "hoverExtra": 24.299999997019768,
+            "idleFrames": 5,
+            "update": 119.90000000596046,
+            "updateFrameAvg": 24.80000000447035
+        },
+        "Heat map · smooth": {
+            "create": 538.5,
+            "initFrameAvg": 47.29999999701977,
+            "hoverFrameAvg": 12.100000001490116,
+            "hoverExtra": 60.899999998509884,
+            "idleFrames": 4,
+            "update": 101.8999999910593,
+            "updateFrameAvg": 27.399999998509884
+        },
+        "Heat map · alive": {
+            "create": 516.4000000208616,
+            "initFrameAvg": 49,
+            "hoverFrameAvg": 12.375,
+            "hoverExtra": 62,
+            "idleFrames": 4,
+            "update": 93.40000000596046,
+            "updateFrameAvg": 29.50000000745058
         }
     }
 }

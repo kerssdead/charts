@@ -118,7 +118,7 @@ describe('Getting tree data', () => {
         expect((items.get('tree-a-label')?.shape as RenderItemText).value)
             .toBe('A')
         expect(items.get('tree-a-label')?.color)
-            .toBe('#000000')
+            .toBe('#ffffff')
         expect(items.has('tree-b-label'))
             .toBe(false)
     })

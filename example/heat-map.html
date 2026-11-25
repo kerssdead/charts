@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Heat Map
+    </title>
+
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="../dist/main.css" rel="stylesheet">
+
+    <script src="../dist/ocharts.js"></script>
+
+    <style>
+        html, body {
+            height: auto;
+            font: 14px system-ui, sans-serif;
+            color: light-dark(#1d1d1f, #f5f5f7);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid light-dark(#d2d2d7, #3a3a3c);
+        }
+
+        .controls label {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .controls output {
+            min-width: 3ch;
+            color: light-dark(#6e6e73, #98989d);
+        }
+
+        #playground {
+            height: 480px;
+        }
+
+        #gallery {
+            height: 1300px;
+        }
+    </style>
+</head>
+
+<body>
+<form class="controls">
+    <label>
+        <input type="checkbox" id="smooth" checked>
+        Smooth
+    </label>
+
+    <label>
+        <input type="checkbox" id="alive">
+        Alive
+    </label>
+
+    <label>
+        <input type="checkbox" id="image" checked>
+        Floor plan
+    </label>
+
+    <label>
+        Radius
+        <input type="range" id="radius" min="10" max="200" value="60">
+        <output id="radius-value">60</output>
+    </label>
+
+    <label>
+        Resolution
+        <input type="range" id="resolution" min="10" max="120" value="60">
+        <output id="resolution-value">60</output>
+    </label>
+
+    <label>
+        Colors
+        <select id="ramp">
+            <option value="rainbow">Rainbow</option>
+            <option value="heat">Heat</option>
+            <option value="cool">Cool to warm</option>
+            <option value="single">Single color</option>
+        </select>
+    </label>
+</form>
+
+<div id="playground"></div>
+<div id="gallery"></div>
+</body>
+
+<script>
+    let seed = 7
+
+    const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+
+    const svg = body => 'data:image/svg+xml,' + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">${ body }</svg>`
+    )
+
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    const hours = ['0h', '4h', '8h', '12h', '16h', '20h']
+
+    const visits = days.flatMap((day, dayIndex) => hours.map((hour, hourIndex) => ({
+        x: day,
+        y: hour,
+        value: Math.round((dayIndex < 5 ? 10 : 4) * (1 + Math.sin(hourIndex * 1.1)) + random() * 6)
+    })))
+
+    const plan = svg(`
+        <rect width="1200" height="800" fill="#f2efe8"/>
+        <g fill="none" stroke="#8a8578" stroke-width="6">
+            <rect x="20" y="20" width="1160" height="760"/>
+            <path d="M420 20V330M420 470V780M20 400H420M800 20V250M800 390V780M800 600H1180"/>
+        </g>`)
+
+    const map = svg(`
+        <rect width="1200" height="800" fill="#e9e5dc"/>
+        <path d="M0 520C140 470 220 560 330 600C440 640 470 720 440 800H0Z" fill="#a9c7e4"/>
+        <path d="M1200 90C1110 140 1040 110 960 150C880 190 860 40 780 0H1200Z" fill="#a9c7e4"/>
+        <g fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round">
+            <path d="M0 300C260 280 420 360 640 320S1000 380 1200 340"/>
+            <path d="M560 0C540 200 620 380 600 560S660 720 700 800"/>
+            <path d="M200 0C260 180 360 240 380 420"/>
+            <path d="M820 800C860 620 980 560 1200 560"/>
+        </g>
+        <g fill="none" stroke="#d4cfc3" stroke-width="3">
+            <path d="M0 160H1200M0 440H1200M0 700H1200M300 0V800M900 0V800"/>
+        </g>`)
+
+    const cluster = (x, y, spread, count) => Array.from({ length: count }, () => ({
+        x: x + (random() + random() + random() - 1.5) * spread,
+        y: y + (random() + random() + random() - 1.5) * spread,
+        value: 1
+    }))
+
+    const people = [
+        ...cluster(200, 200, 90, 400),
+        ...cluster(620, 520, 160, 900),
+        ...cluster(1000, 150, 70, 250)
+    ]
+
+    const hotSpots = [
+        ...cluster(320, 260, 140, 500),
+        ...cluster(720, 520, 200, 900),
+        ...cluster(980, 220, 110, 300),
+        ...cluster(520, 380, 120, 350)
+    ]
+
+    const abstractLabels = count => Array.from({ length: count }, (_, index) => String(index))
+
+    const abstractField = abstractLabels(18).flatMap(y => abstractLabels(28).map(x => ({
+        x: x,
+        y: y,
+        value: 50
+               + 30 * Math.sin(x * .35 + y * .2)
+               + 25 * Math.cos(y * .5 - x * .15)
+               + 15 * Math.sin(x * .9) * Math.cos(y * .7)
+               + random() * 6
+    })))
+
+    const ramps = {
+        rainbow: ['#0000ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'],
+        heat: ['#000000', '#7a0403', '#e8440c', '#fdb927', '#ffffcc'],
+        cool: ['#3b4cc0', '#8db0fe', '#dddddd', '#f4987a', '#b40426'],
+        single: undefined
+    }
+
+    const control = id => document.getElementById(id)
+
+    const playgroundSettings = () => ({
+        type: 'heat-map',
+        title: 'Playground',
+        enableTooltip: true,
+        data: {
+            smooth: control('smooth').checked,
+            alive: control('alive').checked,
+            image: control('image').checked ? plan : undefined,
+            radius: Number(control('radius').value),
+            resolution: Number(control('resolution').value),
+            colors: ramps[control('ramp').value],
+            color: '#d62728',
+            values: people
+        }
+    })
+
+    const playground = OCharts.chart(control('playground'), playgroundSettings())
+
+    document.querySelector('.controls').addEventListener('input', () => {
+        control('radius-value').textContent = control('radius').value
+        control('resolution-value').textContent = control('resolution').value
+
+        playground.applySettings(playgroundSettings())
+    })
+
+    OCharts.chart(
+        control('gallery'),
+        {
+            title: 'Heat Map',
+            enableTooltip: true,
+            columns: 2,
+            charts: [
+                {
+                    type: 'heat-map',
+                    title: 'Visits by weekday and hour',
+                    data: {
+                        xTitle: 'Weekday',
+                        yTitle: 'Hour',
+                        xLabels: days,
+                        yLabels: hours,
+                        values: visits
+                    }
+                },
+                {
+                    type: 'heat-map',
+                    title: 'Crowd over a floor plan',
+                    data: {
+                        image: plan,
+                        resolution: 40,
+                        color: '#d62728',
+                        values: people
+                    }
+                },
+                {
+                    type: 'heat-map',
+                    title: 'Smooth visits',
+                    data: {
+                        smooth: true,
+                        colors: ramps.rainbow,
+                        xTitle: 'Weekday',
+                        yTitle: 'Hour',
+                        xLabels: days,
+                        yLabels: hours,
+                        values: visits
+                    }
+                },
+                {
+                    type: 'heat-map',
+                    title: 'Smooth crowd over a floor plan',
+                    data: {
+                        smooth: true,
+                        colors: ramps.rainbow,
+                        image: plan,
+                        resolution: 60,
+                        radius: 60,
+                        values: people
+                    }
+                },
+                {
+                    type: 'heat-map',
+                    title: 'Abstract field',
+                    data: {
+                        smooth: true,
+                        disableAxes: true,
+                        colors: ramps.rainbow,
+                        values: abstractField
+                    }
+                },
+                {
+                    type: 'heat-map',
+                    title: 'Hot spots on a map',
+                    data: {
+                        smooth: true,
+                        colors: ramps.rainbow,
+                        image: map,
+                        opacity: .75,
+                        resolution: 80,
+                        radius: 45,
+                        values: hotSpots
+                    }
+                }
+            ]
+        }
+    )
+</script>
+</html>

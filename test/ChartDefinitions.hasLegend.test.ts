@@ -13,9 +13,11 @@ describe('Checking chart legend support', () => {
             .toEqual([true, true])
     })
 
-    it('Should not support legend for gauge, segmented bar and tree bar', () => {
-        expect([ChartType.Gauge, ChartType.SegmentedBar, ChartType.TreeBar].map(type => hasLegend(chart(type))))
-            .toEqual([false, false, false])
+    it('Should not support legend for gauge, segmented bar, tree bar and heat map', () => {
+        const types = [ChartType.Gauge, ChartType.SegmentedBar, ChartType.TreeBar, ChartType.HeatMap]
+
+        expect(types.map(type => hasLegend(chart(type))))
+            .toEqual([false, false, false, false])
     })
 
     it('Should support legend for tree map only with several roots', () => {

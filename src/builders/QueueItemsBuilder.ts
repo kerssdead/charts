@@ -5,6 +5,8 @@ import QueueRectangleItemBuilder from '@/builders/QueueRectangleItemBuilder'
 import QueueArcItemBuilder from '@/builders/QueueArcItemBuilder'
 import QueueTextItemBuilder from '@/builders/QueueTextItemBuilder'
 import QueueImageItemBuilder from '@/builders/QueueImageItemBuilder'
+import QueueFieldItemBuilder from '@/builders/QueueFieldItemBuilder'
+import QueueCellsItemBuilder from '@/builders/QueueCellsItemBuilder'
 import QueueLeaderLineItemBuilder from '@/builders/QueueLeaderLineItemBuilder'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import LeaderOrigin from '@/types/interfaces/LeaderOrigin'
@@ -54,6 +56,14 @@ export default class QueueItemsBuilder {
 
     text(text: string) {
         return this.next(new QueueTextItemBuilder(text))
+    }
+
+    field() {
+        return this.next(new QueueFieldItemBuilder())
+    }
+
+    cells() {
+        return this.next(new QueueCellsItemBuilder())
     }
 
     image(url: string) {

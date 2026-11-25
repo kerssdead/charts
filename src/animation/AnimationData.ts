@@ -31,6 +31,8 @@ export default class AnimationData {
 
     appearDelay: number = 0
 
+    appearDuration: number = 0
+
     morphFade: MorphFade | null = null
 
     removeAfterMorph: boolean = false

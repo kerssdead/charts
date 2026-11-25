@@ -19,6 +19,12 @@ export default class QueueImageItemBuilder extends QueueItemBaseBuilder<RenderIt
         return this
     }
 
+    box(x: number, y: number, width: number, height: number) {
+        this.shape.box = { x, y, width, height }
+
+        return this
+    }
+
     crossOrigin(mode: ImageCrossOrigin | undefined) {
         this.shape.crossOrigin = mode
 

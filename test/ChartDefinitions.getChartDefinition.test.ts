@@ -8,7 +8,8 @@ describe('Getting chart definitions', () => {
         ChartType.TreeMap,
         ChartType.Gauge,
         ChartType.SegmentedBar,
-        ChartType.TreeBar
+        ChartType.TreeBar,
+        ChartType.HeatMap
     ])('Should define chart type %s', type => {
         expect(getChartDefinition(type))
             .toBeDefined()

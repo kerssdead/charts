@@ -126,7 +126,7 @@ export default class TooltipOverlay extends Overlay {
             version: queue.version,
             window: Rectangle.copy(window),
             template: target?.tooltipAt(point) ?? null,
-            html: target ? this.getTemplateHtml(target) : null
+            html: target ? this.getTemplateHtml(target, point) : null
         }
 
         return this.scan
@@ -139,7 +139,9 @@ export default class TooltipOverlay extends Overlay {
                && Rectangle.same(scan.window, window)
     }
 
-    private getTemplateHtml(target: RenderItem) {
-        return this.template && target.data ? this.template(target.data) : null
+    private getTemplateHtml(target: RenderItem, point: Point) {
+        const data = target.dataAt(point)
+
+        return this.template && data ? this.template(data) : null
     }
 }

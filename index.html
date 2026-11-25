@@ -339,11 +339,76 @@
                 break
             }
 
+            case 6:
+                return getHeatMapValues(valuesType, pickValue)
+
             default:
                 break
         }
 
         return values
+    }
+
+    const HEAT_MAP_EXTENT = { width: 1200, height: 800 }
+
+    const HEAT_MAP_RAMPS = [
+        undefined,
+        ['#0000ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'],
+        ['#000000', '#7a0403', '#e8440c', '#fdb927', '#ffffcc'],
+        ['#3b4cc0', '#8db0fe', '#dddddd', '#f4987a', '#b40426']
+    ]
+
+    const isHeatMapPoints = () => inputNumber('heat-mode') === 1
+
+    function getHeatMapValues(valuesType, pickValue) {
+        if (isHeatMapPoints())
+            return getHeatMapPoints(valuesType)
+
+        const columns = Math.max(inputNumber('heat-columns'), 1),
+            rows = Math.max(inputNumber('heat-rows'), 1),
+            sameValue = rng.nextFloat() * inputValue('base-value')
+
+        return Array.from({ length: columns * rows }, (_, index) => ({
+            x: `C${ index % columns + 1 }`,
+            y: `R${ Math.floor(index / columns) + 1 }`,
+            value: pickValue(index, sameValue),
+            data: getData(index)
+        }))
+    }
+
+    function getHeatMapPoints(valuesType) {
+        const centers = Array.from({ length: 3 }, () => ({
+                x: rng.nextFloat() * HEAT_MAP_EXTENT.width,
+                y: rng.nextFloat() * HEAT_MAP_EXTENT.height,
+                spread: 60 + rng.nextFloat() * 160
+            })),
+            spreadOf = () => rng.nextFloat() + rng.nextFloat() + rng.nextFloat() - 1.5,
+            clampTo = (value, max) => Math.min(Math.max(value, 0), max)
+
+        return Array.from({ length: inputNumber('heat-points-count') }, (_, index) => {
+            const center = centers[index % centers.length]
+
+            return {
+                x: clampTo(center.x + spreadOf() * center.spread, HEAT_MAP_EXTENT.width),
+                y: clampTo(center.y + spreadOf() * center.spread, HEAT_MAP_EXTENT.height),
+                value: valuesType === 0 ? 1 + rng.nextFloat() : 1
+            }
+        })
+    }
+
+    function heatMapData() {
+        const points = isHeatMapPoints()
+
+        return {
+            smooth: isChecked('heat-smooth'),
+            alive: isChecked('heat-alive'),
+            disableAxes: isChecked('heat-disable-axes'),
+            colors: HEAT_MAP_RAMPS[inputNumber('heat-colors')],
+            resolution: points ? inputNumber('heat-resolution') : undefined,
+            radius: points && inputNumber('heat-radius') > 0 ? inputNumber('heat-radius') : undefined,
+            width: points ? HEAT_MAP_EXTENT.width : undefined,
+            height: points ? HEAT_MAP_EXTENT.height : undefined
+        }
     }
 
     function getContextMenu() {
@@ -420,7 +485,8 @@
                 simple: isChecked('simple'),
                 innerTitle: inputValue('inner-title'),
                 shortLabels: isChecked('short-labels'),
-                yMax: inputValue('y-max')
+                yMax: inputValue('y-max'),
+                ...(chartType === 6 ? heatMapData() : {})
             }
         }
 

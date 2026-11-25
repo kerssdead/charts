@@ -217,6 +217,10 @@ export default class RenderItem {
         return this.shape.tooltipAt(point) ?? resolveTooltip(this.tooltipTemplate ?? null)
     }
 
+    dataAt(point: Point) {
+        return this.shape.dataAt(point) ?? this.data
+    }
+
     isClickableAt(point: Point, isContextOpen: boolean) {
         return !!this.onClick
                && !this.isInitializing
@@ -266,10 +270,12 @@ export default class RenderItem {
     }
 
     appear(duration: number, mapY?: (y: number) => number) {
-        if (!this.shape.appear(mapY))
-            return this.animation.startInit(duration, false)
+        const length = this.animation.appearDuration || duration
 
-        this.morphIn(duration, this.animation.appearDelay)
+        if (!this.shape.appear(mapY))
+            return this.animation.startInit(length, false)
+
+        this.morphIn(length, this.animation.appearDelay)
     }
 
     disappear(duration: number, mapY?: (y: number) => number) {

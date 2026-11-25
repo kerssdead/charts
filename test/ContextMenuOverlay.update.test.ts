@@ -80,7 +80,8 @@ describe('Updating context menu overlay', () => {
 
     it('Should build buttons from the menu of the item under the context point', () => {
         const overlay = new ContextMenuOverlay({} as HTMLCanvasElement, jest.fn(), jest.fn())
-        const target = { data: { id: 1 } }
+        const dataAt = jest.fn(() => ({ id: 1 }))
+        const target = { dataAt }
         const queue = {
             findTop: jest.fn((predicate: (item: unknown) => boolean) => {
                 predicate({ hasContextMenuAt: () => true })
@@ -107,6 +108,8 @@ describe('Updating context menu overlay', () => {
             .toEqual(['Open'])
         expect(action)
             .toHaveBeenCalledWith({ id: 1 })
+        expect(dataAt)
+            .toHaveBeenCalledWith({ x: 1, y: 2 })
     })
 
     it('Should not open a popup when nothing has a context menu at the point', () => {
@@ -177,7 +180,7 @@ describe('Updating context menu overlay', () => {
 
     it('Should pass no data to menu actions of items without data', () => {
         const overlay = new ContextMenuOverlay({} as HTMLCanvasElement, jest.fn(), jest.fn())
-        const queue = { findTop: jest.fn(() => ({ data: null })) } as unknown as Queue
+        const queue = { findTop: jest.fn(() => ({ dataAt: () => null })) } as unknown as Queue
         const action = jest.fn()
 
         overlay.menu = [{ text: 'Open', action }]

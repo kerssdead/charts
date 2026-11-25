@@ -25,6 +25,10 @@ export const SCENARIOS = [
     'Treemap',
     'Segmented bar',
     'Tree bar',
+    'Heat map · cells',
+    'Heat map · bins',
+    'Heat map · smooth',
+    'Heat map · alive',
     'Grid · 9 charts'
 ]
 

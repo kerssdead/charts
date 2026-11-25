@@ -89,6 +89,6 @@ export default class ContextMenuOverlay extends Overlay {
 
         const target = queue.findTop(item => item.hasContextMenuAt(context.point))
 
-        return target ? fromDropdownItems(this.menu, target.data ?? undefined) : []
+        return target ? fromDropdownItems(this.menu, target.dataAt(context.point) ?? undefined) : []
     }
 }

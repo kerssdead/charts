@@ -89,6 +89,11 @@ const exampleCards = buildExampleCards([
         settings: { 'chart-type': 3, 'tree-sectors-count': 12, legend: true, tooltip: true }
     },
     {
+        title: 'Heat map',
+        description: 'Smooth crowd of points with a color ramp',
+        settings: { 'chart-type': 6, 'heat-mode': 1, 'heat-smooth': true, 'heat-colors': 1, tooltip: true }
+    },
+    {
         title: 'Dashboard',
         description: 'Six mixed charts in three columns',
         settings: { 'charts-count': 6, columns: 3, title: true }

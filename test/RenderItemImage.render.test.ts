@@ -43,6 +43,40 @@ describe('Rendering image', () => {
             .toHaveBeenCalled()
     })
 
+    it('Should draw a loaded image over the whole box', () => {
+        (getImage as jest.Mock).mockReturnValue({ naturalWidth: 10, naturalHeight: 20 })
+
+        const item = image()
+        const ctx = context()
+
+        item.box = { x: 1000, y: 2000, width: 500, height: 250 }
+        item.adjust(WINDOW)
+        item.render(ctx as unknown as CanvasRenderingContext2D)
+
+        expect(ctx.drawImage)
+            .toHaveBeenCalledWith({ naturalWidth: 10, naturalHeight: 20 }, 200, 400, 100, 50)
+        expect(ctx.clip)
+            .not.toHaveBeenCalled()
+    })
+
+    it('Should draw nothing for a box while the image is not loaded', () => {
+        (getImage as jest.Mock).mockReturnValue(null)
+
+        const item = image()
+        const ctx = context()
+
+        item.box = { x: 1000, y: 2000, width: 500, height: 250 }
+        item.adjust(WINDOW)
+        item.render(ctx as unknown as CanvasRenderingContext2D)
+
+        expect(ctx.drawImage)
+            .not.toHaveBeenCalled()
+        expect(ctx.arc)
+            .not.toHaveBeenCalled()
+        expect(ctx.fill)
+            .not.toHaveBeenCalled()
+    })
+
     it('Should load images with the configured cross origin', () => {
         (getImage as jest.Mock).mockReturnValue(null)
 

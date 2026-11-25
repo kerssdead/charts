@@ -11,7 +11,8 @@ const ALL_TYPES = [
     ChartType.Gauge,
     ChartType.TreeMap,
     ChartType.SegmentedBar,
-    ChartType.TreeBar
+    ChartType.TreeBar,
+    ChartType.HeatMap
 ]
 
 describe('Getting palette values from chart definitions', () => {
