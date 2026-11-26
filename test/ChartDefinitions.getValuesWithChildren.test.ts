@@ -23,7 +23,7 @@ describe('Getting values with children', () => {
     it('Should get no values for heat map cells', () => {
         const values = [{ x: 'a', y: 'p', value: 1 }]
 
-        expect(getValuesWithChildren({ type: ChartType.HeatMap, data: { values } as ChartItem['data'] }))
+        expect(getValuesWithChildren({ type: ChartType.HeatMap, data: { values } as unknown as ChartItem['data'] }))
             .toEqual([])
     })
 

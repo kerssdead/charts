@@ -43,7 +43,7 @@ export const context = () => {
     const ctx = {
         imageSmoothingEnabled: true,
         smoothingWhileDrawing: [] as boolean[],
-        drawImage: jest.fn(() => ctx.smoothingWhileDrawing.push(ctx.imageSmoothingEnabled))
+        drawImage: jest.fn((): number => ctx.smoothingWhileDrawing.push(ctx.imageSmoothingEnabled))
     }
 
     return ctx

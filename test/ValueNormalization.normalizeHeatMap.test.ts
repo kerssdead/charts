@@ -2,7 +2,7 @@ import { normalizeHeatMap } from '@/helpers/ValueNormalization'
 import { prepareHeatMapCells } from '@/helpers/ValuePreparation'
 import HeatMapData from '@/types/data/HeatMapData'
 
-const normalize = (fields: Partial<HeatMapData> & { values: object[] }, numberLocale?: string) => {
+const normalize = (fields: Omit<Partial<HeatMapData>, 'values'> & { values: object[] }, numberLocale?: string) => {
     const data = { ...fields } as HeatMapData
 
     prepareHeatMapCells(data)

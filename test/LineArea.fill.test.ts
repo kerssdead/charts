@@ -1,4 +1,4 @@
-import LineArea from '@/helpers/LineArea'
+import LineArea, { LinePath } from '@/helpers/LineArea'
 import { layerContext, WINDOW } from './RenderItemLineTestData'
 
 const mockLayer: { current: unknown, requests: number[][] } = { current: null, requests: [] }
@@ -24,7 +24,12 @@ const fill = (left: number, right: number, ratio: number = 1) => {
 
     area.baseline = 400
     area.adjust(WINDOW, 1)
-    area.fill(ctx as unknown as CanvasRenderingContext2D, '#ff0000', BOUNDS, { left, right, trace: jest.fn() })
+    area.fill(
+        ctx as unknown as CanvasRenderingContext2D,
+        '#ff0000',
+        BOUNDS,
+        { left, right, trace: jest.fn() } as unknown as LinePath
+    )
 
     return { ctx, layer }
 }

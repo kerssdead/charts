@@ -139,7 +139,7 @@ describe('Getting heat map data', () => {
 
         const { box } = getItems(labeled(CELLS(), { image: 'plan.png' })).get('heat-image')?.shape as RenderItemImage
 
-        expect(box?.width / box?.height)
+        expect(Number(box?.width) / Number(box?.height))
             .toBeCloseTo(2, 1)
     })
 
@@ -149,7 +149,7 @@ describe('Getting heat map data', () => {
         const data = labeled(CELLS(), { image: 'plan.png', width: 100, height: 100 })
         const { box } = getItems(data).get('heat-image')?.shape as RenderItemImage
 
-        expect(box?.width / box?.height)
+        expect(Number(box?.width) / Number(box?.height))
             .toBeCloseTo(1, 1)
     })
 

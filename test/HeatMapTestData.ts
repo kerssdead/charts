@@ -2,7 +2,7 @@ import HeatMapData from '@/types/data/HeatMapData'
 import { normalizeHeatMap } from '@/helpers/ValueNormalization'
 import { prepareHeatMapCells } from '@/helpers/ValuePreparation'
 
-export function heatMapData(fields: Partial<HeatMapData> & { values: object[] }) {
+export function heatMapData(fields: Omit<Partial<HeatMapData>, 'values'> & { values: object[] }) {
     const data = { color: '#d62728', ...fields } as HeatMapData
 
     prepareHeatMapCells(data)
