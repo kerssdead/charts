@@ -1,4 +1,5 @@
 import CanvasWindow from '@/types/CanvasWindow'
+import Span from '@/types/Span'
 import { Bounds } from '@/types/interfaces/RenderItemBase'
 import { lerp } from '@/helpers/Geometry'
 import { withAlpha } from '@/helpers/Color'
@@ -12,7 +13,9 @@ const AREA_TOP_ALPHA = 0.5
 export type LinePath = {
     left: number
     right: number
+    lastPointIndex: number
     trace: (ctx: CanvasRenderingContext2D) => void
+    traceSlice: (ctx: CanvasRenderingContext2D, slice: Span) => void
 }
 
 export default class LineArea {

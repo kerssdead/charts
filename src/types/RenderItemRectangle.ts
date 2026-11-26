@@ -9,7 +9,7 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import RectangleGradient from '@/helpers/RectangleGradient'
 import { lerp } from '@/helpers/Geometry'
 import Rectangle from '@/helpers/Rectangle'
-import { capFadeGradient } from '@/helpers/Canvas'
+import { capFadeGradient, clipRoundedRectUnlessBoxInside } from '@/helpers/Canvas'
 
 const ALPHA_DELTA = 0.5
 
@@ -201,27 +201,24 @@ export default class RenderItemRectangle extends RenderItemBase {
         if (width === 0 || height === 0)
             return
 
-        if (this.clip) {
-            const clip = this.canvasClip
-
-            ctx.save()
-
-            ctx.roundRect(clip.x, clip.y, clip.width, clip.height, clip.radius)
-            ctx.clip()
-
-            ctx.beginPath()
-        }
+        const box = { x: left, y: top, width, height }
+        const isClipped = this.clip != null && clipRoundedRectUnlessBoxInside(
+            ctx,
+            this.canvasClip,
+            this.canvasClip.radius,
+            box
+        )
 
         ctx.roundRect(left, top, width, height, this.canvas.radii)
 
         if (this.fadeEdge && item.fill) {
-            ctx.fillStyle = capFadeGradient(ctx, item.fill, this.fadeEdge, { x: left, y: top, width, height })
+            ctx.fillStyle = capFadeGradient(ctx, item.fill, this.fadeEdge, box)
             ctx.fill()
         } else {
             this.paint(ctx, item, top, height)
         }
 
-        if (this.clip)
+        if (isClipped)
             ctx.restore()
     }
 

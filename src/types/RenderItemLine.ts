@@ -13,6 +13,7 @@ import RectangleDimensions from '@/types/RectangleDimensions'
 import LinePathTracer from '@/helpers/LinePathTracer'
 import LineArea, { LinePath } from '@/helpers/LineArea'
 import LineMarkers from '@/helpers/LineMarkers'
+import { strokeLinePath } from '@/helpers/LineStroke'
 import { getLineBounds, mapLineStops } from '@/helpers/LineGeometry'
 
 const ALPHA_DELTA = 0.5
@@ -182,11 +183,13 @@ export default class RenderItemLine extends RenderItemBase {
         const path: LinePath = {
             left: canvas[0].x,
             right: (hasPartialStop ? pathTracer.partialStop : canvas[drawnStopCount - 1]).x,
-            trace: target => pathTracer.trace(target, canvas, drawnStopCount, hasPartialStop)
+            lastPointIndex: hasPartialStop ? drawnStopCount : drawnStopCount - 1,
+            trace: target => pathTracer.trace(target, canvas, drawnStopCount, hasPartialStop),
+            traceSlice: (target, slice) => pathTracer.traceSlice(target, canvas, drawnStopCount, slice)
         }
 
         if (this.area.baseline == null)
-            this.strokePath(ctx, path)
+            strokeLinePath(ctx, path)
         else
             this.renderArea(ctx, fill, bounds, path)
 
@@ -203,19 +206,13 @@ export default class RenderItemLine extends RenderItemBase {
             ctx.fillStyle = ctx.strokeStyle = this.gradient.get(ctx, fill, bounds.top, bounds.bottom)
     }
 
-    private strokePath(ctx: CanvasRenderingContext2D, path: LinePath) {
-        path.trace(ctx)
-
-        ctx.stroke()
-    }
-
     private renderArea(ctx: CanvasRenderingContext2D, fill: string | undefined, bounds: Bounds, path: LinePath) {
         if (fill)
             this.area.fill(ctx, fill, bounds, path)
 
         ctx.save()
         this.area.clip(ctx, bounds, path)
-        this.strokePath(ctx, path)
+        strokeLinePath(ctx, path)
         ctx.restore()
     }
 

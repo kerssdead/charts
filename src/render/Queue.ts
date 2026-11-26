@@ -3,8 +3,18 @@ import CanvasWindow from '@/types/CanvasWindow'
 import Point from '@/types/Point'
 import { ThemePalette } from '@/Theme'
 import { ItemFlag as f } from '@/static/ItemFlag'
+import RenderFrame from '@/types/RenderFrame'
+import ItemChanges from '@/render/ItemChanges'
+import QueueLayers, { LayerPainter } from '@/render/QueueLayers'
 
 const OUTSIDE: Point = { x: -Infinity, y: -Infinity }
+
+type ItemsPass = {
+    window: CanvasWindow
+    frame: RenderFrame
+    isAnimating: boolean
+    hasRemovable: boolean
+}
 
 export default class Queue {
     private queue: RenderItem[] = []
@@ -14,6 +24,10 @@ export default class Queue {
     private isSorted: boolean = true
 
     private readonly hoveredGroups = new Set<string>()
+
+    private readonly changes = new ItemChanges()
+
+    private readonly layers = new QueueLayers()
 
     ratio: number = 1
 
@@ -33,41 +47,72 @@ export default class Queue {
         now: DOMHighResTimeStamp,
         window: CanvasWindow,
         screen: CanvasWindow,
-        theme: ThemePalette
+        theme: ThemePalette,
+        canReuseLayers: boolean = false
     ): boolean {
         this.ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0)
 
-        this.ctx.globalAlpha = 1
-        this.ctx.fillStyle = theme.canvasBackground
-        this.ctx.fillRect(0, 0, screen.width, screen.height)
-
-        let isAnimating = false
-
-        let hasRemovable = false
-
         const steps = this.getSorted()
-        const frame = { window, screen, now, theme }
-
-        for (let i = 0; i < steps.length; i++) {
-            const step = steps[i]
-
-            this.ctx.globalAlpha = step.animation.alpha
-            frame.window = step.is(f.Fixed) ? screen : window
-
-            step.render(this.ctx, frame)
-
-            if (step.is(f.Removable))
-                hasRemovable = true
-            else if (step.animation.isInitializing || step.animation.isMorphing)
-                isAnimating = true
+        const pass: ItemsPass = {
+            window,
+            frame: { window, screen, now, theme },
+            isAnimating: false,
+            hasRemovable: false
+        }
+        const painter: LayerPainter = {
+            background: ctx => Queue.paintBackground(ctx, screen, theme),
+            items: (ctx, start, end) => Queue.paintItems(ctx, steps.slice(start, end), pass)
         }
 
-        if (hasRemovable)
+        if (canReuseLayers && !this.isAnimating) {
+            this.layers.draw(this.ctx, {
+                version: this.version,
+                ratio: this.ratio,
+                itemCount: steps.length,
+                changed: this.changes.findChangedSpan(steps)
+            }, painter)
+        } else {
+            this.layers.invalidate()
+            painter.background(this.ctx)
+            painter.items(this.ctx, 0, steps.length)
+        }
+
+        if (pass.hasRemovable)
             this.removeWhere(item => item.is(f.Removable))
 
-        this.isAnimating = isAnimating
+        this.isAnimating = pass.isAnimating
 
-        return isAnimating
+        return pass.isAnimating
+    }
+
+    releaseLayers() {
+        this.layers.release()
+    }
+
+    markChanged() {
+        this.version++
+    }
+
+    private static paintBackground(ctx: CanvasRenderingContext2D, screen: CanvasWindow, theme: ThemePalette) {
+        ctx.globalAlpha = 1
+        ctx.fillStyle = theme.canvasBackground
+        ctx.fillRect(0, 0, screen.width, screen.height)
+    }
+
+    private static paintItems(ctx: CanvasRenderingContext2D, items: RenderItem[], pass: ItemsPass) {
+        const { frame } = pass
+
+        for (const item of items) {
+            ctx.globalAlpha = item.animation.alpha
+            frame.window = item.is(f.Fixed) ? frame.screen : pass.window
+
+            item.render(ctx, frame)
+
+            if (item.is(f.Removable))
+                pass.hasRemovable = true
+            else if (item.animation.isInitializing || item.animation.isMorphing)
+                pass.isAnimating = true
+        }
     }
 
     animate(pointer: Point | null, now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
@@ -84,9 +129,15 @@ export default class Queue {
 
         let isAnimating = false
 
+        this.changes.beginStep()
+
         for (let i = 0; i < this.queue.length; i++) {
-            if (this.queue[i].animate(point, now, hoveredGroups, isInstant))
+            const item = this.queue[i]
+
+            if (item.animate(point, now, hoveredGroups, isInstant)) {
                 isAnimating = true
+                this.changes.add(item)
+            }
         }
 
         return isAnimating
@@ -147,6 +198,7 @@ export default class Queue {
     }
 
     clear() {
+        this.changes.clear()
         this.queue = []
         this.isSorted = true
         this.version++

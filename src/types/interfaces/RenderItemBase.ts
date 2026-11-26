@@ -24,6 +24,14 @@ export default abstract class RenderItemBase {
         return false
     }
 
+    canBeCached(): boolean {
+        return true
+    }
+
+    getDependencies(): RenderItemBase[] {
+        return []
+    }
+
     isMouseOver(_point: Point): boolean {
         return false
     }

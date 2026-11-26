@@ -192,6 +192,10 @@ export default class RenderItemText extends RenderItemBase implements LeaderTarg
         }
     }
 
+    getDependencies(): RenderItemBase[] {
+        return this.follow ? [this.follow] : []
+    }
+
     render(ctx: CanvasRenderingContext2D): void {
         ctx.font = this.font
         ctx.direction = TextDirection.LeftToRight

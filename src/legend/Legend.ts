@@ -165,7 +165,7 @@ export default class Legend extends Overlay {
 
         if (!this.isDirty && !this.motion.isStarted) {
             if (isHoverChanged)
-                this.updateBackgrounds(theme)
+                this.updateBackgrounds(queue, theme)
 
             return this.isAnimating
         }
@@ -281,8 +281,10 @@ export default class Legend extends Overlay {
         return this.hover.update(targets, now, isInstant)
     }
 
-    private updateBackgrounds(theme: ThemePalette) {
+    private updateBackgrounds(queue: Queue, theme: ThemePalette) {
         for (const [key, item] of this.backgrounds)
             item.color = hoverBackground(theme, this.hover.value(key))
+
+        queue.markChanged()
     }
 }

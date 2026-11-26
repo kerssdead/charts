@@ -99,7 +99,10 @@ export default class Renderer {
             syncTheme: () => this.theme.sync(),
             rebuildForTheme: () => this.rebuildAnimated(),
             renewCanvas: () => renewBuffers(canvas),
-            releaseLayers: releaseOffscreenLayer,
+            releaseLayers: () => {
+                releaseOffscreenLayer()
+                this.queue.releaseLayers()
+            },
             onError
         })
     }
@@ -222,6 +225,7 @@ export default class Renderer {
         this.contextMenu.clear(this.queue)
         this.focusRing.clear(this.queue)
         this.queue.clear()
+        this.queue.releaseLayers()
 
         this.frames.cancel()
 

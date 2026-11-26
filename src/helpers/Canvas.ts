@@ -3,6 +3,7 @@ import { AriaRole, Attribute, ErrorType, FadeEdge, Tag } from '@/static/Enums'
 import RectangleDimensions from '@/types/RectangleDimensions'
 import { adjustColor, withAlpha } from '@/helpers/Color'
 import Styles from '@/static/constants/Styles'
+import Rectangle from '@/helpers/Rectangle'
 
 const GRADIENT_DELTA = 20
 
@@ -95,6 +96,38 @@ export function edgeFadeMask(ctx: CanvasRenderingContext2D, x1: number, x2: numb
     gradient.addColorStop(1, TRANSPARENT)
 
     return gradient
+}
+
+export function clipRoundedRectUnlessBoxInside(
+    ctx: CanvasRenderingContext2D,
+    clip: RectangleDimensions,
+    radius: number,
+    box: RectangleDimensions
+) {
+    if (Rectangle.containsRoundedBox(clip, radius, box))
+        return false
+
+    ctx.save()
+
+    clipToBoxArea(ctx, box)
+
+    ctx.roundRect(clip.x, clip.y, clip.width, clip.height, radius)
+    ctx.clip()
+
+    ctx.beginPath()
+
+    return true
+}
+
+function clipToBoxArea(ctx: CanvasRenderingContext2D, box: RectangleDimensions) {
+    const margin = ctx.lineWidth
+    const left = Math.min(box.x, box.x + box.width) - margin
+    const top = Math.min(box.y, box.y + box.height) - margin
+
+    ctx.rect(left, top, Math.abs(box.width) + margin * 2, Math.abs(box.height) + margin * 2)
+    ctx.clip()
+
+    ctx.beginPath()
 }
 
 let sharedLayer: CanvasRenderingContext2D | null = null

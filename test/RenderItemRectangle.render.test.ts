@@ -14,6 +14,7 @@ const context = () => ({
     translate: jest.fn(),
     scale: jest.fn(),
     roundRect: jest.fn(),
+    rect: jest.fn(),
     fill: jest.fn(),
     stroke: jest.fn(),
     beginPath: jest.fn(),
@@ -194,6 +195,21 @@ describe('Rendering rectangle', () => {
             .toHaveBeenCalled()
         expect(ctx.restore)
             .toHaveBeenCalled()
+    })
+
+    it('Should skip the clip when the rectangle is inside its rounded clip box', () => {
+        const ctx = context()
+        const shape = new RenderItemRectangle()
+        const item = new RenderItem(shape)
+
+        shape.absolute = { x: 1000, y: 1000, width: 500, height: 500 }
+        shape.align = { x: HorizontalAlignment.Left, y: VerticalAlignment.Top }
+        shape.clip = { x: 100, y: 100, width: 2000, height: 2000, radius: 10 }
+        shape.adjust(WINDOW)
+        shape.render(ctx as unknown as CanvasRenderingContext2D, item)
+
+        expect([ctx.save.mock.calls.length, ctx.clip.mock.calls.length, ctx.restore.mock.calls.length])
+            .toEqual([0, 0, 0])
     })
 
     it('Should fill a faded edge without stroking', () => {

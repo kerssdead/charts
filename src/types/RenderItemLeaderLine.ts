@@ -82,6 +82,10 @@ export default class RenderItemLeaderLine extends RenderItemBase {
         }
     }
 
+    getDependencies(): RenderItemBase[] {
+        return this.targetItem ? [this.originItem.shape, this.targetItem.shape] : [this.originItem.shape]
+    }
+
     render(ctx: CanvasRenderingContext2D): void {
         const target = this.target
         const targetItem = this.targetItem

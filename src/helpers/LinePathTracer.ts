@@ -1,4 +1,5 @@
 import Point from '@/types/Point'
+import Span from '@/types/Span'
 import { LineDrawMode } from '@/static/Enums'
 import { lerp } from '@/helpers/Geometry'
 import { CurveSegment, getMonotoneSegments, splitCurveSegment } from '@/helpers/MonotoneCurve'
@@ -101,34 +102,36 @@ export default class LinePathTracer {
     }
 
     trace(ctx: CanvasRenderingContext2D, stops: Point[], drawnStopCount: number, hasPartialStop: boolean) {
-        ctx.moveTo(stops[0].x, stops[0].y)
+        const end = hasPartialStop ? drawnStopCount : drawnStopCount - 1
 
-        if (this.isSmooth)
-            this.traceCurve(ctx, drawnStopCount, hasPartialStop)
-        else
-            this.traceStraight(ctx, stops, drawnStopCount, hasPartialStop)
+        this.traceSlice(ctx, stops, drawnStopCount, { start: 0, end })
     }
 
-    private traceStraight(
-        ctx: CanvasRenderingContext2D,
-        stops: Point[],
-        drawnStopCount: number,
-        hasPartialStop: boolean
-    ) {
-        for (let i = 1; i < drawnStopCount; i++)
-            ctx.lineTo(stops[i].x, stops[i].y)
+    traceSlice(ctx: CanvasRenderingContext2D, stops: Point[], drawnStopCount: number, { start, end }: Span) {
+        const first = this.pointAt(stops, drawnStopCount, start)
 
-        if (hasPartialStop)
-            ctx.lineTo(this.partialStop.x, this.partialStop.y)
+        ctx.moveTo(first.x, first.y)
+
+        for (let i = start + 1; i <= end; i++)
+            this.traceSegmentTo(ctx, stops, drawnStopCount, i)
     }
 
-    private traceCurve(ctx: CanvasRenderingContext2D, drawnStopCount: number, hasPartialStop: boolean) {
-        for (let i = 1; i < drawnStopCount; i++)
-            traceCurveSegment(ctx, this.curveSegments[i - 1])
+    private pointAt(stops: Point[], drawnStopCount: number, index: number) {
+        return index < drawnStopCount ? stops[index] : this.partialStop
+    }
 
-        const partialSegment = this.partialCurveSegment
+    private traceSegmentTo(ctx: CanvasRenderingContext2D, stops: Point[], drawnStopCount: number, index: number) {
+        if (!this.isSmooth) {
+            const point = this.pointAt(stops, drawnStopCount, index)
 
-        if (hasPartialStop && partialSegment)
-            traceCurveSegment(ctx, partialSegment)
+            ctx.lineTo(point.x, point.y)
+
+            return
+        }
+
+        const segment = index < drawnStopCount ? this.curveSegments[index - 1] : this.partialCurveSegment
+
+        if (segment)
+            traceCurveSegment(ctx, segment)
     }
 }

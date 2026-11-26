@@ -65,6 +65,10 @@ export default class RenderItemImage extends RenderItemBase {
             window.mapBox(this.box, this.canvasBox)
     }
 
+    canBeCached(): boolean {
+        return getImage(this.url, this.crossOrigin) != null
+    }
+
     render(ctx: CanvasRenderingContext2D): void {
         if (this.box) {
             this.renderBox(ctx)

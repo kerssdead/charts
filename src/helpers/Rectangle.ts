@@ -44,4 +44,14 @@ export default abstract class Rectangle {
 
         return dx * dx + dy * dy <= radius * radius
     }
+
+    static containsRoundedBox(rect: RectangleDimensions, cornerRadius: number, box: RectangleDimensions) {
+        const right = box.x + box.width
+        const bottom = box.y + box.height
+
+        return Rectangle.containsRounded(rect, cornerRadius, { x: box.x, y: box.y })
+               && Rectangle.containsRounded(rect, cornerRadius, { x: right, y: box.y })
+               && Rectangle.containsRounded(rect, cornerRadius, { x: box.x, y: bottom })
+               && Rectangle.containsRounded(rect, cornerRadius, { x: right, y: bottom })
+    }
 }

@@ -26,6 +26,10 @@ export default class RenderItemScrollbar extends RenderItemBase {
         this.thumb = this.panel.thumb
     }
 
+    canBeCached(): boolean {
+        return false
+    }
+
     render(ctx: CanvasRenderingContext2D, _item: RenderItem): void {
         if (!this.thumb)
             return

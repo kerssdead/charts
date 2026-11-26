@@ -143,7 +143,9 @@ export default class Frames {
         let isAnimating = this.animateScene(frame, movingLegend)
 
         if (this.shouldRender(isInstant, isAnimating, theme)) {
-            isAnimating = queue.render(timestamp, window, screen, theme) || isAnimating
+            const canReuseLayers = !isInstant && !this.isSceneChanged(theme)
+
+            isAnimating = queue.render(timestamp, window, screen, theme, canReuseLayers) || isAnimating
 
             this.lastRender = {
                 version: queue.version,

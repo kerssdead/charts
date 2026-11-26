@@ -32,7 +32,7 @@ describe('Drawing frames', () => {
         expect(rebuildForTheme)
             .not.toHaveBeenCalled()
         expect(queue.render)
-            .toHaveBeenCalledWith(100, WINDOW, SCREEN, LIGHT_THEME)
+            .toHaveBeenCalledWith(100, WINDOW, SCREEN, LIGHT_THEME, false)
     })
 
     it('Should skip rendering when nothing changed since the previous frame', () => {
@@ -106,7 +106,7 @@ describe('Drawing frames', () => {
         runFrame(116)
 
         expect(queue.render)
-            .toHaveBeenLastCalledWith(116, WINDOW, SCREEN, DARK_THEME)
+            .toHaveBeenLastCalledWith(116, WINDOW, SCREEN, DARK_THEME, false)
     })
 
     it('Should render when the window moves or resizes', () => {

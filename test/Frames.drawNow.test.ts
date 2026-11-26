@@ -10,7 +10,7 @@ describe('Drawing a frame now', () => {
         frames.drawNow()
 
         expect(queue.render)
-            .toHaveBeenCalledWith(expect.any(Number), WINDOW, SCREEN, LIGHT_THEME)
+            .toHaveBeenCalledWith(expect.any(Number), WINDOW, SCREEN, LIGHT_THEME, false)
     })
 
     it('Should cancel the pending frame', () => {

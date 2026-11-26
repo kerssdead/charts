@@ -15,7 +15,7 @@ describe('Requesting a frame', () => {
         expect(panels.animate)
             .toHaveBeenCalledWith(100, WINDOW)
         expect(queue.render)
-            .toHaveBeenCalledWith(100, WINDOW, SCREEN, LIGHT_THEME)
+            .toHaveBeenCalledWith(100, WINDOW, SCREEN, LIGHT_THEME, false)
     })
 
     it('Should request only one frame at a time', () => {
