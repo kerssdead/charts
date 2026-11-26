@@ -18,10 +18,7 @@ const WHEEL_LATCH = 400
 export default class PointerWheel {
     private lastWheel: DOMHighResTimeStamp = -Infinity
 
-    private readonly handlers: WheelHandlers
-
-    constructor(handlers: WheelHandlers) {
-        this.handlers = handlers
+    constructor(private readonly handlers: WheelHandlers) {
     }
 
     handle(event: WheelEvent, point: Point) {

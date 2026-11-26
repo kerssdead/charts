@@ -21,7 +21,7 @@ function getChartsWithDefinitions(settings: ChartSettings) {
     return settings.charts.flatMap(({ type, data }) => {
         const definition = getChartDefinition(type)
 
-        return definition && data ? [{ definition, data }] : []
+        return data ? [{ definition, data }] : []
     })
 }
 

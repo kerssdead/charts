@@ -52,13 +52,13 @@ export default class RenderItemCells extends RenderItemBase {
 
     private paintedHover = -1
 
-    adjust(window: CanvasWindow, morph: number = 1): void {
+    adjust(window: CanvasWindow, morph = 1) {
         this.morph = morph
 
         window.mapBox(this.currentBox(), this.canvasBox)
     }
 
-    render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
+    render(ctx: CanvasRenderingContext2D, item: RenderItem) {
         const { x, y, width, height } = this.canvasBox
 
         if (!this.cells || width < 1 || height < 1)
@@ -77,11 +77,11 @@ export default class RenderItemCells extends RenderItemBase {
         })
     }
 
-    animateHover(point: Point | null, now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
+    animateHover(point: Point | null, now: DOMHighResTimeStamp, isInstant = false) {
         return this.hover.step(point && this.indexAt(point), now, isInstant)
     }
 
-    morphFrom(previous: RenderItemBase, morph: number): boolean {
+    morphFrom(previous: RenderItemBase, morph: number) {
         if (!(previous instanceof RenderItemCells) || !previous.cells || !this.cells)
             return false
 
@@ -105,7 +105,7 @@ export default class RenderItemCells extends RenderItemBase {
         return Rectangle.toBounds(this.canvasBox)
     }
 
-    isMouseOver(point: Point): boolean {
+    isMouseOver(point: Point) {
         return this.indexAt(point) !== null
     }
 

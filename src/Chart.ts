@@ -19,9 +19,9 @@ import { onReducedMotionChange } from '@/helpers/Motion'
 import RendererTheme from '@/renderer/RendererTheme'
 
 export default class Chart {
-    private isDestroyed: boolean = false
+    private isDestroyed = false
 
-    private isSuspended: boolean = false
+    private isSuspended = false
 
     private suspendedTheme: ColorTheme = ColorTheme.light
 
@@ -35,8 +35,6 @@ export default class Chart {
     private source!: ChartOptions
 
     private settings!: ChartSettings
-
-    private readonly element: HTMLElement
 
     private readonly failure: ChartFailure
 
@@ -70,8 +68,7 @@ export default class Chart {
 
     private removeEnvironmentListeners: (() => void) | null = null
 
-    constructor(element: HTMLElement, settings: ChartOptions) {
-        this.element = element
+    constructor(private readonly element: HTMLElement, settings: ChartOptions) {
         this.failure = new ChartFailure(element)
 
         this.listenToEnvironment()

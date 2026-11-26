@@ -23,15 +23,15 @@ class Value {
                 (this as Record<string, unknown>)[key] = value
     }
 
-    private isGetterOrMethod(key: string): boolean {
+    private isGetterOrMethod(key: string) {
         return key in this
     }
 
-    get isBlank(): boolean {
+    get isBlank() {
         return false
     }
 
-    canToggle(): boolean {
+    canToggle() {
         return false
     }
 }

@@ -17,14 +17,14 @@ export default abstract class RenderItemBase {
     abstract render(ctx: CanvasRenderingContext2D, item: RenderItem): void
 
     // todo: add animation builder
-    animate(_item: RenderItem, _isBackward: boolean, _now: DOMHighResTimeStamp): void {
+    animate(_item: RenderItem, _isBackward: boolean, _now: DOMHighResTimeStamp) {
     }
 
-    animateHover(_point: Point | null, _now: DOMHighResTimeStamp, _isInstant: boolean = false): boolean {
+    animateHover(_point: Point | null, _now: DOMHighResTimeStamp, _isInstant = false) {
         return false
     }
 
-    canBeCached(): boolean {
+    canBeCached() {
         return true
     }
 
@@ -32,7 +32,7 @@ export default abstract class RenderItemBase {
         return []
     }
 
-    isMouseOver(_point: Point): boolean {
+    isMouseOver(_point: Point) {
         return false
     }
 
@@ -66,7 +66,7 @@ export default abstract class RenderItemBase {
         return bounds && { x: (bounds.left + bounds.right) / 2, y: (bounds.top + bounds.bottom) / 2 }
     }
 
-    morphFrom(_previous: RenderItemBase, _morph: number): boolean {
+    morphFrom(_previous: RenderItemBase, _morph: number) {
         return false
     }
 
@@ -78,11 +78,11 @@ export default abstract class RenderItemBase {
         return false
     }
 
-    enterFromAxis(_y: number): boolean {
+    enterFromAxis(_y: number) {
         return false
     }
 
-    leaveToAxis(_y: number, _morph: number): boolean {
+    leaveToAxis(_y: number, _morph: number) {
         return false
     }
 }

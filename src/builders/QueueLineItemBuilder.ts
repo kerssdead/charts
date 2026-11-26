@@ -11,47 +11,35 @@ export default class QueueLineItemBuilder extends QueueItemBaseBuilder<RenderIte
     }
 
     stop(x: number, y: number, tooltip?: Tooltip) {
-        this.shape.absolute.push({ x, y })
+        return this.chain(() => {
+            this.shape.absolute.push({ x, y })
 
-        if (tooltip !== undefined)
-            this.shape.tooltips.push(tooltip)
-
-        return this
+            if (tooltip !== undefined)
+                this.shape.tooltips.push(tooltip)
+        })
     }
 
     width(width: number) {
-        this.shape.width = width
-
-        return this
+        return this.chain(() => this.shape.width = width)
     }
 
     dash(segments: number[]) {
-        this.shape.dash = segments
-
-        return this
+        return this.chain(() => this.shape.dash = segments)
     }
 
     drawMode(mode?: LineDrawMode) {
-        this.shape.pathTracer = new LinePathTracer(mode)
-
-        return this
+        return this.chain(() => this.shape.pathTracer = new LinePathTracer(mode))
     }
 
     area(baseline: number) {
-        this.shape.area.baseline = baseline
-
-        return this
+        return this.chain(() => this.shape.area.baseline = baseline)
     }
 
     clip(box: RectangleDimensions) {
-        this.shape.clip = box
-
-        return this
+        return this.chain(() => this.shape.clip = box)
     }
 
     gradient() {
-        this.shape.isGradient = true
-
-        return this
+        return this.chain(() => this.shape.isGradient = true)
     }
 }

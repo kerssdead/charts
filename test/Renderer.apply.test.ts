@@ -3,12 +3,13 @@ import {
     createSettings,
     mockContextMenu,
     mockFocusRing,
+    mockFrameCallbacks,
+    mockFrameScene,
     mockFrames,
-    mockFramesScene,
-    mockInput,
     mockLegend,
     mockMenu,
     mockPanels,
+    mockPointer,
     mockTooltip
 } from './RendererTestData'
 import Legend from '@/legend/Legend'
@@ -30,7 +31,7 @@ describe('Applying renderer settings', () => {
                 isInitialized: false,
                 theme: DARK_THEME
             }))
-        expect(mockFramesScene?.getThemePalette())
+        expect(mockFrameScene?.theme.getPalette())
             .toBe(DARK_THEME)
     })
 
@@ -51,7 +52,7 @@ describe('Applying renderer settings', () => {
 
         renderer.apply(createSettings({ enableMove: true }))
 
-        expect(mockInput().attach)
+        expect(mockPointer().attach)
             .toHaveBeenCalledWith(true)
     })
 
@@ -60,10 +61,10 @@ describe('Applying renderer settings', () => {
 
         renderer.apply(createSettings())
         mockFrames().isSuspended = true
-        mockInput().attach.mockClear()
+        mockPointer().attach.mockClear()
         renderer.apply(createSettings())
 
-        expect(mockInput().attach)
+        expect(mockPointer().attach)
             .not.toHaveBeenCalled()
     })
 
@@ -139,7 +140,7 @@ describe('Applying renderer settings', () => {
 
         expect(legend.destroy)
             .toHaveBeenCalled()
-        expect(mockFramesScene?.getLegend())
+        expect(mockFrameScene?.legend)
             .toBeUndefined()
     })
 
@@ -148,7 +149,7 @@ describe('Applying renderer settings', () => {
 
         renderer.apply(createSettings())
 
-        expect(mockFramesScene?.getOverlays())
+        expect(mockFrameCallbacks?.getOverlays())
             .toEqual([mockTooltip(), mockContextMenu(), mockFocusRing()])
     })
 })

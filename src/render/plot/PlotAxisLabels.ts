@@ -20,21 +20,14 @@ import {
 } from '@/render/plot/PlotConstants'
 
 export default class PlotAxisLabels {
-    private readonly data: PlotData
-
-    private readonly units: Units
-
-    private readonly layout: PlotLayout
-
-    private readonly seriesGroups: PlotSeriesGroups
-
     private readonly labelSpacing: PlotLabelSpacing
 
-    constructor(data: PlotData, units: Units, layout: PlotLayout, seriesGroups: PlotSeriesGroups) {
-        this.data = data
-        this.units = units
-        this.layout = layout
-        this.seriesGroups = seriesGroups
+    constructor(
+        private readonly data: PlotData,
+        private readonly units: Units,
+        private readonly layout: PlotLayout,
+        private readonly seriesGroups: PlotSeriesGroups
+    ) {
         this.labelSpacing = new PlotLabelSpacing(units, layout.margin.left, COORDS_MAX_X - layout.margin.right)
     }
 

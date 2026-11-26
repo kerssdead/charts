@@ -11,7 +11,7 @@ const create = (values: Sector[], stops: SegmentedBarStop[]) => {
         { values, stops } as SegmentedBarData,
         { x: 5, y: 125 },
         { valuePostfix: undefined, theme: LIGHT_THEME },
-        createState({ values })
+        { state: createState({ values }) }
     )
 }
 

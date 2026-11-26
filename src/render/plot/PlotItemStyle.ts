@@ -16,26 +16,14 @@ const CAP_CARET_WIDTH = 2
 export type ValueTooltip = (series: PlotSeries, value: PlotPoint) => string
 
 export default class PlotItemStyle {
-    readonly getValueTooltip: ValueTooltip
-
-    private readonly layout: PlotLayout
-
-    private readonly seriesGroups: PlotSeriesGroups
-
     private readonly pointKeys = new Map<PlotSeries, string[]>()
 
-    private readonly theme: ThemePalette
-
     constructor(
-        layout: PlotLayout,
-        seriesGroups: PlotSeriesGroups,
-        getValueTooltip: ValueTooltip,
-        theme: ThemePalette
+        private readonly layout: PlotLayout,
+        private readonly seriesGroups: PlotSeriesGroups,
+        readonly getValueTooltip: ValueTooltip,
+        private readonly theme: ThemePalette
     ) {
-        this.layout = layout
-        this.seriesGroups = seriesGroups
-        this.getValueTooltip = getValueTooltip
-        this.theme = theme
     }
 
     styleRect(rect: QueueRectangleItemBuilder, series: PlotSeries, slot: number, valueIndex: number) {

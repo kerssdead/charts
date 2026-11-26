@@ -2,7 +2,6 @@ import { HorizontalAlignment, VerticalAlignment } from '@/static/Enums'
 
 type Alignment = {
     x: HorizontalAlignment
-
     y: VerticalAlignment
 }
 

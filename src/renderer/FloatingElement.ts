@@ -11,10 +11,6 @@ export default class FloatingElement {
 
     minWidth = 0
 
-    private readonly canvas: HTMLCanvasElement
-
-    private readonly offset: number
-
     private point: Point = { x: 0, y: 0 }
 
     private canvasRect: DOMRect | null = null
@@ -29,10 +25,7 @@ export default class FloatingElement {
 
     private abort: AbortController | null = null
 
-    constructor(canvas: HTMLCanvasElement, offset: number) {
-        this.canvas = canvas
-        this.offset = offset
-
+    constructor(private readonly canvas: HTMLCanvasElement, private readonly offset: number) {
         Object.assign(this.element.style, {
             position: 'fixed',
             width: 'max-content',

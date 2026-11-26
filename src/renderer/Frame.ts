@@ -6,19 +6,12 @@ import { ThemePalette } from '@/Theme'
 
 type Frame = {
     queue: Queue
-
     window: CanvasWindow
-
     screen: CanvasWindow
-
     mouse: Point | null
-
     context: PointerContext | null
-
     now: DOMHighResTimeStamp
-
     theme: ThemePalette
-
     isInstant: boolean
 }
 

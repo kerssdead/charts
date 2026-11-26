@@ -5,17 +5,17 @@ import { firstMappedValue, groupBy } from '@/helpers/Collections'
 const ANGLE_EPSILON = 1e-9
 
 export default class ArcNeighbours {
-    private readonly matches: Map<RenderItem, RenderItem>
-
     private readonly newByOld = new Map<RenderItem, RenderItem>()
 
     private readonly newByEnd: Map<string, RenderItem[]>
 
     private readonly oldByEnd: Map<string, RenderItem[]>
 
-    constructor(newArcs: RenderItem[], oldArcs: RenderItem[], matches: Map<RenderItem, RenderItem>) {
-        this.matches = matches
-
+    constructor(
+        newArcs: RenderItem[],
+        oldArcs: RenderItem[],
+        private readonly matches: Map<RenderItem, RenderItem>
+    ) {
         for (const [item, old] of matches)
             this.newByOld.set(old, item)
 
@@ -23,11 +23,11 @@ export default class ArcNeighbours {
         this.oldByEnd = groupBy(oldArcs, item => ArcNeighbours.angleKey(item, ArcNeighbours.currentEnd(item)))
     }
 
-    appearAngle(item: RenderItem): number {
+    appearAngle(item: RenderItem) {
         return this.findAppearAngle(item, new Set())
     }
 
-    disappearAngle(item: RenderItem): number {
+    disappearAngle(item: RenderItem) {
         return this.findDisappearAngle(item, new Set())
     }
 

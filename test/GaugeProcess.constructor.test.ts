@@ -16,7 +16,7 @@ const create = (min: number, max: number) => {
 
     const settings = { valuePostfix: undefined, theme: LIGHT_THEME }
 
-    return new GaugeProcess(data, { x: 5, y: 12.5 }, settings, createState(data))
+    return new GaugeProcess(data, { x: 5, y: 12.5 }, settings, { state: createState(data) })
 }
 
 describe('Creating gauge process', () => {

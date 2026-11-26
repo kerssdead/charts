@@ -24,37 +24,31 @@ import { getHorizontalPlacement, getVerticalPlacement, LegendEntry } from '@/leg
 import { BUTTON_TEXT_PADDING, ITEM_HEIGHT, PADDING_X, PADDING_Y, RESET_KEY, SIDES } from '@/legend/LegendConstants'
 
 export default class Legend extends Overlay {
-    settings: ChartSettings
-
-    onChange: (() => void) | undefined
-
-    private area: DOMRect | undefined
+    private area?: DOMRect
 
     private entries: LegendEntry[] = []
 
-    private button: DOMRect | undefined
+    private button?: DOMRect
 
-    private size: Size | undefined
+    private size?: Size
 
     private units: Units = Units.fromSize(1, 1)
 
-    private top: number = 0
+    private top = 0
 
     private backgrounds: Map<string, RenderItem> = new Map()
 
     private readonly hover = new HoverMap<string>()
 
-    private isDirty: boolean = true
+    private isDirty = true
 
     private readonly values: LegendValues
 
     private readonly motion: LegendMotion
 
-    constructor(settings: ChartSettings, viewState: ViewState, onChange?: () => void) {
+    constructor(private settings: ChartSettings, viewState: ViewState, private readonly onChange?: () => void) {
         super()
 
-        this.settings = settings
-        this.onChange = onChange
         this.values = new LegendValues(settings, viewState)
         this.motion = new LegendMotion(value => this.values.getKey(value))
     }
@@ -77,7 +71,7 @@ export default class Legend extends Overlay {
         if (!area)
             return reserved
 
-        const side = SIDES[this.settings.legendPlace] ?? 'bottom'
+        const side = SIDES[this.settings.legendPlace] ?? SIDES[LegendPlace.Bottom]
 
         reserved[side] = this.isVertical ? area.width : area.height
 
@@ -103,25 +97,23 @@ export default class Legend extends Overlay {
         return this.hover.isAnimating || this.isMoving || this.values.isToggling
     }
 
-    applySettings(settings?: ChartSettings) {
+    applySettings(settings: ChartSettings) {
         const previous = this.entries
         const previousArea = this.area
 
-        if (settings) {
-            this.settings = settings
-            this.values.apply(settings)
-        }
+        this.settings = settings
+        this.values.apply(settings)
 
         if (this.size)
             this.resize(this.size.width, this.size.height, this.top)
 
-        if (settings && previous.length > 0 && !settings.staticMode) {
+        if (previous.length > 0 && !settings.staticMode) {
             this.motion.move(previous, previousArea, this.entries)
             this.isDirty = true
         }
     }
 
-    resize(width: number, height: number, top: number = 0) {
+    resize(width: number, height: number, top = 0) {
         this.size = { width, height }
         this.units = Units.fromSize(width, height)
         this.top = top
@@ -151,7 +143,7 @@ export default class Legend extends Overlay {
         this.isDirty = true
     }
 
-    update({ queue, mouse, now, theme, isInstant }: Frame): boolean {
+    update({ queue, mouse, now, theme, isInstant }: Frame) {
         if (!this.area || !this.hasSize) {
             this.clear(queue)
 

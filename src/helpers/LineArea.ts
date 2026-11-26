@@ -21,13 +21,13 @@ export type LinePath = {
 export default class LineArea {
     baseline: number | null = null
 
-    canvasBaseline: number = 0
+    canvasBaseline = 0
 
     private fromBaseline: number | null = null
 
     private readonly gradient = new GradientCache(fadingGradient)
 
-    current(morph: number = 1): number | null {
+    current(morph = 1): number | null {
         if (this.baseline == null || this.fromBaseline == null || morph >= 1)
             return this.baseline
 

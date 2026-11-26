@@ -8,11 +8,8 @@ export type TreeValue = Value & {
 
 export default interface TreeData extends Data {
     values: TreeValue[]
-
     padding: number
-
     gap: number
-
     enableMerging: boolean
 }
 

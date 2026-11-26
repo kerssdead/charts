@@ -1,18 +1,11 @@
 type Palette = {
     text: string
-
     background: string
-
     line: string
-
     lineAxis: string
-
     dropdownBorder: string
-
     canvasBackground: string
-
     other: string
-
     floatingOpacity: number
 }
 

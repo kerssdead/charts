@@ -2,11 +2,11 @@ import HoverProgress from '@/types/HoverProgress'
 import { AnimationTiming } from '@/static/constants/Index'
 
 export default class HoverMap<K> {
-    isAnimating: boolean = false
+    isAnimating = false
 
     private items = new Map<K, HoverProgress>()
 
-    update(targets: [K, boolean][], now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
+    update(targets: [K, boolean][], now: DOMHighResTimeStamp, isInstant = false) {
         const items = new Map<K, HoverProgress>()
 
         let isChanged = false

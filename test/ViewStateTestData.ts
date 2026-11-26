@@ -15,9 +15,9 @@ export function createState(data: StateData = {}) {
     const state = new ChartViewState(isDisabledByFlag)
     const values = data.values ?? []
 
-    state.applyPinned(values as Sector[])
-    state.applyExpanded(getAllTreeBarRows(values as TreeBarRow[]))
-    state.applySort(data.sortColumn, data.sortDescending)
+    state.pinned.apply(values as Sector[], sector => sector.pinned)
+    state.expanded.apply(getAllTreeBarRows(values as TreeBarRow[]), row => row.expanded)
+    state.sort.apply(data.sortColumn, data.sortDescending)
 
     return state
 }

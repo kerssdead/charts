@@ -17,7 +17,7 @@ describe('Resetting view state', () => {
         viewState.apply(settings)
         viewState.reset()
 
-        expect([viewState.isDisabled(first), viewState.getChartState(0).isPinned(second)])
+        expect([viewState.isDisabled(first), viewState.getChartState(0).pinned.has(second)])
             .toEqual([false, false])
     })
 
@@ -33,7 +33,7 @@ describe('Resetting view state', () => {
 
         const state = viewState.getChartState(0)
 
-        expect([state.isExpanded(settings.charts[0].data.values[0] as TreeBarRow), state.sortColumn])
+        expect([state.expanded.has(settings.charts[0].data.values[0] as TreeBarRow), state.sort.column])
             .toEqual([true, 'amount'])
     })
 })

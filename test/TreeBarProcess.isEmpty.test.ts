@@ -15,7 +15,7 @@ const create = (values: TreeBarRow[]) => {
         { values } as TreeBarData,
         { x: 5, y: 12.5 },
         { valuePostfix: undefined, theme: LIGHT_THEME },
-        createState({ values })
+        { state: createState({ values }) }
     )
 }
 

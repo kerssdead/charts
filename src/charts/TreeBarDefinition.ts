@@ -6,7 +6,7 @@ import { normalizeTreeBarRows } from '@/helpers/ValueNormalization'
 import { getTreeBarRows } from '@/export/TableRows'
 
 const TreeBarDefinition: ChartDefinition<TreeBarData> = {
-    createProcess: (data, pixel, settings, state) => new TreeBarProcess(data, pixel, settings, state),
+    createProcess: (data, pixel, settings, context) => new TreeBarProcess(data, pixel, settings, context),
     prepareData: prepareTreeBarRows,
     normalizeData: (data, numberLocale, scope) => normalizeTreeBarRows(data.values, numberLocale, scope),
     applyViewState: applyTreeBarViewState,

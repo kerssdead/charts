@@ -1,7 +1,7 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import RenderItem from '@/types/RenderItem'
-import { AnimationTiming, COORDS_MAX_X, FULL_ANGLE } from '@/static/constants/Index'
+import { AnimationTiming, FULL_ANGLE } from '@/static/constants/Index'
 import Point from '@/types/Point'
 import { GradientCache } from '@/helpers/Canvas'
 import { lerp } from '@/helpers/Geometry'
@@ -28,25 +28,25 @@ type ArcCanvas = ArcGeometry & {
 }
 
 export default class RenderItemArc extends RenderItemBase implements LeaderOrigin {
-    isFill: boolean = false
+    isFill = false
 
-    isGradient: boolean = false
+    isGradient = false
 
     absolute: Point = { x: 0, y: 0 }
 
-    radius: number = 10
+    radius = 10
 
-    innerRadius: number = 0
+    innerRadius = 0
 
-    gap: number = 0
+    gap = 0
 
-    cornerRadius: number = 0
+    cornerRadius = 0
 
     growOrigin: number | null = null
 
-    hover: number = 0
+    hover = 0
 
-    pull: number = 0
+    pull = 0
 
     readonly pop: Point = { x: 0, y: 0 }
 
@@ -54,7 +54,7 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
 
     private readonly gradient = new GradientCache()
 
-    startAngle: number = 0
+    startAngle = 0
 
     endAngle: number = FULL_ANGLE
 
@@ -66,7 +66,7 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
         cornerRadius: this.cornerRadius
     }
 
-    current(morph: number = 1): ArcGeometry {
+    current(morph = 1): ArcGeometry {
         const result = {
             x: this.absolute.x,
             y: this.absolute.y,
@@ -91,7 +91,7 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
         }
     }
 
-    morphFrom(previous: RenderItemBase, morph: number): boolean {
+    morphFrom(previous: RenderItemBase, morph: number) {
         if (!(previous instanceof RenderItemArc))
             return false
 
@@ -110,7 +110,7 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
         this.endAngle = angle
     }
 
-    adjust(window: CanvasWindow, morph: number = 1): void {
+    adjust(window: CanvasWindow, morph = 1) {
         const from = this.from
         const isMorphing = from != null && morph < 1
         const x = isMorphing ? lerp(from.x, this.absolute.x, morph) : this.absolute.x
@@ -120,21 +120,20 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
         const startAngle = isMorphing ? lerp(from.startAngle, this.startAngle, morph) : this.startAngle
         const endAngle = isMorphing ? lerp(from.endAngle, this.endAngle, morph) : this.endAngle
         const pull = isMorphing ? lerp(from.pull, this.pull, morph) : this.pull
-        const scale = window.width / COORDS_MAX_X
         const canvas = this.canvas
 
         canvas.x = window.mapX(x)
         canvas.y = window.mapY(y)
-        canvas.radius = radius * scale
-        canvas.innerRadius = innerRadius * scale
-        canvas.gap = this.gap * scale
-        canvas.cornerRadius = this.cornerRadius * scale
+        canvas.radius = window.scaleX(radius)
+        canvas.innerRadius = window.scaleX(innerRadius)
+        canvas.gap = window.scaleX(this.gap)
+        canvas.cornerRadius = window.scaleX(this.cornerRadius)
         canvas.startAngle = startAngle
         canvas.endAngle = endAngle
-        canvas.pull = pull * scale
+        canvas.pull = window.scaleX(pull)
     }
 
-    render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
+    render(ctx: CanvasRenderingContext2D, item: RenderItem) {
         const shape = this.shape(item.animation.init)
         const fill = item.fill
 
@@ -233,7 +232,7 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
         return { x: x + distance * Math.cos(middle), y: y + distance * Math.sin(middle) }
     }
 
-    animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp): void {
+    animate(item: RenderItem, isBackward: boolean, now: DOMHighResTimeStamp) {
         const k = item.hoverFactor(isBackward, now, AnimationTiming.hover)
 
         if (item.hoverGroup == null)
@@ -242,7 +241,7 @@ export default class RenderItemArc extends RenderItemBase implements LeaderOrigi
             item.animation.alpha = 1 - ALPHA_DELTA * k
     }
 
-    isMouseOver(point: Point): boolean {
+    isMouseOver(point: Point) {
         return isInsideSector(point, this.canvas)
     }
 }

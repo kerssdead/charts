@@ -30,7 +30,7 @@ type TextUpdate = Pick<Frame, 'now' | 'isInstant'>
 const NO_TARGET: TooltipTarget = { template: null, html: null }
 
 export default class TooltipOverlay extends Overlay {
-    isEnabled: boolean = false
+    isEnabled = false
 
     template: ((data: ItemData) => string) | null = null
 
@@ -71,7 +71,7 @@ export default class TooltipOverlay extends Overlay {
         this.fade = new HoverProgress()
     }
 
-    update({ queue, window, mouse, context, now, theme, isInstant }: Frame): boolean {
+    update({ queue, window, mouse, context, now, theme, isInstant }: Frame) {
         if (context || !this.isEnabled) {
             this.clear(queue)
 

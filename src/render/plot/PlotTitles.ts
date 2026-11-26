@@ -7,16 +7,11 @@ import PlotLayout from '@/render/plot/PlotLayout'
 import { AXIS_TITLE_FONT, BOTTOM_PADDING, LEFT_PADDING, TOP_BASELINE_GAP } from '@/render/plot/PlotConstants'
 
 export default class PlotTitles {
-    private readonly data: PlotData
-
-    private readonly units: Units
-
-    private readonly layout: PlotLayout
-
-    constructor(data: PlotData, units: Units, layout: PlotLayout) {
-        this.data = data
-        this.units = units
-        this.layout = layout
+    constructor(
+        private readonly data: PlotData,
+        private readonly units: Units,
+        private readonly layout: PlotLayout
+    ) {
     }
 
     getItems() {

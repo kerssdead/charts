@@ -1,4 +1,4 @@
-import { createRenderer, createSettings, mockFrames, mockInput } from './RendererTestData'
+import { createRenderer, createSettings, mockFrames, mockPointer } from './RendererTestData'
 import { onImageLoad } from '@/helpers/Images'
 
 describe('Resuming renderer', () => {
@@ -9,12 +9,12 @@ describe('Resuming renderer', () => {
         renderer.apply(settings)
         renderer.suspend()
 
-        const input = mockInput()
+        const pointer = mockPointer()
 
-        input.attach.mockClear()
+        pointer.attach.mockClear()
         renderer.resume()
 
-        expect(input.attach)
+        expect(pointer.attach)
             .toHaveBeenCalledWith(true)
         expect(mockFrames().resume)
             .toHaveBeenCalled()

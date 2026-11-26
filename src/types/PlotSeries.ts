@@ -15,7 +15,7 @@ export default class PlotSeries extends Value {
 
     drawMode?: LineDrawMode
 
-    canToggle(): boolean {
+    canToggle() {
         return true
     }
 }

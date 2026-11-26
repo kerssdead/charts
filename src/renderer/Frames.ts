@@ -1,10 +1,8 @@
 import AnimationFrame from '@/renderer/AnimationFrame'
 import InputRouter from '@/renderer/InputRouter'
-import Queue from '@/render/Queue'
-import Layout from '@/renderer/Layout'
-import ChartPanels from '@/renderer/ChartPanels'
 import Overlay from '@/renderer/Overlay'
 import Legend from '@/legend/Legend'
+import Scene from '@/renderer/Scene'
 import ChartSettings from '@/types/ChartSettings'
 import Frame from '@/renderer/Frame'
 import Panel from '@/types/Panel'
@@ -14,16 +12,8 @@ import { ThemePalette } from '@/Theme'
 import { guard } from '@/helpers/Errors'
 import { prefersReducedMotion } from '@/helpers/Motion'
 
-type FrameScene = {
-    queue: Queue
-    layout: Layout
-    panels: ChartPanels
-    input: InputRouter
-    getLegend: () => Legend | undefined
+type FrameCallbacks = {
     getOverlays: () => Overlay[]
-    getSettings: () => ChartSettings
-    getThemePalette: () => ThemePalette
-    syncTheme: () => boolean
     rebuildForTheme: () => void
     renewCanvas: () => void
     releaseLayers: () => void
@@ -46,23 +36,24 @@ type FrameRenderState = {
 export default class Frames {
     private static readonly SETTLE_DELAY = 2000
 
-    private readonly scene: FrameScene
-
     private readonly animationFrame: AnimationFrame
 
-    private isClean: boolean = false
+    private isClean = false
 
-    isSuspended: boolean = false
+    isSuspended = false
 
-    private wasAnimating: boolean = false
+    private wasAnimating = false
 
     private lastRender: FrameRenderState | null = null
 
     private settleTimer: ReturnType<typeof setTimeout> | null = null
 
-    constructor(scene: FrameScene) {
-        this.scene = scene
-        this.animationFrame = new AnimationFrame(timestamp => guard(() => this.draw(timestamp), scene.onError))
+    constructor(
+        private readonly scene: Scene,
+        private readonly input: InputRouter,
+        private readonly callbacks: FrameCallbacks
+    ) {
+        this.animationFrame = new AnimationFrame(timestamp => guard(() => this.draw(timestamp), callbacks.onError))
     }
 
     request() {
@@ -109,8 +100,8 @@ export default class Frames {
     }
 
     private syncTheme() {
-        if (this.scene.syncTheme())
-            this.scene.rebuildForTheme()
+        if (this.scene.theme.sync())
+            this.callbacks.rebuildForTheme()
     }
 
     private shouldDrawInstant(settings: ChartSettings) {
@@ -118,23 +109,22 @@ export default class Frames {
     }
 
     private draw(timestamp: DOMHighResTimeStamp) {
-        const { queue, layout, input } = this.scene
-        const settings = this.scene.getSettings()
+        const { queue, layout, settings, legend } = this.scene
+        const { input } = this
 
         this.syncTheme()
 
-        const theme = this.scene.getThemePalette()
+        const theme = this.scene.theme.getPalette()
         const isInstant = this.shouldDrawInstant(settings)
         const { window, screen } = layout
         const position = this.isClean ? null : input.position
-        const legend = this.scene.getLegend()
         const movingLegend = legend?.isMoving ? legend : undefined
         const frame = {
             queue,
             window,
             screen,
             mouse: position,
-            context: input.context,
+            context: input.pointer.context,
             now: timestamp,
             theme,
             isInstant
@@ -174,10 +164,10 @@ export default class Frames {
             this.settleTimer = null
 
             guard(() => {
-                this.scene.renewCanvas()
+                this.callbacks.renewCanvas()
                 this.drawNow()
-                this.scene.releaseLayers()
-            }, this.scene.onError)
+                this.callbacks.releaseLayers()
+            }, this.callbacks.onError)
         }, Frames.SETTLE_DELAY)
     }
 
@@ -240,7 +230,7 @@ export default class Frames {
     private updateOverlays(frame: Frame) {
         let isAnimating = false
 
-        for (const overlay of this.scene.getOverlays())
+        for (const overlay of this.callbacks.getOverlays())
             isAnimating = overlay.update(frame) || isAnimating
 
         return isAnimating

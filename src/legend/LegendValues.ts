@@ -6,17 +6,11 @@ import { hasLegend } from '@/charts/ChartDefinitions'
 import ViewState from '@/charts/ViewState'
 
 export default class LegendValues {
-    private settings: ChartSettings
-
     private values: Value[] = []
-
-    private readonly viewState: ViewState
 
     private readonly toggles: Map<string, DOMHighResTimeStamp | null> = new Map()
 
-    constructor(settings: ChartSettings, viewState: ViewState) {
-        this.settings = settings
-        this.viewState = viewState
+    constructor(private settings: ChartSettings, private readonly viewState: ViewState) {
         this.values = LegendValues.getValues(settings)
     }
 
@@ -47,7 +41,7 @@ export default class LegendValues {
         return this.viewState.isDisabled(value)
     }
 
-    toggle(value: Value): boolean {
+    toggle(value: Value) {
         const key = this.getKey(value)
 
         if (this.toggles.has(key) || !value.canToggle())

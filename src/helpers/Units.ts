@@ -2,13 +2,7 @@ import Point from '@/types/Point'
 import { COORDS_MAX_X, COORDS_MAX_Y } from '@/static/constants/Index'
 
 export default class Units {
-    private readonly pixel: Point
-
-    private readonly origin: Point
-
-    constructor(pixel: Point, origin: Point = { x: 0, y: 0 }) {
-        this.pixel = pixel
-        this.origin = origin
+    constructor(private readonly pixel: Point, private readonly origin: Point = { x: 0, y: 0 }) {
     }
 
     static fromSize(width: number, height: number) {

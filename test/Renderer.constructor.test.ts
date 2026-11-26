@@ -2,11 +2,12 @@ import {
     createRenderer,
     createSettings,
     mockContextMenu,
+    mockFrameCallbacks,
+    mockFrameScene,
     mockFrames,
-    mockFramesScene,
-    mockInput,
     mockMenu,
-    mockPanels
+    mockPanels,
+    mockPointer
 } from './RendererTestData'
 import ChartMenu from '@/renderer/ChartMenu'
 import ContextMenuOverlay from '@/renderer/ContextMenuOverlay'
@@ -23,7 +24,7 @@ describe('Creating renderer', () => {
 
         lastArgs(ChartMenu)[2]({ x: 1, y: 2 })
 
-        expect(mockInput().openMenu)
+        expect(mockPointer().openMenu)
             .toHaveBeenCalledWith({ x: 1, y: 2 })
     })
 
@@ -41,7 +42,7 @@ describe('Creating renderer', () => {
 
         lastArgs(ContextMenuOverlay)[1]()
 
-        expect(mockInput().closeContext)
+        expect(mockPointer().closeContext)
             .toHaveBeenCalled()
     })
 
@@ -67,7 +68,7 @@ describe('Creating renderer', () => {
     it('Should render when input changes', () => {
         createRenderer()
 
-        lastArgs(InputRouter)[1].onChange()
+        lastArgs(InputRouter)[2].onChange()
 
         expect(mockFrames().request)
             .toHaveBeenCalled()
@@ -79,16 +80,16 @@ describe('Creating renderer', () => {
 
         renderer.apply(settings)
 
-        expect(lastArgs(InputRouter)[1].getSettings())
+        expect(lastArgs(InputRouter)[1].settings)
             .toBe(settings)
-        expect(mockFramesScene?.getSettings())
+        expect(mockFrameScene?.settings)
             .toBe(settings)
     })
 
     it('Should sync theme for frames', () => {
         createRenderer()
 
-        expect(mockFramesScene?.syncTheme())
+        expect(mockFrameScene?.theme.sync())
             .toBe(false)
     })
 
@@ -98,7 +99,7 @@ describe('Creating renderer', () => {
         renderer.resize(600, 300, 1)
         renderer.apply(createSettings())
         mockPanels().build.mockClear()
-        mockFramesScene?.rebuildForTheme()
+        mockFrameCallbacks?.rebuildForTheme()
 
         expect(mockPanels().build)
             .toHaveBeenCalledWith(expect.objectContaining({ isInitialized: true }))

@@ -23,7 +23,7 @@ const process = new TestProcess(
     { values: [] } as unknown as Data,
     { x: 1, y: 1 },
     { valuePostfix: undefined, theme: LIGHT_THEME },
-    createState()
+    { state: createState() }
 )
 
 describe('Getting fitting font size', () => {

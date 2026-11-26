@@ -16,7 +16,7 @@ describe('Getting chart value axis', () => {
             { values: [] } as unknown as Data,
             { x: 1, y: 1 },
             { valuePostfix: undefined, theme: LIGHT_THEME },
-            createState()
+            { state: createState() }
         )
 
         expect(process.getValueAxis())

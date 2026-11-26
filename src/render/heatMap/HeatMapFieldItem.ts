@@ -17,10 +17,7 @@ export type FieldItemContext = {
 }
 
 export default class HeatMapFieldItem {
-    private readonly context: FieldItemContext
-
-    constructor(context: FieldItemContext) {
-        this.context = context
+    constructor(private readonly context: FieldItemContext) {
     }
 
     getAction(field: Field, area: RectangleDimensions): QueueAction {

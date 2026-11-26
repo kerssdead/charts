@@ -23,24 +23,24 @@ export default class LinePathTracer {
 
     private lengths: number[] = []
 
-    private total: number = 0
+    private total = 0
 
     private lengthStops: Point[] | null = null
 
-    private isMorphing: boolean = false
+    private isMorphing = false
 
     constructor(drawMode: LineDrawMode = LineDrawMode.Straight) {
         this.isSmooth = drawMode === LineDrawMode.Smooth
     }
 
-    updateCurve(stops: Point[], isMorphing: boolean = false) {
+    updateCurve(stops: Point[], isMorphing = false) {
         this.isMorphing = isMorphing
 
         if (this.isSmooth)
             this.curveSegments = getMonotoneSegments(stops)
     }
 
-    placeProgress(stops: Point[], progress: number): number {
+    placeProgress(stops: Point[], progress: number) {
         const lengths = this.isMorphing || this.lengthStops !== stops
                         ? this.cacheLengths(stops)
                         : this.lengths

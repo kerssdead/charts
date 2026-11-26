@@ -10,7 +10,7 @@ const create = (values: TreeValue[]) => {
         { values } as TreeData,
         { x: 5, y: 5 },
         { valuePostfix: undefined, theme: LIGHT_THEME },
-        createState({ values })
+        { state: createState({ values }) }
     )
 }
 

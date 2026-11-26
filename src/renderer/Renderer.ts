@@ -4,12 +4,10 @@ import Legend from '@/legend/Legend'
 import Queue from '@/render/Queue'
 import { hasFixedHeader } from '@/charts/ChartDefinitions'
 import Transition from '@/renderer/Transition'
-import ChartPanels from '@/renderer/ChartPanels'
 import Overlay from '@/renderer/Overlay'
 import TooltipOverlay from '@/renderer/TooltipOverlay'
 import ContextMenuOverlay from '@/renderer/ContextMenuOverlay'
 import FocusRing from '@/renderer/FocusRing'
-import Layout from '@/renderer/Layout'
 import ChartMenu from '@/renderer/ChartMenu'
 import { AnimationTiming } from '@/static/constants/Index'
 import RendererTheme from '@/renderer/RendererTheme'
@@ -18,6 +16,7 @@ import { guard } from '@/helpers/Errors'
 import InputRouter from '@/renderer/InputRouter'
 import Frames from '@/renderer/Frames'
 import ViewState from '@/charts/ViewState'
+import Scene from '@/renderer/Scene'
 
 export default class Renderer {
     private static readonly RESIZE_REBUILD_DELAY = 150
@@ -26,7 +25,7 @@ export default class Renderer {
 
     private readonly frames: Frames
 
-    private readonly queue: Queue
+    private readonly scene: Scene
 
     private readonly tooltip: TooltipOverlay
 
@@ -34,85 +33,65 @@ export default class Renderer {
 
     private readonly focusRing: FocusRing
 
-    private readonly layout = new Layout()
-
     private readonly menu: ChartMenu
 
-    private isApplied: boolean = false
+    private isApplied = false
 
-    private isLaidOut: boolean = false
+    private isLaidOut = false
 
     private rebuildTimer: ReturnType<typeof setTimeout> | null = null
 
-    private legend: Legend | undefined
-
-    private readonly panels: ChartPanels
-
-    private settings!: ChartSettings
-
     private removeImageListener: (() => void) | null = null
-
-    private readonly viewState: ViewState
-
-    private readonly theme: RendererTheme
 
     constructor(
         canvas: HTMLCanvasElement,
-        viewState: ViewState,
+        private readonly viewState: ViewState,
         theme: RendererTheme,
         onError: (error: unknown) => void
     ) {
-        this.viewState = viewState
-        this.theme = theme
-        this.queue = new Queue(getContext(canvas))
-        this.panels = new ChartPanels(this.queue, this.layout)
+        this.scene = new Scene(new Queue(getContext(canvas)), theme)
+
+        const { queue } = this.scene
+
         this.tooltip = new TooltipOverlay(canvas)
-        this.menu = new ChartMenu(canvas, this.queue, point => this.input.openMenu(point), () => {
+        this.menu = new ChartMenu(canvas, queue, point => this.input.pointer.openMenu(point), () => {
             this.frames.drawClean()
         })
-        this.contextMenu = new ContextMenuOverlay(canvas, () => this.input.closeContext(), action => {
+        this.contextMenu = new ContextMenuOverlay(canvas, () => this.input.pointer.closeContext(), action => {
             guard(() => action(), onError)
         })
         this.contextMenu.fixedButtons = () => this.menu.getButtons()
         this.listenToImages()
 
-        this.input = new InputRouter(canvas, {
-            queue: this.queue,
-            layout: this.layout,
-            panels: this.panels,
-            getSettings: () => this.settings,
+        this.input = new InputRouter(canvas, this.scene, {
             openChartMenu: () => this.menu.open(),
             onChange: () => this.render(),
             onError
         })
         this.focusRing = new FocusRing(() => this.input.focusBounds)
 
-        this.frames = new Frames({
-            queue: this.queue,
-            layout: this.layout,
-            panels: this.panels,
-            input: this.input,
-            getLegend: () => this.legend,
+        this.frames = new Frames(this.scene, this.input, {
             getOverlays: () => this.overlays,
-            getSettings: () => this.settings,
-            getThemePalette: () => this.theme.getPalette(),
-            syncTheme: () => this.theme.sync(),
             rebuildForTheme: () => this.rebuildAnimated(),
             renewCanvas: () => renewBuffers(canvas),
             releaseLayers: () => {
                 releaseOffscreenLayer()
-                this.queue.releaseLayers()
+                queue.releaseLayers()
             },
             onError
         })
     }
 
+    private get settings() {
+        return this.scene.settings
+    }
+
     apply(settings: ChartSettings) {
-        this.settings = settings
+        this.scene.settings = settings
 
         this.cancelPendingRebuild()
 
-        this.menu.apply(settings, value => this.viewState.isDisabled(value), this.theme.getPalette())
+        this.menu.apply(settings, value => this.viewState.isDisabled(value), this.scene.theme.getPalette())
         this.syncLegend()
 
         this.contextMenu.menu = settings.contextMenu
@@ -120,7 +99,7 @@ export default class Renderer {
         this.tooltip.apply(settings)
 
         if (!this.frames.isSuspended)
-            this.input.attach(this.settings.enableMove)
+            this.input.pointer.attach(this.settings.enableMove)
 
         if (this.isApplied)
             this.rebuildAnimated()
@@ -131,24 +110,26 @@ export default class Renderer {
     }
 
     private rebuild({ isInitialized }: { isInitialized: boolean }) {
-        this.queue.clear()
+        const { queue, layout, panels, theme } = this.scene
+
+        queue.clear()
 
         for (const overlay of this.overlays)
-            overlay.clear(this.queue)
+            overlay.clear(queue)
 
-        this.input.closeContext()
+        this.input.pointer.closeContext()
 
-        if (this.layout.hasArea) {
-            this.panels.build({
+        if (layout.hasArea) {
+            panels.build({
                 settings: this.settings,
                 viewState: this.viewState,
                 isInitialized,
                 onChange: () => this.rebuildAnimated(),
-                theme: this.theme.getPalette()
+                theme: theme.getPalette()
             })
-            this.input.setScrollable(this.panels.canScroll)
+            this.input.pointer.setScrollable(panels.canScroll)
         } else {
-            this.panels.clear()
+            panels.clear()
         }
 
         this.render()
@@ -158,26 +139,29 @@ export default class Renderer {
         if (this.settings.staticMode)
             return this.rebuild({ isInitialized: true })
 
-        const previous = Transition.snapshot(this.queue)
-        const previousPanels = this.panels.list
+        const { queue, panels } = this.scene
+        const previous = Transition.snapshot(queue)
+        const previousPanels = panels.list
 
         this.rebuild({ isInitialized: true })
 
-        new Transition(this.queue, previousPanels, this.panels.list, AnimationTiming.rebuild).apply(previous)
+        new Transition(queue, previousPanels, panels.list, AnimationTiming.rebuild).apply(previous)
     }
 
     resize(width: number, height: number, ratio: number) {
-        this.layout.width = width
-        this.layout.height = height
+        const { layout } = this.scene
+
+        layout.width = width
+        layout.height = height
         this.menu.ratio = ratio
-        this.queue.ratio = ratio
+        this.scene.queue.ratio = ratio
 
         if (!this.isApplied)
             return
 
         const isResized = this.updateLayout()
 
-        if (isResized && this.layout.hasArea) {
+        if (isResized && layout.hasArea) {
             if (this.isLaidOut)
                 this.scheduleRebuild()
             else
@@ -186,7 +170,7 @@ export default class Renderer {
             this.render()
         }
 
-        this.isLaidOut ||= this.layout.hasArea
+        this.isLaidOut ||= layout.hasArea
 
         this.frames.drawNow()
     }
@@ -198,7 +182,7 @@ export default class Renderer {
         this.rebuildTimer = setTimeout(() => {
             this.rebuildTimer = null
 
-            const isInitialized = this.isLaidOut && !this.queue.items.some(item => item.isInitializing)
+            const isInitialized = this.isLaidOut && !this.scene.queue.items.some(item => item.isInitializing)
 
             this.rebuild({ isInitialized })
         }, Renderer.RESIZE_REBUILD_DELAY)
@@ -213,40 +197,44 @@ export default class Renderer {
     }
 
     destroy() {
+        const { queue, panels, layout } = this.scene
+
         this.cancelPendingRebuild()
 
-        this.input.detach()
+        this.input.pointer.detach()
         this.stopListeningToImages()
 
         this.removeLegend()
         this.menu.remove()
 
-        this.tooltip.reset(this.queue)
-        this.contextMenu.clear(this.queue)
-        this.focusRing.clear(this.queue)
-        this.queue.clear()
-        this.queue.releaseLayers()
+        this.tooltip.reset(queue)
+        this.contextMenu.clear(queue)
+        this.focusRing.clear(queue)
+        queue.clear()
+        queue.releaseLayers()
 
         this.frames.cancel()
 
-        this.panels.clear()
-        this.layout.reset()
+        panels.clear()
+        layout.reset()
         this.isApplied = false
         this.isLaidOut = false
     }
 
     suspend() {
+        const { queue } = this.scene
+
         this.frames.suspend()
 
-        this.input.detach()
+        this.input.pointer.detach()
         this.stopListeningToImages()
-        this.tooltip.clear(this.queue)
-        this.contextMenu.clear(this.queue)
-        this.focusRing.clear(this.queue)
+        this.tooltip.clear(queue)
+        this.contextMenu.clear(queue)
+        this.focusRing.clear(queue)
     }
 
     resume() {
-        this.input.attach(this.settings.enableMove)
+        this.input.pointer.attach(this.settings.enableMove)
         this.listenToImages()
 
         this.frames.resume()
@@ -264,34 +252,34 @@ export default class Renderer {
     private syncLegend() {
         if (!this.settings.enableLegend)
             this.removeLegend()
-        else if (this.legend)
-            this.legend.applySettings(this.settings)
+        else if (this.scene.legend)
+            this.scene.legend.applySettings(this.settings)
         else
-            this.legend = new Legend(this.settings, this.viewState, () => this.rebuildAnimated())
+            this.scene.legend = new Legend(this.settings, this.viewState, () => this.rebuildAnimated())
 
         this.updateLayout()
     }
 
     private removeLegend() {
-        this.legend?.destroy(this.queue)
-        this.legend = undefined
+        this.scene.legend?.destroy(this.scene.queue)
+        this.scene.legend = undefined
     }
 
-    render(): void {
+    render() {
         this.frames.request()
     }
 
     private get overlays(): Overlay[] {
-        return [this.tooltip, this.contextMenu, this.legend, this.menu.button, this.focusRing]
+        return [this.tooltip, this.contextMenu, this.scene.legend, this.menu.button, this.focusRing]
             .filter(overlay => overlay !== undefined)
     }
 
     private updateLayout() {
         const reserveMenuRow = this.settings.charts.some(hasFixedHeader)
 
-        return this.layout.update({
+        return this.scene.layout.update({
             title: this.settings.title,
-            legend: this.legend,
+            legend: this.scene.legend,
             menu: this.menu.button,
             reserveMenuRow
         })

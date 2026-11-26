@@ -19,8 +19,8 @@ globalThis.DOMRect = class {
     }
 } as unknown as typeof DOMRect
 
-const create = (legendPlace: LegendPlace = LegendPlace.Bottom) => {
-    const settings = normalize({
+const createSettings = (legendPlace: LegendPlace) => {
+    return normalize({
         type: ChartType.Pie,
         legendPlace,
         enableLegend: true,
@@ -32,12 +32,15 @@ const create = (legendPlace: LegendPlace = LegendPlace.Bottom) => {
             ]
         }
     } as unknown as ChartOptions)
+}
 
+const create = (legendPlace: LegendPlace = LegendPlace.Bottom, onChange?: () => void) => {
+    const settings = createSettings(legendPlace)
     const viewState = new ViewState()
 
     viewState.apply(settings)
 
-    const legend = new Legend(settings, viewState)
+    const legend = new Legend(settings, viewState, onChange)
 
     legend.resize(400, 400)
 
@@ -103,7 +106,7 @@ describe('Updating legend', () => {
         const queue = new Queue({} as CanvasRenderingContext2D)
 
         update(legend, queue)
-        legend.applySettings(legend.settings)
+        legend.applySettings(createSettings(LegendPlace.Bottom))
 
         expect(legend.isMoving)
             .toBe(true)
@@ -165,9 +168,8 @@ describe('Interacting with legend', () => {
     it('Should report the change when an entry is toggled', () => {
         const onChange = jest.fn()
         const queue = new Queue({} as CanvasRenderingContext2D)
-        const legend = create()
+        const legend = create(LegendPlace.Bottom, onChange)
 
-        legend.onChange = onChange
         update(legend, queue)
 
         clickAll(queue)
@@ -179,9 +181,8 @@ describe('Interacting with legend', () => {
     it('Should report the change when the reset button is clicked', () => {
         const onChange = jest.fn()
         const queue = new Queue({} as CanvasRenderingContext2D)
-        const legend = create()
+        const legend = create(LegendPlace.Bottom, onChange)
 
-        legend.onChange = onChange
         update(legend, queue)
         clickAll(queue)
 

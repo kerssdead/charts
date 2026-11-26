@@ -9,15 +9,9 @@ import MenuPopup from '@/renderer/MenuPopup'
 import { ContextMenu } from '@/static/constants/Index'
 
 export default class ContextMenuOverlay extends Overlay {
-    menu: DropdownItem[] | undefined
+    menu?: DropdownItem[]
 
-    fixedButtons: (() => ButtonOptions[]) | undefined
-
-    private readonly canvas: HTMLCanvasElement
-
-    private readonly onClose: () => void
-
-    private readonly onAction: (action: () => void) => void
+    fixedButtons?: () => ButtonOptions[]
 
     private context: PointerContext | null = null
 
@@ -25,15 +19,15 @@ export default class ContextMenuOverlay extends Overlay {
 
     private fade = new HoverProgress()
 
-    constructor(canvas: HTMLCanvasElement, onClose: () => void, onAction: (action: () => void) => void) {
+    constructor(
+        private readonly canvas: HTMLCanvasElement,
+        private readonly onClose: () => void,
+        private readonly onAction: (action: () => void) => void
+    ) {
         super()
-
-        this.canvas = canvas
-        this.onClose = onClose
-        this.onAction = onAction
     }
 
-    update({ queue, context, now, theme, isInstant }: Frame): boolean {
+    update({ queue, context, now, theme, isInstant }: Frame) {
         if (context && context !== this.context) {
             this.clear(queue)
             this.context = context

@@ -23,7 +23,7 @@ jest.mock('@/render/heatMap/HeatMapProcess')
 const data = {} as Data
 const pixel = { x: 5, y: 12.5 }
 const settings = {} as ChartSettings
-const state = createState()
+const context = { state: createState() }
 
 describe('Checking process creation', () => {
     it.each([
@@ -37,17 +37,21 @@ describe('Checking process creation', () => {
     ])('Should create matching process for chart type %s', (type, Process) => {
         const processSettings = { ...settings, theme: LIGHT_THEME }
 
-        expect(createProcess({ type, data }, pixel, processSettings, state))
+        expect(createProcess({ type, data }, pixel, processSettings, context))
             .toBeInstanceOf(Process)
         expect(Process)
-            .toHaveBeenLastCalledWith(data, pixel, processSettings, state)
+            .toHaveBeenLastCalledWith(data, pixel, processSettings, context)
     })
 
-    it('Should return undefined for unknown chart type', () => {
-        expect(createProcess({ type: -1 as unknown as ChartType, data }, pixel, {
-            ...settings,
-            theme: LIGHT_THEME
-        }, state))
-            .toBeUndefined()
+    it('Should create an empty process for unknown chart type', () => {
+        const process = createProcess(
+            { type: -1 as unknown as ChartType, data },
+            pixel,
+            { ...settings, theme: LIGHT_THEME },
+            context
+        )
+
+        expect([process.getData(), process.isEmpty()])
+            .toEqual([[], false])
     })
 })

@@ -12,33 +12,25 @@ export default class QueueLeaderLineItemBuilder extends QueueItemBaseBuilder<Ren
     }
 
     gap(gap: number) {
-        this.shape.gap = gap
-
-        return this
+        return this.chain(() => this.shape.gap = gap)
     }
 
     length(length: number) {
-        this.shape.length = length
-
-        return this
+        return this.chain(() => this.shape.length = length)
     }
 
     offset(angle: number) {
-        this.shape.offset = angle
-
-        return this
+        return this.chain(() => this.shape.offset = angle)
     }
 
     anchor(angle: number) {
-        this.shape.anchor = angle
-
-        return this
+        return this.chain(() => this.shape.anchor = angle)
     }
 
     target(target: QueueItemBaseBuilder<RenderItemBase & LeaderTarget>) {
-        this.shape.target = target.shape
-        this.shape.targetItem = target.build()
-
-        return this
+        return this.chain(() => {
+            this.shape.target = target.shape
+            this.shape.targetItem = target.build()
+        })
     }
 }

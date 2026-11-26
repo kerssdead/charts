@@ -1,18 +1,12 @@
 import Pointer from '@/renderer/Pointer'
 import KeyboardFocus from '@/renderer/KeyboardFocus'
-import Queue from '@/render/Queue'
-import Layout from '@/renderer/Layout'
-import ChartPanels from '@/renderer/ChartPanels'
-import ChartSettings from '@/types/ChartSettings'
+import Scene from '@/renderer/Scene'
 import Point from '@/types/Point'
 import RenderItem from '@/types/RenderItem'
 import { guard } from '@/helpers/Errors'
+import { Keys } from '@/static/Enums'
 
-type InputScene = {
-    queue: Queue
-    layout: Layout
-    panels: ChartPanels
-    getSettings: () => ChartSettings
+type InputCallbacks = {
     openChartMenu: () => boolean
     onChange: () => void
     onError: (error: unknown) => void
@@ -21,9 +15,7 @@ type InputScene = {
 type KeyHandler = (event: KeyboardEvent) => boolean
 
 export default class InputRouter {
-    private readonly pointer: Pointer
-
-    private readonly scene: InputScene
+    readonly pointer: Pointer
 
     private readonly keyHandlers: KeyHandler[] = []
 
@@ -37,20 +29,18 @@ export default class InputRouter {
         return this.keyboard.target?.focusBounds ?? null
     }
 
-    get context() {
-        return this.pointer.context
-    }
-
-    constructor(canvas: HTMLCanvasElement, scene: InputScene) {
-        this.scene = scene
-
+    constructor(
+        canvas: HTMLCanvasElement,
+        private readonly scene: Scene,
+        private readonly callbacks: InputCallbacks
+    ) {
         const { queue, layout, panels } = scene
 
-        this.keyboard = new KeyboardFocus(queue, () => scene.onChange())
+        this.keyboard = new KeyboardFocus(queue, () => callbacks.onChange())
 
         this.pointer = new Pointer(canvas, () => layout.window, {
-            onClick: (point: Point) => guard(() => this.onClick(point), scene.onError),
-            onChange: () => scene.onChange(),
+            onClick: (point: Point) => guard(() => this.onClick(point), callbacks.onError),
+            onChange: () => callbacks.onChange(),
             onKeyDown: (event: KeyboardEvent) => this.onKeyDown(event),
             onPointerMove: () => this.keyboard.clear(),
             onBlur: () => {
@@ -58,7 +48,7 @@ export default class InputRouter {
                     this.keyboard.clear()
             },
             canDrag: (point: Point) => !this.pointer.context && !this.getClickableItemAt(point),
-            hasContextMenuAt: (point: Point) => !!scene.getSettings().contextMenu?.length
+            hasContextMenuAt: (point: Point) => !!scene.settings.contextMenu?.length
                                                 && queue.items.some(item => item.hasContextMenuAt(point)),
             scrollBy: (point: Point, delta: number) => panels.scrollBy(point, delta),
             getScrollDrag: (point: Point) => panels.getScrollDrag(point)
@@ -72,26 +62,6 @@ export default class InputRouter {
         this.keyHandlers.push(handler)
     }
 
-    attach(enableMove: boolean) {
-        this.pointer.attach(enableMove)
-    }
-
-    detach() {
-        this.pointer.detach()
-    }
-
-    setScrollable(value: boolean) {
-        this.pointer.setScrollable(value)
-    }
-
-    openMenu(point: Point) {
-        this.pointer.openMenu(point)
-    }
-
-    closeContext() {
-        this.pointer.closeContext()
-    }
-
     private getClickableItemAt(point: Point): RenderItem | undefined {
         const isContextOpen = this.pointer.context != null
 
@@ -101,14 +71,14 @@ export default class InputRouter {
     private onKeyDown(event: KeyboardEvent) {
         let isHandled = false
 
-        guard(() => isHandled = this.keyHandlers.some(handler => handler(event)), this.scene.onError)
+        guard(() => isHandled = this.keyHandlers.some(handler => handler(event)), this.callbacks.onError)
 
         return isHandled
     }
 
     private onMenuKey(event: KeyboardEvent) {
-        if (event.key === 'Enter' && !this.keyboard.target)
-            return this.scene.openChartMenu()
+        if (event.key === Keys.Enter && !this.keyboard.target)
+            return this.callbacks.openChartMenu()
 
         const point = this.keyboard.point
 
@@ -116,12 +86,12 @@ export default class InputRouter {
     }
 
     private static isContextMenuKey(event: KeyboardEvent) {
-        return event.key === 'ContextMenu' || event.shiftKey && event.key === 'F10'
+        return event.key === Keys.ContextMenu || event.shiftKey && event.key === Keys.F10
     }
 
     private onClick(point: Point) {
         this.getClickableItemAt(point)?.onClick?.()
 
-        this.scene.onChange()
+        this.callbacks.onChange()
     }
 }

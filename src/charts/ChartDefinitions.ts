@@ -6,6 +6,7 @@ import TreeMapDefinition from '@/charts/TreeMapDefinition'
 import SegmentedBarDefinition from '@/charts/SegmentedBarDefinition'
 import TreeBarDefinition from '@/charts/TreeBarDefinition'
 import HeatMapDefinition from '@/charts/HeatMapDefinition'
+import UnknownDefinition from '@/charts/UnknownDefinition'
 import { ChartType } from '@/static/Enums'
 import ChartItem from '@/types/ChartItem'
 import ChartSettings from '@/types/ChartSettings'
@@ -19,9 +20,10 @@ import TreeData from '@/types/data/TreeData'
 import SegmentedBarData from '@/types/data/SegmentedBarData'
 import TreeBarData from '@/types/data/TreeBarData'
 import HeatMapData from '@/types/data/HeatMapData'
-import ChartViewState, { IsDisabled } from '@/types/ChartViewState'
+import { IsDisabled } from '@/types/ChartViewState'
 import Value from '@/types/base/Value'
 import { ThemePalette } from '@/Theme'
+import { ProcessContext } from '@/render/ChartProcess'
 
 type ChartDataByType = {
     [ChartType.Plot]: PlotData
@@ -43,42 +45,44 @@ const definitions: { [Type in ChartType]: ChartDefinition<ChartDataByType[Type]>
     [ChartType.HeatMap]: HeatMapDefinition
 }
 
-export function getChartDefinition(type: ChartType): ChartDefinition<Data> | undefined {
-    return definitions[type] as unknown as ChartDefinition<Data> | undefined
+export function getChartDefinition(type: ChartType): ChartDefinition<Data> {
+    const definition = definitions[type] as unknown as ChartDefinition<Data> | undefined
+
+    return definition ?? UnknownDefinition
 }
 
 export function hasLegend(chart: ChartItem) {
-    return getChartDefinition(chart.type)?.hasLegend(chart.data) ?? false
+    return getChartDefinition(chart.type).hasLegend(chart.data)
 }
 
 export function hasMenu(chart: ChartItem) {
-    return getChartDefinition(chart.type)?.hasMenu ?? false
+    return getChartDefinition(chart.type).hasMenu
 }
 
 export function hasFixedHeader(chart: ChartItem) {
-    return getChartDefinition(chart.type)?.hasFixedHeader ?? false
+    return getChartDefinition(chart.type).hasFixedHeader
 }
 
 export function getValuesWithChildren(chart: ChartItem): Value[] {
     if (!chart.data)
         return []
 
-    return getChartDefinition(chart.type)?.getValuesWithChildren?.(chart.data) ?? chart.data.values ?? []
+    return getChartDefinition(chart.type).getValuesWithChildren?.(chart.data) ?? chart.data.values ?? []
 }
 
 export function createProcess(
     chart: ChartItem,
     pixel: Point,
     settings: ChartSettings & { theme: ThemePalette },
-    state: ChartViewState
+    context: ProcessContext
 ) {
-    return getChartDefinition(chart.type)?.createProcess(chart.data, pixel, settings, state)
+    return getChartDefinition(chart.type).createProcess(chart.data, pixel, settings, context)
 }
 
 export function getTableRows(chart: ChartItem, isDisabled: IsDisabled): TableData {
-    return getChartDefinition(chart.type)?.getTableRows(chart.data, isDisabled) ?? { headers: [], values: [] }
+    return getChartDefinition(chart.type).getTableRows(chart.data, isDisabled)
 }
 
 export function summarizeTable(chart: ChartItem, table: TableData): TableData {
-    return getChartDefinition(chart.type)?.summarizeTable?.(table) ?? table
+    return getChartDefinition(chart.type).summarizeTable?.(table) ?? table
 }

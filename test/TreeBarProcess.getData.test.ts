@@ -1,6 +1,7 @@
 import { LIGHT_THEME } from '@/Theme'
 
 import TreeBarProcess from '@/render/treeBar/TreeBarProcess'
+import { ProcessContext } from '@/render/ChartProcess'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
 import RenderItem from '@/types/RenderItem'
 import RenderItemRectangle from '@/types/RenderItemRectangle'
@@ -38,9 +39,10 @@ const row = (id: string, values: number[], extra: Partial<TreeBarRow> = {}) => {
 function create(
     data: Partial<TreeBarData>,
     state = createState(data),
-    settings = SETTINGS
+    settings = SETTINGS,
+    context: Partial<ProcessContext> = {}
 ) {
-    return new TreeBarProcess({ values: [], ...data } as TreeBarData, PIXEL, settings, state)
+    return new TreeBarProcess({ values: [], ...data } as TreeBarData, PIXEL, settings, { state, ...context })
 }
 
 function getItems(process: TreeBarProcess) {
@@ -127,19 +129,17 @@ describe('Getting tree bar data', () => {
     it('Should toggle sort direction by header click', () => {
         const data = { values: [row('a', [1])], columns: [{ key: 'amount', title: 'Amount' }] } as TreeBarData
         const state = createState(data)
-        const process = create(data, state)
         const onChange = jest.fn()
-
-        process.onChange = onChange
+        const process = create(data, state, SETTINGS, { onChange })
 
         getItems(process).get('tree-bar-column-amount-area')?.onClick?.()
 
-        expect([state.sortColumn, state.isSortDescending, onChange.mock.calls.length, data.sortColumn])
+        expect([state.sort.column, state.sort.isDescending, onChange.mock.calls.length, data.sortColumn])
             .toEqual(['amount', false, 1, undefined])
 
         getItems(process).get('tree-bar-column-amount-area')?.onClick?.()
 
-        expect(state.isSortDescending)
+        expect(state.sort.isDescending)
             .toBe(true)
     })
 
@@ -147,16 +147,14 @@ describe('Getting tree bar data', () => {
         const parent = row('a', [1], { children: [row('b', [1])] })
         const data = { values: [parent, row('c', [1])] }
         const state = createState(data)
-        const process = create(data, state)
         const onChange = jest.fn()
-
-        process.onChange = onChange
+        const process = create(data, state, SETTINGS, { onChange })
 
         const items = getItems(process)
 
         items.get('tree-bar-row-a-toggle-area')?.onClick?.()
 
-        expect([state.isExpanded(parent), parent.expanded, onChange.mock.calls.length, items.has('tree-bar-row-c-toggle-area')])
+        expect([state.expanded.has(parent), parent.expanded, onChange.mock.calls.length, items.has('tree-bar-row-c-toggle-area')])
             .toEqual([true, undefined, 1, false])
     })
 
@@ -208,13 +206,16 @@ describe('Getting tree bar data', () => {
     })
 
     it('Should build only rows near the scroll window', () => {
-        const process = create({ values: Array.from({ length: 50 }, (_, i) => row(`r${ i }`, [1])) })
         const panel = new Panel(0, { x: 0, y: 0, width: 1, height: 1 })
+        const process = create(
+            { values: Array.from({ length: 50 }, (_, i) => row(`r${ i }`, [1])) },
+            undefined,
+            SETTINGS,
+            { panel }
+        )
 
         panel.scroll = process.getScroll()
         panel.update(new CanvasWindow(500, 400))
-
-        process.panel = panel
 
         const labels = texts(getItems(process), '-label-0')
 
@@ -227,14 +228,17 @@ describe('Getting tree bar data', () => {
     })
 
     it('Should recenter the built window after scrolling', () => {
-        const process = create({ values: Array.from({ length: 50 }, (_, i) => row(`r${ i }`, [1])) })
         const panel = new Panel(0, { x: 0, y: 0, width: 1, height: 1 })
+        const process = create(
+            { values: Array.from({ length: 50 }, (_, i) => row(`r${ i }`, [1])) },
+            undefined,
+            SETTINGS,
+            { panel }
+        )
 
         panel.scroll = process.getScroll()
         panel.update(new CanvasWindow(500, 400))
         panel.scrollTo(500)
-
-        process.panel = panel
 
         const labels = texts(getItems(process), '-label-0')
 
@@ -249,7 +253,7 @@ describe('Getting tree bar data', () => {
             { values: [row('a', [1], { image: 'a.png' })] } as TreeBarData,
             PIXEL,
             { ...SETTINGS, imageCrossOrigin: ImageCrossOrigin.None },
-            createState()
+            { state: createState() }
         )
 
         expect((getItems(process).get('tree-bar-row-a-image')?.shape as RenderItemImage).crossOrigin)

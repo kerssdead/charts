@@ -13,13 +13,7 @@ type LineStop = {
 }
 
 export default class PlotLineItems {
-    private readonly layout: PlotLayout
-
-    private readonly style: PlotItemStyle
-
-    constructor(layout: PlotLayout, style: PlotItemStyle) {
-        this.layout = layout
-        this.style = style
+    constructor(private readonly layout: PlotLayout, private readonly style: PlotItemStyle) {
     }
 
     getItems(series: PlotSeries) {

@@ -17,31 +17,24 @@ export function isMenuEnabled(settings: ChartSettings) {
 }
 
 export default class ChartMenu {
-    ratio: number = 1
+    ratio = 1
 
-    button: MenuButton | undefined
+    button?: MenuButton
 
     private settings!: ChartSettings
 
-    private buttons: ButtonOptions[] | undefined
-
-    private readonly canvas: HTMLCanvasElement
-
-    private readonly queue: Queue
+    private buttons?: ButtonOptions[]
 
     private isDisabled!: IsDisabled
 
     private theme!: ThemePalette
 
-    private readonly onOpen: (point: Point) => void
-
-    private readonly drawClean: () => void
-
-    constructor(canvas: HTMLCanvasElement, queue: Queue, onOpen: (point: Point) => void, drawClean: () => void) {
-        this.canvas = canvas
-        this.queue = queue
-        this.onOpen = onOpen
-        this.drawClean = drawClean
+    constructor(
+        private readonly canvas: HTMLCanvasElement,
+        private readonly queue: Queue,
+        private readonly onOpen: (point: Point) => void,
+        private readonly drawClean: () => void
+    ) {
     }
 
     apply(settings: ChartSettings, isDisabled: IsDisabled, theme: ThemePalette) {

@@ -114,7 +114,7 @@ function readPixel(ctx: CanvasRenderingContext2D) {
     return '#' + toHex(r) + toHex(g) + toHex(b) + (a === 255 ? '' : toHex(a))
 }
 
-export function grayScale(color: string, amount: number = 1) {
+export function grayScale(color: string, amount = 1) {
     if (amount <= 0)
         return color
 
@@ -163,10 +163,7 @@ export function luminance(color: string) {
 export function hexToRgb(hex: string): Color | null {
     const value = getHexValues(expandHex(hex))
 
-    if (!value)
-        return null
-
-    return { r: parseInt(value[1], 16), g: parseInt(value[2], 16), b: parseInt(value[3], 16) }
+    return value ? { r: parseInt(value[1], 16), g: parseInt(value[2], 16), b: parseInt(value[3], 16) } : null
 }
 
 function getHexValues(str: string) {

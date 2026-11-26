@@ -25,7 +25,7 @@ export default class RenderItem {
 
     axisValue: number | null = null
 
-    isInstant: boolean = false
+    isInstant = false
 
     hoverGroup: string | null = null
 
@@ -39,7 +39,7 @@ export default class RenderItem {
 
     data: ItemData | null = null
 
-    layer: number = 0
+    layer = 0
 
     onClick?: () => void
 
@@ -47,18 +47,15 @@ export default class RenderItem {
 
     animation: AnimationData = new AnimationData()
 
-    readonly shape: RenderItemBase
-
     private flags: number = f.Fading
 
     private palette: ThemePalette = LIGHT_THEME
 
     private readonly hover = new HoverProgress()
 
-    private hoverChanged: boolean = false
+    private hoverChanged = false
 
-    constructor(shape: RenderItemBase) {
-        this.shape = shape
+    constructor(readonly shape: RenderItemBase) {
     }
 
     get isInitializing() {
@@ -169,7 +166,7 @@ export default class RenderItem {
         return SCREEN_AREA
     }
 
-    animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>, isInstant = false): boolean {
+    animate(point: Point, now: DOMHighResTimeStamp, hoveredGroups: Set<string>, isInstant = false) {
         if (!this.is(f.Interactive) || this.isInitializing)
             return false
 
@@ -263,10 +260,7 @@ export default class RenderItem {
         if (previous.is(f.Ghost))
             return MorphFade.In
 
-        if (this.is(f.Ghost))
-            return MorphFade.Out
-
-        return null
+        return this.is(f.Ghost) ? MorphFade.Out : null
     }
 
     appear(duration: number, mapY?: (y: number) => number) {
@@ -299,7 +293,7 @@ export default class RenderItem {
         this.morphOut(duration)
     }
 
-    morphIn(duration: number, delay: number = 0) {
+    morphIn(duration: number, delay = 0) {
         this.animation.startMorph(MorphFade.In, duration, delay)
     }
 

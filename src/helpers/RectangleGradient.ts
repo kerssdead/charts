@@ -9,7 +9,7 @@ export default class RectangleGradient {
 
     private stableGradient: CanvasGradient | null = null
 
-    private isContextSaved: boolean = false
+    private isContextSaved = false
 
     apply(ctx: CanvasRenderingContext2D, color: string, top: number, height: number) {
         if (this.isSameAsLast(color, top, height)) {

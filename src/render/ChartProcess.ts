@@ -15,27 +15,39 @@ import { ThemePalette } from '@/Theme'
 
 const LINE_BREAK = /<br\s*\/?>/gi
 
+export type ProcessContext = {
+    state: ChartViewState
+    panel?: Panel
+    onChange?: () => void
+}
+
+type RingSizing = {
+    radius: number
+    innerRadiusRatio: number
+}
+
 export default abstract class ChartProcess<
     TData extends Data,
     TSettings extends ProcessSettings = ProcessSettings
 > {
-    protected readonly data: TData
-
     protected readonly units: Units
-
-    protected readonly settings: TSettings
 
     protected readonly state: ChartViewState
 
-    panel: Panel | null = null
+    protected readonly panel: Panel | null
 
-    onChange: (() => void) | undefined
+    protected readonly onChange?: () => void
 
-    constructor(data: TData, pixel: Point, settings: TSettings, state: ChartViewState) {
-        this.data = data
+    constructor(
+        protected readonly data: TData,
+        pixel: Point,
+        protected readonly settings: TSettings,
+        { state, panel, onChange }: ProcessContext
+    ) {
         this.units = new Units(pixel)
-        this.settings = settings
         this.state = state
+        this.panel = panel ?? null
+        this.onChange = onChange
     }
 
     protected get theme(): ThemePalette {
@@ -81,6 +93,12 @@ export default abstract class ChartProcess<
 
     protected getFittingFontSize(text: string, availableWidth: number, maxFontSize: number) {
         return Math.min(maxFontSize, availableWidth / stringWidth(text, 1))
+    }
+
+    protected getFittingFontSizeInRing(text: string, ring: RingSizing, widthRatio: number, maxFontSize: number) {
+        const innerDiameter = ring.radius * ring.innerRadiusRatio * 2
+
+        return this.getFittingFontSize(text, innerDiameter * widthRatio, maxFontSize)
     }
 
     protected percent(ratio: number) {

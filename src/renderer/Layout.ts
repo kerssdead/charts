@@ -35,19 +35,19 @@ type LayoutContent = {
 }
 
 export default class Layout {
-    width: number = 0
+    width = 0
 
-    height: number = 0
+    height = 0
 
     window = new CanvasWindow(0, 0)
 
     screen = new CanvasWindow(0, 0)
 
-    private title: string | undefined
+    private title?: string
 
     private titleInset: number = TITLE_PADDING
 
-    private hasMenuRow: boolean = false
+    private hasMenuRow = false
 
     get hasArea() {
         return this.window.width > 0 && this.window.height > 0
@@ -64,7 +64,7 @@ export default class Layout {
         this.window = new CanvasWindow(this.width, this.height)
     }
 
-    update({ title, legend, menu, reserveMenuRow = false }: LayoutContent): boolean {
+    update({ title, legend, menu, reserveMenuRow = false }: LayoutContent) {
         this.title = title
         this.hasMenuRow = reserveMenuRow && !!menu
 
@@ -78,7 +78,7 @@ export default class Layout {
         return this.fit(legend?.reservedPaddings ?? NO_PADDINGS)
     }
 
-    fit({ left, top, right, bottom }: Paddings): boolean {
+    fit({ left, top, right, bottom }: Paddings) {
         const { width, height } = this
 
         top += this.titleHeight

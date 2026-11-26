@@ -8,29 +8,25 @@ import { withAlpha } from '@/helpers/Color'
 const ALPHA = .3
 
 export default class RenderItemScrollbar extends RenderItemBase {
-    private readonly panel: Panel
-
     private thumb: RectangleDimensions | null = null
 
-    constructor(panel: Panel) {
+    constructor(private readonly panel: Panel) {
         super()
-
-        this.panel = panel
     }
 
-    defaultColor(theme: ThemePalette): string {
+    defaultColor(theme: ThemePalette) {
         return withAlpha(theme.text, ALPHA)
     }
 
-    adjust(): void {
+    adjust() {
         this.thumb = this.panel.thumb
     }
 
-    canBeCached(): boolean {
+    canBeCached() {
         return false
     }
 
-    render(ctx: CanvasRenderingContext2D, _item: RenderItem): void {
+    render(ctx: CanvasRenderingContext2D, _item: RenderItem) {
         if (!this.thumb)
             return
 

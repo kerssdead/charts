@@ -8,16 +8,11 @@ import { AXIS_LAYER, GRID_DASH, MAX_LINE_DASH } from '@/render/plot/PlotConstant
 import { Axis } from '@/static/Enums'
 
 export default class PlotAxisLines {
-    private readonly layout: PlotLayout
-
-    private readonly seriesGroups: PlotSeriesGroups
-
-    private readonly theme: ThemePalette
-
-    constructor(layout: PlotLayout, seriesGroups: PlotSeriesGroups, theme: ThemePalette) {
-        this.layout = layout
-        this.seriesGroups = seriesGroups
-        this.theme = theme
+    constructor(
+        private readonly layout: PlotLayout,
+        private readonly seriesGroups: PlotSeriesGroups,
+        private readonly theme: ThemePalette
+    ) {
     }
 
     addItems(items: QueueItemsBuilder) {

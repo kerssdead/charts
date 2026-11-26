@@ -38,30 +38,25 @@ export default class Pointer {
 
     private drag: DragState | null = null
 
-    private isDragged: boolean = false
+    private isDragged = false
 
     private abort: AbortController = new AbortController()
 
     private dragAbort: AbortController | null = null
 
-    private isAttached: boolean = false
+    private isAttached = false
 
-    private isMoveEnabled: boolean = false
+    private isMoveEnabled = false
 
-    private isScrollable: boolean = false
-
-    private readonly canvas: HTMLCanvasElement
-
-    private readonly getWindow: () => CanvasWindow
-
-    private readonly handlers: PointerHandlers
+    private isScrollable = false
 
     private readonly wheel: PointerWheel
 
-    constructor(canvas: HTMLCanvasElement, getWindow: () => CanvasWindow, handlers: PointerHandlers) {
-        this.canvas = canvas
-        this.getWindow = getWindow
-        this.handlers = handlers
+    constructor(
+        private readonly canvas: HTMLCanvasElement,
+        private readonly getWindow: () => CanvasWindow,
+        private readonly handlers: PointerHandlers
+    ) {
         this.wheel = new PointerWheel({
             isZoomEnabled: () => this.isMoveEnabled,
             zoom: (step, point) => this.updateWindow(view => view.zoom(step, point)),
@@ -226,7 +221,7 @@ export default class Pointer {
         this.canvas.setPointerCapture(event.pointerId)
     }
 
-    private onDrag(event: PointerEvent): boolean {
+    private onDrag(event: PointerEvent) {
         if (this.drag?.pointerId !== event.pointerId)
             return false
 

@@ -30,7 +30,7 @@ const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
 function create(data: Partial<PieData>, settings: Partial<PieProcessSettings> = {}, pixel = PIXEL) {
     const pieData = { values: [], ...data } as PieData
 
-    return new PieProcess(pieData, pixel, { ...SETTINGS, ...settings }, createState(pieData))
+    return new PieProcess(pieData, pixel, { ...SETTINGS, ...settings }, { state: createState(pieData) })
 }
 
 function getItems(process: PieProcess) {
@@ -131,13 +131,11 @@ describe('Getting pie data', () => {
     it('Should toggle pin on click and notify about change', () => {
         const values = [sector('A', 1), sector('B', 3)]
         const state = createState({ values })
-        const process = new PieProcess({ values } as PieData, PIXEL, SETTINGS, state)
         const onChange = jest.fn()
-
-        process.onChange = onChange
+        const process = new PieProcess({ values } as PieData, PIXEL, SETTINGS, { state, onChange })
         getItems(process).get('sector-A')?.onClick?.()
 
-        expect([state.isPinned(values[0]), values[0].pinned])
+        expect([state.pinned.has(values[0]), values[0].pinned])
             .toEqual([true, undefined])
         expect(onChange)
             .toHaveBeenCalledTimes(1)

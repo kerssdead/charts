@@ -11,15 +11,14 @@ import ViewState from '@/charts/ViewState'
 import ChartSettings from '@/types/ChartSettings'
 import { ChartType } from '@/static/Enums'
 import { ThemePalette } from '@/Theme'
+import Scene from '@/renderer/Scene'
 import { DARK_THEME } from './TestTheme'
 
-export let mockFramesScene: {
-    getThemePalette: () => ThemePalette
-    syncTheme: () => boolean
-    rebuildForTheme: () => void
-    getLegend: () => unknown
+export let mockFrameScene: Scene | null = null
+
+export let mockFrameCallbacks: {
     getOverlays: () => unknown[]
-    getSettings: () => ChartSettings
+    rebuildForTheme: () => void
 } | null = null
 
 jest.mock('@/helpers/Canvas', () => ({
@@ -85,13 +84,15 @@ jest.mock('@/renderer/FocusRing', () => ({
 jest.mock('@/renderer/InputRouter', () => ({
     __esModule: true,
     default: jest.fn(() => ({
-        attach: jest.fn(),
-        detach: jest.fn(),
-        closeContext: jest.fn(),
-        setScrollable: jest.fn(),
-        openMenu: jest.fn(),
-        position: null,
-        context: null
+        pointer: {
+            attach: jest.fn(),
+            detach: jest.fn(),
+            closeContext: jest.fn(),
+            setScrollable: jest.fn(),
+            openMenu: jest.fn(),
+            context: null
+        },
+        position: null
     }))
 }))
 
@@ -108,8 +109,9 @@ jest.mock('@/legend/Legend', () => ({
 
 jest.mock('@/renderer/Frames', () => ({
     __esModule: true,
-    default: jest.fn((scene: typeof mockFramesScene) => {
-        mockFramesScene = scene
+    default: jest.fn((scene: Scene, _input: unknown, callbacks: typeof mockFrameCallbacks) => {
+        mockFrameScene = scene
+        mockFrameCallbacks = callbacks
 
         return {
             request: jest.fn(),
@@ -134,6 +136,7 @@ export const mockTooltip = () => lastResult(TooltipOverlay)
 export const mockFocusRing = () => lastResult(FocusRing)
 export const mockContextMenu = () => lastResult(ContextMenuOverlay)
 export const mockInput = () => lastResult(InputRouter)
+export const mockPointer = () => mockInput().pointer
 export const mockLegend = () => lastResult(Legend)
 export const mockFrames = () => lastResult(Frames)
 
@@ -152,7 +155,8 @@ export const createSettings = (overrides: Partial<ChartSettings> = {}) => {
 }
 
 export const createRenderer = (theme: ThemePalette = DARK_THEME) => {
-    mockFramesScene = null
+    mockFrameScene = null
+    mockFrameCallbacks = null
 
     const viewState = new ViewState()
     const onError = jest.fn()

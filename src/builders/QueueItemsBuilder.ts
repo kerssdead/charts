@@ -18,10 +18,7 @@ export default class QueueItemsBuilder {
 
     private current: QueueItemBaseBuilder | null = null
 
-    private readonly isInitialized: boolean
-
-    constructor(isInitialized: boolean = false) {
-        this.isInitialized = isInitialized
+    constructor(private readonly isInitialized: boolean = false) {
     }
 
     build() {
@@ -70,7 +67,7 @@ export default class QueueItemsBuilder {
         return this.next(new QueueImageItemBuilder(url))
     }
 
-    static build(actions: QueueAction | QueueAction[], isInitialized: boolean = false) {
+    static build(actions: QueueAction | QueueAction[], isInitialized = false) {
         const builder = new QueueItemsBuilder(isInitialized)
 
         for (const action of Array.isArray(actions) ? actions : [actions])

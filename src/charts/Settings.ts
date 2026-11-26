@@ -11,7 +11,7 @@ import { applyDefaultColors } from '@/charts/DefaultColors'
 function normalizeChart({ type, data }: ChartItem, numberLocale: string | undefined, scope?: Element) {
     const definition = getChartDefinition(type)
 
-    if (!definition || !data)
+    if (!data)
         return
 
     if (data.values)

@@ -25,28 +25,16 @@ type StackedColumn = {
 }
 
 export default class PlotStackedColumnItems {
-    private readonly layout: PlotLayout
-
-    private readonly style: PlotItemStyle
-
-    private readonly seriesGroups: PlotSeriesGroups
-
-    private readonly columnGroups: Map<string, ColumnGroup>
-
     private readonly stackTops: Map<string, PlotSeries>
 
     private readonly outlines: Map<string, StackOutline>
 
     constructor(
-        layout: PlotLayout,
-        style: PlotItemStyle,
-        seriesGroups: PlotSeriesGroups,
-        columnGroups: Map<string, ColumnGroup>
+        private readonly layout: PlotLayout,
+        private readonly style: PlotItemStyle,
+        private readonly seriesGroups: PlotSeriesGroups,
+        private readonly columnGroups: Map<string, ColumnGroup>
     ) {
-        this.layout = layout
-        this.style = style
-        this.seriesGroups = seriesGroups
-        this.columnGroups = columnGroups
         this.stackTops = getStackTops(seriesGroups.enabledSeries, layout.yMax)
         this.outlines = getStackOutlines(layout, seriesGroups.enabledSeries)
     }

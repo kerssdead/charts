@@ -10,17 +10,17 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<Rend
     }
 
     position(x: number, y: number) {
-        this.shape.absolute.x = x
-        this.shape.absolute.y = y
-
-        return this
+        return this.chain(() => {
+            this.shape.absolute.x = x
+            this.shape.absolute.y = y
+        })
     }
 
     size(width: number, height: number) {
-        this.shape.absolute.width = width
-        this.shape.absolute.height = height
-
-        return this
+        return this.chain(() => {
+            this.shape.absolute.width = width
+            this.shape.absolute.height = height
+        })
     }
 
     box(units: Units, { x, y, width, height }: RectangleDimensions) {
@@ -30,51 +30,37 @@ export default class QueueRectangleItemBuilder extends QueueItemBaseBuilder<Rend
     }
 
     fill() {
-        this.shape.isFill = true
-
-        return this
+        return this.chain(() => this.shape.isFill = true)
     }
 
     gradient() {
-        this.shape.isGradient = true
-
-        return this
+        return this.chain(() => this.shape.isGradient = true)
     }
 
     fadeEdge(edge: FadeEdge) {
-        this.shape.fadeEdge = edge
-
-        return this
+        return this.chain(() => this.shape.fadeEdge = edge)
     }
 
     round(radii: number | number[]) {
-        this.shape.radii = typeof radii == 'number' ? Array(4).fill(radii) : radii
-
-        return this
+        return this.chain(() => this.shape.radii = typeof radii == 'number' ? Array(4).fill(radii) : radii)
     }
 
     align(x: HorizontalAlignment, y: VerticalAlignment) {
-        this.shape.align = { x, y }
-
-        return this
+        return this.chain(() => this.shape.align = { x, y })
     }
 
     clip(box: RectangleDimensions, radius: number) {
-        this.shape.clip = { ...box, radius }
-
-        return this
+        return this.chain(() => this.shape.clip = { ...box, radius })
     }
 
     collapse(width: boolean, height: boolean) {
-        this.shape.collapse = { width, height }
-
-        return this
+        return this.chain(() => this.shape.collapse = { width, height })
     }
 
     grow(axis: Axis, origin: number) {
-        this.shape.growAxis = axis
-        this.shape.growOrigin = origin
-
-        return this
+        return this.chain(() => {
+            this.shape.growAxis = axis
+            this.shape.growOrigin = origin
+        })
     }
 }

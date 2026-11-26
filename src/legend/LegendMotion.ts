@@ -8,18 +8,15 @@ import { LegendEntry } from '@/legend/LegendLayout'
 export default class LegendMotion {
     leaving: LegendEntry[] = []
 
-    private readonly getKey: (value: Value) => string
-
     private start: DOMHighResTimeStamp | null = null
 
-    private isPending: boolean = false
+    private isPending = false
 
     private from: Map<string, Point> = new Map()
 
-    private fromArea: DOMRect | undefined
+    private fromArea?: DOMRect
 
-    constructor(getKey: (value: Value) => string) {
-        this.getKey = getKey
+    constructor(private readonly getKey: (value: Value) => string) {
     }
 
     get isMoving() {

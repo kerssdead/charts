@@ -26,7 +26,7 @@ export function appearScale(progress: number) {
     return Math.round((1 + (1 - progress) * APPEAR_SCALE) * 1000) / 1000
 }
 
-export default function ease(value: number): number {
+export default function ease(value: number) {
     if (value <= 0)
         return 0
 
@@ -39,7 +39,7 @@ export default function ease(value: number): number {
     return TABLE[index] + (TABLE[index + 1] - TABLE[index]) * (position - index)
 }
 
-function solve(x: number): number {
+function solve(x: number) {
     let t = x
 
     for (let i = 0; i < NEWTON_ITERATIONS; i++) {

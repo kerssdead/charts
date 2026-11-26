@@ -6,12 +6,9 @@ import { ItemFlag as f } from '@/static/ItemFlag'
 import { FocusOrder } from '@/static/Enums'
 
 export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemBase> {
-    readonly shape: S
-
     protected current: RenderItem
 
-    constructor(shape: S) {
-        this.shape = shape
+    constructor(readonly shape: S) {
         this.current = new RenderItem(shape)
     }
 
@@ -19,120 +16,90 @@ export default class QueueItemBaseBuilder<S extends RenderItemBase = RenderItemB
         return this.current
     }
 
-    interact(): this {
-        this.current.set(f.Interactive, true)
+    protected chain(update: () => void): this {
+        update()
 
         return this
     }
 
-    init(duration: number, delay: number = 0, fade: boolean = false): this {
-        this.current.animation.init = 0
-        this.current.animation.initDuration = duration
-        this.current.animation.initDelay = delay
-        this.current.animation.initFade = fade
-
-        return this
+    interact() {
+        return this.chain(() => this.current.set(f.Interactive, true))
     }
 
-    appearDelay(delay: number): this {
-        this.current.animation.appearDelay = delay
-
-        return this
+    init(duration: number, delay = 0, fade = false) {
+        return this.chain(() => {
+            this.current.animation.init = 0
+            this.current.animation.initDuration = duration
+            this.current.animation.initDelay = delay
+            this.current.animation.initFade = fade
+        })
     }
 
-    appearDuration(duration: number): this {
-        this.current.animation.appearDuration = duration
-
-        return this
+    appearDelay(delay: number) {
+        return this.chain(() => this.current.animation.appearDelay = delay)
     }
 
-    hoverGroup(group: string): this {
-        this.current.hoverGroup = group
-
-        return this
+    appearDuration(duration: number) {
+        return this.chain(() => this.current.animation.appearDuration = duration)
     }
 
-    tooltip(template: Tooltip): this {
-        this.current.tooltipTemplate = template
-
-        return this
+    hoverGroup(group: string) {
+        return this.chain(() => this.current.hoverGroup = group)
     }
 
-    data(data: ItemData | undefined): this {
-        this.current.data = data ?? null
-
-        return this
+    tooltip(template: Tooltip) {
+        return this.chain(() => this.current.tooltipTemplate = template)
     }
 
-    color(color: string): this {
-        this.current.color = color
-
-        return this
+    data(data: ItemData | undefined) {
+        return this.chain(() => this.current.data = data ?? null)
     }
 
-    stroke(color: string): this {
-        this.current.stroke = color
-
-        return this
+    color(color: string) {
+        return this.chain(() => this.current.color = color)
     }
 
-    layer(layer: number): this {
-        this.current.layer = layer
-
-        return this
+    stroke(color: string) {
+        return this.chain(() => this.current.stroke = color)
     }
 
-    fixed(value: boolean = true): this {
-        this.current.set(f.Fixed, value)
-
-        return this
+    layer(layer: number) {
+        return this.chain(() => this.current.layer = layer)
     }
 
-    key(value: string): this {
-        this.current.key = value
-
-        return this
+    fixed(value = true) {
+        return this.chain(() => this.current.set(f.Fixed, value))
     }
 
-    ghost(value: boolean = true): this {
-        this.current.setGhost(value)
-
-        return this
+    key(value: string) {
+        return this.chain(() => this.current.key = value)
     }
 
-    axisValue(value: number): this {
-        this.current.axisValue = value
-
-        return this
+    ghost(value = true) {
+        return this.chain(() => this.current.setGhost(value))
     }
 
-    fade(value: boolean): this {
-        this.current.set(f.Fading, value)
+    axisValue(value: number) {
+        return this.chain(() => this.current.axisValue = value)
+    }
 
-        return this
+    fade(value: boolean) {
+        return this.chain(() => this.current.set(f.Fading, value))
     }
 
     monochrome() {
-        this.current.set(f.Monochrome, true)
-
-        return this
+        return this.chain(() => this.current.set(f.Monochrome, true))
     }
 
     contextMenu() {
-        this.current.set(f.ContextMenu, true)
-
-        return this
+        return this.chain(() => this.current.set(f.ContextMenu, true))
     }
 
     focusable(order: FocusOrder = FocusOrder.Chart) {
-        this.current.focusOrder = order
-
-        return this
+        return this.chain(() => this.current.focusOrder = order)
     }
 
     onClick(action: () => void) {
-        this.current.onClick = action
-
-        return this
+        return this.chain(() => this.current.onClick = action)
     }
 }

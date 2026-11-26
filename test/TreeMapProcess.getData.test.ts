@@ -24,7 +24,7 @@ const value = (id: string, amount: number, extra: Partial<TreeValue> = {}) => {
 function getItems(data: Partial<TreeData>) {
     const treeData = { values: [], ...data } as TreeData
     const settings = { valuePostfix: undefined, theme: LIGHT_THEME }
-    const process = new TreeMapProcess(treeData, PIXEL, settings, createState(treeData))
+    const process = new TreeMapProcess(treeData, PIXEL, settings, { state: createState(treeData) })
 
     return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))
 }

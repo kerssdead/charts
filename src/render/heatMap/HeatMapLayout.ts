@@ -12,18 +12,12 @@ import { stringWidth } from '@/helpers/Text'
 import { maxOf } from '@/helpers/Collections'
 import { HeatMapResolution } from '@/types/data/HeatMapData'
 import RectangleDimensions from '@/types/RectangleDimensions'
+import Paddings from '@/types/Paddings'
 import Units from '@/helpers/Units'
 
 export type Extent = {
     width: number
     height: number
-}
-
-type Margins = {
-    left: number
-    top: number
-    right: number
-    bottom: number
 }
 
 export function getEdges(count: number, start: number, size: number) {
@@ -42,7 +36,7 @@ type AxesSizing = {
 }
 
 export function getMargins(axes: AxesSizing | null) {
-    const margins: Margins = {
+    const margins: Paddings = {
         left: PADDING,
         top: PADDING,
         right: PADDING,
@@ -65,7 +59,7 @@ export function getMargins(axes: AxesSizing | null) {
     return margins
 }
 
-export function getBounds(width: number, height: number, margins: Margins): RectangleDimensions {
+export function getBounds(width: number, height: number, margins: Paddings): RectangleDimensions {
     return {
         x: margins.left,
         y: margins.top,

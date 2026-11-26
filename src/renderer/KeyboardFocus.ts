@@ -2,12 +2,13 @@ import Queue from '@/render/Queue'
 import RenderItem from '@/types/RenderItem'
 import Point from '@/types/Point'
 import { ItemFlag as f } from '@/static/ItemFlag'
+import { Keys } from '@/static/Enums'
 
-const NEXT_KEYS = ['ArrowRight', 'ArrowDown']
+const NEXT_KEYS: string[] = [Keys.ArrowRight, Keys.ArrowDown]
 
-const PREVIOUS_KEYS = ['ArrowLeft', 'ArrowUp']
+const PREVIOUS_KEYS: string[] = [Keys.ArrowLeft, Keys.ArrowUp]
 
-const ACTIVATION_KEYS = ['Enter', ' ']
+const ACTIVATION_KEYS: string[] = [Keys.Enter, Keys.Space]
 
 const INACTIVE = -1
 
@@ -16,15 +17,9 @@ export default class KeyboardFocus {
 
     private stops: RenderItem[] = []
 
-    private stopsVersion: number = -1
+    private stopsVersion = -1
 
-    private readonly queue: Queue
-
-    private readonly onChange: () => void
-
-    constructor(queue: Queue, onChange: () => void) {
-        this.queue = queue
-        this.onChange = onChange
+    constructor(private readonly queue: Queue, private readonly onChange: () => void) {
     }
 
     get target(): RenderItem | null {
@@ -44,7 +39,7 @@ export default class KeyboardFocus {
         this.onChange()
     }
 
-    onKeyDown(event: KeyboardEvent): boolean {
+    onKeyDown(event: KeyboardEvent) {
         if (event.altKey || event.ctrlKey || event.metaKey)
             return false
 
@@ -53,7 +48,7 @@ export default class KeyboardFocus {
         if (target && ACTIVATION_KEYS.includes(event.key))
             return this.activate(target)
 
-        if (target && event.key === 'Escape') {
+        if (target && event.key === Keys.Escape) {
             this.clear()
 
             return true
@@ -88,10 +83,10 @@ export default class KeyboardFocus {
         if (count === 0)
             return null
 
-        if (key === 'Home')
+        if (key === Keys.Home)
             return 0
 
-        if (key === 'End')
+        if (key === Keys.End)
             return count - 1
 
         if (NEXT_KEYS.includes(key))

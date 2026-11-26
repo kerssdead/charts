@@ -3,7 +3,6 @@ import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import RenderItem from '@/types/RenderItem'
 import LeaderOrigin from '@/types/interfaces/LeaderOrigin'
 import LeaderTarget from '@/types/interfaces/LeaderTarget'
-import { COORDS_MAX_X } from '@/static/constants/Index'
 import { ThemePalette } from '@/Theme'
 import { clamp, lerp } from '@/helpers/Geometry'
 
@@ -18,21 +17,17 @@ type LeaderCanvas = LeaderAngles & {
 }
 
 export default class RenderItemLeaderLine extends RenderItemBase {
-    readonly origin: LeaderOrigin
-
-    readonly originItem: RenderItem
-
     target: LeaderTarget | null = null
 
     targetItem: RenderItem | null = null
 
-    gap: number = 0
+    gap = 0
 
-    length: number = 0
+    length = 0
 
-    offset: number = 0
+    offset = 0
 
-    anchor: number = 0
+    anchor = 0
 
     from: LeaderAngles | null = null
 
@@ -40,18 +35,15 @@ export default class RenderItemLeaderLine extends RenderItemBase {
 
     private canvas: LeaderCanvas = { gap: 0, length: 0, offset: 0, anchor: 0 }
 
-    constructor(origin: LeaderOrigin, originItem: RenderItem) {
+    constructor(readonly origin: LeaderOrigin, readonly originItem: RenderItem) {
         super()
-
-        this.origin = origin
-        this.originItem = originItem
     }
 
-    defaultColor(theme: ThemePalette): string {
+    defaultColor(theme: ThemePalette) {
         return theme.line
     }
 
-    current(morph: number = 1): LeaderAngles {
+    current(morph = 1): LeaderAngles {
         if (!this.from || morph >= 1)
             return { offset: this.offset, anchor: this.anchor }
 
@@ -61,7 +53,7 @@ export default class RenderItemLeaderLine extends RenderItemBase {
         }
     }
 
-    morphFrom(previous: RenderItemBase, morph: number): boolean {
+    morphFrom(previous: RenderItemBase, morph: number) {
         if (!(previous instanceof RenderItemLeaderLine))
             return false
 
@@ -70,15 +62,13 @@ export default class RenderItemLeaderLine extends RenderItemBase {
         return true
     }
 
-    adjust(window: CanvasWindow, morph: number = 1): void {
-        const scale = window.width / COORDS_MAX_X
-
+    adjust(window: CanvasWindow, morph = 1) {
         this.window = window
 
         this.canvas = {
             ...this.current(morph),
-            gap: this.gap * scale,
-            length: this.length * scale
+            gap: window.scaleX(this.gap),
+            length: window.scaleX(this.length)
         }
     }
 
@@ -86,7 +76,7 @@ export default class RenderItemLeaderLine extends RenderItemBase {
         return this.targetItem ? [this.originItem.shape, this.targetItem.shape] : [this.originItem.shape]
     }
 
-    render(ctx: CanvasRenderingContext2D): void {
+    render(ctx: CanvasRenderingContext2D) {
         const target = this.target
         const targetItem = this.targetItem
         const visibility = targetItem?.animation.visibility ?? 0

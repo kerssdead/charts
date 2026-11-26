@@ -15,12 +15,9 @@ export default class PlotSeriesGroups {
 
     readonly hasOnlyBarSeries: boolean
 
-    readonly isDisabled: IsDisabled
-
     private readonly indexes: Map<PlotSeries, number>
 
-    constructor(series: PlotSeries[], isDisabled: IsDisabled) {
-        this.isDisabled = isDisabled
+    constructor(series: PlotSeries[], readonly isDisabled: IsDisabled) {
         this.enabledSeries = series.filter(item => !isDisabled(item))
         this.barSeries = series.filter(item => item.type === PlotType.Bar)
         this.verticalSeries = series.filter(item => {

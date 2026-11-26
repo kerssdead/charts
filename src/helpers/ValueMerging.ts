@@ -89,8 +89,5 @@ function addY(first: PlotPoint, second: PlotPoint) {
     const firstY = getY(first)
     const secondY = getY(second)
 
-    if (firstY == null || secondY == null)
-        return firstY ?? secondY
-
-    return firstY + secondY
+    return firstY == null || secondY == null ? firstY ?? secondY : firstY + secondY
 }

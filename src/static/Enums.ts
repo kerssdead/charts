@@ -58,6 +58,32 @@ export const enum Events {
     Wheel = 'wheel'
 }
 
+export const enum Keys {
+    ArrowDown = 'ArrowDown',
+
+    ArrowLeft = 'ArrowLeft',
+
+    ArrowRight = 'ArrowRight',
+
+    ArrowUp = 'ArrowUp',
+
+    ContextMenu = 'ContextMenu',
+
+    End = 'End',
+
+    Enter = 'Enter',
+
+    Escape = 'Escape',
+
+    F10 = 'F10',
+
+    Home = 'Home',
+
+    Space = ' ',
+
+    Tab = 'Tab'
+}
+
 export const enum PrintEvents {
     Before = 'beforeprint',
 

@@ -17,7 +17,7 @@ describe('Getting plot y coordinate', () => {
             { values: [createSeries(PlotType.Line, [0, 100])] } as PlotData,
             { x: 1, y: 1 },
             { valuePostfix: undefined, theme: LIGHT_THEME },
-            createState()
+            { state: createState() }
         )
 
         expect(process.getAxisY(0))

@@ -11,7 +11,7 @@ describe('Applying tree bar view state', () => {
 
         applyTreeBarViewState({ values: [parent], sortColumn: 'amount', sortDescending: true } as TreeBarData, state)
 
-        expect([state.isExpanded(parent), state.isExpanded(child), state.sortColumn, state.isSortDescending])
+        expect([state.expanded.has(parent), state.expanded.has(child), state.sort.column, state.sort.isDescending])
             .toEqual([false, true, 'amount', true])
     })
 })

@@ -48,13 +48,13 @@ export default class RenderItemField extends RenderItemBase {
 
     private paintedFrame = -1
 
-    adjust(window: CanvasWindow, morph: number = 1): void {
+    adjust(window: CanvasWindow, morph = 1) {
         this.morph = morph
 
         window.mapBox(this.box, this.canvasBox)
     }
 
-    render(ctx: CanvasRenderingContext2D, item: RenderItem): void {
+    render(ctx: CanvasRenderingContext2D, item: RenderItem) {
         const { x, y, width, height } = this.canvasBox
 
         if (!this.field || width < 1 || height < 1)
@@ -71,7 +71,7 @@ export default class RenderItemField extends RenderItemBase {
         ctx.drawImage(layer, x, y, width, height)
     }
 
-    animateHover(point: Point | null, now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
+    animateHover(point: Point | null, now: DOMHighResTimeStamp, isInstant = false) {
         if (!this.field?.alive || !this.field.diffusion || isInstant) {
             this.life.stop()
 
@@ -85,7 +85,7 @@ export default class RenderItemField extends RenderItemBase {
         return true
     }
 
-    morphFrom(previous: RenderItemBase, morph: number): boolean {
+    morphFrom(previous: RenderItemBase, morph: number) {
         if (!(previous instanceof RenderItemField) || !previous.field || !this.field)
             return false
 
@@ -98,7 +98,7 @@ export default class RenderItemField extends RenderItemBase {
         return Rectangle.toBounds(this.canvasBox)
     }
 
-    isMouseOver(point: Point): boolean {
+    isMouseOver(point: Point) {
         return Rectangle.contains(this.canvasBox, point)
     }
 

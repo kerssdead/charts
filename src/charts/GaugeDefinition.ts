@@ -7,7 +7,7 @@ import { mergeSectors } from '@/helpers/ValueMerging'
 import { getValueRows } from '@/export/TableRows'
 
 const GaugeDefinition: ChartDefinition<GaugeData> = {
-    createProcess: (data, pixel, settings, state) => new GaugeProcess(data, pixel, settings, state),
+    createProcess: (data, pixel, settings, context) => new GaugeProcess(data, pixel, settings, context),
     prepareData: prepareSectors,
     normalizeData: (data, numberLocale, scope) => normalizeValues(data.values, numberLocale, scope),
     mergeSameLabelValues: mergeSectors,

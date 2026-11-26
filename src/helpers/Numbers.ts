@@ -12,7 +12,7 @@ type IntervalCounts = {
     pos: number
 }
 
-export function getRoundedValues(all: number[], targetTicks: number = 5, max?: number) {
+export function getRoundedValues(all: number[], targetTicks = 5, max?: number) {
     if (!Array.isArray(all) || all.length === 0 || targetTicks < 2)
         return []
 
@@ -129,7 +129,6 @@ const MINUS = /^[-\u2212]/
 
 type NumberSeparators = {
     group: string
-
     decimal: string
 }
 
@@ -196,7 +195,7 @@ function normalizeByDetection(text: string) {
     return decimal === ',' ? normalized.replace(',', '.') : normalized
 }
 
-export function parseNumber(value: string | number | null | undefined, locale?: string): number {
+export function parseNumber(value: string | number | null | undefined, locale?: string) {
     if (typeof value == 'number')
         return value
 

@@ -67,17 +67,11 @@ export function sampleLevels(field: Levels, width: number, height: number, level
 }
 
 class FieldRowSampler {
-    private readonly field: Samples
-
-    private readonly width: number
-
     private readonly horizontal: Axis
 
     private readonly rows: Float32Array[] = []
 
-    constructor(field: Samples, width: number) {
-        this.field = field
-        this.width = width
+    constructor(private readonly field: Samples, private readonly width: number) {
         this.horizontal = getAxis(width, field.columns)
     }
 

@@ -5,7 +5,6 @@ import { TextAlignment, TextBaseline, TextDirection } from '@/static/Enums'
 import RenderItemArc from '@/types/RenderItemArc'
 import { boxEdgeDistance, clamp, lerp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
-import { COORDS_MAX_X } from '@/static/constants/Index'
 import { getFontFamily } from '@/static/Typography'
 import { ThemePalette } from '@/Theme'
 import LeaderTarget, { LeaderBox } from '@/types/interfaces/LeaderTarget'
@@ -30,21 +29,19 @@ type TextCanvas = Point & {
 }
 
 export default class RenderItemText extends RenderItemBase implements LeaderTarget {
-    value: string
-
     absolute: Point = { x: 0, y: 0 }
 
     canvas: TextCanvas = { x: 0, y: 0, angle: 0, radius: 0, orbitHalfWidth: 0 }
 
-    fontSize: number = 14
+    fontSize = 14
 
-    rotate: number = 0
+    rotate = 0
 
     alignment: TextAlignment = TextAlignment.Center
 
     baseline: TextBaseline = TextBaseline.Alphabetic
 
-    private get font(): string {
+    private get font() {
         return `${this.fontSize}px ${getFontFamily()}`
     }
 
@@ -52,7 +49,7 @@ export default class RenderItemText extends RenderItemBase implements LeaderTarg
 
     orbit: Orbit | null = null
 
-    angle: number = 0
+    angle = 0
 
     fromAngle: number | null = null
 
@@ -62,45 +59,40 @@ export default class RenderItemText extends RenderItemBase implements LeaderTarg
 
     clipWidth: number | null = null
 
-    private canvasClipWidth: number = 0
+    private canvasClipWidth = 0
 
     private halfWidth: number | null = null
 
     private window!: CanvasWindow
 
-    constructor(value: string) {
+    constructor(public value: string) {
         super()
-
-        this.value = value
     }
 
-    defaultColor(theme: ThemePalette): string {
+    defaultColor(theme: ThemePalette) {
         return theme.text
     }
 
-    private get baselineShift(): number {
+    private get baselineShift() {
         return this.orbit || this.baseline !== TextBaseline.Alphabetic ? 0 : this.fontSize * 0.3
     }
 
-    private get textHalfWidth(): number {
+    private get textHalfWidth() {
         return this.halfWidth ??= stringWidth(this.value, this.fontSize) / 2
     }
 
-    private currentOrbitHalfWidth(morph: number): number {
+    private currentOrbitHalfWidth(morph: number) {
         if (this.fromOrbitHalfWidth == null || morph >= 1)
             return this.textHalfWidth
 
         return lerp(this.fromOrbitHalfWidth, this.textHalfWidth, morph)
     }
 
-    currentAngle(morph: number = 1): number {
-        if (this.fromAngle == null || morph >= 1)
-            return this.angle
-
-        return lerp(this.fromAngle, this.angle, morph)
+    currentAngle(morph = 1) {
+        return this.fromAngle == null || morph >= 1 ? this.angle : lerp(this.fromAngle, this.angle, morph)
     }
 
-    current(morph: number = 1): Point {
+    current(morph = 1): Point {
         if (this.orbit) {
             const angle = this.currentAngle(morph)
 
@@ -119,7 +111,7 @@ export default class RenderItemText extends RenderItemBase implements LeaderTarg
         }
     }
 
-    morphFrom(previous: RenderItemBase, morph: number): boolean {
+    morphFrom(previous: RenderItemBase, morph: number) {
         if (!(previous instanceof RenderItemText))
             return false
 
@@ -130,26 +122,26 @@ export default class RenderItemText extends RenderItemBase implements LeaderTarg
         return true
     }
 
-    enterFromAxis(y: number): boolean {
+    enterFromAxis(y: number) {
         this.from = { x: this.absolute.x, y }
 
         return true
     }
 
-    leaveToAxis(y: number, morph: number): boolean {
+    leaveToAxis(y: number, morph: number) {
         this.from = this.current(morph)
         this.absolute.y = y
 
         return true
     }
 
-    adjust(window: CanvasWindow, morph: number = 1): void {
+    adjust(window: CanvasWindow, morph = 1) {
         const position = this.current(morph)
 
         this.window = window
         this.canvas.angle = this.currentAngle(morph)
-        this.canvas.radius = (this.orbit?.radiusX ?? 0) / COORDS_MAX_X * window.width
-        this.canvasClipWidth = (this.clipWidth ?? 0) / COORDS_MAX_X * window.width
+        this.canvas.radius = window.scaleX(this.orbit?.radiusX ?? 0)
+        this.canvasClipWidth = window.scaleX(this.clipWidth ?? 0)
 
         this.canvas.x = window.mapX(position.x)
         this.canvas.y = window.mapY(position.y) + (this.rotate === 0 ? this.baselineShift : 0)
@@ -196,7 +188,7 @@ export default class RenderItemText extends RenderItemBase implements LeaderTarg
         return this.follow ? [this.follow] : []
     }
 
-    render(ctx: CanvasRenderingContext2D): void {
+    render(ctx: CanvasRenderingContext2D) {
         ctx.font = this.font
         ctx.direction = TextDirection.LeftToRight
         ctx.textAlign = this.alignment

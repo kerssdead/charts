@@ -36,17 +36,17 @@ export function sortRows(
     return [...rows].sort(compare)
 }
 
-export type TreeBarView = Pick<ChartViewState, 'sortColumn' | 'isSortDescending' | 'isExpanded'>
+export type TreeBarView = Pick<ChartViewState, 'sort' | 'expanded'>
 
 export function getVisibleEntries(
     rows: TreeBarRow[],
     view: TreeBarView,
     numberLocale?: string,
-    level: number = 0
+    level = 0
 ): TreeBarEntry[] {
-    return sortRows(rows, view.sortColumn, view.isSortDescending, numberLocale).flatMap(node => [
+    return sortRows(rows, view.sort.column, view.sort.isDescending, numberLocale).flatMap(node => [
         { node, level },
-        ...(view.isExpanded(node) && node.children
+        ...(view.expanded.has(node) && node.children
             ? getVisibleEntries(node.children, view, numberLocale, level + 1)
             : [])
     ])

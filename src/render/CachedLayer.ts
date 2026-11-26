@@ -1,9 +1,9 @@
 import { createCanvas, getContext } from '@/helpers/Canvas'
 
 export default class CachedLayer {
-    start: number = 0
+    start = 0
 
-    end: number = 0
+    end = 0
 
     private canvas: HTMLCanvasElement | null = null
 

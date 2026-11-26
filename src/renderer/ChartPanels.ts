@@ -37,13 +37,7 @@ type PanelData = {
 export default class ChartPanels {
     list: Panel[] = []
 
-    private readonly queue: Queue
-
-    private readonly layout: Layout
-
-    constructor(queue: Queue, layout: Layout) {
-        this.queue = queue
-        this.layout = layout
+    constructor(private readonly queue: Queue, private readonly layout: Layout) {
     }
 
     get canScroll() {
@@ -96,18 +90,13 @@ export default class ChartPanels {
             chart,
             pixel,
             { ...build.settings, theme: build.theme },
-            build.viewState.getChartState(index)
+            { state: build.viewState.getChartState(index), panel, onChange: build.onChange }
         )
 
-        panel.valueAxis = process?.getValueAxis() ?? null
+        panel.valueAxis = process.getValueAxis()
         panel.onContentChange = build.onChange
 
-        if (process) {
-            process.panel = panel
-            process.onChange = build.onChange
-        }
-
-        panel.scroll = process?.getScroll() ?? null
+        panel.scroll = process.getScroll()
         panel.keepScroll(build.previousPanels[index])
 
         const data = this.getPanelData(process, this.layout.getPanelTitle(chart.title, pixel))
@@ -123,10 +112,7 @@ export default class ChartPanels {
             this.queue.add([ChartPanels.getScrollbar(panel)])
     }
 
-    private getPanelData(process: ChartProcess<Data> | undefined, title: QueueAction): PanelData {
-        if (!process)
-            return { fixed: [title], content: [] }
-
+    private getPanelData(process: ChartProcess<Data>, title: QueueAction): PanelData {
         if (process.isEmpty())
             return { fixed: [title], content: [this.layout.getEmpty()] }
 

@@ -23,10 +23,7 @@ type CellLayout = {
 }
 
 export default class HeatMapCellItems {
-    private readonly context: CellItemsContext
-
-    constructor(context: CellItemsContext) {
-        this.context = context
+    constructor(private readonly context: CellItemsContext) {
     }
 
     getActions(grid: Grid, { area }: CellLayout): QueueAction[] {

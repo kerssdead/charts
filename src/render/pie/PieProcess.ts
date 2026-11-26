@@ -1,5 +1,6 @@
 import PieData from '@/types/data/PieData'
 import QueueItemsBuilder from '@/builders/QueueItemsBuilder'
+import QueueArcItemBuilder from '@/builders/QueueArcItemBuilder'
 import Sector from '@/types/Sector'
 import { AnimationTiming, CANVAS_CENTER } from '@/static/constants/Index'
 import Point from '@/types/Point'
@@ -7,7 +8,7 @@ import { clamp } from '@/helpers/Geometry'
 import Angle from '@/helpers/Angle'
 import layoutLabels, { LabelPlacement } from '@/render/LabelLayout'
 import { stringWidth } from '@/helpers/Text'
-import ChartProcess from '@/render/ChartProcess'
+import ChartProcess, { ProcessContext } from '@/render/ChartProcess'
 import { TextAlignment } from '@/static/Enums'
 import PieSizing from '@/render/pie/PieSizing'
 import PieProcessSettings from '@/render/pie/PieProcessSettings'
@@ -27,23 +28,24 @@ import {
     SECTOR_GAP,
     TOP_ANGLE
 } from '@/render/pie/PieConstants'
-import ChartViewState from '@/types/ChartViewState'
 
 export default class PieProcess extends ChartProcess<PieData, PieProcessSettings> {
     private readonly sizing: PieSizing
 
     private readonly startAngle: number
 
-    constructor(data: PieData, pixel: Point, settings: PieProcessSettings, state: ChartViewState) {
-        super(data, pixel, settings, state)
+    private readonly visibleTotal: number
+
+    constructor(data: PieData, pixel: Point, settings: PieProcessSettings, context: ProcessContext) {
+        super(data, pixel, settings, context)
 
         this.sizing = new PieSizing(this.units, this.data.innerRadius)
         this.startAngle = TOP_ANGLE + Angle.toRadians(this.data.startAngle ?? 0)
+        this.visibleTotal = PieSlices.getVisibleTotal(this.data.values, this.state.isDisabled)
     }
 
     getData() {
-        const visibleTotal = PieSlices.getVisibleTotal(this.data.values, this.state.isDisabled)
-        const radiansPerUnit = PieSlices.getRadiansPerUnit(visibleTotal)
+        const radiansPerUnit = PieSlices.getRadiansPerUnit(this.visibleTotal)
 
         const slices = PieSlices.getSlices(
             this.getKeyedSectors(radiansPerUnit),
@@ -51,12 +53,12 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             radiansPerUnit,
             this.startAngle
         )
-        const labelPlacements = this.getLabelPlacements(slices, visibleTotal)
+        const labelPlacements = this.getLabelPlacements(slices)
 
         return [
             (items: QueueItemsBuilder) => {
                 for (const [index, slice] of slices.entries())
-                    this.addSlice(items, slice, labelPlacements[index], visibleTotal)
+                    this.addSlice(items, slice, labelPlacements[index])
 
                 this.addInnerTitle(items)
             }
@@ -77,7 +79,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
         )
     }
 
-    private getLabelPlacements(slices: PieSlice[], visibleTotal: number): LabelPlacement[] {
+    private getLabelPlacements(slices: PieSlice[]): LabelPlacement[] {
         if (this.sizing.areLabelsHidden)
             return slices.map(slice => ({ angle: PieSlices.getMiddleAngle(slice), isVisible: false }))
 
@@ -97,7 +99,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
                 return {
                     angle: placements[sliceIndex].angle,
                     value: sector.value,
-                    halfWidth: stringWidth(this.getLabelText(sector, visibleTotal), LABEL_FONT_SIZE) / 2,
+                    halfWidth: stringWidth(this.getLabelText(sector), LABEL_FONT_SIZE) / 2,
                     halfHeight: LABEL_FONT_SIZE / 2
                 }
             }),
@@ -117,8 +119,12 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
         if (!title)
             return
 
-        const availableWidth = this.sizing.radius * this.sizing.innerRadiusRatio * 2 * INNER_TITLE_WIDTH_RATIO
-        const fontSize = this.getFittingFontSize(title, availableWidth, INNER_TITLE_FONT_SIZE)
+        const fontSize = this.getFittingFontSizeInRing(
+            title,
+            this.sizing,
+            INNER_TITLE_WIDTH_RATIO,
+            INNER_TITLE_FONT_SIZE
+        )
 
         if (fontSize < INNER_TITLE_MIN_FONT_SIZE)
             return
@@ -131,36 +137,36 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
              .init(AnimationTiming.pieInit, 0, true)
     }
 
-    private addSlice(
+    private addSlice(items: QueueItemsBuilder, slice: PieSlice, labelPlacement: LabelPlacement) {
+        const isDisabled = this.state.isDisabled(slice.sector)
+        const arc = this.addArc(items, slice, isDisabled)
+        const leader = this.addLeader(items, slice, arc, labelPlacement)
+        const label = labelPlacement.isVisible ? this.addLabel(items, slice, arc, labelPlacement) : null
+
+        if (label)
+            leader.target(label)
+
+        if (isDisabled)
+            for (const builder of [arc, leader, label])
+                builder?.ghost()
+    }
+
+    private addArc(
         items: QueueItemsBuilder,
-        slice: PieSlice,
-        labelPlacement: LabelPlacement,
-        visibleTotal: number
+        { sector, key, groupedSectors, startAngle, angle }: PieSlice,
+        isDisabled: boolean
     ) {
-        const { sector, key, groupedSectors, startAngle, angle } = slice
-        const endAngle = startAngle + angle
-        const labelAngleOffset = Angle.normalize(labelPlacement.angle - PieSlices.getMiddleAngle(slice))
-        const leaderAnchorRange = angle / 2 - Math.min(angle / 2, LEADER_ANCHOR_INSET_ANGLE)
-        const isDisabled = this.state.isDisabled(sector)
-
         const radius = this.units.x(this.sizing.radius)
-        const innerRadius = radius * this.sizing.innerRadiusRatio
-
-        const labelOrbit = {
-            ...CANVAS_CENTER,
-            radiusX: this.units.x(this.sizing.labelDistance),
-            radiusY: this.units.y(this.sizing.labelDistance)
-        }
 
         const arc = items.arc()
             .position(CANVAS_CENTER.x, CANVAS_CENTER.y)
             .startAngle(startAngle)
-            .endAngle(endAngle)
+            .endAngle(startAngle + angle)
             .radius(radius)
-            .innerRadius(innerRadius)
+            .innerRadius(radius * this.sizing.innerRadiusRatio)
             .gap(SECTOR_GAP)
             .cornerRadius(SECTOR_CORNER_RADIUS)
-            .pull(this.state.isPinned(sector) && !isDisabled ? this.units.x(PINNED_SECTOR_OFFSET) : 0)
+            .pull(this.state.pinned.has(sector) && !isDisabled ? this.units.x(PINNED_SECTOR_OFFSET) : 0)
             .grow(this.startAngle)
             .fill()
             .gradient()
@@ -168,61 +174,70 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
             .key(`sector-${ key }`)
             .init(AnimationTiming.pieInit)
             .interact()
-            .tooltip(this.getTooltipText(sector, groupedSectors, visibleTotal))
+            .tooltip(this.getTooltipText(sector, groupedSectors))
             .data(sector.data)
             .contextMenu()
 
-        if (isDisabled)
-            arc.ghost()
-        else if (!groupedSectors)
+        if (!isDisabled && !groupedSectors)
             arc.focusable().onClick(() => {
-                this.state.togglePinned(sector)
+                this.state.pinned.toggle(sector)
                 this.onChange?.()
             })
 
-        const leader = items.leaderLine(arc)
+        return arc
+    }
+
+    private addLeader(
+        items: QueueItemsBuilder,
+        slice: PieSlice,
+        arc: QueueArcItemBuilder,
+        labelPlacement: LabelPlacement
+    ) {
+        const labelAngleOffset = Angle.normalize(labelPlacement.angle - PieSlices.getMiddleAngle(slice))
+        const leaderAnchorRange = slice.angle / 2 - Math.min(slice.angle / 2, LEADER_ANCHOR_INSET_ANGLE)
+
+        return items.leaderLine(arc)
             .gap(LEADER_GAP)
             .length(LEADER_LENGTH)
             .offset(labelAngleOffset)
             .anchor(clamp(labelAngleOffset, -leaderAnchorRange, leaderAnchorRange))
-            .key(`sector-leader-${ key }`)
+            .key(`sector-leader-${ slice.key }`)
+    }
 
-        if (isDisabled)
-            leader.ghost()
+    private addLabel(
+        items: QueueItemsBuilder,
+        { sector, key }: PieSlice,
+        arc: QueueArcItemBuilder,
+        labelPlacement: LabelPlacement
+    ) {
+        const labelOrbit = {
+            ...CANVAS_CENTER,
+            radiusX: this.units.x(this.sizing.labelDistance),
+            radiusY: this.units.y(this.sizing.labelDistance)
+        }
 
-        if (!labelPlacement.isVisible)
-            return
-
-        const text = items.text(this.getLabelText(sector, visibleTotal))
+        return items.text(this.getLabelText(sector))
             .orbit(labelPlacement.angle, labelOrbit)
             .size(LABEL_FONT_SIZE)
             .follow(arc.shape)
             .key(`sector-label-${ key }`)
             .init(AnimationTiming.pieLabelInit, AnimationTiming.pieInit, true)
-
-        leader.target(text)
-
-        if (isDisabled)
-            text.ghost()
     }
 
-    private getLabelText(sector: Sector, visibleTotal: number) {
-        if (this.state.isPinned(sector) && this.hasVisibleValue(sector))
-            return `${ sector.label }: ${ this.getValueWithPercentText(sector.value, visibleTotal) }`
+    private getLabelText(sector: Sector) {
+        if (this.state.pinned.has(sector) && this.hasVisibleValue(sector))
+            return `${ sector.label }: ${ this.getValueWithPercentText(sector.value) }`
 
         return this.data.labelPercent && this.hasVisibleValue(sector)
-               ? `${ sector.label } ${ this.percent(sector.value / visibleTotal) }`
+               ? `${ sector.label } ${ this.percent(sector.value / this.visibleTotal) }`
                : sector.label ?? ''
     }
 
-    private getTooltipText(sector: Sector, groupedSectors: Sector[] | undefined, visibleTotal: number) {
-        const rows = [sector.label, this.getValueWithPercentText(sector.value, visibleTotal)]
+    private getTooltipText(sector: Sector, groupedSectors: Sector[] | undefined) {
+        const rows = [sector.label, this.getValueWithPercentText(sector.value)]
 
-        for (const groupedSector of groupedSectors ?? []) {
-            const valueWithPercent = this.getValueWithPercentText(groupedSector.value, visibleTotal)
-
-            rows.push(`${ groupedSector.label }: ${ valueWithPercent }`)
-        }
+        for (const groupedSector of groupedSectors ?? [])
+            rows.push(`${ groupedSector.label }: ${ this.getValueWithPercentText(groupedSector.value) }`)
 
         return this.tooltip(...rows)
     }
@@ -231,7 +246,7 @@ export default class PieProcess extends ChartProcess<PieData, PieProcessSettings
         return PieSlices.hasVisibleValue(sector, this.state.isDisabled)
     }
 
-    private getValueWithPercentText(value: number, visibleTotal: number) {
-        return this.share(value, visibleTotal === 0 ? 0 : value / visibleTotal)
+    private getValueWithPercentText(value: number) {
+        return this.share(value, this.visibleTotal === 0 ? 0 : value / this.visibleTotal)
     }
 }

@@ -49,7 +49,7 @@ export function createFrames(settings: Partial<ChartSettings> = {}) {
     const queue = { animate: jest.fn(() => false), render: jest.fn(() => false), version: 0 }
     const layout = { window: WINDOW, screen: SCREEN, fit: jest.fn() }
     const panels = { animate: jest.fn(() => false), list: [] }
-    const input = { position: POSITION as Point | null, context: null }
+    const input = { position: POSITION as Point | null, pointer: { context: null } }
     const overlay = { update: jest.fn(() => false) }
     const legend = { isMoving: false, getAnimatedReservedPaddings: jest.fn(() => RESERVED) }
     const syncTheme = jest.fn(() => false)
@@ -58,21 +58,26 @@ export function createFrames(settings: Partial<ChartSettings> = {}) {
     const releaseLayers = jest.fn()
     const onError = jest.fn()
 
-    const frames = new Frames({
+    const scene = {
         queue,
         layout,
         panels,
-        input,
-        getLegend: () => legend,
-        getOverlays: () => [overlay],
-        getSettings: () => settings as ChartSettings,
-        getThemePalette: () => theme.current,
-        syncTheme,
-        rebuildForTheme,
-        renewCanvas,
-        releaseLayers,
-        onError
-    } as unknown as ConstructorParameters<typeof Frames>[0])
+        legend,
+        settings: settings as ChartSettings,
+        theme: { getPalette: () => theme.current, sync: syncTheme }
+    }
+
+    const frames = new Frames(
+        scene as unknown as ConstructorParameters<typeof Frames>[0],
+        input as unknown as ConstructorParameters<typeof Frames>[1],
+        {
+            getOverlays: () => [overlay],
+            rebuildForTheme,
+            renewCanvas,
+            releaseLayers,
+            onError
+        } as unknown as ConstructorParameters<typeof Frames>[2]
+    )
 
     return {
         frames,

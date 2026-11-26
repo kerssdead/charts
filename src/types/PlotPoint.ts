@@ -2,11 +2,8 @@ import ItemData from '@/types/ItemData'
 
 type PlotPoint = {
     x: number | Date | string
-
     y: number | Date | string | null
-
     label?: string
-
     data?: ItemData
 }
 

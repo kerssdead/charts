@@ -53,15 +53,13 @@ export function createRouter(items: FakeItem[] = [], settings: Partial<ChartSett
     const onChange = jest.fn()
     const onError = jest.fn()
 
-    const router = new InputRouter({} as HTMLCanvasElement, {
-        queue,
-        layout: { window: WINDOW },
-        panels,
-        getSettings: () => settings as ChartSettings,
-        openChartMenu,
-        onChange,
-        onError
-    } as unknown as ConstructorParameters<typeof InputRouter>[1])
+    const scene = { queue, layout: { window: WINDOW }, panels, settings: settings as ChartSettings }
+
+    const router = new InputRouter(
+        {} as HTMLCanvasElement,
+        scene as unknown as ConstructorParameters<typeof InputRouter>[1],
+        { openChartMenu, onChange, onError }
+    )
 
     return { router, pointer, handlers, getWindow, panels, onChange, onError, openChartMenu }
 }

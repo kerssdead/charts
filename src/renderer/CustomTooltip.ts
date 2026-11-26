@@ -13,14 +13,11 @@ const PLACEHOLDER = /\$\{\s*([^}\s]+)\s*}/g
 const TEXT_STYLES = new WeakMap<ThemePalette, string>()
 
 export default class CustomTooltip {
-    private readonly canvas: HTMLCanvasElement
-
     private floating: FloatingElement | null = null
 
     private html: string | null = null
 
-    constructor(canvas: HTMLCanvasElement) {
-        this.canvas = canvas
+    constructor(private readonly canvas: HTMLCanvasElement) {
     }
 
     static fromTemplate(templateId: string): ((data: ItemData) => string) | null {

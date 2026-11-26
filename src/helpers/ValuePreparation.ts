@@ -16,7 +16,7 @@ import Data from '@/types/interfaces/Data'
 function createValuePreparer() {
     const counts = new Map<string, number>()
 
-    return <T extends Value>(value: T, hasDefaultLabel: boolean = true) => {
+    return <T extends Value>(value: T, hasDefaultLabel = true) => {
         if (hasDefaultLabel)
             value.label ||= TextResources.noLabel
 

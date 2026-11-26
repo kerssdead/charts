@@ -24,15 +24,10 @@ const SCROLL_PRECISION = .5
 
 export type PanelScroll = {
     top: number
-
     height: number
 }
 
 export default class Panel {
-    readonly index: number
-
-    readonly rect: RectangleDimensions
-
     readonly window: CanvasWindow = new CanvasWindow(0, 0)
 
     readonly body: CanvasWindow = new CanvasWindow(0, 0)
@@ -41,25 +36,23 @@ export default class Panel {
 
     scroll: PanelScroll | null = null
 
-    offset: number = 0
+    offset = 0
 
-    target: number = 0
+    target = 0
 
     onContentChange: (() => void) | null = null
 
     clip: RectangleDimensions = Rectangle.empty()
 
-    zoom: number = 1
+    zoom = 1
 
-    baseHeight: number = 0
+    baseHeight = 0
 
     private scrollTime: DOMHighResTimeStamp | null = null
 
     private contentWindow: { top: number, bottom: number } | null = null
 
-    constructor(index: number, rect: RectangleDimensions) {
-        this.index = index
-        this.rect = rect
+    constructor(readonly index: number, readonly rect: RectangleDimensions) {
     }
 
     get maxOffset() {
@@ -126,7 +119,7 @@ export default class Panel {
         this.contentWindow = { top, bottom }
     }
 
-    scrollTo(offset: number): boolean {
+    scrollTo(offset: number) {
         const next = this.clampOffset(offset)
         const isChanged = next !== this.offset
 
@@ -138,19 +131,16 @@ export default class Panel {
         return isChanged
     }
 
-    private isOutsideContent(offset: number): boolean {
+    private isOutsideContent(offset: number) {
         const content = this.contentWindow
 
         if (content == null || this.scroll == null)
             return false
 
-        if (this.baseHeight + offset < content.top)
-            return true
-
-        return this.scroll.top + offset > content.bottom
+        return this.baseHeight + offset < content.top || this.scroll.top + offset > content.bottom
     }
 
-    glideTo(target: number): boolean {
+    glideTo(target: number) {
         const next = this.clampOffset(target)
         const isChanged = next !== this.target
 
@@ -162,7 +152,7 @@ export default class Panel {
         return isChanged
     }
 
-    glideBy(delta: number): boolean {
+    glideBy(delta: number) {
         return this.glideTo(this.target + delta / this.zoom)
     }
 
@@ -180,7 +170,7 @@ export default class Panel {
                : null
     }
 
-    animateScroll(now: DOMHighResTimeStamp): boolean {
+    animateScroll(now: DOMHighResTimeStamp) {
         if (this.offset === this.target) {
             this.scrollTime = null
 

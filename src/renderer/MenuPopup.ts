@@ -4,7 +4,7 @@ import Point from '@/types/Point'
 import { ThemePalette } from '@/Theme'
 import { ContextMenu } from '@/static/constants/Index'
 import { getFontFamily } from '@/static/Typography'
-import { Events } from '@/static/Enums'
+import { Events, Keys } from '@/static/Enums'
 import { appearScale } from '@/animation/Animations'
 import { FLOATING_PANEL_BLUR, floatingPanelShadow } from '@/helpers/FloatingStyle'
 
@@ -197,12 +197,12 @@ export default class MenuPopup {
     }
 
     private isActivationKey(event: KeyboardEvent) {
-        return event.key === 'Enter' || event.key === ' '
+        return event.key === Keys.Enter || event.key === Keys.Space
     }
 
     private onKey(event: KeyboardEvent, dismiss: () => void) {
-        if (event.key === 'Escape' || event.key === 'Tab') {
-            if (event.key === 'Escape')
+        if (event.key === Keys.Escape || event.key === Keys.Tab) {
+            if (event.key === Keys.Escape)
                 event.preventDefault()
 
             event.stopPropagation()

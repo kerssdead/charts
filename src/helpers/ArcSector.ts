@@ -42,7 +42,7 @@ type Corner = Point & {
 
 export const isFullCircle = (sweep: number) => sweep >= FULL_ANGLE - FULL_CIRCLE_EPSILON
 
-export function traceSector(ctx: CanvasRenderingContext2D, shape: ArcShape, outline: SectorOutline): boolean {
+export function traceSector(ctx: CanvasRenderingContext2D, shape: ArcShape, outline: SectorOutline) {
     const angle = shape.end - shape.start
 
     if (angle <= 0)
@@ -90,7 +90,7 @@ export function traceSector(ctx: CanvasRenderingContext2D, shape: ArcShape, outl
     return true
 }
 
-export function isInsideSector(point: Point, sector: PlacedSector): boolean {
+export function isInsideSector(point: Point, sector: PlacedSector) {
     const sweep = sector.endAngle - sector.startAngle
     const pull = isFullCircle(sweep) ? 0 : sector.pull
     const middle = sector.startAngle + sweep / 2

@@ -21,7 +21,7 @@ const SETTINGS: ProcessSettings = { valuePostfix: undefined, theme: LIGHT_THEME 
 
 function getTexts(data: Partial<PlotData>) {
     const plotData = { values: [], ...data } as PlotData
-    const process = new PlotProcess(plotData, PIXEL, SETTINGS, createState(plotData))
+    const process = new PlotProcess(plotData, PIXEL, SETTINGS, { state: createState(plotData) })
     const items = QueueItemsBuilder.build(process.getData())
 
     return new Map(items.filter(item => item.key).map(item => [item.key ?? '', item.shape as RenderItemText]))
@@ -71,7 +71,7 @@ describe('Getting plot data', () => {
                     values: values.map((_, i) => ({ x: `Day ${ i }`, y: i < 2 ? '15' : '0' }))
                 }
             ]
-        } as PlotData, PIXEL, SETTINGS, createState())
+        } as PlotData, PIXEL, SETTINGS, { state: createState() })
 
         const rects = new Map(QueueItemsBuilder.build(process.getData())
                                                .filter(item => item.shape instanceof RenderItemRectangle)
@@ -92,7 +92,7 @@ describe('Getting plot data', () => {
                 values: [{ x: 'Day 1', y: 5, label: 'Special day' }]
             }]
         } as unknown as PlotData
-        const process = new PlotProcess(data, PIXEL, SETTINGS, createState(data))
+        const process = new PlotProcess(data, PIXEL, SETTINGS, { state: createState(data) })
         const tooltips = QueueItemsBuilder.build(process.getData())
             .map(item => resolveTooltip(item.tooltipTemplate ?? null))
 
@@ -105,7 +105,7 @@ describe('Getting plot data', () => {
             xType: PlotAxisType.Text,
             values: [{ type: PlotType.Column, label: 'Orders', values: [{ x: 'Day 1', y: 5 }] }]
         } as unknown as PlotData
-        const process = new PlotProcess(data, PIXEL, SETTINGS, createState(data))
+        const process = new PlotProcess(data, PIXEL, SETTINGS, { state: createState(data) })
         const tooltips = QueueItemsBuilder.build(process.getData())
             .map(item => resolveTooltip(item.tooltipTemplate ?? null))
 

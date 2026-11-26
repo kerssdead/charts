@@ -12,7 +12,7 @@ export default class CellsHover {
         return this.changes
     }
 
-    step(target: number | null, now: DOMHighResTimeStamp, isInstant: boolean = false) {
+    step(target: number | null, now: DOMHighResTimeStamp, isInstant = false) {
         if (target !== null && !this.progress.has(target))
             this.progress.set(target, new HoverProgress())
 

@@ -16,7 +16,7 @@ export default class ViewState {
 
     private charts: ChartEntry[] = []
 
-    private isShared: boolean = false
+    private isShared = false
 
     apply(settings: ChartSettings) {
         this.isShared = settings.charts.length > 1
@@ -32,7 +32,7 @@ export default class ViewState {
                           : new ChartViewState(value => this.isDisabled(value))
 
             if (chart.data)
-                getChartDefinition(chart.type)?.applyViewState?.(chart.data, state)
+                getChartDefinition(chart.type).applyViewState?.(chart.data, state)
 
             return { type: chart.type, state }
         })
@@ -58,6 +58,6 @@ export default class ViewState {
         this.disabled.clear()
 
         for (const { state } of this.charts)
-            state.clearPinned()
+            state.pinned.clear()
     }
 }

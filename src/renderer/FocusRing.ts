@@ -14,17 +14,13 @@ const RADIUS = 4
 const FILL_ALPHA = .12
 
 export default class FocusRing extends Overlay {
-    private readonly getBounds: () => Bounds | null
-
     private shown: RectangleDimensions | null = null
 
-    constructor(getBounds: () => Bounds | null) {
+    constructor(private readonly getBounds: () => Bounds | null) {
         super()
-
-        this.getBounds = getBounds
     }
 
-    update({ queue, screen, theme }: Frame): boolean {
+    update({ queue, screen, theme }: Frame) {
         const bounds = this.getBounds()
 
         if (!bounds || screen.width <= 0 || screen.height <= 0) {

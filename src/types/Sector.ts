@@ -7,7 +7,7 @@ class Sector extends Value {
         return this.value === 0
     }
 
-    canToggle(): boolean {
+    canToggle() {
         return !this.isBlank
     }
 }

@@ -24,7 +24,12 @@ jest.mock('@/helpers/Images', () => ({
 const PIXEL = { x: 5, y: 5 }
 
 const create = (data: HeatMapData) => {
-    return new HeatMapProcess(data, PIXEL, { valuePostfix: undefined, theme: LIGHT_THEME }, createState(data))
+    return new HeatMapProcess(
+        data,
+        PIXEL,
+        { valuePostfix: undefined, theme: LIGHT_THEME },
+        { state: createState(data) }
+    )
 }
 
 const getItems = (data: HeatMapData) => {

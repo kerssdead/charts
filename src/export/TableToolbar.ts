@@ -8,11 +8,8 @@ const copyResultTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>
 
 export type TableToolbarOptions = {
     canFilter: boolean
-
     onFilter: (query: string) => void
-
     getText: () => string
-
     onSave: () => void
 }
 

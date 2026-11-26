@@ -5,16 +5,11 @@ import { COORDS_MAX_X } from '@/static/constants/Index'
 import { X_LABEL_FONT, X_LABEL_SPACING } from '@/render/plot/PlotConstants'
 
 export default class PlotLabelSpacing {
-    private readonly units: Units
-
-    private readonly leftBoundary: number
-
-    private readonly plotRight: number
-
-    constructor(units: Units, leftBoundary: number, plotRight: number) {
-        this.units = units
-        this.leftBoundary = leftBoundary
-        this.plotRight = plotRight
+    constructor(
+        private readonly units: Units,
+        private readonly leftBoundary: number,
+        private readonly plotRight: number
+    ) {
     }
 
     getValueLabels(values: number[], positions: number[], shortLabels: boolean) {

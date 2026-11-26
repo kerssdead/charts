@@ -29,7 +29,7 @@ const sector = (label: string, value: number, extra: Partial<Sector> = {}) => {
 
 function getItems(data: Partial<GaugeData>, pixel = PIXEL, settings = SETTINGS) {
     const gaugeData = { values: [], ...data } as GaugeData
-    const process = new GaugeProcess(gaugeData, pixel, settings, createState(gaugeData))
+    const process = new GaugeProcess(gaugeData, pixel, settings, { state: createState(gaugeData) })
 
     return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))
 }

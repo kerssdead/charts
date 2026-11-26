@@ -17,7 +17,7 @@ import { getCapRoom } from '@/render/plot/PlotCapMarks'
 import { BAND_SPACING, BAR_BAND_RATIO, X_LABEL_HEIGHT } from '@/render/plot/PlotConstants'
 
 export default class PlotLayout {
-    readonly yMax: number | undefined
+    readonly yMax?: number
 
     readonly margin: Paddings
 
@@ -25,17 +25,7 @@ export default class PlotLayout {
 
     readonly horizontal: PlotSection
 
-    readonly units: Units
-
-    private readonly data: PlotData
-
-    readonly seriesGroups: PlotSeriesGroups
-
-    constructor(data: PlotData, units: Units, seriesGroups: PlotSeriesGroups) {
-        this.data = data
-        this.units = units
-        this.seriesGroups = seriesGroups
-
+    constructor(private readonly data: PlotData, readonly units: Units, readonly seriesGroups: PlotSeriesGroups) {
         const yMax = Number(data.yMax)
 
         this.yMax = yMax > 0 && Number.isFinite(yMax) ? yMax : undefined

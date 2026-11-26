@@ -5,15 +5,11 @@ import { clamp } from '@/helpers/Geometry'
 import Rectangle from '@/helpers/Rectangle'
 
 export default class CanvasWindow {
-    x: number = 0
+    x = 0
 
-    y: number = 0
+    y = 0
 
-    width: number
-
-    height: number
-
-    private scale: number = 1
+    private scale = 1
 
     private base: RectangleDimensions
 
@@ -32,9 +28,7 @@ export default class CanvasWindow {
         }
     }
 
-    constructor(width: number, height: number) {
-        this.width = width
-        this.height = height
+    constructor(public width: number, public height: number) {
         this.base = { x: 0, y: 0, width, height }
     }
 
@@ -46,16 +40,24 @@ export default class CanvasWindow {
         return Math.round(y / COORDS_MAX_Y * this.height + this.y)
     }
 
+    scaleX(length: number) {
+        return length / COORDS_MAX_X * this.width
+    }
+
+    scaleY(length: number) {
+        return length / COORDS_MAX_Y * this.height
+    }
+
     mapBox(box: RectangleDimensions, result: RectangleDimensions = Rectangle.empty()) {
         result.x = this.mapX(box.x)
         result.y = this.mapY(box.y)
-        result.width = box.width / COORDS_MAX_X * this.width
-        result.height = box.height / COORDS_MAX_Y * this.height
+        result.width = this.scaleX(box.width)
+        result.height = this.scaleY(box.height)
 
         return result
     }
 
-    fit(x: number, y: number, width: number, height: number): boolean {
+    fit(x: number, y: number, width: number, height: number) {
         const isResized = width !== this.base.width || height !== this.base.height
         const offsetX = this.x - this.base.x
         const offsetY = this.y - this.base.y

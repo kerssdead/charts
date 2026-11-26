@@ -10,24 +10,12 @@ import { CORNER_RADIUS } from '@/render/plot/PlotConstants'
 import { addColumnCapMarks } from '@/render/plot/PlotCapMarks'
 
 export default class PlotColumnItems {
-    private readonly layout: PlotLayout
-
-    private readonly style: PlotItemStyle
-
-    private readonly seriesGroups: PlotSeriesGroups
-
-    private readonly columnGroups: Map<string, ColumnGroup>
-
     constructor(
-        layout: PlotLayout,
-        style: PlotItemStyle,
-        seriesGroups: PlotSeriesGroups,
-        columnGroups: Map<string, ColumnGroup>
+        private readonly layout: PlotLayout,
+        private readonly style: PlotItemStyle,
+        private readonly seriesGroups: PlotSeriesGroups,
+        private readonly columnGroups: Map<string, ColumnGroup>
     ) {
-        this.layout = layout
-        this.style = style
-        this.seriesGroups = seriesGroups
-        this.columnGroups = columnGroups
     }
 
     getItems(series: PlotSeries) {

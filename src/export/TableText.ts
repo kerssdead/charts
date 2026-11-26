@@ -3,7 +3,7 @@ import TableValue from '@/types/TableValue'
 import TextResources from '@/static/TextResources'
 import { getTotals } from '@/export/TableTotals'
 
-export function toTabSeparatedText(table: TableData): string {
+export function toTabSeparatedText(table: TableData) {
     const clean = (value: string) => value.replace(/[\t\r\n]+/g, ' ')
     const getCells = (row: TableValue) => table.headers.map(header => `${ row.values.get(header.value) ?? '' }`)
 

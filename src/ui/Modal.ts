@@ -21,9 +21,9 @@ let titleCount = 0
 class Modal {
     private readonly modal: HTMLDialogElement
 
-    private isClosed: boolean = false
+    private isClosed = false
 
-    constructor(content?: HTMLElement, title?: string, isDark: boolean = false) {
+    constructor(content?: HTMLElement, title?: string, isDark = false) {
         this.modal = document.createElement(Tag.Dialog)
 
         this.modal.classList.add(ModalClasses.Modal)

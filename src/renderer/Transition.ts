@@ -13,19 +13,12 @@ type ArcChanges = {
 }
 
 export default class Transition {
-    private readonly queue: Queue
-
-    private readonly previousPanels: Panel[]
-
-    private readonly panels: Panel[]
-
-    private readonly duration: number
-
-    constructor(queue: Queue, previousPanels: Panel[], panels: Panel[], duration: number) {
-        this.queue = queue
-        this.previousPanels = previousPanels
-        this.panels = panels
-        this.duration = duration
+    constructor(
+        private readonly queue: Queue,
+        private readonly previousPanels: Panel[],
+        private readonly panels: Panel[],
+        private readonly duration: number
+    ) {
     }
 
     static snapshot(queue: Queue): Map<string, RenderItem> {
@@ -70,7 +63,7 @@ export default class Transition {
             this.leave(item)
     }
 
-    private enter(item: RenderItem, old: RenderItem | undefined): boolean {
+    private enter(item: RenderItem, old: RenderItem | undefined) {
         if (old?.is(f.Ghost) && item.is(f.Ghost))
             return false
 

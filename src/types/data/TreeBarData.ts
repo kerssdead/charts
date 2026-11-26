@@ -6,32 +6,26 @@ import ChartViewState from '@/types/ChartViewState'
 
 export type TreeBarColumn = {
     key: string
-
     title: string
 }
 
 export default interface TreeBarData extends Data {
     values: TreeBarRow[]
-
     columns?: TreeBarColumn[]
-
     sortColumn?: string
-
     sortDescending?: boolean
-
     numberLocale?: string
 }
 
 export type TreeBarEntry = {
     node: TreeBarRow
-
     level: number
 }
 
 export function flattenTreeBarRows(
     rows: TreeBarRow[] | undefined,
     isOpen: (node: TreeBarRow) => boolean = () => true,
-    level: number = 0
+    level = 0
 ): TreeBarEntry[] {
     return (rows ?? []).flatMap(node => [
         { node, level },
@@ -44,8 +38,8 @@ export function getAllTreeBarRows(rows: TreeBarRow[] | undefined) {
 }
 
 export function applyTreeBarViewState(data: TreeBarData, state: ChartViewState) {
-    state.applyExpanded(getAllTreeBarRows(data.values))
-    state.applySort(data.sortColumn, data.sortDescending)
+    state.expanded.apply(getAllTreeBarRows(data.values), row => row.expanded)
+    state.sort.apply(data.sortColumn, data.sortDescending)
 }
 
 export function colorTreeBarRows(rows: TreeBarRow[] | undefined, color: string) {

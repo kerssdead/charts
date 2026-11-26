@@ -43,17 +43,11 @@ function nameCell(value: TableValue) {
 export default class TableView {
     readonly element: HTMLElement
 
-    private readonly data: TableData
-
-    private readonly decimals: number | undefined
-
     private readonly rowElements: HTMLElement[] = []
 
     private totalElements: HTMLElement[] = []
 
-    constructor(data: TableData, decimals?: number) {
-        this.data = data
-        this.decimals = decimals
+    constructor(private readonly data: TableData, private readonly decimals?: number) {
         this.element = this.build()
     }
 

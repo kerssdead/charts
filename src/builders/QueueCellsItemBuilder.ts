@@ -9,26 +9,18 @@ export default class QueueCellsItemBuilder extends QueueItemBaseBuilder<RenderIt
     }
 
     box(x: number, y: number, width: number, height: number) {
-        this.shape.box = { x, y, width, height }
-
-        return this
+        return this.chain(() => this.shape.box = { x, y, width, height })
     }
 
     cells(cells: CellsRenderData) {
-        this.shape.cells = cells
-
-        return this
+        return this.chain(() => this.shape.cells = cells)
     }
 
     lookup(lookup: CellLookup<string>) {
-        this.shape.lookup = lookup
-
-        return this
+        return this.chain(() => this.shape.lookup = lookup)
     }
 
     dataLookup(lookup: CellLookup<ItemData>) {
-        this.shape.dataLookup = lookup
-
-        return this
+        return this.chain(() => this.shape.dataLookup = lookup)
     }
 }

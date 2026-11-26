@@ -7,14 +7,11 @@ import PlotAxisLines from '@/render/plot/PlotAxisLines'
 import { ThemePalette } from '@/Theme'
 
 export default class PlotAxes {
-    private readonly data: PlotData
-
     private readonly labels: PlotAxisLabels
 
     private readonly lines: PlotAxisLines
 
-    constructor(data: PlotData, units: Units, layout: PlotLayout, theme: ThemePalette) {
-        this.data = data
+    constructor(private readonly data: PlotData, units: Units, layout: PlotLayout, theme: ThemePalette) {
         this.labels = new PlotAxisLabels(data, units, layout, layout.seriesGroups)
         this.lines = new PlotAxisLines(layout, layout.seriesGroups, theme)
     }

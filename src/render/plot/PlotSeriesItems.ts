@@ -13,8 +13,6 @@ import { GHOST_TYPES } from '@/render/plot/PlotConstants'
 import { ThemePalette } from '@/Theme'
 
 export default class PlotSeriesItems {
-    private readonly allSeries: PlotSeries[]
-
     private readonly seriesGroups: PlotSeriesGroups
 
     private readonly columns: PlotColumnItems
@@ -26,7 +24,7 @@ export default class PlotSeriesItems {
     private readonly lines: PlotLineItems
 
     constructor(
-        allSeries: PlotSeries[],
+        private readonly allSeries: PlotSeries[],
         layout: PlotLayout,
         getValueTooltip: ValueTooltip,
         theme: ThemePalette
@@ -35,7 +33,6 @@ export default class PlotSeriesItems {
         const style = new PlotItemStyle(layout, seriesGroups, getValueTooltip, theme)
         const columnGroups = getColumnGroups(seriesGroups.enabledSeries)
 
-        this.allSeries = allSeries
         this.seriesGroups = seriesGroups
         this.columns = new PlotColumnItems(layout, style, seriesGroups, columnGroups)
         this.stackedColumns = new PlotStackedColumnItems(layout, style, seriesGroups, columnGroups)

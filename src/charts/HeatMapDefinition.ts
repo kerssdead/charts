@@ -6,7 +6,7 @@ import { normalizeHeatMap } from '@/helpers/ValueNormalization'
 import { getHeatMapRows } from '@/export/TableRows'
 
 const HeatMapDefinition: ChartDefinition<HeatMapData> = {
-    createProcess: (data, pixel, settings, state) => new HeatMapProcess(data, pixel, settings, state),
+    createProcess: (data, pixel, settings, context) => new HeatMapProcess(data, pixel, settings, context),
     prepareData: prepareHeatMapCells,
     normalizeData: normalizeHeatMap,
     applyOwnColors: (data, baseColor) => {

@@ -29,7 +29,7 @@ function getItems(data: Partial<SegmentedBarData>, settings = SETTINGS) {
         { values: [], stops: [], ...data } as SegmentedBarData,
         PIXEL,
         settings,
-        createState()
+        { state: createState() }
     )
 
     return new Map(QueueItemsBuilder.build(process.getData()).map(item => [item.key ?? '', item]))

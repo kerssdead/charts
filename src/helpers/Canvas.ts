@@ -12,14 +12,11 @@ const gradientStops = new Map<string, [string, string]>()
 type GradientFactory = (ctx: CanvasRenderingContext2D, color: string, y1: number, y2: number) => CanvasGradient
 
 export class GradientCache {
-    private readonly createGradient: GradientFactory
-
     private key: string | null = null
 
     private gradient: CanvasGradient | null = null
 
-    constructor(createGradient: GradientFactory = verticalGradient) {
-        this.createGradient = createGradient
+    constructor(private readonly createGradient: GradientFactory = verticalGradient) {
     }
 
     get(ctx: CanvasRenderingContext2D, color: string, y1: number, y2: number) {
@@ -181,7 +178,7 @@ export function unitVerticalGradient(ctx: CanvasRenderingContext2D, color: strin
 
 export function getContext(
     canvas: HTMLCanvasElement,
-    willReadFrequently: boolean = false
+    willReadFrequently = false
 ): CanvasRenderingContext2D {
     return canvas.getContext('2d', { willReadFrequently })
            ?? fail(ErrorType.NullContext)

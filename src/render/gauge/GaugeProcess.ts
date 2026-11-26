@@ -7,7 +7,7 @@ import ProcessSettings from '@/types/ProcessSettings'
 import { withAlpha } from '@/helpers/Color'
 import { clamp } from '@/helpers/Geometry'
 import { stringWidth } from '@/helpers/Text'
-import ChartProcess from '@/render/ChartProcess'
+import ChartProcess, { ProcessContext } from '@/render/ChartProcess'
 import { ErrorType, TextAlignment } from '@/static/Enums'
 import fail from '@/helpers/Errors'
 import GaugeSizing from '@/render/gauge/GaugeSizing'
@@ -36,7 +36,6 @@ import {
     VALUE_MIN_FONT_SIZE,
     VALUE_WIDTH_RATIO
 } from '@/render/gauge/GaugeConstants'
-import ChartViewState from '@/types/ChartViewState'
 
 export default class GaugeProcess extends ChartProcess<GaugeData> {
     private readonly enabledSectors: Sector[]
@@ -47,8 +46,8 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
 
     private readonly sizing: GaugeSizing
 
-    constructor(data: GaugeData, pixel: Point, settings: ProcessSettings, state: ChartViewState) {
-        super(data, pixel, settings, state)
+    constructor(data: GaugeData, pixel: Point, settings: ProcessSettings, context: ProcessContext) {
+        super(data, pixel, settings, context)
 
         if (this.min > this.max)
             fail(ErrorType.InvalidGaugeRange)
@@ -56,7 +55,7 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         const formatValue = (value: number) => this.formatValue(value)
         const legendAvailableWidth = this.units.toPxX(COORDS_MAX_X) - this.units.toPxX(CANVAS_PADDING) * 2
 
-        this.enabledSectors = data.values.filter(sector => !state.isDisabled(sector))
+        this.enabledSectors = data.values.filter(sector => !this.state.isDisabled(sector))
         this.legendLines = GaugeLegend.getLegendLines(
             GaugeLegend.getLegendItems(this.enabledSectors, value => this.formatValueWithRangeMark(value)),
             legendAvailableWidth
@@ -117,16 +116,15 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
     }
 
     private formatValueWithRangeMark(value: number) {
+        const text = this.formatValue(value)
+
         if (!Number.isFinite(value))
-            return this.formatValue(value)
+            return text
 
         if (value > this.max)
-            return `${ this.formatValue(value) } ${ ABOVE_MAX_MARK }`
+            return `${ text } ${ ABOVE_MAX_MARK }`
 
-        if (value < this.min)
-            return `${ this.formatValue(value) } ${ BELOW_MIN_MARK }`
-
-        return this.formatValue(value)
+        return value < this.min ? `${ text } ${ BELOW_MIN_MARK }` : text
     }
 
     private addRingShape(items: QueueItemsBuilder, ringIndex: number, endAngle: number) {
@@ -240,8 +238,12 @@ export default class GaugeProcess extends ChartProcess<GaugeData> {
         )
         const widthBetweenRangeLabels = (this.sizing.ringMiddleRadius - rangeLabelWidth / 2 - LABEL_GAP * 2) * 2
 
-        const innerWidth = this.sizing.radius * this.sizing.innerRadiusRatio * 2 * VALUE_WIDTH_RATIO
-        const valueFontSize = this.getFittingFontSize(valueText, innerWidth, VALUE_FONT_SIZE)
+        const valueFontSize = this.getFittingFontSizeInRing(
+            valueText,
+            this.sizing,
+            VALUE_WIDTH_RATIO,
+            VALUE_FONT_SIZE
+        )
         const isValueInside = valueFontSize >= VALUE_MIN_FONT_SIZE
 
         if (isValueInside)

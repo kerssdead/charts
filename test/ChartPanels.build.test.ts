@@ -40,7 +40,7 @@ function buildPanels(settings: Partial<ChartSettings>) {
     return panels.list
 }
 
-function buildQueue(settings: Partial<ChartSettings>, isInitialized: boolean) {
+function buildQueue(settings: Partial<ChartSettings>, isInitialized: boolean, onChange: () => void = () => {}) {
     const layout = new Layout()
 
     layout.width = 600
@@ -60,7 +60,7 @@ function buildQueue(settings: Partial<ChartSettings>, isInitialized: boolean) {
         settings: chartSettings,
         viewState,
         isInitialized,
-        onChange: () => {},
+        onChange,
         theme: LIGHT_THEME
     })
 
@@ -176,5 +176,15 @@ describe('Building chart panels', () => {
 
         expect(queue.items.some(item => item.isInitializing))
             .toBe(true)
+    })
+
+    it('Should let the chart process request a rebuild', () => {
+        const onChange = jest.fn()
+        const queue = buildQueue({}, true, onChange)
+
+        queue.items.find(item => item.key === 'sector-a')?.onClick?.()
+
+        expect(onChange)
+            .toHaveBeenCalled()
     })
 })

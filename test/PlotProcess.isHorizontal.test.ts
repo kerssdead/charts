@@ -16,7 +16,7 @@ const create = (values: PlotData['values']) => {
         { values } as PlotData,
         { x: 1, y: 1 },
         { valuePostfix: undefined, theme: LIGHT_THEME },
-        createState({ values })
+        { state: createState({ values }) }
     )
 }
 

@@ -105,7 +105,7 @@ describe('Applying view state', () => {
 
         const state = viewState.getChartState(0)
 
-        expect([state === previous, state.isExpanded(rows(next)[0]), state.sortColumn])
+        expect([state === previous, state.expanded.has(rows(next)[0]), state.sort.column])
             .toEqual([true, true, 'amount'])
     })
 
@@ -128,7 +128,7 @@ describe('Applying view state', () => {
 
         viewState.apply(settings)
 
-        expect(viewState.getChartState(0).isPinned(settings.charts[0].data.values[0] as Sector))
+        expect(viewState.getChartState(0).pinned.has(settings.charts[0].data.values[0] as Sector))
             .toBe(true)
     })
 })

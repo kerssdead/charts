@@ -8,7 +8,7 @@ import { TextAlignment } from '@/static/Enums'
 import { getRoundedValues } from '@/helpers/Numbers'
 import { maxOf } from '@/helpers/Collections'
 import { short, stringWidth } from '@/helpers/Text'
-import ChartProcess from '@/render/ChartProcess'
+import ChartProcess, { ProcessContext } from '@/render/ChartProcess'
 import * as TreeBarLayout from '@/render/treeBar/TreeBarLayout'
 import * as TreeBarRowText from '@/render/treeBar/TreeBarRowText'
 import * as TreeBarSorting from '@/render/treeBar/TreeBarSorting'
@@ -51,8 +51,8 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
 
     private readonly rowItems: TreeBarRowItems
 
-    constructor(data: TreeBarData, pixel: Point, settings: ProcessSettings, state: ChartViewState) {
-        super(data, pixel, settings, state)
+    constructor(data: TreeBarData, pixel: Point, settings: ProcessSettings, context: ProcessContext) {
+        super(data, pixel, settings, context)
 
         const allEntries = flattenTreeBarRows(data.values)
 
@@ -64,14 +64,14 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
         }, {
             getPartTooltip: (part, label) => this.valueTooltip(part, label, this.formatValue(part.value)),
             getPartData: part => TreeBarProcess.getItemData(part),
-            isExpanded: row => state.isExpanded(row),
+            isExpanded: row => this.state.expanded.has(row),
             onToggle: row => {
-                state.toggleExpanded(row)
+                this.state.expanded.toggle(row)
                 this.onChange?.()
             }
         })
 
-        const { rows, height } = layoutRows(data, state)
+        const { rows, height } = layoutRows(data, this.state)
 
         this.rows = rows
         this.height = height
@@ -200,8 +200,8 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
         for (const column of this.geometry.columns) {
             const sortIndicator = TreeBarSorting.getSortIndicator(
                 column.key,
-                this.state.sortColumn,
-                this.state.isSortDescending
+                this.state.sort.column,
+                this.state.sort.isDescending
             )
 
             items.text(column.title + sortIndicator)
@@ -221,7 +221,7 @@ export default class TreeBarProcess extends ChartProcess<TreeBarData> {
     }
 
     private sortBy(columnKey: string) {
-        this.state.sortBy(columnKey)
+        this.state.sort.sortBy(columnKey)
         this.onChange?.()
     }
 }

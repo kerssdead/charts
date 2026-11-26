@@ -12,10 +12,7 @@ export function getLocale() {
 function getTranslation(locale: string | undefined) {
     const tag = locale?.toLowerCase().replace('_', '-')
 
-    if (!tag)
-        return undefined
-
-    return Translations[tag] ?? Translations[tag.split('-')[0]]
+    return tag ? Translations[tag] ?? Translations[tag.split('-')[0]] : undefined
 }
 
 export function setLocalization(newLocale: string | undefined, strings: TextOverrides | undefined) {

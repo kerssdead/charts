@@ -2,14 +2,11 @@ import { createErrorMessage } from '@/ui/ErrorMessage'
 import ChartSettings from '@/types/ChartSettings'
 
 export default class ChartFailure {
-    isActive: boolean = false
+    isActive = false
 
-    private message: HTMLElement | undefined
+    private message?: HTMLElement
 
-    private readonly element: HTMLElement
-
-    constructor(element: HTMLElement) {
-        this.element = element
+    constructor(private readonly element: HTMLElement) {
     }
 
     report(error: unknown, details: object, onError?: ChartSettings['onError']) {

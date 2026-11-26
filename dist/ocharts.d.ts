@@ -149,6 +149,7 @@ type MultipleCharts = {
 };
 export type ChartOptions = (SingleChart | MultipleCharts) & CommonOptions;
 declare class Chart {
+	private readonly element;
 	private isDestroyed;
 	private isSuspended;
 	private suspendedTheme;
@@ -156,7 +157,6 @@ declare class Chart {
 	private readonly rendererTheme;
 	private source;
 	private settings;
-	private readonly element;
 	private readonly failure;
 	private host;
 	private tableHint;

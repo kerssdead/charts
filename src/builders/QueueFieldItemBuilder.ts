@@ -8,20 +8,14 @@ export default class QueueFieldItemBuilder extends QueueItemBaseBuilder<RenderIt
     }
 
     box(x: number, y: number, width: number, height: number) {
-        this.shape.box = { x, y, width, height }
-
-        return this
+        return this.chain(() => this.shape.box = { x, y, width, height })
     }
 
     field(field: FieldRenderData) {
-        this.shape.field = field
-
-        return this
+        return this.chain(() => this.shape.field = field)
     }
 
     lookup(lookup: FieldLookup) {
-        this.shape.lookup = lookup
-
-        return this
+        return this.chain(() => this.shape.lookup = lookup)
     }
 }

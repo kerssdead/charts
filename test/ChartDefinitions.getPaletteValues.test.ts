@@ -37,11 +37,11 @@ describe('Getting palette values from chart definitions', () => {
     })
 
     it('Should pin nothing for pie data without values', () => {
-        const state = { applyPinned: jest.fn() } as unknown as ChartViewState
+        const state = { pinned: { apply: jest.fn() } } as unknown as ChartViewState
 
-        getChartDefinition(ChartType.Pie)?.applyViewState?.(emptyData, state)
+        getChartDefinition(ChartType.Pie).applyViewState?.(emptyData, state)
 
-        expect(state.applyPinned)
-            .toHaveBeenCalledWith([])
+        expect(state.pinned.apply)
+            .toHaveBeenCalledWith([], expect.any(Function))
     })
 })

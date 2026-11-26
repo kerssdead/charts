@@ -1,5 +1,6 @@
 import { getChartDefinition } from '@/charts/ChartDefinitions'
 import { ChartType } from '@/static/Enums'
+import UnknownDefinition from '@/charts/UnknownDefinition'
 
 describe('Getting chart definitions', () => {
     it.each([
@@ -12,11 +13,11 @@ describe('Getting chart definitions', () => {
         ChartType.HeatMap
     ])('Should define chart type %s', type => {
         expect(getChartDefinition(type))
-            .toBeDefined()
+            .not.toBe(UnknownDefinition)
     })
 
-    it('Should not define unknown chart type', () => {
+    it('Should fall back to the unknown definition for unknown chart type', () => {
         expect(getChartDefinition(-1 as unknown as ChartType))
-            .toBeUndefined()
+            .toBe(UnknownDefinition)
     })
 })

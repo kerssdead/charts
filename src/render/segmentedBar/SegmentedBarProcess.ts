@@ -11,7 +11,7 @@ import { HorizontalAlignment, TextAlignment, VerticalAlignment } from '@/static/
 import { contrastTextColor, withAlpha } from '@/helpers/Color'
 import { clamp } from '@/helpers/Geometry'
 import { sum } from '@/helpers/Collections'
-import ChartProcess from '@/render/ChartProcess'
+import ChartProcess, { ProcessContext } from '@/render/ChartProcess'
 import * as SegmentedBarLayout from '@/render/segmentedBar/SegmentedBarLayout'
 import * as SegmentedBarParts from '@/render/segmentedBar/SegmentedBarParts'
 import { Part, PartsLayout } from '@/render/segmentedBar/SegmentedBarParts'
@@ -30,7 +30,6 @@ import {
     STOP_WIDTH,
     TRACK_ALPHA
 } from '@/render/segmentedBar/SegmentedBarConstants'
-import ChartViewState from '@/types/ChartViewState'
 
 export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> {
     private readonly total: number
@@ -41,8 +40,8 @@ export default class SegmentedBarProcess extends ChartProcess<SegmentedBarData> 
 
     private readonly partsLayout: PartsLayout
 
-    constructor(data: SegmentedBarData, pixel: Point, settings: ProcessSettings, state: ChartViewState) {
-        super(data, pixel, settings, state)
+    constructor(data: SegmentedBarData, pixel: Point, settings: ProcessSettings, context: ProcessContext) {
+        super(data, pixel, settings, context)
 
         const positiveValues = data.values.filter(value => value.value > 0)
 

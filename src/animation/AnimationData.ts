@@ -7,39 +7,39 @@ function getProgress(now: DOMHighResTimeStamp, start: DOMHighResTimeStamp, delay
 }
 
 export default class AnimationData {
-    alpha: number = 1
+    alpha = 1
 
-    grayscale: number = 0
+    grayscale = 0
 
-    init: number = 1
+    init = 1
 
-    initDuration: number = 0
+    initDuration = 0
 
-    initDelay: number = 0
+    initDelay = 0
 
     initStart: DOMHighResTimeStamp | null = null
 
-    isLeaving: boolean = false
+    isLeaving = false
 
-    morph: number = 1
+    morph = 1
 
-    morphDuration: number = 0
+    morphDuration = 0
 
     morphStart: DOMHighResTimeStamp | null = null
 
-    morphDelay: number = 0
+    morphDelay = 0
 
-    appearDelay: number = 0
+    appearDelay = 0
 
-    appearDuration: number = 0
+    appearDuration = 0
 
     morphFade: MorphFade | null = null
 
-    removeAfterMorph: boolean = false
+    removeAfterMorph = false
 
-    initFade: boolean = false
+    initFade = false
 
-    visibility: number = 1
+    visibility = 1
 
     get isInitializing() {
         return this.initDuration > 0
@@ -60,7 +60,7 @@ export default class AnimationData {
         this.initStart = null
     }
 
-    startMorph(fade: MorphFade | null, duration: number, delay: number = 0) {
+    startMorph(fade: MorphFade | null, duration: number, delay = 0) {
         this.morphFade = fade
         this.morph = 0
         this.morphDuration = duration
@@ -71,7 +71,7 @@ export default class AnimationData {
             this.visibility = 0
     }
 
-    stepInit(now: DOMHighResTimeStamp): boolean {
+    stepInit(now: DOMHighResTimeStamp) {
         if (!this.isInitializing)
             return false
 
@@ -92,7 +92,7 @@ export default class AnimationData {
         return this.isLeaving
     }
 
-    stepMorph(now: DOMHighResTimeStamp): boolean {
+    stepMorph(now: DOMHighResTimeStamp) {
         if (!this.isMorphing)
             return false
 

@@ -39,13 +39,7 @@ export default function layoutLabels(labels: LabelBox[], distance: number, bound
 }
 
 class LabelArranger {
-    private readonly distance: number
-
-    private readonly bounds: Point
-
-    constructor(distance: number, bounds: Point) {
-        this.distance = distance
-        this.bounds = bounds
+    constructor(private readonly distance: number, private readonly bounds: Point) {
     }
 
     place(labels: LabelBox[]) {

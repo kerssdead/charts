@@ -63,48 +63,68 @@ function getTimeStep(rawDuration: number): TimeStep {
            ?? { unit: TimeUnit.Year, size: Math.max(1, getNiceStep(rawYears, YEAR_MULTIPLIERS)) }
 }
 
-function getFirstTick(min: number, step: TimeStep) {
-    const date = new Date(min)
+type TimeUnitCalendar = {
+    getFirstTick: (min: number, step: TimeStep) => Date
+    addStep: (date: Date, step: TimeStep) => Date
+}
 
-    switch (step.unit) {
-        case TimeUnit.Second:
-        case TimeUnit.Minute: {
-            const duration = getStepDuration(step)
-            const offset = date.getTimezoneOffset() * MINUTE
+const FIXED_DURATION_CALENDAR: TimeUnitCalendar = {
+    getFirstTick: (min, step) => {
+        const duration = getStepDuration(step)
+        const offset = new Date(min).getTimezoneOffset() * MINUTE
 
-            return advanceIfBefore(min, new Date(Math.floor((min - offset) / duration) * duration + offset), step)
-        }
+        return advanceIfBefore(min, new Date(Math.floor((min - offset) / duration) * duration + offset), step)
+    },
+    addStep: (date, step) => new Date(date.getTime() + getStepDuration(step))
+}
 
-        case TimeUnit.Hour: {
+const TIME_UNIT_CALENDARS: { [Unit in TimeUnit]: TimeUnitCalendar } = {
+    [TimeUnit.Second]: FIXED_DURATION_CALENDAR,
+    [TimeUnit.Minute]: FIXED_DURATION_CALENDAR,
+    [TimeUnit.Hour]: {
+        getFirstTick: (min, step) => {
+            const date = new Date(min)
             const hour = Math.floor(date.getHours() / step.size) * step.size
 
             return advanceIfBefore(min, new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour), step)
+        },
+        addStep: (date, step) => {
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours() + step.size)
         }
+    },
+    [TimeUnit.Day]: {
+        getFirstTick: min => {
+            const date = new Date(min)
 
-        case TimeUnit.Day:
             return advanceIfBefore(
                 min,
                 new Date(date.getFullYear(), date.getMonth(), date.getDate()),
                 { unit: TimeUnit.Day, size: 1 }
             )
+        },
+        addStep: (date, step) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + step.size)
+    },
+    [TimeUnit.Month]: {
+        getFirstTick: (min, step) => {
+            const date = new Date(min)
+            const offset = (step.size - date.getMonth() % step.size) % step.size
 
-        case TimeUnit.Month: {
-            const monthStart = new Date(date.getFullYear(), date.getMonth(), 1)
-            const offset = (step.size - monthStart.getMonth() % step.size) % step.size
-
-            return advanceIfBefore(
-                min,
-                new Date(monthStart.getFullYear(), monthStart.getMonth() + offset, 1),
-                step
-            )
-        }
-
-        case TimeUnit.Year: {
-            const year = Math.ceil(date.getFullYear() / step.size) * step.size
+            return advanceIfBefore(min, new Date(date.getFullYear(), date.getMonth() + offset, 1), step)
+        },
+        addStep: (date, step) => new Date(date.getFullYear(), date.getMonth() + step.size, 1)
+    },
+    [TimeUnit.Year]: {
+        getFirstTick: (min, step) => {
+            const year = Math.ceil(new Date(min).getFullYear() / step.size) * step.size
 
             return advanceIfBefore(min, new Date(year, 0, 1), step)
-        }
+        },
+        addStep: (date, step) => new Date(date.getFullYear() + step.size, 0, 1)
     }
+}
+
+function getFirstTick(min: number, step: TimeStep) {
+    return TIME_UNIT_CALENDARS[step.unit].getFirstTick(min, step)
 }
 
 function getStepDuration(step: TimeStep) {
@@ -116,21 +136,5 @@ function advanceIfBefore(min: number, candidate: Date, step: TimeStep) {
 }
 
 function addStep(date: Date, step: TimeStep) {
-    switch (step.unit) {
-        case TimeUnit.Second:
-        case TimeUnit.Minute:
-            return new Date(date.getTime() + getStepDuration(step))
-
-        case TimeUnit.Hour:
-            return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours() + step.size)
-
-        case TimeUnit.Day:
-            return new Date(date.getFullYear(), date.getMonth(), date.getDate() + step.size)
-
-        case TimeUnit.Month:
-            return new Date(date.getFullYear(), date.getMonth() + step.size, 1)
-
-        case TimeUnit.Year:
-            return new Date(date.getFullYear() + step.size, 0, 1)
-    }
+    return TIME_UNIT_CALENDARS[step.unit].addStep(date, step)
 }

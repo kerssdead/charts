@@ -6,7 +6,9 @@ import { normalizeSegmentedBar } from '@/helpers/ValueNormalization'
 import { getValueRows } from '@/export/TableRows'
 
 const SegmentedBarDefinition: ChartDefinition<SegmentedBarData> = {
-    createProcess: (data, pixel, settings, state) => new SegmentedBarProcess(data, pixel, settings, state),
+    createProcess: (data, pixel, settings, context) => {
+        return new SegmentedBarProcess(data, pixel, settings, context)
+    },
     prepareData: prepareSegmentedBar,
     normalizeData: normalizeSegmentedBar,
     getPaletteValues: data => data.values ?? [],

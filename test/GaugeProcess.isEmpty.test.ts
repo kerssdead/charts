@@ -15,7 +15,7 @@ const create = (values: Sector[]) => {
         { values } as GaugeData,
         { x: 5, y: 12.5 },
         { valuePostfix: undefined, theme: LIGHT_THEME },
-        createState({ values })
+        { state: createState({ values }) }
     )
 }
 

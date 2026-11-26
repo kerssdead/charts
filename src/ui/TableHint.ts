@@ -4,12 +4,9 @@ import { Attribute, Tag } from '@/static/Enums'
 let hintCount = 0
 
 export default class TableHint {
-    private readonly canvas: HTMLCanvasElement
-
     private readonly element: HTMLElement
 
-    constructor(parent: HTMLElement, canvas: HTMLCanvasElement) {
-        this.canvas = canvas
+    constructor(parent: HTMLElement, private readonly canvas: HTMLCanvasElement) {
         this.element = document.createElement(Tag.Span)
         this.element.id = `o-table-hint-${ ++hintCount }`
 

@@ -64,13 +64,13 @@ export function hoverBackground(theme: ThemePalette, hover: number) {
 }
 
 export default class Theme {
-    private media: MediaQueryList | undefined
+    private media?: MediaQueryList
 
-    private isDarkThemeFunction: (() => boolean) | undefined
+    private isDarkThemeFunction?: () => boolean
 
     private onChange!: () => void
 
-    private isAttached: boolean = false
+    private isAttached = false
 
     private currentColorTheme: ColorTheme = ColorTheme.light
 

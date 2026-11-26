@@ -7,68 +7,46 @@ export default class QueueArcItemBuilder extends QueueItemBaseBuilder<RenderItem
     }
 
     position(x: number, y: number) {
-        this.shape.absolute = { x, y }
-
-        return this
+        return this.chain(() => this.shape.absolute = { x, y })
     }
 
     radius(radius: number) {
-        this.shape.radius = radius
-
-        return this
+        return this.chain(() => this.shape.radius = radius)
     }
 
     innerRadius(radius: number) {
-        this.shape.innerRadius = radius
-
-        return this
+        return this.chain(() => this.shape.innerRadius = radius)
     }
 
     gap(gap: number) {
-        this.shape.gap = gap
-
-        return this
+        return this.chain(() => this.shape.gap = gap)
     }
 
     cornerRadius(radius: number) {
-        this.shape.cornerRadius = radius
-
-        return this
+        return this.chain(() => this.shape.cornerRadius = radius)
     }
 
     startAngle(angle: number) {
-        this.shape.startAngle = angle
-
-        return this
+        return this.chain(() => this.shape.startAngle = angle)
     }
 
     endAngle(angle: number) {
-        this.shape.endAngle = angle
-
-        return this
+        return this.chain(() => this.shape.endAngle = angle)
     }
 
     pull(distance: number) {
-        this.shape.pull = distance
-
-        return this
+        return this.chain(() => this.shape.pull = distance)
     }
 
     gradient() {
-        this.shape.isGradient = true
-
-        return this
+        return this.chain(() => this.shape.isGradient = true)
     }
 
     grow(angle: number) {
-        this.shape.growOrigin = angle
-
-        return this
+        return this.chain(() => this.shape.growOrigin = angle)
     }
 
-    fill(isFill: boolean = true) {
-        this.shape.isFill = isFill
-
-        return this
+    fill(isFill = true) {
+        return this.chain(() => this.shape.isFill = isFill)
     }
 }

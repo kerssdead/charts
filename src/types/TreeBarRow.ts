@@ -2,21 +2,21 @@ import Value from '@/types/base/Value'
 import Sector from '@/types/Sector'
 
 class TreeBarRow extends Value {
-    subLabel: string | undefined
+    subLabel?: string
 
-    image: string | undefined
+    image?: string
 
     label!: string
 
     parts!: Sector[]
 
-    barLabel: string | undefined
+    barLabel?: string
 
-    cells: Record<string, string | number> | undefined
+    cells?: Record<string, string | number>
 
-    expanded: boolean | undefined
+    expanded?: boolean
 
-    children: TreeBarRow[] | undefined
+    children?: TreeBarRow[]
 
     get hasChildren() {
         return (this.children?.length ?? 0) > 0

@@ -3,9 +3,7 @@ import ItemData from '@/types/ItemData'
 
 type ButtonOptions = {
     text: string
-
     action: () => void
-
     isDivider?: boolean
 }
 

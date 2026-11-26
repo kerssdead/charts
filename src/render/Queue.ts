@@ -19,9 +19,7 @@ type ItemsPass = {
 export default class Queue {
     private queue: RenderItem[] = []
 
-    private readonly ctx: CanvasRenderingContext2D
-
-    private isSorted: boolean = true
+    private isSorted = true
 
     private readonly hoveredGroups = new Set<string>()
 
@@ -29,14 +27,13 @@ export default class Queue {
 
     private readonly layers = new QueueLayers()
 
-    ratio: number = 1
+    ratio = 1
 
-    version: number = 0
+    version = 0
 
-    isAnimating: boolean = false
+    isAnimating = false
 
-    constructor(ctx: CanvasRenderingContext2D) {
-        this.ctx = ctx
+    constructor(private readonly ctx: CanvasRenderingContext2D) {
     }
 
     get items(): readonly RenderItem[] {
@@ -48,7 +45,7 @@ export default class Queue {
         window: CanvasWindow,
         screen: CanvasWindow,
         theme: ThemePalette,
-        canReuseLayers: boolean = false
+        canReuseLayers = false
     ): boolean {
         this.ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0)
 
@@ -115,7 +112,7 @@ export default class Queue {
         }
     }
 
-    animate(pointer: Point | null, now: DOMHighResTimeStamp, isInstant: boolean = false): boolean {
+    animate(pointer: Point | null, now: DOMHighResTimeStamp, isInstant = false) {
         const point = pointer ?? OUTSIDE
 
         const hoveredGroups = this.hoveredGroups

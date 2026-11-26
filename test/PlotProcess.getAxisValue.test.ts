@@ -17,7 +17,7 @@ describe('Getting plot value at y coordinate', () => {
             { values: [createSeries(PlotType.Line, [0, 100])] } as PlotData,
             { x: 1, y: 1 },
             { valuePostfix: undefined, theme: LIGHT_THEME },
-            createState()
+            { state: createState() }
         )
 
         expect(process.getAxisValue(process.getAxisY(37)))
@@ -29,7 +29,7 @@ describe('Getting plot value at y coordinate', () => {
             { values: [] } as unknown as PlotData,
             { x: 1, y: 1 },
             { valuePostfix: undefined, theme: LIGHT_THEME },
-            createState()
+            { state: createState() }
         )
 
         expect(process.getAxisValue(1000))
@@ -41,7 +41,7 @@ describe('Getting plot value at y coordinate', () => {
             { values: [createSeries(PlotType.Line, [3, 700])], yScale: PlotScaleType.Log } as PlotData,
             { x: 1, y: 1 },
             { valuePostfix: undefined, theme: LIGHT_THEME },
-            createState()
+            { state: createState() }
         )
 
         expect(process.getAxisValue(process.getAxisY(37)))

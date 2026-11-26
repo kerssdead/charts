@@ -20,15 +20,15 @@ const FONT_SIZE = 20
 export default class MenuButton extends Overlay {
     static readonly rowHeight = HEIGHT + PADDING * 2
 
-    onClick: (() => void) | undefined
+    onClick?: () => void
 
-    bounds: DOMRect | undefined
+    bounds?: DOMRect
 
-    private size: { width: number, height: number } | undefined
+    private size?: { width: number, height: number }
 
     private hover = new HoverProgress()
 
-    private isDirty: boolean = true
+    private isDirty = true
 
     resize(width: number, height: number, top: number) {
         this.size = { width, height }
@@ -36,7 +36,7 @@ export default class MenuButton extends Overlay {
         this.isDirty = true
     }
 
-    update({ queue, mouse, now, theme, isInstant }: Frame): boolean {
+    update({ queue, mouse, now, theme, isInstant }: Frame) {
         if (!this.bounds || !this.size || this.size.width <= 0 || this.size.height <= 0) {
             this.clear(queue)
 

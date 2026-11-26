@@ -8,26 +8,18 @@ export default class QueueImageItemBuilder extends QueueItemBaseBuilder<RenderIt
     }
 
     position(x: number, y: number) {
-        this.shape.absolute = { x, y }
-
-        return this
+        return this.chain(() => this.shape.absolute = { x, y })
     }
 
     size(value: number) {
-        this.shape.size = value
-
-        return this
+        return this.chain(() => this.shape.size = value)
     }
 
     box(x: number, y: number, width: number, height: number) {
-        this.shape.box = { x, y, width, height }
-
-        return this
+        return this.chain(() => this.shape.box = { x, y, width, height })
     }
 
     crossOrigin(mode: ImageCrossOrigin | undefined) {
-        this.shape.crossOrigin = mode
-
-        return this
+        return this.chain(() => this.shape.crossOrigin = mode)
     }
 }

@@ -7,7 +7,7 @@ import { labeled } from './HeatMapTestData'
 const isEmpty = (data: HeatMapData) => {
     const settings = { valuePostfix: undefined, theme: LIGHT_THEME }
 
-    return new HeatMapProcess(data, { x: 5, y: 5 }, settings, createState(data)).isEmpty()
+    return new HeatMapProcess(data, { x: 5, y: 5 }, settings, { state: createState(data) }).isEmpty()
 }
 
 describe('Checking the heat map is empty', () => {

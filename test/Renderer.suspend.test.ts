@@ -1,4 +1,4 @@
-import { createRenderer, createSettings, mockContextMenu, mockFrames, mockInput, mockTooltip } from './RendererTestData'
+import { createRenderer, createSettings, mockContextMenu, mockFrames, mockPointer, mockTooltip } from './RendererTestData'
 import { onImageLoad } from '@/helpers/Images'
 
 describe('Suspending renderer', () => {
@@ -8,7 +8,7 @@ describe('Suspending renderer', () => {
         renderer.apply(createSettings())
         renderer.suspend()
 
-        expect(mockInput().detach)
+        expect(mockPointer().detach)
             .toHaveBeenCalled()
         expect(mockTooltip().clear)
             .toHaveBeenCalled()

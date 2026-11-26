@@ -7,53 +7,29 @@ import EnumInput from '@/types/EnumInput'
 
 export interface CommonOptions {
     enableLegend?: boolean
-
     enableTooltip?: boolean
-
     enableOther?: boolean
-
     enableMove?: boolean
-
     staticMode?: boolean
-
     disableInteractions?: boolean
-
     disableMenu?: boolean
-
     enableDebugMode?: boolean
-
     baseColor?: string
-
     title?: string
-
     ariaLabel?: string
-
     templateId?: string
-
     valuePostfix?: string
-
     decimals?: number
-
     legendPlace?: EnumInput<LegendPlace>
-
     fontFamily?: string
-
     locale?: string
-
     strings?: TextOverrides
-
     numberLocale?: string
-
     width?: string
-
     height?: string
-
     contextMenu?: DropdownItem[]
-
     imageCrossOrigin?: ImageCrossOrigin
-
     isDarkThemeFunction?: () => boolean
-
     onError?: (error: unknown) => boolean | void
 }
 
@@ -61,21 +37,15 @@ export type ChartItemOptions = Omit<ChartItem, 'type'> & { type?: EnumInput<Char
 
 export type SingleChart = {
     type?: EnumInput<ChartType>
-
     data: Data
-
     charts?: never
-
     columns?: never
 }
 
 export type MultipleCharts = {
     charts: ChartItemOptions[]
-
     columns?: number
-
     type?: never
-
     data?: never
 }
 

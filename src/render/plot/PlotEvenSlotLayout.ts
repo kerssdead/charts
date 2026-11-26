@@ -6,16 +6,12 @@ export default class PlotEvenSlotLayout implements PlotSlotLayout {
 
     readonly gap: number
 
-    private readonly slots: Slots
-
-    private readonly start: number
-
-    private readonly direction: number
-
-    constructor(slots: Slots, start: number, length: number, direction: number) {
-        this.slots = slots
-        this.start = start
-        this.direction = direction
+    constructor(
+        private readonly slots: Slots,
+        private readonly start: number,
+        length: number,
+        private readonly direction: number
+    ) {
         this.gap = getGap(length, slots.values.length)
         this.step = (length - this.gap) / slots.values.length - this.gap
     }

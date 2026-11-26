@@ -9,7 +9,7 @@ import { withShares } from '@/export/TableTotals'
 import TextResources from '@/static/TextResources'
 
 const TreeMapDefinition: ChartDefinition<TreeData> = {
-    createProcess: (data, pixel, settings, state) => new TreeMapProcess(data, pixel, settings, state),
+    createProcess: (data, pixel, settings, context) => new TreeMapProcess(data, pixel, settings, context),
     prepareData: prepareSectors,
     normalizeData: normalizeTreeValues,
     mergeSameLabelValues: mergeTreeValues,

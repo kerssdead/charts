@@ -9,11 +9,11 @@ import { withShares } from '@/export/TableTotals'
 import TextResources from '@/static/TextResources'
 
 const PieDefinition: ChartDefinition<PieData> = {
-    createProcess: (data, pixel, settings, state) => new PieProcess(data, pixel, settings, state),
+    createProcess: (data, pixel, settings, context) => new PieProcess(data, pixel, settings, context),
     prepareData: prepareSectors,
     normalizeData: (data, numberLocale, scope) => normalizeValues(data.values, numberLocale, scope),
     mergeSameLabelValues: mergeSectors,
-    applyViewState: (data, state) => state.applyPinned(data.values ?? []),
+    applyViewState: (data, state) => state.pinned.apply(data.values ?? [], sector => sector.pinned),
     getPaletteValues: data => data.values ?? [],
     getTableRows: (data, isDisabled) => getValueRows(data.values, isDisabled),
     summarizeTable: table => withShares(table, TextResources.value),

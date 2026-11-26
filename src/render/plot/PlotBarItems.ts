@@ -9,16 +9,11 @@ import { CORNER_RADIUS } from '@/render/plot/PlotConstants'
 import { addBarCapMarks } from '@/render/plot/PlotCapMarks'
 
 export default class PlotBarItems {
-    private readonly layout: PlotLayout
-
-    private readonly style: PlotItemStyle
-
-    private readonly seriesGroups: PlotSeriesGroups
-
-    constructor(layout: PlotLayout, style: PlotItemStyle, seriesGroups: PlotSeriesGroups) {
-        this.layout = layout
-        this.style = style
-        this.seriesGroups = seriesGroups
+    constructor(
+        private readonly layout: PlotLayout,
+        private readonly style: PlotItemStyle,
+        private readonly seriesGroups: PlotSeriesGroups
+    ) {
     }
 
     getItems(series: PlotSeries) {

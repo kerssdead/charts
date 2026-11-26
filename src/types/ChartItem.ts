@@ -3,8 +3,6 @@ import { ChartType } from '@/static/Enums'
 
 export default interface ChartItem {
     type: ChartType
-
     data: Data
-
     title?: string
 }

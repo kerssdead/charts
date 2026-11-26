@@ -1,7 +1,7 @@
 import CanvasWindow from '@/types/CanvasWindow'
 import RenderItemBase from '@/types/interfaces/RenderItemBase'
 import Point from '@/types/Point'
-import { COORDS_MAX_X, FULL_ANGLE } from '@/static/constants/Index'
+import { FULL_ANGLE } from '@/static/constants/Index'
 import { getImage } from '@/helpers/Images'
 import { ImageCrossOrigin } from '@/static/Enums'
 import { lerp } from '@/helpers/Geometry'
@@ -13,13 +13,11 @@ type ImageCanvas = Point & {
 }
 
 export default class RenderItemImage extends RenderItemBase {
-    url: string
-
-    crossOrigin: ImageCrossOrigin | undefined
+    crossOrigin?: ImageCrossOrigin
 
     absolute: Point = { x: 0, y: 0 }
 
-    size: number = 0
+    size = 0
 
     from: Point | null = null
 
@@ -29,13 +27,11 @@ export default class RenderItemImage extends RenderItemBase {
 
     private readonly canvasBox = Rectangle.empty()
 
-    constructor(url: string) {
+    constructor(public url: string) {
         super()
-
-        this.url = url
     }
 
-    current(morph: number = 1): Point {
+    current(morph = 1): Point {
         if (!this.from || morph >= 1)
             return { ...this.absolute }
 
@@ -45,7 +41,7 @@ export default class RenderItemImage extends RenderItemBase {
         }
     }
 
-    morphFrom(previous: RenderItemBase, morph: number): boolean {
+    morphFrom(previous: RenderItemBase, morph: number) {
         if (!(previous instanceof RenderItemImage))
             return false
 
@@ -54,22 +50,22 @@ export default class RenderItemImage extends RenderItemBase {
         return true
     }
 
-    adjust(window: CanvasWindow, morph: number = 1): void {
+    adjust(window: CanvasWindow, morph = 1) {
         const position = this.current(morph)
 
         this.canvas.x = window.mapX(position.x)
         this.canvas.y = window.mapY(position.y)
-        this.canvas.size = this.size / COORDS_MAX_X * window.width
+        this.canvas.size = window.scaleX(this.size)
 
         if (this.box)
             window.mapBox(this.box, this.canvasBox)
     }
 
-    canBeCached(): boolean {
+    canBeCached() {
         return getImage(this.url, this.crossOrigin) != null
     }
 
-    render(ctx: CanvasRenderingContext2D): void {
+    render(ctx: CanvasRenderingContext2D) {
         if (this.box) {
             this.renderBox(ctx)
 
@@ -114,7 +110,7 @@ export default class RenderItemImage extends RenderItemBase {
         return { left: x - size / 2, top: y - size / 2, right: x + size / 2, bottom: y + size / 2 }
     }
 
-    isMouseOver(point: Point): boolean {
+    isMouseOver(point: Point) {
         return Math.hypot(point.x - this.canvas.x, point.y - this.canvas.y) <= this.canvas.size / 2
     }
 }

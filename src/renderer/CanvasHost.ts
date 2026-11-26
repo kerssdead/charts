@@ -18,8 +18,6 @@ const RELEASED_SIZE: Size = { width: 0, height: 0 }
 export default class CanvasHost {
     readonly canvas: HTMLCanvasElement = createCanvas()
 
-    private readonly events: CanvasHostEvents
-
     private readonly observer: ResizeObserver
 
     private readonly visibility: IntersectionObserver | null
@@ -28,15 +26,15 @@ export default class CanvasHost {
 
     private ratioWatcher: AbortController | null = null
 
-    private width: number = 0
+    private width = 0
 
-    private height: number = 0
+    private height = 0
 
     private pixelSize: Size = RELEASED_SIZE
 
-    private isInViewport: boolean = true
+    private isInViewport = true
 
-    private isPrinting: boolean = false
+    private isPrinting = false
 
     get size(): Size {
         return { width: this.width, height: this.height }
@@ -50,9 +48,7 @@ export default class CanvasHost {
         return this.isInViewport || this.isPrinting
     }
 
-    constructor(element: HTMLElement, events: CanvasHostEvents) {
-        this.events = events
-
+    constructor(element: HTMLElement, private readonly events: CanvasHostEvents) {
         this.canvas.classList.add(ChartClasses.Canvas)
         element.appendChild(this.canvas)
 

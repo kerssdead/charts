@@ -9,51 +9,37 @@ export default class QueueTextItemBuilder extends QueueItemBaseBuilder<RenderIte
     }
 
     position(x: number, y: number) {
-        this.shape.absolute = { x, y }
-
-        return this
+        return this.chain(() => this.shape.absolute = { x, y })
     }
 
     orbit(angle: number, orbit: Orbit) {
-        this.shape.angle = angle
-        this.shape.orbit = orbit
-
-        return this
+        return this.chain(() => {
+            this.shape.angle = angle
+            this.shape.orbit = orbit
+        })
     }
 
     follow(arc: RenderItemArc) {
-        this.shape.follow = arc
-
-        return this
+        return this.chain(() => this.shape.follow = arc)
     }
 
     size(value: number) {
-        this.shape.fontSize = value
-
-        return this
+        return this.chain(() => this.shape.fontSize = value)
     }
 
     align(value: TextAlignment) {
-        this.shape.alignment = value
-
-        return this
+        return this.chain(() => this.shape.alignment = value)
     }
 
     baseline(value: TextBaseline) {
-        this.shape.baseline = value
-
-        return this
+        return this.chain(() => this.shape.baseline = value)
     }
 
     rotate(angle: number) {
-        this.shape.rotate = angle
-
-        return this
+        return this.chain(() => this.shape.rotate = angle)
     }
 
     clip(width: number) {
-        this.shape.clipWidth = width
-
-        return this
+        return this.chain(() => this.shape.clipWidth = width)
     }
 }

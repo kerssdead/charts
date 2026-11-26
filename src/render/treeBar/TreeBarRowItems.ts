@@ -65,27 +65,18 @@ type RowContext = {
 }
 
 export default class TreeBarRowItems {
-    private readonly units: Units
-
-    private readonly geometry: TreeBarGeometry
-
-    private readonly imageCrossOrigin: ImageCrossOrigin | undefined
+    private readonly imageCrossOrigin?: ImageCrossOrigin
 
     private readonly theme: ThemePalette
 
-    private readonly actions: TreeBarRowActions
-
     constructor(
-        units: Units,
-        geometry: TreeBarGeometry,
+        private readonly units: Units,
+        private readonly geometry: TreeBarGeometry,
         style: TreeBarRowStyle,
-        actions: TreeBarRowActions
+        private readonly actions: TreeBarRowActions
     ) {
-        this.units = units
-        this.geometry = geometry
         this.imageCrossOrigin = style.imageCrossOrigin
         this.theme = style.theme
-        this.actions = actions
     }
 
     add(items: QueueItemsBuilder, { node, level, y, height }: TreeBarRowEntry) {
