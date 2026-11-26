@@ -1,15 +1,13 @@
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin')
 
+const dist = path.resolve(__dirname, 'dist')
+
 const base = {
     entry: './src/OCharts.ts',
-    output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: 'ocharts.js',
-        clean: { keep: /ocharts\.esm\.js/ }
-    },
     mode: 'production',
     devtool: 'source-map',
+    cache: { type: 'filesystem' },
     module: {
         rules: [
             {
@@ -17,7 +15,8 @@ const base = {
                 use: {
                     loader: 'ts-loader',
                     options: {
-                        compilerOptions: { module: 'ESNext', moduleResolution: 'bundler', isolatedModules: false }
+                        transpileOnly: true,
+                        compilerOptions: { module: 'ESNext', moduleResolution: 'bundler' }
                     }
                 },
                 exclude: /node_modules/,
@@ -46,15 +45,34 @@ const base = {
     }
 }
 
-module.exports = [
-    base,
-    {
-        ...base,
-        output: {
-            path: path.resolve(__dirname, 'dist'),
-            filename: 'ocharts.esm.js',
-            library: { type: 'module' }
-        },
-        experiments: { outputModule: true }
+const umd = {
+    ...base,
+    name: 'umd',
+    output: {
+        path: dist,
+        filename: 'ocharts.js',
+        clean: true
     }
-]
+}
+
+const esm = {
+    ...base,
+    name: 'esm',
+    dependencies: ['umd'],
+    output: {
+        path: dist,
+        filename: 'ocharts.esm.js',
+        library: { type: 'module' }
+    },
+    experiments: { outputModule: true }
+}
+
+const dev = {
+    ...umd,
+    name: 'dev',
+    mode: 'development',
+    output: { ...umd.output, clean: false },
+    optimization: { minimize: false }
+}
+
+module.exports = (env = {}) => env.dev ? dev : [umd, esm]

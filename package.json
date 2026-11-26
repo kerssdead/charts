@@ -1,6 +1,6 @@
 {
   "name": "charts",
-  "version": "2.1.232",
+  "version": "2.1.234",
   "description": "Typescript Canvas Charts",
   "main": "./dist/ocharts.js",
   "module": "./dist/ocharts.esm.js",
@@ -47,8 +47,8 @@
   ],
   "scripts": {
     "prebuild": "npm version patch --no-git-tag-version",
-    "build": "webpack && npm run sass && dts-bundle-generator --project tsconfig.json --umd-module-name OCharts -o dist/ocharts.d.ts src/OCharts.ts",
-    "watch": "webpack --watch",
+    "build": "tsc --noEmit -p . && webpack && npm run sass && dts-bundle-generator --no-check --project tsconfig.json --umd-module-name OCharts -o dist/ocharts.d.ts src/OCharts.ts",
+    "watch": "webpack --watch --env dev",
     "test": "jest",
     "lint": "eslint src test e2e",
     "fuzz:build": "tsc -p fuzz",
